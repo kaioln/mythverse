@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "power": 13698,
+  "kills": 15,
+  "dungeonClears": 1,
+  "bossKills": 1,
+  "inventory": 13,
+  "logs": 8
+}

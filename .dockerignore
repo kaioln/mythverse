@@ -1,0 +1,14 @@
+data
+node_modules
+.git
+tools
+tests
+docs
+assets/original
+assets/crossover
+assets/units
+assets/items
+assets/world
+*.zip
+*.bat
+*.command

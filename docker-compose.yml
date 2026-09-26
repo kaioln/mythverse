@@ -1,0 +1,21 @@
+# Uso: docker compose up -d --build   →   http://localhost:8080
+# Em produção coloque um proxy HTTPS na frente (Caddy/Nginx/Cloudflare) — veja DEPLOY.md.
+services:
+  mythverse:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATA_DIR: /data
+      TRUST_PROXY: "1"
+      # Use SECURE_COOKIE=0 apenas se testar sem HTTPS.
+      SECURE_COOKIE: "1"
+      BACKUP_HOURS: "6"
+    volumes:
+      - mythverse-data:/data
+
+volumes:
+  mythverse-data:

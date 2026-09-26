@@ -1,0 +1,17 @@
+{
+  "name": "mythverse",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mythverse — RPG de heróis de todos os mundos (cliente web + servidor com contas e saves na nuvem).",
+  "main": "server/index.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "dev": "node --watch --env-file-if-exists=.env server/index.js",
+    "test": "node tests/smoke.js && node tests/server.test.js",
+    "sim": "node tools/sim.js 6 7",
+    "backup": "node -e \"const {Store}=require('./server/db');const s=new Store(require('path').resolve(process.env.DATA_DIR||'data','mythverse.db'));console.log(s.backup());s.close()\""
+  }
+}

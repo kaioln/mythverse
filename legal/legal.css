@@ -1,0 +1,10 @@
+:root{color-scheme:dark}
+body{margin:0;background:#0b0a1a;color:#e9e6ff;font:16px/1.65 Outfit,"Segoe UI",system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:40px 22px 60px}
+.brand{font-weight:800;letter-spacing:.12em;color:#ffcf6b}
+h1{font-size:34px;margin:.2em 0 .1em}
+h2{font-size:20px;margin-top:1.8em;color:#ffcf6b}
+.updated{padding:10px 14px;border-radius:10px;background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.3);font-size:14px}
+a{color:#ff9ec7}
+code{background:rgba(255,255,255,.08);padding:1px 6px;border-radius:6px}
+li{margin:.3em 0}
