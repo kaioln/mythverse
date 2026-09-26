@@ -16,6 +16,8 @@ O jogo roda no plano **Free** do [Render](https://render.com), e as contas e os 
 
 > ⏳ **Limites do grátis:** o Render desliga o servidor depois de 15 minutos sem acessos, e o próximo acesso demora cerca de 1 minuto para acordar. O Neon também dorme quando ninguém joga e acorda sozinho. Serve para testar, não para lançar: o Neon grátis guarda 0,5 GB e só permite restaurar as últimas 6 horas. Confira os limites atuais em [render.com/pricing](https://render.com/pricing) e [neon.com/pricing](https://neon.com/pricing).
 
+📘 **Passo a passo detalhado**, com o que aparece em cada tela, backups e solução de problemas: [DEPLOY.md](DEPLOY.md).
+
 Para rodar com Neon no próprio computador, crie um arquivo `.env` com `DATABASE_URL=...` e rode `npm install` e `npm start`. Sem `DATABASE_URL`, o servidor usa o SQLite local de sempre.
 
 ---
