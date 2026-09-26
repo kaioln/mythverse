@@ -15,6 +15,9 @@ services:
         value: "1"
       - key: SECURE_COOKIE
         value: "1"
+      # Banco PostgreSQL (Neon, Supabase…): cole a connection string. Vazio = SQLite no disco /data.
+      - key: DATABASE_URL
+        sync: false
       # Token do painel /admin/ (gerado pelo Render; veja em Environment).
       - key: ADMIN_TOKEN
         generateValue: true

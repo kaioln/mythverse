@@ -32,6 +32,13 @@ npm test
 4. Aponte seu domínio. O HTTPS é automático.
 5. Abra `https://seu-endereço/admin/` e entre com o `ADMIN_TOKEN` (em Environment → Reveal).
 
+## Banco no Neon (PostgreSQL gerenciado)
+
+1. No Neon, copie a **connection string** do banco (a com `-pooler` no host funciona bem). Troque `sslmode=require` por `sslmode=verify-full`, que é a verificação de certificado mais forte.
+2. Defina `DATABASE_URL` com ela: no `.env` para rodar local (`npm start`) ou em **Environment** no Render.
+3. Não é preciso rodar SQL à mão: na primeira inicialização o servidor cria o schema `mythverse` com todas as tabelas e aplica as migrações novas sozinho a cada versão.
+4. Com o Neon, o disco `/data` do Render deixa de ser necessário para o banco (continua útil só para backups do SQLite, que não são usados nesse modo). Os backups ficam por conta do Neon (histórico/branches).
+
 ## Opção 2: Docker em qualquer servidor (VPS)
 
 ```bash
