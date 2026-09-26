@@ -64,7 +64,17 @@
   // entre "local" e "nuvem". Offline (arquivo aberto direto), o progresso fica neste navegador.
   async function resolveState() {
     const online = await KT.Net.detect();
-    if (!online) { KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' }; }
+    if (!online) {
+      // Site só de arquivos (ex.: GitHub Pages): leva ao servidor configurado; sem servidor, avisa em vez de entrar sem conta.
+      const server = String(KT.CONFIG?.server || '').trim();
+      if (location.protocol !== 'file:' && server) {
+        let target = null; try { target = new URL(server); } catch (_) { target = null; }
+        if (target && /^https?:$/.test(target.protocol) && target.origin !== location.origin) { location.replace(target.href); return new Promise(() => {}); }
+      }
+      if (location.protocol !== 'file:' && KT.Neon?.enabled) return resolveNeon();
+      if (location.protocol !== 'file:' && await KT.Auth.unavailable() !== 'offline') { location.reload(); return new Promise(() => {}); }
+      KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' };
+    }
     let user = await KT.Net.me();
     if (!user) user = await KT.Auth.show('login');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:srv:${user.id}`);
@@ -72,6 +82,17 @@
     for (let i = 0; !remote.ok && remote.status !== 401 && i < 3; i++) { await new Promise(r => setTimeout(r, 1500)); remote = await KT.Net.getState(); }
     if (!remote.ok) throw new Error(`Não foi possível carregar seu progresso do servidor: ${remote.error}`);
     return { state:KT.State.mergeState(remote.state), mode:'cloud', revision:remote.revision || 0, user, offline:remote.offline };
+  }
+
+  // Modo Neon: conta no Neon Auth, save na tabela mv_saves (Data API). O jogo roda no navegador.
+  async function resolveNeon() {
+    let user = await KT.Neon.currentUser();
+    if (!user) user = await KT.Auth.show('login', 'neon');
+    KT.State.setSaveKey(`${KT.State.SAVE_KEY}:neon:${user.id}`);
+    const data = await KT.Neon.loadSave();
+    const state = data ? KT.State.mergeState(data) : KT.State.createState();
+    if (!data) state.player.name = String(user.username || 'Viajante').slice(0, 20);
+    return { state, mode:'neon', user:{ ...user, id:'me' } };
   }
 
   async function boot() {
@@ -102,6 +123,14 @@
         onAccountLevel:l => ui.onAccountLevel(l),
         onState:() => { ui.renderResources(); ui.renderSide(); }
       };
+      if (session.mode === 'neon') {
+        const save0 = engine.save.bind(engine);
+        engine.save = () => { const r = save0(); KT.Neon.queue(state); return r; };
+        KT.Neon.onConflict = () => ui.toast('Seu progresso foi salvo em <b>outro aparelho</b>. Recarregue a página para continuar de lá.', 'red');
+        KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
+        addEventListener('visibilitychange', () => { if (document.hidden) { engine.save(); KT.Neon.flush(); } });
+        addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });
+      }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 
       assets.onProgress = (done, total) => { fill.style.width = `${Math.round(done / total * 100)}%`; label.textContent = `Abrindo a Fenda… ${done}/${total}`; };
@@ -112,6 +141,7 @@
         ui.renderAll();
         if (session.mode === 'offline') ui.toast(location.protocol === 'file:' ? '<b>Modo offline</b>: progresso salvo só neste navegador. Rode o servidor para contas e saves na nuvem.' : 'Servidor indisponível: jogando no <b>modo offline</b>.');
         if (session.mode === 'cloud' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica protegido no servidor.`, 'gold');
+        if (session.mode === 'neon' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica salvo na sua conta.`, 'gold');
         if (!state.story.seen.intro) { ui.cmd('markSeen', 'intro'); ui.onDialog(KT.Data.story.intro); }
         if (offline) ui.showOffline(offline);
       };

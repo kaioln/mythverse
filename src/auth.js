@@ -5,29 +5,43 @@
   // Tela de entrada: Entrar · Criar conta · Recuperar acesso.
   const Auth = {
     el:null, mode:'login', resolve:null,
-    show(mode = 'login') {
+    show(mode = 'login', provider = 'server') {
       this.el = document.querySelector('#auth');
-      this.mode = mode;
+      this.mode = mode; this.provider = provider;
       this.render();
       this.el.hidden = false;
       document.querySelector('#boot')?.classList.add('done');
       return new Promise(resolve => { this.resolve = resolve; });
     },
     hide() { if (this.el) this.el.hidden = true; },
+    // Sem servidor: explica e deixa o jogador escolher entre tentar de novo e jogar offline (sem conta).
+    unavailable() {
+      this.el = document.querySelector('#auth'); this.el.hidden = false;
+      document.querySelector('#boot')?.classList.add('done');
+      this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="alertdialog" aria-labelledby="auth-off-title">
+        <div class="auth-brand"><img class="auth-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos"></div>
+        <h2 id="auth-off-title" class="auth-off-title">Servidor indisponível</h2>
+        <p class="auth-note">Não foi possível falar com o servidor do jogo, então login, cadastro e saves na nuvem não estão disponíveis agora. Tente de novo em alguns instantes.</p>
+        <button class="action primary big" type="button" data-off="retry">Tentar de novo</button>
+        <p class="auth-alt">Ou <button type="button" class="link" data-off="offline">jogar offline neste navegador</button> (sem conta: o progresso fica só neste aparelho e não vai para o servidor).</p>
+      </section>`;
+      return new Promise(resolve => this.el.querySelectorAll('[data-off]').forEach(b => b.addEventListener('click', () => { if (b.dataset.off === 'offline') this.hide(); resolve(b.dataset.off); })));
+    },
     render(message = '') {
       const m = this.mode;
       const tab = (id, label) => `<button type="button" class="auth-tab ${m === id ? 'active' : ''}" data-auth-mode="${id}">${label}</button>`;
       const pw = (name, label, auto, hint = '') => `<label class="field"><span>${label}</span><div class="pw-wrap"><input name="${name}" type="password" autocomplete="${auto}" required maxlength="128"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Mostrar senha">👁</button></div>${hint ? `<small>${hint}</small>` : ''}</label>`;
       let form = '';
+      const neon = this.provider === 'neon';
       if (m === 'login') form = `<form data-auth-form="login" novalidate>
-          <label class="field"><span>Usuário ou e-mail</span><input name="login" autocomplete="username" required maxlength="254" autofocus></label>
+          <label class="field"><span>${neon ? 'E-mail' : 'Usuário ou e-mail'}</span><input name="login" ${neon ? 'type="email" autocomplete="email"' : 'autocomplete="username"'} required maxlength="254" autofocus></label>
           ${pw('password', 'Senha', 'current-password')}
           <button class="action primary big" type="submit">Entrar</button>
-          <p class="auth-alt">Esqueceu a senha? <button type="button" class="link" data-auth-mode="recover">Recuperar acesso</button></p>
+          ${neon ? '' : '<p class="auth-alt">Esqueceu a senha? <button type="button" class="link" data-auth-mode="recover">Recuperar acesso</button></p>'}
         </form>`;
       if (m === 'register') form = `<form data-auth-form="register" novalidate>
           <label class="field"><span>Nome de usuário</span><input name="username" autocomplete="username" required minlength="3" maxlength="20"><small>3 a 20 caracteres: letras, números, ponto, hífen ou sublinhado. Aparece no ranking.</small></label>
-          <label class="field"><span>E-mail <em>(opcional)</em></span><input name="email" type="email" autocomplete="email" maxlength="254"><small>Permite entrar com o e-mail.</small></label>
+          <label class="field"><span>E-mail ${neon ? '' : '<em>(opcional)</em>'}</span><input name="email" type="email" autocomplete="email" maxlength="254" ${neon ? 'required' : ''}><small>${neon ? 'Você entra com o e-mail.' : 'Permite entrar com o e-mail.'}</small></label>
           ${pw('password', 'Senha', 'new-password', 'Mínimo de 8 caracteres, com letras e números.')}
           ${pw('confirm', 'Confirmar senha', 'new-password')}
           <label class="check"><input type="checkbox" name="acceptTerms" required> <span>Li e aceito os <a href="legal/termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="legal/privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>
@@ -66,6 +80,14 @@
         if ((d.password || '').length < 8) return this.error('A senha precisa ter pelo menos 8 caracteres.');
         if (d.password !== d.confirm) return this.error('As senhas não conferem.');
         if (!d.acceptTerms) return this.error('Aceite os Termos de Uso e a Política de Privacidade.');
+        if (this.provider === 'neon' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email || '')) return this.error('Informe um e-mail válido.');
+      }
+      if (this.provider === 'neon') {
+        btn.disabled = true; btn.textContent = 'Aguarde…';
+        const rn = kind === 'login' ? await KT.Neon.signIn(d) : await KT.Neon.signUp(d);
+        btn.disabled = false; btn.textContent = label;
+        if (!rn.ok || !rn.user) return this.error(rn.error || (kind === 'register' ? 'Conta criada: confirme o e-mail e depois entre.' : 'Não foi possível entrar.'));
+        this.hide(); this.resolve?.(rn.user); return;
       }
       btn.disabled = true; btn.textContent = 'Aguarde…';
       const r = kind === 'login' ? await KT.Net.login(d) : kind === 'register' ? await KT.Net.register(d) : await KT.Net.recover(d);

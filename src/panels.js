@@ -519,28 +519,28 @@
   // RANKING
   // ---------------------------------------------------------------------------
   P.rankingPanel = function(_, tab) {
-    if (this.session?.mode !== 'cloud') return '<div class="empty-state"><h3>Ranking online</h3><p>O ranking fica disponível quando o jogo roda no servidor com uma conta. No modo offline o progresso fica só neste navegador.</p></div>';
+    if (this.session?.mode !== 'cloud' && this.session?.mode !== 'neon') return '<div class="empty-state"><h3>Ranking online</h3><p>O ranking fica disponível quando o jogo roda no servidor com uma conta. No modo offline o progresso fica só neste navegador.</p></div>';
     const cache = this.rankCache?.[tab];
     if (!cache || Date.now() - cache.at > 30_000) {
-      KT.Net.leaderboard(tab).then(r => { this.rankCache = { ...(this.rankCache || {}), [tab]:{ at:Date.now(), data:r } }; if (this.view.panel === 'ranking' && this.view.tab === tab) this.refreshPanel(); });
+      (this.session.mode === 'neon' ? KT.Neon.leaderboard(tab) : KT.Net.leaderboard(tab)).then(r => { this.rankCache = { ...(this.rankCache || {}), [tab]:{ at:Date.now(), data:r } }; if (this.view.panel === 'ranking' && this.view.tab === tab) this.refreshPanel(); });
       if (!cache) return '<div class="empty-state"><p>Carregando ranking…</p></div>';
     }
     const r = cache.data; if (!r.ok) return `<div class="empty-state"><p>Não foi possível carregar o ranking: ${esc(r.error)}</p></div>`;
     const col = { power:['power', 'Poder', v => compact(v)], bosses:['boss_kills', 'Chefes vencidos', v => U.fmt(v)], stage:['best_stage', 'Estágios vencidos', v => U.fmt(v)], rift:['rift_best', 'Andar da Fenda', v => `Andar ${U.fmt(v)}`] }[tab] || ['power', 'Poder', v => compact(v)];
     const meId = String(this.session.user?.id || ''), rows = r.rows || [], top = Number(rows[0]?.[col[0]]) || 1;
     const teamOf = row => { try { return JSON.parse(row.team || '[]').filter(h => this.engine.template(h.id)); } catch (_) { return []; } };
-    const name = row => row.id ? `<button class="linkish" data-seller="${row.id}" type="button">${esc(row.name)}</button>` : esc(row.name);
+    const name = row => row.id && this.session.mode === 'cloud' ? `<button class="linkish" data-seller="${row.id}" type="button">${esc(row.name)}</button>` : esc(row.name);
     const minis = team => `<span class="rk-team">${team.map(h => `<img src="${portrait(h.id)}" alt="" title="${esc(this.engine.template(h.id).name)} ${'★'.repeat(h.stars)}" loading="lazy">`).join('')}</span>`;
-    const podium = rows.slice(0, 3).map((row, i) => { const team = teamOf(row), lead = team[0]; return `<article class="rk-pod p${i + 1} ${String(row.id) === meId ? 'me' : ''}">
+    const podium = rows.slice(0, 3).map((row, i) => { const team = teamOf(row), lead = team[0]; return `<article class="rk-pod p${i + 1} ${(row.me || String(row.id) === meId) ? 'me' : ''}">
         <span class="rk-medal">${i + 1}</span>
         <div class="rk-lead" ${lead ? `style="background-image:url('${portrait(lead.id)}')"` : ''}>${lead ? '' : ic('crown')}</div>
         <b class="rk-name">${name(row)}</b><small>Nv. ${row.account_level} de conta</small>
         <strong class="rk-val">${col[2](row[col[0]])}</strong>${minis(team)}</article>`; }).join('');
-    const myIdx = rows.findIndex(row => String(row.id) === meId);
+    const myIdx = rows.findIndex(row => (row.me || String(row.id) === meId));
     const mine = myIdx >= 0 ? { rank:myIdx + 1, row:rows[myIdx] } : null;
     const meBox = mine ? `<div class="rank-me"><span>Sua posição em ${col[1].toLowerCase()}</span><b>#${mine.rank}</b><small>${esc(mine.row.name)} · ${col[2](mine.row[col[0]])}</small></div>`
       : r.me ? `<div class="rank-me"><span>Sua posição por poder</span><b>#${r.me.rank}</b><small>${esc(r.me.name)} · ${compact(r.me.power)} de poder${tab !== 'power' ? ' · fora do top 50 nesta categoria' : ''}</small></div>` : '<p class="note">Seu save aparece no ranking após a primeira sincronização.</p>';
-    const list = rows.slice(3).map((row, k) => { const i = k + 3, pctW = Math.max(3, Math.round(100 * (Number(row[col[0]]) || 0) / top)); return `<div class="rk-row ${String(row.id) === meId ? 'me' : ''}"><span class="rk-pos">${i + 1}</span>${minis(teamOf(row))}<span class="rk-who">${name(row)}<small>Nv. ${row.account_level}</small></span><span class="rk-bar"><i style="width:${pctW}%"></i><b>${col[2](row[col[0]])}</b></span></div>`; }).join('');
+    const list = rows.slice(3).map((row, k) => { const i = k + 3, pctW = Math.max(3, Math.round(100 * (Number(row[col[0]]) || 0) / top)); return `<div class="rk-row ${(row.me || String(row.id) === meId) ? 'me' : ''}"><span class="rk-pos">${i + 1}</span>${minis(teamOf(row))}<span class="rk-who">${name(row)}<small>Nv. ${row.account_level}</small></span><span class="rk-bar"><i style="width:${pctW}%"></i><b>${col[2](row[col[0]])}</b></span></div>`; }).join('');
     return `${meBox}
       ${rows.length ? `<div class="rk-podium">${podium}</div>${list ? `<div class="rk-list">${list}</div>` : ''}` : '<div class="empty-state"><p>Ninguém no ranking ainda. Seja o primeiro!</p></div>'}
       <p class="note">Toque no nome para ver o perfil e a equipe. O poder é recalculado pelo servidor a partir do save; contas com atividade suspeita não aparecem.</p>`;
@@ -782,6 +782,7 @@
   };
   P.accountHtml = function() {
     const ses = this.session || {}, c = KT.Server || {};
+    if (ses.mode === 'neon') return `<h4 class="sub-title">Conta</h4><div class="panel"><h3>${esc(ses.user?.username || '')}</h3><p>E-mail: ${esc(ses.user?.email || '')}</p><p class="dim">Conta no Neon. O progresso é salvo na sua conta automaticamente (a cada 20 s e ao fechar a aba).</p><div class="box-actions"><button class="action primary" data-neon-save type="button">☁ Salvar agora</button><button class="action" data-neon-logout type="button">Sair</button></div></div>`;
     if (ses.mode !== 'cloud') return `<h4 class="sub-title">Conta</h4><div class="panel"><p><b>Modo offline.</b> O progresso fica salvo apenas neste navegador. Para ter conta, login e save na nuvem, rode o servidor (<code>npm start</code>) e acesse pelo endereço dele.</p></div>`;
     const u = ses.user || {};
     return `<h4 class="sub-title">Conta</h4><div class="account-grid">
@@ -947,6 +948,8 @@
     const run = (op, args, then) => { if (busy) busy.disabled = true; return c(op, ...args).then(r => { then?.(r); refresh(); }).finally(() => { if (busy) busy.disabled = false; }); };
     if (d.remove) { ev.stopPropagation(); run('removeFromParty', [d.remove], () => { this.selectedSlot = s.formation.indexOf(null) >= 0 ? s.formation.indexOf(null) : this.selectedSlot; this.dockKey = ''; }); return; }
     if (d.go) { const [p, param] = d.go.split(':'); this.openPanel(p, param); return; }
+    if (b.hasAttribute('data-neon-save')) { this.engine.save(); KT.Neon.flush().then(ok => this.toast(ok ? 'Progresso salvo na sua conta.' : 'Não foi possível salvar agora.', ok ? 'gold' : '')); return; }
+    if (b.hasAttribute('data-neon-logout')) { this.engine.save(); KT.Neon.queue(this.state); KT.Neon.signOut().then(() => location.reload()); return; }
     if (d.tabGo) { this.view.tab = d.tabGo; this.refreshPanel(true); return; }
     if (d.previewZone) { this.view.stage = null; this.view.floor = null; this.view.tier = null; this.openPanel('destination', d.previewZone); return; }
     if (d.pickStage) { this.view.stage = Number(d.pickStage); this.refreshPanel(); return; }

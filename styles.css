@@ -1271,3 +1271,5 @@ a.action{text-decoration:none;color:inherit}
 .rk-bar b{position:relative;display:block;padding:0 10px;line-height:26px;font-size:13px;text-align:right}
 @media (max-width:640px){.rk-podium{gap:6px}.rk-lead{width:52px;height:52px}.rk-pod.p1 .rk-lead{width:64px;height:64px}.rk-val{font-size:16px}.rk-team img{width:16px;height:16px}
   .rk-row{grid-template-columns:30px minmax(0,1fr) 42%;gap:8px}.rk-row .rk-team{display:none}}
+
+.auth-off-title{margin:4px 0 8px;text-align:center;font:22px var(--display);color:var(--gold)}
