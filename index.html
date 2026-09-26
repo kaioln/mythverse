@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0a1a">
-  <meta name="description" content="Mythverse — RPG de heróis de todos os mundos. Convoque, forme laços, fortaleça sua equipe e feche a Fenda.">
-  <title>Mythverse — Heróis de todos os mundos</title>
+  <meta name="description" content="Mythverse: RPG de heróis de todos os mundos. Convoque, forme laços, fortaleça sua equipe e feche a Fenda.">
+  <title>Mythverse: Heróis de todos os mundos</title>
   <link rel="icon" type="image/png" sizes="64x64" href="assets/brand/favicon-64.png?v=2">
   <link rel="apple-touch-icon" href="assets/brand/favicon-192.png?v=2">
-  <meta property="og:title" content="Mythverse — Heróis de todos os mundos">
+  <meta property="og:title" content="Mythverse: Heróis de todos os mundos">
   <meta property="og:image" content="assets/brand/logo-full.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
 <body>
   <div class="boot" id="boot">
     <div class="boot-inner">
-      <img class="boot-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse — Heróis de todos os mundos">
+      <img class="boot-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos">
       <div class="boot-bar"><span id="boot-fill"></span></div>
       <small id="boot-label">Abrindo a Fenda…</small>
     </div>
@@ -35,18 +35,18 @@
         <span class="player-avatar"><img id="player-avatar-img" alt="" hidden><img class="avatar-fallback" src="assets/brand/emblem.png?v=2" alt=""><i class="cloud-dot" id="cloud-dot" data-tip="Salvamento"></i></span>
         <span class="player-copy">
           <strong id="player-name">Viajante</strong>
-          <small><span id="player-level">Conta Nv. 1</span> · <span id="power-label">Poder —</span></small>
+          <small><span id="player-level">Conta Nv. 1</span> · <span id="power-label">Poder,</span></small>
           <span class="xp-mini"><span id="player-xp-fill"></span></span>
         </span>
       </button>
 
       <div class="resources" id="resources">
-        <div class="res gold" data-tip="Ouro — ganho em combate. Usado em prédios, treino, aprimoramentos e loja."><i></i><b id="gold-value">—</b></div>
-        <div class="res crystal" data-tip="Cristais — marcos de progresso, missões e conquistas. Troque por chaves na Loja."><i></i><b id="crystal-value">—</b></div>
-        <div class="res dust" data-tip="Éter — desmontando itens. Usado para encantar afixos na Oficina."><i></i><b id="dust-value">—</b></div>
-        <div class="res ore" data-tip="Tamahagane — aço sagrado para aprimorar itens na Forja."><i></i><b id="ore-value">—</b></div>
+        <div class="res gold" data-tip="Ouro, ganho em combate. Usado em prédios, treino, aprimoramentos e loja."><i></i><b id="gold-value">, </b></div>
+        <div class="res crystal" data-tip="Cristais, marcos de progresso, missões e conquistas. Troque por chaves na Loja."><i></i><b id="crystal-value">, </b></div>
+        <div class="res dust" data-tip="Éter, desmontando itens. Usado para encantar afixos na Oficina."><i></i><b id="dust-value">, </b></div>
+        <div class="res ore" data-tip="Tamahagane, aço sagrado para aprimorar itens na Forja."><i></i><b id="ore-value">, </b></div>
         <button class="res key" data-open="collection" type="button" data-tip="Convocações disponíveis (grátis ou chaves)."><i></i><b id="key-value">0</b><small id="key-caption">Grátis</small></button>
-        <button class="res gem" data-open="shop:gems" type="button" data-tip="Gemas — moeda premium."><i></i><b id="gem-value">0</b></button>
+        <button class="res gem" data-open="shop:gems" type="button" data-tip="Gemas, moeda de dinheiro real (100 = R$ 1,00), usada no Mercado de Jogadores. Clique para abrir a carteira."><i></i><b id="gem-value">0</b></button>
       </div>
 
       <div class="top-actions">
@@ -58,6 +58,7 @@
 
     <nav class="side-nav" aria-label="Navegação">
       <button class="nav" data-panel="journey" type="button"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><b>Mapa</b></button>
+      <button class="nav" data-panel="adventure" type="button"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4 3.4 7.3 8 8 4.6-.7 8-4 8-8V7z"/><path d="M9 12l2 2 4-4"/></svg><b>Aventuras</b><em id="adventure-badge" hidden>!</em></button>
       <button class="nav" data-panel="party" type="button"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.2A4.5 4.5 0 0 1 21 18.5"/></svg><b>Equipe</b><em id="party-badge" hidden>!</em></button>
       <button class="nav" data-panel="collection" type="button"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><b>Heróis</b><em id="summon-badge" hidden>!</em></button>
       <button class="nav" data-panel="inventory" type="button"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><b>Bolsa</b><em id="inventory-badge" hidden>0</em></button>
@@ -80,7 +81,7 @@
             <div class="zone-meta"><span id="zone-difficulty">Refúgio</span><span id="wave-label">Cidade segura</span><span id="power-check" hidden></span></div>
           </div>
           <div class="boss-panel" id="boss-panel" hidden>
-            <div class="boss-line"><span id="boss-kind">CHEFE</span><strong id="boss-name">—</strong><b id="boss-percent">100%</b></div>
+            <div class="boss-line"><span id="boss-kind">CHEFE</span><strong id="boss-name">, </strong><b id="boss-percent">100%</b></div>
             <div class="boss-track"><span class="boss-chip" id="boss-chip"></span><span class="boss-fill" id="boss-fill"></span><span class="boss-shield" id="boss-shield"></span><i id="boss-mark-1"></i><i id="boss-mark-2"></i></div>
             <div class="boss-sub"><small id="boss-phase">Fase 1</small><small id="boss-timer"></small></div>
           </div>
@@ -151,6 +152,7 @@
   <script src="src/items.js"></script>
   <script src="src/progression.js"></script>
   <script src="src/roster.js"></script>
+  <script src="src/builds.js"></script>
   <script src="src/engine.js"></script>
   <script src="src/net.js"></script>
   <script src="src/auth.js"></script>

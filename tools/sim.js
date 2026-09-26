@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 global.setTimeout = fn => fn();
 let seed = Number(process.argv[3] || 7);
 Math.random = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
-for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/engine.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
+for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
 const { State, CombatEngine, Data:D, Items:I, Progression:PR } = global.KT;
 
 const HOURS = Number(process.argv[2] || 3);
@@ -13,7 +13,8 @@ const state = State.createState();
 const log = [];
 let t = 0;
 const mark = txt => { log.push(`${(t / 60).toFixed(1).padStart(6)} min  ${txt}`); };
-const engine = new CombatEngine(state, { onToast(){}, onLog(){}, onFx(){}, onLoot(){}, onZone(){}, onWave(){}, onState(){}, onChoice(c){ if (c.kind === 'route') setTimeout(() => engine.chooseRoute('safe')); else setTimeout(() => engine.resolveEncounter(c.options[0].id === 'buy0' ? 'leave' : c.options[0].id)); }, onResult(){}, onDialog(){}, onWarn(){}, onPhase(){}, onStageClear(){}, onDefeatHunt(){}, onAccountLevel(){} });
+const lootBy = {}, hourly = [];
+const engine = new CombatEngine(state, { onToast(){}, onLog(){}, onFx(){}, onLoot(it){ lootBy[it.rarity] = (lootBy[it.rarity] || 0) + 1; }, onZone(){}, onWave(){}, onState(){}, onChoice(c){ if (c.kind === 'route') setTimeout(() => engine.chooseRoute('safe')); else setTimeout(() => engine.resolveEncounter(c.options[0].id === 'buy0' ? 'leave' : c.options[0].id)); }, onResult(){}, onDialog(){}, onWarn(){}, onPhase(){}, onStageClear(){}, onDefeatHunt(){}, onAccountLevel(){} });
 
 for (let i = 0; i < 10; i++) engine.openBox(true);
 const hint = { Vanguarda:['vit','str'], Executor:['str','dex','luk'], Arcanista:['int','luk'], Atirador:['agi','dex'], Suporte:['int','vit'] };
@@ -31,15 +32,7 @@ pickTeam();
 const talentPath = ['root','b1','b1','b1','a1','a1','g1','g1','g2','g2','b2','b2','b4','b4','b3','b3','bN1','a2','a2','g3','g3','b5','b5','bN2','b6','e1','e1','g4','g4','gN1'];
 function manage() {
   const ctx = engine.ctx();
-  engine.heroes.forEach(r => { const t = D.roster.find(x => x.id === r.id); let free = engine.freeAttr(r); let i = 0; while (free > 0) { engine.addAttr(r.uid, hint[t.cls][i % hint[t.cls].length], 1); free--; i++; } });
-  // Equipar melhor item por espaço.
-  const used = new Set();
-  engine.heroes.forEach(r => Object.keys(I.slots).forEach(slot => {
-    const cur = state.inventory.find(x => x.uid === r.equipped[slot]);
-    const best = state.inventory.filter(x => x.slot === slot && !used.has(x.uid) && (!engine.ownerOf(x.uid) || engine.ownerOf(x.uid) === r)).sort((a, b) => I.itemScore(b) - I.itemScore(a))[0];
-    if (best && best !== cur) engine.equip(r.uid, best.uid);
-    if (r.equipped[slot]) used.add(r.equipped[slot]);
-  }));
+  engine.heroes.forEach(r => { engine.autoBuild(r.uid); engine.autoEquip(r.uid); }); // o simulador escolhe equipamentos como um jogador atento
   // Desmontar lixo.
   engine.salvageMany('rare');
   // Gastar ouro.
@@ -53,9 +46,10 @@ function manage() {
     const o = opts[0]; if (!o || state.player.gold < o.c) break; o.f();
   }
   while (state.player.keys > 0) engine.openBox(true);
-  while (state.player.crystal >= 60) engine.buy('key1');
-  engine.heroes.forEach(r => { const tree = PR.classTrees[D.roster.find(x => x.id === r.id).cls]; let guard = 0; while (engine.heroTalentPoints(r) > 0 && guard++ < 80) { const n = tree.slice().sort((a, b) => (b.notable || b.keystone ? 1 : 0) - (a.notable || a.keystone ? 1 : 0)).find(x => engine.talentState(r, x.id).ok); if (!n) break; engine.addHeroTalent(r.uid, n.id); } if (engine.canJobChange(r)) engine.jobChange(r.uid); });
+  while (state.player.crystal >= 150) engine.buy('key1');
+  engine.heroes.forEach(r => { engine.autoTalents(r.uid); if (engine.canJobChange(r)) engine.jobChange(r.uid); });
   while (engine.claimGuide());
+  engine.claimLogin(); state.daily.list.forEach((d, i) => engine.claimDaily(i)); while (engine.claimChronicle());
   for (let i = 2; i >= 0; i--) engine.claimContract(i);
   D.achievements.forEach(a => engine.claimAchievement(a.id));
   if (state.consumables.potion < 3 && state.player.gold > 5000) engine.buy('potion');
@@ -95,8 +89,12 @@ while (t < END) {
   if (engine.phase === 'result' && !engine.autoAfterResult) { engine.fallbackToHunt(); }
   if (engine.phase === 'result' && engine.lastResult?.kind !== 'defeat') { engine.autoAfterResult = null; engine.fallbackToHunt(); }
   if (manageT > 30) { manageT = 0; manage(); milestones(); if (engine.phase !== 'fight' || state.zone.startsWith('hunt')) decide(); }
+  if (Math.floor(t / 3600) > hourly.length - 1 && t >= 3600 * hourly.length) hourly.push({ h:hourly.length, goldEarned:state.stats.goldEarned, kills:state.stats.kills, cards:state.stats.cards || 0, star:state.mats?.star || 0, ori:state.mats?.ori || 0, zone:state.zone, stage:engine.opts.stage || engine.opts.floor || 0 });
 }
 milestones();
 console.log(log.join('\n'));
 console.log(`\nFim: ${HOURS}h · conta nv ${state.player.level} · heróis ${engine.heroes.map(r => `${D.roster.find(x => x.id === r.id).name} nv${r.level} ${r.stars}★`).join(', ')}`);
 console.log(`Ouro ${state.player.gold.toLocaleString()} · itens ${state.inventory.length} · derrotas em caçada ${deaths} · kills ${state.stats.kills} · treino ${JSON.stringify(state.training)} · prédios ${JSON.stringify(state.buildings)}`);
+console.log('Por hora (acumulado): h | ouro ganho | abates | cartas | Aço Estelar | Oricalco | onde');
+hourly.forEach((x, i) => { const prev = hourly[i - 1] || { goldEarned:0, kills:0 }; console.log(`${String(x.h).padStart(2)}h | +${Math.round((x.goldEarned - prev.goldEarned) / 1000)}k ouro/h | ${x.kills - prev.kills} abates/h | cartas ${x.cards} | estelar ${x.star} | oricalco ${x.ori} | ${x.zone} ${x.stage}`); });
+console.log('Itens obtidos por raridade:', JSON.stringify(lootBy), '· ouro total ganho', state.stats.goldEarned.toLocaleString(), '· cartas', state.stats.cards || 0);

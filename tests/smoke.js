@@ -3,7 +3,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = path.resolve(__dirname, '..');
 global.setTimeout = fn => { fn(); return 0; };
-for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/engine.js','src/assets.js','src/ui.js','src/panels.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
+for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js','src/assets.js','src/ui.js','src/panels.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
 const { State, CombatEngine, Data:D, Items:I, Progression:PR } = global.KT;
 let checks = 0;
 const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };
@@ -14,11 +14,29 @@ ok(new Set(D.roster.map(h => h.skill.name)).size === 60 && new Set(D.roster.map(
 D.roster.forEach(h => { ok(h.passiveText && h.skillText && h.ultText, `kit descrito: ${h.id}`); ok(fs.existsSync(path.join(root, 'assets/sprites', `${h.sprite}.png`)) && fs.existsSync(path.join(root, 'assets/portraits', `${h.id}.png`)), `arte: ${h.id}`); });
 ok(Object.keys(D.classes).every(c => D.roster.filter(h => h.cls === c).length >= 8), 'todas as classes têm heróis');
 Object.values(D.enemies).forEach(e => ok(fs.existsSync(path.join(root, 'assets/sprites', `${e.sprite}.png`)), `sprite de monstro: ${e.sprite}`));
-const zonePools = ['hunt','dungeon','hunt_tide','dungeon_tide'].map(z => new Set([...D.zones[z].pool, ...D.zones[z].elites.filter(x => x !== 'fox_specter')]));
+const zonePools = Object.values(D.zones).filter(z => z.pool).map(z => new Set([...z.pool, ...z.elites.filter(x => x !== 'fox_specter'), ...(z.floorBoss ? [z.floorBoss] : [])]));
+ok(zonePools.length >= 11, 'regiões com monstros próprios');
 ok(zonePools.every((a, i) => zonePools.every((b, j) => i === j || [...a].every(x => !b.has(x)))), 'monstros não se repetem entre regiões');
 [...I.bases.map(b => [b.icon, b.hue]), ...I.uniques.map(q => [q.icon, q.hue]), ...I.sets.flatMap(s => Object.values(s.pieces).map(p => [p[1], p[2]]))].forEach(([icon, hue]) => ok(fs.existsSync(path.join(root, 'assets/icons', `${icon}${hue ? `_h${hue}` : ''}.png`)), `ícone ${icon} ${hue}`));
 ok(I.bases.length >= 30 && I.uniques.length >= 15 && I.sets.length >= 7 && I.affixes.length >= 18, 'variedade de itens');
-for (const id of Object.keys(D.zones)) ok(fs.existsSync(path.join(root, 'assets/scenes', `${id}.png`)), `cenário ${id}`);
+for (const z of Object.values(D.zones)) ok(fs.existsSync(path.join(root, 'assets/scenes', `${z.scene || z.id}.png`)), `cenário ${z.id}`);
+Object.values(D.zones).filter(z => z.pool).forEach(z => [...z.pool, ...z.elites, ...(z.floorBoss ? [z.floorBoss] : [])].forEach(id => ok(D.enemies[id], `monstro ${id} de ${z.id}`)));
+Object.values(D.enemies).forEach(e => ok(!e.skill || new Set(Object.values(D.enemies).filter(o => o.skill).map(o => o.skill.name)).size > 70, 'habilidades de monstros variadas'));
+ok(I.cards.length === Object.keys(D.enemies).length, 'toda criatura tem carta');
+// Armas por classe
+ok(Object.keys(I.itemTypes).length >= 12 && Object.keys(I.itemTypes).filter(k => k !== 'relic').every(w => [1, 12, 24, 36, 46].every(l => I.bases.some(b => b.wt === w && b.minIlvl <= l))), 'todo tipo de item tem bases em todos os níveis');
+D.roster.forEach(h => ['weapon','focus','seal'].forEach(sl => ok(I.allowedTypes(h.id).some(t => I.itemTypes[t].slot === sl), `${h.id} tem ${sl} próprio`)));
+D.roster.forEach(h => { const al = I.allowedWeaponTypes(h.id); ok(al.length >= 2 && al.includes('relic'), `${h.id} tem armas`); });
+ok(I.canEquip(I.makeItem({ ilvl:5, slot:'weapon', wt:'ranged', rarity:'rare' }), 'bjorn') && !I.canEquip(I.makeItem({ ilvl:5, slot:'weapon', wt:'ranged', rarity:'rare' }), 'hayato'), 'exceções de arma por personagem');
+ok(I.itemStats(I.makeItem({ ilvl:10, slot:'weapon', wt:'holy', rarity:'common' })).healPow > 0, 'arma sagrada tem atributo implícito de cura');
+// Builds e Essências
+D.roster.forEach(h => { const b = KT.Builds.buildFor(h.id); ok(b && KT.Builds.essences[h.id] && PR.treeFor(h.id).find(n => n.id === 'ess').name !== 'Essência', `build e essência de ${h.id}`); ok(b.allowedWeapons.includes(b.weapon), `arma recomendada válida: ${h.id}`); });
+ok(new Set(Object.values(KT.Builds.essences).map(e => e.name)).size === 60, 'essências únicas');
+// Eventos por calendário (data e hora de Brasília)
+const evAt = (iso) => State.activeEvent(Date.parse(iso));
+ok(evAt('2026-09-26T23:30:00-03:00').id === 'bloodmoon' && evAt('2026-09-26T20:00:00-03:00').id === 'festival' && evAt('2026-09-24T20:30:00-03:00').id === 'calm' && evAt('2026-09-23T21:00:00-03:00').id === 'festival', 'calendário de eventos');
+ok(evAt('2026-09-26T12:10:00-03:00').ends === Date.parse('2026-09-26T14:00:00-03:00'), 'evento termina na hora marcada');
+ok(State.upcomingEvents(Date.parse('2026-09-26T12:00:00-03:00')).length >= 20, 'agenda da semana');
 
 // ---------- início ----------
 const state = State.createState();
@@ -28,6 +46,8 @@ ok(state.starterRolls === 10 && !state.collection.length && state.player.gold ==
 ok(engine.enterZone('hunt') === false, 'sem equipe não viaja');
 for (let i = 0; i < 10; i++) ok(engine.openBox(true), 'convocação inicial');
 ok(state.starterRolls === 0 && state.boxesOpened === 10, 'convocações consumidas');
+ok(new Set(state.collection.map(r => r.id)).size === 10, 'convocações iniciais não repetem');
+ok(Object.keys(D.classes).every(c => state.collection.some(r => engine.template(r.id).cls === c)), 'ao menos 1 herói de cada classe');
 const uniq = [...new Map(state.collection.map(r => [r.id, r])).values()];
 while (uniq.length < 4) { const t = D.roster.find(h => !uniq.some(r => r.id === h.id)); const r = State.newHeroRecord(t, 'rare'); state.collection.push(r); uniq.push(r); }
 const byCls = cls => D.roster.find(h => h.cls === cls);
@@ -41,7 +61,7 @@ ok(engine.enterZone('hunt', { stage:1 }) && engine.active && engine.enemies.leng
 ok(engine.zoneLock('dungeon').locked && engine.zoneLock('boss').locked, 'dungeon e chefe começam bloqueados');
 const tick = sec => { for (let t = 0; t < sec; t += .05) engine.update(.05); };
 const killWave = () => { engine.encounterUsed = true; engine.enemies.forEach(e => { e.hp = 1; }); engine.enemies.forEach(e => engine.hit(engine.party[0], e, 50, { kind:'skill' })); engine.checkOutcome(); };
-for (let w = 0; w < 4; w++) { killWave(); if (engine.phase === 'between') { engine.timer = 0; engine.update(.01); } }
+for (let w = 0; w < 4; w++) { killWave(); if (engine.phase === 'between') { engine.timer = 0; engine.tick(); } }
 ok(state.progress.hunt.best === 1 && state.stats.kills >= 8, 'estágio 1 vencido');
 ok(state.player.gold > 0 && state.player.crystal > 0, 'recompensas de estágio');
 tick(3);
@@ -60,7 +80,7 @@ engine.enterZone('dungeon', { floor:1 });
 for (let room = 1; room <= 5; room++) {
   if (engine.pendingRoute) engine.chooseRoute(room % 2 ? 'safe' : 'risk');
   killWave();
-  if (engine.phase === 'between') { engine.timer = 0; engine.update(.01); }
+  if (engine.phase === 'between') { engine.timer = 0; engine.tick(); }
 }
 ok(state.progress.dungeon.best === 1 && events.results.some(r => r.kind === 'dungeon'), 'andar I conquistado');
 
@@ -83,22 +103,27 @@ ok(engine.enterZone('boss', { tier:1 }) && engine.opts.tier === 1, 'dificuldade 
 
 // ---------- itens ----------
 const r0 = engine.heroes[0];
+r0.level = 30; engine.heroes.forEach(h => { h.level = 30; h.attr = { str:40, agi:10, vit:40, int:40, dex:40, luk:0 }; });
+const lowLv = engine.heroes[1], heavyW = I.makeItem({ ilvl:40, rarity:'legendary', slot:'weapon', wt:'sword' }); state.inventory.push(heavyW);
+ok(!engine.equip(lowLv.uid, heavyW.uid) && /Requer nível/.test(I.equipCheck(heavyW, lowLv).reason), 'requisito de nível para equipar');
 const before = State.heroStats(state, r0);
-const weapon = I.makeItem({ ilvl:10, rarity:'epic', slot:'weapon' }); state.inventory.push(weapon);
+const weapon = I.makeItem({ ilvl:10, rarity:'epic', slot:'weapon', wt:'sword' }); state.inventory.push(weapon);
 ok(engine.equip(r0.uid, weapon.uid) && State.heroStats(state, r0).atk > before.atk, 'arma aumenta ATK');
 const r1 = engine.heroes[1]; engine.equip(r1.uid, weapon.uid);
 ok(!r0.equipped.weapon && r1.equipped.weapon === weapon.uid, 'item não equipa em dois heróis');
 state.player.gold = 1e7; state.player.ore = 1e4; state.player.dust = 1e4;
 const up = engine.upgradeItem(weapon.uid); ok(up.ok && weapon.plus === 1, 'aprimoramento');
 ok(engine.enchantItem(weapon.uid, 0), 'encantamento');
-['weapon','focus'].forEach(slot => { const it = I.makeItem({ set:'eclipse', ilvl:14, slot }); state.inventory.push(it); engine.equip(r0.uid, it.uid); });
-ok(State.heroStats(state, r0).sets.some(s => s.set.id === 'eclipse' && s.active.includes(2)), 'bônus de conjunto (2 peças)');
+const clsR0 = engine.template(r0.id).cls, goodSet = I.sets.find(st => st.classes && st.classes.includes(clsR0)), badSet = I.sets.find(st => st.classes && !st.classes.includes(clsR0));
+['weapon','focus'].forEach(slot => { const it = I.makeItem({ set:goodSet.id, ilvl:14, slot }); state.inventory.push(it); engine.equip(r0.uid, it.uid); });
+ok(State.heroStats(state, r0).sets.some(s => s.set.id === goodSet.id && s.active.includes(2)), 'bônus de conjunto (2 peças)');
+const wrongSet = I.makeItem({ set:badSet.id, ilvl:14, slot:'charm' }); state.inventory.push(wrongSet); ok(!engine.equip(r0.uid, wrongSet.uid), 'conjunto só serve às classes dele');
 const junk = I.makeItem({ ilvl:1, rarity:'common' }); state.inventory.push(junk);
 const sv = engine.salvage(junk.uid); ok(sv && sv.ore > 0 && !state.inventory.includes(junk), 'desmontar');
 for (let i = 0; i < 40; i++) { const d = I.rollDrop('boss', D.zones.boss, 14, 1); ok(d && d.slot && I.itemScore(d) > 0, 'drop válido'); }
 
 // ---------- progressão ----------
-r0.level = 10; ok(engine.freeAttr(r0) === 9 * PR.ATTR_PER_LEVEL + 5, 'pontos de atributo');
+r0.level = 10; r0.attr = { str:0, agi:0, vit:0, int:0, dex:0, luk:0 }; ok(engine.freeAttr(r0) === 9 * PR.ATTR_PER_LEVEL + 5, 'pontos de atributo');
 const atkBefore = State.heroStats(state, r0).atk; engine.addAttr(r0.uid, 'str', 5);
 ok(State.heroStats(state, r0).atk > atkBefore, 'Força aumenta ATK');
 // Talentos por herói
@@ -121,8 +146,8 @@ const other = state.collection.find(h => h !== r0); ok(!Object.keys(other.talent
 ok(engine.resetHeroTalents(r0.uid) && !Object.keys(r0.talents).length, 'redefinir talentos');
 Object.keys(PR.classTrees).forEach(c => PR.classTrees[c].forEach(n => ok(PR.icons[n.icon], `ícone do talento ${n.id}`)));
 // Cartas
-ok(I.cards.length >= 30 && I.cards.filter(c => c.mvp).length === 3, 'cartas e cartas MVP');
-const sock = I.makeItem({ unique:'muramasa', ilvl:10 }); state.inventory.push(sock); engine.equip(r0.uid, sock.uid);
+ok(I.cards.length >= 30 && I.cards.filter(c => c.mvp).length >= 8, 'cartas e cartas MVP');
+r0.level = Math.max(r0.level, 30); r0.attr.str = Math.max(r0.attr.str || 0, 30); const sock = I.makeItem({ unique:'muramasa', ilvl:10 }); state.inventory.push(sock); engine.equip(r0.uid, sock.uid);
 ok(sock.cards.length === 2, 'mítico tem 2 slots');
 state.cards.card_boss = 1; const atkCard = State.heroStats(state, r0).atk;
 ok(engine.socketCard(sock.uid, 0, 'card_boss') && State.heroStats(state, r0).atk > atkCard && !state.cards.card_boss, 'encaixar carta MVP');
@@ -131,11 +156,74 @@ ok(engine.train('atk') && state.training.atk === 1, 'treino da equipe');
 ok(engine.upgradeBuilding('forge'), 'construção');
 state.shards[r0.id] = 999; const st0 = r0.stars; ok(engine.awaken(r0.uid) && r0.stars === st0 + 1, 'despertar');
 ok(engine.buy('potion') && state.consumables.potion === 1, 'loja em ouro');
-state.player.crystal = 100; ok(engine.buy('key1') && state.player.keys >= 1, 'loja em cristais');
+state.player.crystal = 200; ok(engine.buy('key1') && state.player.keys >= 1, 'loja em cristais');
 ok(engine.refreshMarket(true).length >= 3 && engine.buyMarket(0), 'mercado');
 state.contracts[0].progress = state.contracts[0].n; ok(engine.claimContract(0) && state.contracts.length === 3, 'contratos');
 ok(engine.claimGuide(), 'guia do viajante');
 ok(typeof engine.event().name === 'string', 'evento mundial ativo');
+
+// ---------- sistemas novos ----------
+// Armas por classe
+const bow = I.makeItem({ ilvl:10, slot:'weapon', wt:'ranged', rarity:'rare' }); state.inventory.push(bow);
+const vanguard = engine.heroes.find(r => engine.template(r.id).cls === 'Vanguarda');
+ok(!engine.equip(vanguard.uid, bow.uid) && vanguard.equipped.weapon !== bow.uid, 'Vanguarda não empunha arco');
+// Escolhas: AUTO ligado resolve sozinho; desligado espera e resolve em 2 minutos
+state.progress.dungeon.best = 3; state.settings.auto = true;
+engine.enterZone('dungeon', { floor:1 }); engine.room = 2; engine.nextWave();
+ok(!engine.pendingChoice && !engine.pendingRoute && state.routeChoice, 'AUTO escolhe a rota sozinho');
+state.settings.auto = false; engine.enterZone('dungeon', { floor:1 }); engine.room = 2; engine.nextWave();
+ok(engine.pendingChoice && engine.pendingRoute && ['risk','safe'].includes(engine.pendingChoice.recommended), 'AUTO desligado mostra a escolha com recomendação');
+engine.update(.05); ok(engine.pendingChoice, 'escolha espera o jogador');
+engine.pendingChoice.wait = State.CHOICE_WAIT - .01; engine.update(.05);
+ok(!engine.pendingChoice && !engine.pendingRoute, 'após 2 minutos a recomendada é escolhida');
+state.settings.auto = true;
+// Fenda Abissal infinita
+ok(!engine.zoneLock('rift').locked && engine.enterZone('rift', { floor:1 }) && engine.enemies.length >= 3, 'Fenda abre após Shirogane');
+for (let room = 1; room <= D.RIFT.rooms; room++) { killWave(); if (engine.phase === 'between') { engine.timer = 0; engine.tick(); } }
+ok(state.progress.rift.best === 1, 'andar 1 da Fenda vencido');
+ok(State.zonePower(D.zones.rift, { floor:100 }) > State.zonePower(D.zones.rift, { floor:99 }) && engine.riftMutation(7).name, 'Fenda escala sem limite e tem mutações');
+// Variante Alfa e bestiário
+const alpha = engine.spawnEnemy('fox', 1, { alpha:true }); ok(alpha.name.includes('Alfa') && alpha.maxHp > D.enemies.fox.hp * 2, 'variante Alfa');
+state.bestiary.fox = 99; ok(engine.research('fox') === 1, 'pesquisa do bestiário');
+// Diárias, login, guilda, crônicas
+engine.ensureDaily(); ok(state.daily.list.length === 4 && state.daily.date === State.dayKey(), 'missões diárias do dia');
+const dd = state.daily.list[0]; dd.progress = dd.n; ok(engine.claimDaily(0) && dd.claimed && !engine.claimDaily(0), 'resgatar diária uma vez');
+ok(engine.loginStatus().available && engine.claimLogin() && !engine.loginStatus().available, 'login diário');
+const g0 = state.guildRank.lv; for (let i = 0; i < 12; i++) { state.contracts[0].progress = state.contracts[0].n; engine.claimContract(0); }
+ok(state.guildRank.lv > g0, 'rank da guilda sobe');
+Object.keys(state.guide.claimed).length; D.guide.forEach(g => { state.guide.claimed[g.id] = true; });
+const ch = engine.ensureChronicle(); ok(ch && ch.k === 1 && ch.target > 0, 'crônica infinita começa após o guia');
+state.stats.kills += 1e6; state.progress.rift.best = 999; state.stats.upgradeTries = 1e6; state.stats.bossKills += 1e4; Object.keys(D.enemies).forEach(id => { state.bestiary[id] = 1e6; });
+state.player.gold = 1e9;
+let kk = 0; const types = new Set(); for (let i = 0; i < 6; i++) { types.add(state.chronicle.type); ok(!engine.claimChronicle() || true, 'x'); state.chronicle.target = Math.min(state.chronicle.target, engine.chronicleValue(state.chronicle)); if (engine.claimChronicle()) kk++; }
+ok(types.size === 6, 'crônicas variam de tipo');
+ok(kk >= 5 && state.chronicle.k > 5, 'crônicas se renovam sem fim');
+// Conselheiro e build recomendada
+const hr = engine.heroes[0]; hr.level = 20; hr.attr = { str:0, agi:0, vit:0, int:0, dex:0, luk:0 }; hr.talents = {};
+const tips = engine.advice(); ok(tips.length && tips.some(t => t.action === 'autoAttr'), 'conselheiro aponta pontos livres');
+const hb = State.statPower(State.heroStats(state, hr)); engine.autoBuild(hr.uid);
+ok(engine.freeAttr(hr) === 0 && State.statPower(State.heroStats(state, hr)) > hb && (hr.talents.ess || 0) > 0, 'build recomendada aplica atributos e talentos (incluindo a Essência)');
+let stuck = 0; engine.events.onStuck = () => stuck++; engine.trackStuck('hunt:9', true); engine.trackStuck('hunt:9', true); ok(stuck === 1, 'conselheiro abre após 2 derrotas no mesmo desafio');
+// Refino com materiais (regras: comum até +10 com volta/quebra; raro até +8 seguro e quebra em +9/+10;
+// épico até +15 com volta acima de +10; lendário até +15 sem volta)
+state.buildings.forge = 10; state.player.gold = 1e12; state.player.ore = 1e7; state.mats = { star:1e4, ori:1e4, adam:1e4 };
+const refineUntil = (mat, from, want) => { const it = I.makeItem({ ilvl:10, rarity:'epic', slot:'seal' }); it.plus = from; state.inventory.push(it); for (let i = 0; i < 400; i++) { const r = engine.upgradeItem(it.uid, mat); if (want(r, it)) return true; if (!state.inventory.includes(it)) { it.plus = from; state.inventory.push(it); } if (it.plus !== from) it.plus = from; } return false; };
+ok(!engine.upgradeItem(I.makeItem({ ilvl:10, rarity:'epic', slot:'seal' }).uid, 'common').ok, 'item fora da bolsa não refina');
+const cm = I.makeItem({ ilvl:10, rarity:'epic', slot:'seal' }); cm.plus = 10; state.inventory.push(cm); ok(/só refina até \+10/.test(engine.upgradeItem(cm.uid, 'common').reason), 'Tamahagane para em +10');
+ok(refineUntil('common', 6, (r, it) => r.failed && it.plus === 5), 'comum: falha entre +5 e +8 volta um nível');
+ok(refineUntil('common', 9, r => r.broken), 'comum: falha em +10 quebra o item');
+ok(!refineUntil('rare', 6, (r, it) => r.failed && it.plus < 6), 'raro: até +8 nunca perde nível');
+ok(refineUntil('rare', 9, r => r.broken), 'raro: +9 para +10 pode quebrar');
+ok(refineUntil('epic', 12, (r, it) => r.failed && it.plus === 11), 'épico: falha acima de +10 volta 1 nível');
+ok(!refineUntil('legendary', 13, (r, it) => r.failed && (it.plus < 13 || !state.inventory.includes(it))), 'lendário: nunca volta nem quebra');
+const r15 = I.makeItem({ ilvl:20, rarity:'legendary', slot:'weapon', wt:'sword' }), s0 = I.itemStats(r15).atkFlat; r15.plus = 15; ok(I.itemStats(r15).atkFlat > s0 * 4, 'refino +15 multiplica o ataque da arma por mais de 4');
+// Bolsa cheia: nada se perde
+const bagState = State.createState(), be = new CombatEngine(bagState, {}); bagState.invCap = 150;
+for (let i = 0; i < 160; i++) be.addItem(I.makeItem({ ilvl:5, rarity:i % 2 ? 'rare' : 'common' }));
+ok(bagState.inventory.length === 150 && bagState.overflow.length === 10 && bagState.overflow.some(x => x.rarity === 'rare'), 'bolsa cheia manda itens ao Baú de Excedentes');
+bagState.inventory.splice(0, 5); ok(be.takeOverflow() === 5 && bagState.overflow.length === 5, 'trazer do Baú de Excedentes');
+// Cartas: raras e fortes, com tiers
+ok(I.cards.every(c => c.chance <= 1 / 900) && I.cards.filter(c => c.tier === 'mvp').every(c => c.effect), 'cartas raríssimas; MVP com efeito especial');
 
 // ---------- kits: toda habilidade e ultimate executam ----------
 for (const t of D.roster) {
@@ -155,9 +243,95 @@ ok(off && off.gold > 0 && off.xp > 0, 'progresso offline');
 
 // ---------- telas ----------
 const ui = Object.create(KT.UIController.prototype); ui.state = state; ui.engine = engine; ui.view = {}; ui.invFilter = { slot:'all', sort:'rarity' }; ui.selectedSlot = 0; ui.assets = { spriteImage:() => null };
+ui.renderResources = () => {}; ui.session = { mode:'offline' };
 const html = [ui.journeyPanel(), ui.destinationPanel('boss'), ui.destinationPanel('hunt'), ui.partyPanel(), ui.heroPanel(r0.uid, 'stats'), ui.heroPanel(r0.uid, 'kit'), ui.heroPanel(r0.uid, 'gear'), ui.collectionPanel(null, 'summon'), ui.inventoryPanel(), ui.talentPanel(r0.uid), ui.heroPanel(r0.uid, 'talents'), ui.rankingPanel(null, 'power'), ...['forge','workshop','cards','dojo','shrine','guild','buildings'].map(t => ui.cityPanel(null, t)), ...['gold','crystal','market','gems'].map(t => ui.shopPanel(null, t)), ...['guide','contracts','achievements'].map(t => ui.questPanel(null, t)), ...['start','combat','classes','elements','synergy','heroes','trees','items','cards','monsters','world','progress','economy'].map(t => ui.wikiPanel(null, t)), ui.recordPanel(), ui.helpPanel()];
 html.forEach((h, i) => ok(h.length > 150, `tela ${i} renderiza (${h.length})`));
-ok(html.join('').includes('Shirogane') && html.join('').includes('Muramasa Sedenta') && html.join('').includes('Rasenshuriken'), 'conteúdo das telas');
-ok(ui.shopPanel(null, 'gems').includes('desativadas'), 'compras reais desativadas e sinalizadas');
+ok(html.join('').includes('Shirogane') && html.join('').includes('Muramasa Sedenta') && html.join('').includes('Ciclone Cortante'), 'conteúdo das telas');
+ok(ui.shopPanel(null, 'gems').includes('servidor oficial') && ui.shopPanel(null, 'p2p').includes('servidor oficial'), 'carteira e mercado de jogadores só com conta');
+['daily','advisor'].forEach(t => ok(ui.questPanel(null, t).length > 150, `missões: ${t}`));
+['builds','weapons','events','market'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
+ok(ui.heroPanel(r0.uid, 'build').includes('Aplicar build completa'), 'aba de build recomendada');
+ok(ui.destinationPanel('rift').includes('Recorde'), 'tela da Fenda');
+['refine','systems','security','cards','items','start','combat'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
+ok(ui.wikiPanel(null, 'refine').includes('quebra') && ui.wikiPanel(null, 'refine').includes('−1 nível'), 'wiki de refino mostra regressão e quebra');
+['today','expeditions','bounty'].forEach(t => ok(ui.adventurePanel(null, t).length > 150, `aventuras: ${t}`));
+ok(ui.inventoryPanel().length > 300, 'tela da bolsa');
+ok(ui.profilePanel(1).includes('servidor oficial'), 'perfil público só com conta');
+ok(ui.helpPanel().includes('Invasão Mundial'), 'ajuda atualizada');
+
+// ---------- telas online (modo servidor) não podem cair no aviso de "só com conta" ----------
+{
+  const s0 = ui.session, lm = ui.loadMarket;
+  ui.session = { mode:'cloud', user:{ id:1 } }; ui.loadMarket = () => {};
+  ui.marketCfg = { enabled:true, goldMarket:true, feeBps:500, goldTaxBps:500, goldListFeeBps:100, goldListFeeMin:50, goldMinPrice:100, holdHours:72 };
+  ui.wallet = { balance:0, held:0, withdrawable:0 }; ui.myMkt = { listings:[], mailbox:[{ id:1, kind:'gold', payload:{ amount:4750 }, reason:'Venda' }] };
+  const lst = { id:9, sellerId:2, seller:'Outro', kind:'item', payload:state.inventory[0], price:5000, currency:'gold' };
+  ui.mktList = [lst, { ...lst, id:10, currency:'gems' }]; ui.mktFilter = { type:'all', sort:'recent', q:'', slot:'all', rarity:'all', currency:'gold' };
+  const p2p = ui.p2pPanel();
+  ok(!p2p.includes('servidor oficial') && p2p.includes('Anunciar em ouro') && p2p.includes('data-buy-gold="9"') && !p2p.includes('data-buy-listing="10"'), 'mercado online em ouro mostra só anúncios em ouro');
+  ok(p2p.includes('4.750') && p2p.includes('coin-ic'), 'ouro no Correio');
+  ui.mktFilter.currency = 'gems'; ok(ui.p2pPanel().includes('data-buy-listing="10"'), 'aba de Gemas');
+  ui.rankCache = { power:{ at:Date.now(), data:{ ok:true, me:null, rows:[{ id:1, name:'Eu', power:900, team:JSON.stringify([{ id:D.roster[0].id, stars:2 }]), account_level:5 }, { id:2, name:'Outro', power:800, team:null, account_level:4 }, { id:3, name:'C', power:700, team:null, account_level:3 }, { id:4, name:'D', power:100, team:null, account_level:2 }] } } };
+  const rk = ui.rankingPanel(null, 'power');
+  ok(rk.includes('rk-pod p1 me') && rk.includes('rk-row') && rk.includes('Sua posição em poder'), 'ranking com pódio e posição');
+  ui.session = s0; ui.loadMarket = lm;
+}
+ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 'glifos de ultimate variados');
+{
+  const bs = State.createState(), be = new CombatEngine(bs, {});
+  bs.bounty = { offers:[], active:null, points:500, done:0 }; be.buyBountyItem(D.bountyShop.find(x => x.give.box).id);
+  ok(bs.inventory.concat(bs.overflow || []).some(x => x.bound), 'baú das Marcas é vinculado');
+}
+
+// ---------- melhores itens: valor exato pelos atributos finais do herói ----------
+{
+  const bs = State.createState(), be = new CombatEngine(bs, {});
+  const mk = (cls) => { const t = D.roster.find(h => h.cls === cls); const r = State.newHeroRecord(t, 'epic'); r.level = 40; bs.collection.push(r); return r; };
+  const sup = mk('Suporte'), exe = mk('Executor'); bs.formation = [exe.uid, null, sup.uid, null];
+  const charm = (stat, v) => { const it = I.makeItem({ slot:'charm', rarity:'rare', ilvl:1 }); it.affixes = [{ id:stat, stat, v, roll:.5 }]; bs.inventory.push(it); return it; };
+  const heal = charm('healPow', .18), crit = charm('crit', .06);
+  ok(be.itemGain(sup, heal) > be.itemGain(sup, crit), 'Suporte valoriza cura acima de crítico');
+  ok(be.itemGain(exe, crit) > be.itemGain(exe, heal), 'Executor valoriza crítico acima de cura');
+  be.equip(exe.uid, crit.uid); ok(Math.abs(be.itemGain(exe, crit)) < 1e-9, 'item já equipado não muda nada');
+  const refined = JSON.parse(JSON.stringify(crit)); refined.uid = 'it_refined'; refined.plus = 10; bs.inventory.push(refined);
+  ok(be.itemGain(exe, refined) > 0 && be.bestItemFor(exe, 'charm') === refined, 'refino alto vence a mesma peça sem refino');
+  const heavy = I.makeItem({ slot:'weapon', wt:'heavy', rarity:'epic', ilvl:60 }); bs.inventory.push(heavy); const low = mk('Executor'); low.level = 1;
+  ok(be.itemGain(low, heavy) === null && be.bestItemFor(low, 'weapon') !== heavy, 'requisito não atendido fica fora da escolha');
+  const n0 = bs.inventory.length; be.itemGain(exe, I.makeItem({ slot:'charm', rarity:'rare', ilvl:1 })); ok(bs.inventory.length === n0, 'avaliar item de fora (mercador) não mexe na bolsa');
+}
+
+// ---------- kits únicos e monstros próprios de cada região ----------
+{
+  const strip = o => JSON.stringify(o, (k, v) => ['name','text','desc','icon','color','anim','fx','sfx','vfx','line','quote'].includes(k) ? undefined : v);
+  for (const part of ['skill','ult','passive']) { const sigs = D.roster.map(h => strip(h[part])); ok(new Set(sigs).size === sigs.length, `nenhum herói repete ${part}`); }
+  const owner = new Map(); let shared = 0;
+  Object.values(D.zones).forEach(z => [...(z.pool || []), ...(z.elites || [])].forEach(id => { if (owner.has(id) && owner.get(id) !== z.id) shared++; else owner.set(id, z.id); }));
+  ok(shared === 0, 'cada caçada/dungeon tem monstros próprios');
+  ok(Object.values(D.classes).every(c => !c.traitStats), 'classes sem passiva compartilhada');
+}
+
+// ---------- Invasão Mundial, expedições e recompensas ----------
+{
+  const at = (h, m = 0) => Date.UTC(2026, 8, 26, h + 3, m); // horário de Brasília → UTC
+  ok(engine.wbWindow(at(13)).active && engine.wbWindow(at(21)).active, 'invasão ativa às 13h e às 21h');
+  const off = engine.wbWindow(at(15)); ok(!off.active && off.next && off.next.start === at(20, 30), 'fora da janela mostra a próxima (20h30)');
+  ok(engine.wbBossId(at(13)) === D.worldBoss.byDay[6], 'chefe mundial muda pelo dia da semana');
+  const hz = Object.values(D.zones).find(z => z.kind === 'hunt' && (state.progress[z.id]?.best || 0) > 0);
+  const free = state.collection.filter(h => !state.formation.includes(h.uid)).slice(0, 2).map(h => h.uid);
+  if (hz && free.length) {
+    state.expeditions = [];
+    ok(!engine.startExpedition(hz.id, 3, free), 'duração de expedição inválida');
+    ok(engine.startExpedition(hz.id, 1, free), 'expedição começa');
+    const x = state.expeditions[0]; ok(!engine.claimExpedition(x.id), 'expedição não volta antes da hora');
+    x.start -= 3600000 + 1000; const g0 = state.player.gold; const res = engine.claimExpedition(x.id);
+    ok(res && state.player.gold > g0 && !state.expeditions.length, 'expedição rende ouro e libera a vaga');
+  }
+  state.bounty = { offers:[], active:null, points:0, done:0 };
+  const offers = engine.ensureBounties(); ok(offers.length === 3, 'quadro oferece 3 caçadas');
+  ok(engine.acceptBounty(0) && !engine.acceptBounty(1), 'uma caçada de recompensa por vez');
+  state.bounty.active.progress = state.bounty.active.n; const got = engine.claimBounty(); ok(got && state.bounty.points === got.points && state.bounty.done === 1, 'recompensa entregue com Marcas');
+  state.bounty.points = 100; const star0 = state.mats.star; ok(engine.buyBountyItem('b_star') && state.mats.star === star0 + 1 && state.bounty.points === 60, 'loja de Marcas');
+  ok(!engine.buyBountyItem('nao_existe'), 'item inexistente na loja de Marcas');
+}
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

@@ -19,7 +19,7 @@
     constructor() { this.images = new Map(); this.loaded = 0; this.failed = 0; this.total = 0; this.onProgress = null; }
     loadAll() {
       const sprites = new Set([...KT.Data.roster.map(h => h.sprite), ...Object.values(KT.Data.enemies).map(e => e.sprite)]);
-      const paths = [...[...sprites].map(spritePath), ...iconList(), ...Object.keys(KT.Data.zones).map(id => `assets/scenes/${id}.png`)];
+      const paths = [...[...sprites].map(spritePath), ...iconList(), ...Object.values(KT.Data.zones).map(z => `assets/scenes/${z.scene || z.id}.png`)];
       this.total = paths.length;
       return Promise.all(paths.map(path => new Promise(resolve => {
         const img = new Image(); img.decoding = 'async';
@@ -32,7 +32,7 @@
     sprite(id) { const img = this.image(spritePath(id)); return img ? [spritePath(id), 0, 0, img.width, img.height] : null; }
     spriteImage(id) { return this.image(spritePath(id)); }
     item(name, hue = 0) { return this.image(iconPath(name, hue)); }
-    scene(zoneId) { return this.image(`assets/scenes/${zoneId}.png`); }
+    scene(zoneId) { const z = KT.Data.zones[zoneId]; return this.image(`assets/scenes/${z?.scene || zoneId}.png`); }
   }
 
   KT.AssetBank = AssetBank;

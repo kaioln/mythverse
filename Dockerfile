@@ -1,4 +1,4 @@
-# Mythverse — imagem de produção (sem dependências npm; SQLite embutido do Node).
+# Mythverse: imagem de produção. Banco: SQLite local (padrão) ou PostgreSQL via DATABASE_URL.
 FROM node:24-slim
 
 ENV NODE_ENV=production \
@@ -7,7 +7,8 @@ ENV NODE_ENV=production \
     TRUST_PROXY=1
 
 WORKDIR /app
-COPY package.json ./
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 COPY server ./server
 COPY src ./src
 COPY assets/sprites ./assets/sprites
@@ -15,7 +16,9 @@ COPY assets/portraits ./assets/portraits
 COPY assets/icons ./assets/icons
 COPY assets/scenes ./assets/scenes
 COPY assets/brand ./assets/brand
+COPY assets/ui ./assets/ui
 COPY legal ./legal
+COPY admin ./admin
 COPY index.html styles.css ./
 
 RUN mkdir -p /data && chown -R node:node /data /app

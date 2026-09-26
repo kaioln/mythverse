@@ -41,7 +41,7 @@
           <button class="action primary big" type="submit">Redefinir senha</button>
         </form>`;
       this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="dialog" aria-labelledby="auth-title">
-        <div class="auth-brand"><img class="auth-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse — Heróis de todos os mundos"><h1 id="auth-title" class="sr-only">Mythverse</h1></div>
+        <div class="auth-brand"><img class="auth-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos"><h1 id="auth-title" class="sr-only">Mythverse</h1></div>
         <div class="auth-tabs">${tab('login', 'Entrar')}${tab('register', 'Criar conta')}</div>
         <div class="auth-msg ${message ? 'show' : ''}" role="alert">${message}</div>
         ${form}

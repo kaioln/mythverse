@@ -2,7 +2,7 @@
   const KT = globalThis.KT;
 
   // ---------------------------------------------------------------------------
-  // ATRIBUTOS DO HERÓI (estilo clássico) — 3 pontos por nível.
+  // ATRIBUTOS DO HERÓI (estilo clássico), 3 pontos por nível.
   // ---------------------------------------------------------------------------
   const attributes = {
     str: { name:'Força', short:'FOR', color:'#ff7a6b', text:'+1,5% ATK por ponto.', per:{ atk:.015 } },
@@ -14,11 +14,11 @@
   };
   const ATTR_PER_LEVEL = 3;
   const classAttrHint = {
-    Vanguarda:'VIT e FOR — aguentar a linha de frente e revidar.',
-    Executor:'FOR, DES e SOR — críticos devastadores.',
-    Arcanista:'INT e SOR — habilidades e ultimates frequentes.',
-    Atirador:'AGI e DES — muitos ataques e críticos.',
-    Suporte:'INT e VIT — curas fortes e sobrevivência.'
+    Vanguarda:'VIT e FOR, aguentar a linha de frente e revidar.',
+    Executor:'FOR, DES e SOR, críticos devastadores.',
+    Arcanista:'INT e SOR, habilidades e ultimates frequentes.',
+    Atirador:'AGI e DES, muitos ataques e críticos.',
+    Suporte:'INT e VIT, curas fortes e sobrevivência.'
   };
 
   // ---------------------------------------------------------------------------
@@ -69,13 +69,14 @@
   const TIER_REQ = [0, 8, 20];   // pontos gastos na árvore para liberar cada círculo
 
   // ---------------------------------------------------------------------------
-  // ÁRVORES DE TALENTO POR CLASSE — cada herói tem a sua própria distribuição.
+  // ÁRVORES DE TALENTO POR CLASSE, cada herói tem a sua própria distribuição.
   // 1 ponto por nível do herói (+5 ao mudar de classe).
   // stats: por rank · hook(rank): efeito especial · sig: nó exclusivo do herói.
   // ---------------------------------------------------------------------------
   const T = (id, tier, x, name, icon, max, stats, desc, o = {}) => ({ id, tier, x, name, icon, max, stats, desc, ...o });
   const common = (cls) => [
-    T('sig_skill', 1, 850, 'Maestria', 'book', 5, { skillMastery:.08, cdr:.03 }, 'Aprimora a habilidade exclusiva deste herói.', { sig:'skill', req:[] }),
+    T('ess', 0, 850, 'Essência', 'star', 3, {}, 'Traço único do herói.', { sig:'ess', req:[] }),
+    T('sig_skill', 1, 850, 'Maestria', 'book', 5, { skillMastery:.08, cdr:.03 }, 'Aprimora a habilidade exclusiva deste herói.', { sig:'skill', req:['ess'] }),
     T('sig_ult', 2, 850, 'Ápice', 'sparkle', 5, { ultDmg:.08, startNrg:4 }, 'Aprimora a ultimate exclusiva deste herói.', { sig:'ult', req:['sig_skill'] })
   ];
   const classTrees = {
@@ -156,9 +157,19 @@
     ]
   };
   Object.keys(classTrees).forEach(cls => { classTrees[cls].push(...common(cls)); classTrees[cls].forEach(n => { n.req = n.req || []; }); });
+  // Árvore de um herói: a da classe + a Essência exclusiva dele (ver builds.js).
+  const treeCache = new Map();
+  function treeFor(heroId) {
+    if (treeCache.has(heroId)) return treeCache.get(heroId);
+    const t = KT.Data.roster?.find(h => h.id === heroId); if (!t) return [];
+    const ess = KT.Builds?.essenceNode(heroId);
+    const tree = classTrees[t.cls].map(n => n.id === 'ess' && ess ? ess : n);
+    if (KT.Builds) treeCache.set(heroId, tree);
+    return tree;
+  }
 
   // ---------------------------------------------------------------------------
-  // TREINO DA EQUIPE (Dojo) — melhorias permanentes pagas com ouro.
+  // TREINO DA EQUIPE (Dojo), melhorias permanentes pagas com ouro.
   // ---------------------------------------------------------------------------
   const training = {
     atk: { name:'Treino de Força', per:.02, stat:'atk', text:'+2% ATK para todos os heróis por nível.' },
@@ -172,32 +183,37 @@
   // ---------------------------------------------------------------------------
   // LOJA
   // ---------------------------------------------------------------------------
+  // Comidas e pergaminhos: buffs temporários (a duração acumula ao usar mais de um).
+  const buffs = {
+    onigiri:{ name:'Onigiri do Viajante', text:'+10% HP por 30 min.', stats:{ hp:.10 }, dur:1800, icon:'magic_dust_01', hue:130 },
+    ramen:{ name:'Ramen Picante', text:'+10% ATK por 30 min.', stats:{ atk:.10 }, dur:1800, icon:'potion_red_01', hue:20 },
+    tea:{ name:'Chá de Jasmim', text:'+15% EXP por 30 min.', mods:{ xp:.15 }, dur:1800, icon:'potion_blue_01', hue:130 },
+    luck:{ name:'Pergaminho da Sorte', text:'+20% chance de itens por 30 min.', mods:{ drop:.20 }, dur:1800, icon:'tome_01', hue:45 }
+  };
   const shop = {
     gold: [
       { id:'potion', name:'Poção de Cura', icon:'potion_red_01', hue:0, give:{ potion:1 }, price:{ gold:250 }, scale:true, text:'Cura 35% do HP de toda a equipe durante o combate (recarga 20s).' },
       { id:'potion5', name:'Poções de Cura ×5', icon:'potion_red_01', hue:0, give:{ potion:5 }, price:{ gold:1100 }, scale:true, text:'Pacote econômico de 5 poções.' },
       { id:'elixir', name:'Elixir de Energia', icon:'potion_blue_01', hue:0, give:{ elixir:1 }, price:{ gold:400 }, scale:true, text:'+50 de energia para toda a equipe (recarga 30s). Ultimates na hora certa!' },
       { id:'scroll', name:'Pergaminho de EXP', icon:'tome_01', hue:45, give:{ scroll:1 }, price:{ gold:600 }, scale:true, text:'Concede EXP a um herói (equivalente a vários minutos de caça).' },
-      { id:'ore10', name:'Tamahagane ×10', icon:'crystal_01', hue:290, give:{ ore:10 }, price:{ gold:900 }, scale:true, text:'Aço sagrado para aprimorar itens na Forja.' },
-      { id:'dust10', name:'Pó de Éter ×15', icon:'magic_dust_01', hue:220, give:{ dust:15 }, price:{ gold:700 }, scale:true, text:'Usado para encantar (re-sortear afixos) na Oficina.' }
+      { id:'onigiri', name:'Onigiri do Viajante', icon:'magic_dust_01', hue:130, give:{ onigiri:1 }, price:{ gold:900 }, scale:true, text:'Comida: +10% HP para a equipe por 30 minutos.' },
+      { id:'ramen', name:'Ramen Picante', icon:'potion_red_01', hue:20, give:{ ramen:1 }, price:{ gold:1100 }, scale:true, text:'Comida: +10% ATK para a equipe por 30 minutos.' },
+      { id:'tea', name:'Chá de Jasmim', icon:'potion_blue_01', hue:130, give:{ tea:1 }, price:{ gold:1400 }, scale:true, text:'Bebida: +15% de EXP por 30 minutos.' },
+      { id:'ore10', name:'Tamahagane ×10', icon:'crystal_01', hue:290, give:{ ore:10 }, price:{ gold:1500 }, scale:true, text:'Material comum de refino (até +10).' },
+      { id:'dust10', name:'Pó de Éter ×15', icon:'magic_dust_01', hue:220, give:{ dust:15 }, price:{ gold:1200 }, scale:true, text:'Usado para encantar (re-sortear afixos) na Oficina.' }
     ],
     crystal: [
-      { id:'key1', name:'Chave de Convocação', icon:'lantern_seal', hue:290, give:{ keys:1 }, price:{ crystal:60 }, text:'Uma convocação na Caixa dos Mundos.' },
-      { id:'key10', name:'10 Chaves de Convocação', icon:'lantern_seal', hue:290, give:{ keys:10 }, price:{ crystal:540 }, text:'10 convocações com 10% de desconto.' },
-      { id:'bag', name:'Expansão da Bolsa (+20)', icon:'backpack_LVL_01', hue:0, give:{ invCap:20 }, price:{ crystal:100 }, text:'Mais espaço para itens. Máximo de 200 espaços.' },
+      { id:'key1', name:'Chave de Convocação', icon:'lantern_seal', hue:290, give:{ keys:1 }, price:{ crystal:150 }, text:'Uma convocação na Caixa dos Mundos.' },
+      { id:'key10', name:'10 Chaves de Convocação', icon:'lantern_seal', hue:290, give:{ keys:10 }, price:{ crystal:1350 }, text:'10 convocações com 10% de desconto.' },
+      { id:'bag', name:'Expansão da Bolsa (+25)', icon:'backpack_LVL_01', hue:0, give:{ invCap:25 }, price:{ crystal:100 }, text:'Mais espaço para itens. O preço sobe a cada expansão. Máximo de 400 espaços.' },
+      { id:'luck', name:'Pergaminho da Sorte', icon:'tome_01', hue:45, give:{ luck:1 }, price:{ crystal:40 }, text:'+20% chance de itens por 30 minutos.' },
       { id:'boost', name:'Incenso do Viajante (1h)', icon:'magic_dust_01', hue:45, give:{ boost:3600 }, price:{ crystal:80 }, text:'+50% de EXP e ouro por 1 hora de jogo.' },
       { id:'respec', name:'Pergaminho do Esquecimento', icon:'tome_01', hue:290, give:{ respec:1 }, price:{ crystal:50 }, text:'Redefine gratuitamente os talentos de um herói.' },
-      { id:'ore50', name:'Tamahagane ×50', icon:'crystal_01', hue:290, give:{ ore:50 }, price:{ crystal:90 }, text:'Estoque de aço para aprimoramentos.' }
-    ],
-    gems: [
-      { id:'g_starter', name:'Pacote do Iniciante', price:'R$ 9,90', text:'300 Gemas + 10 Chaves + Herói Épico garantido. Compra única.', tag:'MELHOR VALOR' },
-      { id:'g_pass', name:'Passe da Fenda (30 dias)', price:'R$ 19,90', text:'+30% EXP e ouro, 50 Gemas por dia e trilha de recompensas exclusivas.' },
-      { id:'g_small', name:'Punhado de Gemas', price:'R$ 4,90', text:'120 Gemas.' },
-      { id:'g_med', name:'Bolsa de Gemas', price:'R$ 24,90', text:'650 Gemas (+8% bônus).' },
-      { id:'g_big', name:'Baú de Gemas', price:'R$ 49,90', text:'1.400 Gemas (+16% bônus).' },
-      { id:'g_huge', name:'Tesouro da Fenda', price:'R$ 99,90', text:'3.000 Gemas (+25% bônus).' }
+      { id:'ore50', name:'Tamahagane ×50', icon:'crystal_01', hue:290, give:{ ore:50 }, price:{ crystal:160 }, text:'Estoque de material comum de refino.' },
+      { id:'star1', name:'Aço Estelar', icon:'crystal_01', hue:190, give:{ star:1 }, price:{ crystal:180 }, limit:2, text:'Material raro de refino: até +8 sem perder nível. Limite de 2 por dia.' },
+      { id:'ori1', name:'Oricalco', icon:'crystal_01', hue:250, give:{ ori:1 }, price:{ crystal:900 }, limit:1, text:'Material épico de refino: até +15. Limite de 1 por dia.' }
     ]
   };
 
-  KT.Progression = { attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, jobCost, TIER_REQ, classTrees, training, trainingCost, trainingCap, shop };
+  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, jobCost, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
 })();

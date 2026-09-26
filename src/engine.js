@@ -5,11 +5,16 @@
   let saveKey = SAVE_KEY;
   const setSaveKey = k => { saveKey = k || SAVE_KEY; };
   const ULT_COST = 100;
-  const OFFENSIVE = new Set(['dmg','st']);
+  const OFFENSIVE = new Set(['dmg','st','dispel','delay','execute','chain']);
   const CC = new Set(['stun','freeze']);
   const DEBUFFS = new Set(['burn','poison','bleed','stun','freeze','slow','armorBreak','mark','weaken','silence']);
   const DOTS = new Set(['burn','poison','bleed']);
   const HERO_MAX_STARS = 6;
+  const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  const CHOICE_WAIT = 120; // segundos até a escolha recomendada ser feita sozinha (AUTO desligado)
+  const DT = .05;           // passo fixo da simulação (20 passos por segundo de jogo)
+  const MAX_SPEED = 3;
+  const INPUT_KINDS = new Set(['ult', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance']);
 
   // ===========================================================================
   // ESTADO
@@ -20,16 +25,19 @@
       player:{ name:'Viajante', level:1, xp:0, gold:0, crystal:0, dust:0, ore:0, gems:0, keys:0 },
       starterRolls:10, boxesOpened:0, pity:0,
       formation:[null, null, null, null], collection:[], shards:{},
-      inventory:[], invCap:80, consumables:{ potion:0, elixir:0, scroll:0 }, cards:{},
-      progress:{ hunt:{ best:0, cur:1 }, hunt_tide:{ best:0, cur:1 }, dungeon:{ best:0, cur:1 }, dungeon_tide:{ best:0, cur:1 }, boss:{ kills:0, tier:0, tierKills:[0, 0, 0] }, boss_tide:{ kills:0, tier:0, tierKills:[0, 0, 0] }, boss_event:{ kills:0, tier:0, tierKills:[0, 0, 0] } },
+      inventory:[], invCap:150, overflow:[], mats:{ star:0, ori:0, adam:0 }, buffs:{}, shopDaily:{ date:'', bought:{} },
+      consumables:{ potion:0, elixir:0, scroll:0, onigiri:0, ramen:0, tea:0, luck:0 }, cards:{},
+      progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
       settings:{ auto:true, autoAdvance:true, autoRepeat:true, speed:1, sound:false, autoSalvage:'none' },
-      stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, goldEarned:0, deaths:0 },
+      stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
       buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1 },
       guide:{ claimed:{}, flags:{} }, contracts:[], achievements:{}, contractCounters:{},
       market:{ offers:[], refreshedAt:0 }, boostUntil:0, freeRespec:1,
-      story:{ seen:{} }, codex:{ enemies:[] },
+      story:{ seen:{} }, codex:{ enemies:[] }, bestiary:{},
+      guildRank:{ lv:1, xp:0 }, chronicle:null, daily:{ date:'', list:[] }, login:{ last:'', streak:0, claimed:'' }, stuck:{ key:'', n:0 },
+      worldBoss:{ day:'', window:-1, boss:'', tier:0, damage:0, claimed:true }, expeditions:[], bounty:{ active:null, offers:[], points:0, done:0 }, crafted:{ date:'', n:{} },
       lastSeen:Date.now(), totalPlaySeconds:0, created:Date.now()
     };
   }
@@ -43,7 +51,10 @@
     const fresh = createState();
     if (!raw || raw.version !== 3) return fresh;
     const s = { ...fresh, ...raw };
-    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
+    s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
+    s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
     s.progress = { ...fresh.progress }; Object.keys(raw.progress || {}).forEach(k => { s.progress[k] = { ...(fresh.progress[k] || {}), ...raw.progress[k] }; });
     s.collection = (raw.collection || []).filter(h => D.roster.some(t => t.id === h.id)).map(h => ({ ...newHeroRecord(D.roster.find(t => t.id === h.id), h.rarity), ...h, attr:{ ...fresh.collection[0]?.attr, str:0, agi:0, vit:0, int:0, dex:0, luk:0, ...(h.attr || {}) }, equipped:{ weapon:null, focus:null, seal:null, charm:null, ...(h.equipped || {}) } }));
     const uids = new Set(s.collection.map(h => h.uid));
@@ -51,6 +62,8 @@
     s.inventory = (raw.inventory || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
     s.cards = { ...(raw.cards || {}) };
     s.collection.forEach(h => { h.talents = h.talents || {}; h.job = h.job || 0; });
+    // Regras de tipo por classe: itens que a classe não usa (saves antigos) voltam para a bolsa.
+    s.collection.forEach(h => Object.entries(h.equipped).forEach(([k, uid]) => { const it = uid && s.inventory.find(x => x.uid === uid); if (uid && (!it || !I.equipCheck(it, h.id).ok)) h.equipped[k] = null; }));
     return s;
   }
   function loadState(raw) { try { if (raw === undefined) raw = U.safeStorage.get(saveKey); return mergeState(raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : null); } catch (_) { return createState(); } }
@@ -62,32 +75,56 @@
   const heroXpNext = lvl => Math.round(60 * lvl * Math.pow(1.14, lvl - 1));
   const accountXpNext = lvl => Math.round(250 * Math.pow(1.2, lvl - 1));
   const heroMaxLevel = stars => 12 + stars * 8;
-  const awakenCost = (stars, shrineLv) => ({ shards:[0, 10, 20, 40, 70, 110][stars] || 999, gold:Math.round(1500 * Math.pow(2.2, stars - 1) * (1 - Math.min(.4, (shrineLv - 1) * .05))) });
+  const awakenCost = (stars, shrineLv) => ({ shards:[0, 15, 30, 60, 100, 160][stars] || 999, gold:Math.round(2500 * Math.pow(2.3, stars - 1) * (1 - Math.min(.4, (shrineLv - 1) * .05))) });
   const zonePower = (zone, opts = {}) => {
     if (zone.kind === 'hunt') return zone.basePower * Math.pow(D.STAGE_GROWTH, (opts.stage || 1) - 1);
     if (zone.kind === 'dungeon') return zone.floorPower[(opts.floor || 1) - 1] || zone.floorPower[0];
     if (zone.kind === 'boss') return zone.power * (D.bossTiers[opts.tier || 0]?.mult || 1);
+    if (zone.kind === 'rift') return D.RIFT.base * Math.pow(D.RIFT.growth, (opts.floor || 1) - 1);
     return 1;
   };
   const itemLevelFor = (zone, opts = {}) => {
     if (zone.kind === 'hunt') return zone.ilvl + (opts.stage || 1) - 1;
     if (zone.kind === 'dungeon') return zone.ilvl + ((opts.floor || 1) - 1) * 3;
     if (zone.kind === 'boss') return zone.ilvl + (opts.tier || 0) * 5;
+    if (zone.kind === 'rift') return zone.ilvl + Math.floor((opts.floor || 1) * .9);
     return 1;
   };
 
-  function activeEvent(now = Date.now()) {
-    const idx = Math.floor(now / D.EVENT_BLOCK_MS) % D.worldEvents.length;
-    const ends = (Math.floor(now / D.EVENT_BLOCK_MS) + 1) * D.EVENT_BLOCK_MS;
-    const next = D.worldEvents[(idx + 1) % D.worldEvents.length];
-    return { ...D.worldEvents[idx], ends, next };
+  // Datas no fuso de Brasília (UTC−3, sem horário de verão).
+  const TZ_MS = D.EVENT_TZ_OFFSET_MIN * 60000;
+  const localDate = ms => new Date(ms + TZ_MS);
+  const dayKey = (ms = KT.Clock.now()) => localDate(ms).toISOString().slice(0, 10);
+  // Janelas de evento de um dia (início/fim em ms UTC reais).
+  function windowsOfDay(dayStartUtc) {
+    const dow = localDate(dayStartUtc).getUTCDay();
+    return D.eventSchedule.filter(w => w.days.includes(dow)).map(w => ({ id:w.id, start:dayStartUtc + w.from * 3600000, end:dayStartUtc + w.to * 3600000 }));
+  }
+  function dayStart(ms) { const l = localDate(ms); return Date.UTC(l.getUTCFullYear(), l.getUTCMonth(), l.getUTCDate()) - TZ_MS; }
+  function upcomingEvents(now = KT.Clock.now(), days = 7) {
+    const out = [], d0 = dayStart(now);
+    for (let d = -1; d <= days; d++) windowsOfDay(d0 + d * 86400000).forEach(w => { if (w.end > now) out.push({ ...D.worldEvents.find(e => e.id === w.id), start:w.start, end:w.end }); });
+    return out.sort((x, y) => x.start - y.start);
+  }
+  function activeEvent(now = KT.Clock.now()) {
+    const list = upcomingEvents(now, 2);
+    const cur = list.find(w => w.start <= now && w.end > now);
+    const next = list.find(w => w.start > now) || null;
+    if (cur) return { ...cur, ends:cur.end, next };
+    return { ...D.calmEvent, ends:next ? next.start : now + 3600000, next };
   }
 
   // ===========================================================================
   // CÁLCULO DE ATRIBUTOS DOS HERÓIS
   // ===========================================================================
   function mergeStats(target, add, mult = 1) { Object.entries(add || {}).forEach(([k, v]) => { target[k] = (target[k] || 0) + v * mult; }); return target; }
-  function teamContext(state, records) {
+  // Buffs de comida ativos (dependem da hora: a luta usa a hora fixada pelo servidor).
+  function buffStats(state, now) {
+    const out = {};
+    Object.entries(state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.stats && until > now) Object.entries(b.stats).forEach(([k, v]) => { out[k] = (out[k] || 0) + v; }); });
+    return out;
+  }
+  function teamContext(state, records, now = KT.Clock.now()) {
     const team = records.filter(Boolean);
     const templates = team.map(r => D.roster.find(t => t.id === r.id));
     const clsCount = {}, elCount = {};
@@ -103,6 +140,7 @@
       const t = templates[i]; if (t.passive.hooks.aura) mergeStats(teamStats, t.passive.hooks.aura);
       Object.values(r.equipped || {}).forEach(uid => { const it = state.inventory.find(x => x.uid === uid); if (it?.kind === 'unique') { const q = I.uniques.find(u => u.id === it.uniqueId); if (q?.hook?.aura) mergeStats(teamStats, q.hook.aura); } });
     });
+    mergeStats(teamStats, buffStats(state, now));
     return { teamStats, clsSyn, elSyn, bonds, elCount, clsCount };
   }
 
@@ -121,13 +159,13 @@
       else if (k === 'spd') s.spd += c.base.spd * v * m;
       else if (k in s) s[k] += v * m;
     });
-    add(c.traitStats);
+    add(c.baseBonus);
     add(t.passive.hooks.stats);
     Object.entries(rec.attr || {}).forEach(([k, n]) => add(PR.attributes[k]?.per, n));
     add(ctx.teamStats);
     ctx.elSyn.forEach(e => e.tiers.forEach(tier => { if (tier.n === 4 || e.el === t.el) add(tier.stats); }));
     ctx.bonds.forEach(b => { if (b.ids.includes(t.id)) add(b.stats); });
-    const tree = PR.classTrees[t.cls] || [], talentHooks = [];
+    const tree = PR.treeFor(t.id), talentHooks = [];
     Object.entries(rec.talents || {}).forEach(([id, rank]) => { const n = tree.find(x => x.id === id); if (!n || !rank) return; add(n.stats, rank); if (n.hook) talentHooks.push(n.hook(rank)); });
     if (rec.job) { pctAdd.hp += .10; pctAdd.atk += .10; pctAdd.def += .10; }
     Object.entries(state.training || {}).forEach(([k, lv]) => { const tr = PR.training[k]; if (tr && lv) add({ [tr.stat]:tr.per * lv }); });
@@ -138,6 +176,7 @@
       add(I.itemStats(it));
       if (it.kind === 'set') setCount[it.setId] = (setCount[it.setId] || 0) + 1;
       if (it.kind === 'unique') { const q = I.uniques.find(u => u.id === it.uniqueId); if (q?.hook) hooks.push(q.hook); }
+      (it.cards || []).forEach(cid => { const cd = cid && I.cardById(cid); if (cd?.hook) hooks.push(cd.hook); });
     });
     const sets = [];
     Object.entries(setCount).forEach(([id, n]) => { const set = I.sets.find(x => x.id === id); if (!set) return; const active = []; if (n >= 2) { add(set.bonus2.stats); active.push(2); } if (n >= 4) { add(set.bonus4.stats); if (set.bonus4.hook) hooks.push(set.bonus4.hook); active.push(4); } sets.push({ set, n, active }); });
@@ -166,25 +205,28 @@
       this.time = 0; this.zoneElapsed = 0; this.wave = 0; this.room = 0; this.pendingRoute = null; this.pendingEncounter = null;
       this.focusUid = null; this.bossPhase = 0; this.paused = false; this.stageMods = {}; this.encounterUsed = false;
       this.potionCd = 0; this.elixirCd = 0; this.runLoot = []; this.runGold = 0; this.runXp = 0;
-      this.ensureContracts();
+      this.acc = 0; this.seg = null; this.segWaiting = false; this.replay = false; this.fixedNow = null; this.segmentProvider = null;
+      this.ensureContracts(); this.ensureDaily();
     }
-    emit(name, payload) { try { this.events?.[name]?.(payload); } catch (err) { console.warn(err); } }
+    // Eventos para a interface nunca consomem o gerador da luta (o servidor não tem interface).
+    emit(name, payload) { const h = this.events?.[name]; if (!h) return; KT.Rng.with(null, () => { try { h(payload); } catch (err) { console.warn(err); } }); }
+    now() { return this.fixedNow ?? KT.Clock.now(); }
 
     // ---------- conveniências ----------
     get heroes() { return formationRecords(this.state); }
     template(id) { return D.roster.find(t => t.id === id); }
     record(uid) { return this.state.collection.find(h => h.uid === uid); }
-    ctx() { return teamContext(this.state, this.heroes); }
+    ctx() { return teamContext(this.state, this.heroes, this.now()); }
     heroStats(rec, ctx) { return heroStats(this.state, rec, ctx); }
     heroPower(rec, ctx) { return statPower(this.heroStats(rec, ctx)); }
     getPower() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
-    event() { return activeEvent(); }
-    mod(key) { const ev = activeEvent(); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > Date.now() ? .5 : 0; } if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return v; }
+    event() { return activeEvent(this.now()); }
+    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .5 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return v; }
 
     recommendedPower(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z || z.kind === 'village') return 0;
       const P = zonePower(z, opts);
-      const ref = z.kind === 'boss' ? 3.1 : z.kind === 'dungeon' ? 1.35 : 1;
+      const ref = z.kind === 'boss' ? 3.1 : z.kind === 'dungeon' || z.kind === 'rift' ? 1.35 : 1;
       return Math.round(6500 * P * Math.min(1, .25 + .1 * P) * ref / 100) * 100;
     }
 
@@ -194,37 +236,123 @@
       if (!z) return { locked:true, reasons:['Região desconhecida'] };
       if (z.kind === 'village') return { locked:false, reasons };
       if (this.heroes.length < 4) reasons.push({ text:'Equipe com 4 heróis', met:false });
-      Object.entries(z.unlock?.stage || {}).forEach(([id, n]) => reasons.push({ text:`Vencer ${D.zones[id].title} — estágio ${n}`, met:(s.progress[id]?.best || 0) >= n }));
-      Object.entries(z.unlock?.floor || {}).forEach(([id, n]) => reasons.push({ text:`Conquistar ${D.zones[id].title} — andar ${['I','II','III'][n - 1]}`, met:(s.progress[id]?.best || 0) >= n }));
+      Object.entries(z.unlock?.stage || {}).forEach(([id, n]) => reasons.push({ text:`Vencer ${D.zones[id].title}, estágio ${n}`, met:(s.progress[id]?.best || 0) >= n }));
+      Object.entries(z.unlock?.floor || {}).forEach(([id, n]) => reasons.push({ text:`Conquistar ${D.zones[id].title}, andar ${['I','II','III'][n - 1] || n}`, met:(s.progress[id]?.best || 0) >= n }));
       Object.entries(z.unlock?.kills || {}).forEach(([id, n]) => reasons.push({ text:`Derrotar ${D.enemies[D.zones[id].enemy].name.split(',')[0]}`, met:(s.progress[id]?.kills || 0) >= n }));
-      if (z.event) reasons.push({ text:`Evento ativo: ${D.worldEvents.find(e => e.id === z.event).name}`, met:activeEvent().id === z.event });
+      if (z.event) reasons.push({ text:`Evento ativo: ${D.worldEvents.find(e => e.id === z.event).name}`, met:activeEvent(this.now()).id === z.event });
+      if (z.kind === 'worldboss') { const w = this.wbWindow(); reasons.push({ text:`Janela aberta (${D.worldBoss.windows.map(x => x.label).join(' ou ')})`, met:w.active }); reasons.push({ text:'Uma investida por dia', met:s.worldBoss.day !== dayKey(this.now()) }); }
       return { locked:reasons.some(r => !r.met), reasons };
     }
     getZoneRequirements(zoneId) { return this.zoneLock(zoneId).reasons.map(r => ({ label:r.text, met:r.met })); }
 
     // ---------- entrar em região ----------
-    enterZone(zoneId, opts = {}) {
+    // Valida e posiciona a equipe numa região (mesma regra no navegador e no servidor).
+    prepareZone(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z) return false;
       const lock = this.zoneLock(zoneId);
       if (lock.locked) { this.emit('onToast', `Bloqueado: ${lock.reasons.filter(r => !r.met).map(r => r.text).join(' · ')}.`); return false; }
+      opts = { ...opts };
       const p = this.state.progress[zoneId];
       if (z.kind === 'hunt') { const max = Math.min(z.stages, (p.best || 0) + 1); opts.stage = U.clamp(opts.stage || p.cur || 1, 1, max); p.cur = opts.stage; this.state.lastHunt = zoneId; }
       if (z.kind === 'dungeon') { opts.floor = U.clamp(opts.floor || p.cur || 1, 1, Math.min(z.floors, (p.best || 0) + 1)); p.cur = opts.floor; }
+      if (z.kind === 'rift') { opts.floor = U.clamp(opts.floor || p.cur || 1, 1, (p.best || 0) + 1); p.cur = opts.floor; }
       if (z.kind === 'boss') { const unlockedTier = D.bossTiers.filter(t => !t.needKills || (p.kills || 0) >= t.needKills).length - 1; opts.tier = U.clamp(opts.tier ?? p.tier ?? 0, 0, unlockedTier); p.tier = opts.tier; }
+      if (z.kind === 'worldboss') { opts.tier = U.clamp(Number(opts.tier) || 0, 0, D.worldBoss.tiers.length - 1); if (this.getPower() < D.worldBoss.tiers[opts.tier].minPower) opts.tier = 0; opts.ally = U.clamp(Number(opts.ally) || 0, 0, 500); }
       this.zone = z; this.opts = opts; this.state.zone = zoneId; this.zoneElapsed = 0;
-      this.enemies = []; this.party = []; this.focusUid = null; this.pendingRoute = null; this.pendingEncounter = null;
+      this.enemies = []; this.party = []; this.focusUid = null; this.pendingRoute = null; this.pendingEncounter = null; this.pendingChoice = null;
       this.runLoot = []; this.runGold = 0; this.runXp = 0;
       if (!this.state.codex.discovered) this.state.codex.discovered = {};
-      if (z.kind === 'village') { this.active = false; this.phase = 'idle'; this.emit('onZone', z); return true; }
+      if (z.kind === 'village') { this.active = false; this.phase = 'idle'; return true; }
       this.active = true;
       this.state.guide.flags[`entered_${zoneId}`] = true;
-      this.emit('onZone', z);
-      if (!this.state.story.seen[`zone_${zoneId}`] && D.story.zone[zoneId]) { this.state.story.seen[`zone_${zoneId}`] = true; this.emit('onDialog', D.story.zone[zoneId]); }
+      const firstVisit = !this.state.story.seen[`zone_${zoneId}`] && D.story.zone[zoneId];
+      if (firstVisit) this.state.story.seen[`zone_${zoneId}`] = true;
+      return { firstVisit };
+    }
+    enterZone(zoneId, opts = {}) {
+      if (this.seg) this.abortSegment();
+      const r = this.prepareZone(zoneId, opts); if (!r) return false;
+      this.emit('onZone', this.zone);
+      if (this.zone.kind === 'village') { this.segmentProvider?.flush?.(); return true; }
+      if (r.firstVisit) this.emit('onDialog', D.story.zone[zoneId]);
       this.startRun();
       return true;
     }
 
+    // ---------- segmentos de luta (reproduzíveis pelo servidor) ----------
+    // Um segmento vai do início de um estágio/andar/luta até vitória ou derrota. No modo online o
+    // servidor fornece a semente; o navegador grava os comandos do jogador (ultimates, poções, alvo,
+    // escolhas) com o passo em que aconteceram, e o servidor refaz a luta para calcular as recompensas.
     startRun() {
+      if (this.segmentProvider && !this.replay) { this.phase = 'waiting'; this.segWaiting = true; this.enemies = []; this.segmentProvider.request({ zone:this.zone.id, opts:{ ...this.opts } }); return; }
+      this.beginSegment(null);
+    }
+    beginSegment(seg) {
+      this.seg = { id:seg?.id ?? null, seed:seg?.seed ?? null, at:seg?.at ?? null, tick:0, inputs:[], rng:seg ? KT.Rng.seeded(seg.seed) : null };
+      if (seg?.opts && typeof seg.opts === 'object') this.opts = { ...seg.opts };
+      this.fixedNow = seg?.at ?? null; this.segWaiting = false; this.acc = 0;
+      KT.Rng.with(this.seg.rng, () => this.startRunCore());
+    }
+    // Encerra o segmento (vitória/derrota) e entrega o que o servidor precisa para conferir.
+    endSegment(outcome) {
+      const seg = this.seg; if (!seg) return;
+      this.seg = null; this.fixedNow = null;
+      if (seg.id !== null && !this.replay) this.segmentProvider?.finished?.({ segId:seg.id, endTick:seg.tick, inputs:seg.inputs, outcome });
+      this.lastOutcome = outcome;
+    }
+    // Interrompe no meio (trocar de região, equipar, etc.): o servidor paga o que já foi feito.
+    abortSegment() {
+      const seg = this.seg; if (!seg) return null;
+      this.seg = null; this.fixedNow = null;
+      const fin = seg.id !== null ? { segId:seg.id, endTick:seg.tick, inputs:seg.inputs, outcome:'abort' } : null;
+      if (fin && !this.replay) this.segmentProvider?.finished?.(fin);
+      this.enemies = []; this.phase = 'idle';
+      return fin;
+    }
+    // Comando do jogador durante a luta: executa com o gerador da luta e fica gravado.
+    input(kind, arg) {
+      if (!INPUT_KINDS.has(kind)) return false;
+      const seg = this.seg;
+      const run = () => this.applyInput({ k:kind, a:arg });
+      const ok = seg ? KT.Rng.with(seg.rng, run) : run();
+      if (seg && ok !== false && !this.replay && seg.inputs.length < 4000) seg.inputs.push({ t:seg.tick, k:kind, a:arg });
+      return ok;
+    }
+    applyInput(inp) {
+      switch (inp.k) {
+        case 'ult': return this.castUlt(Number(inp.a), true);
+        case 'potion': return this.usePotion();
+        case 'elixir': return this.useElixir();
+        case 'focus': return this.setFocus(String(inp.a || '')) !== undefined;
+        case 'choice': { const c = this.pendingChoice; if (!c || !c.options.some(o => o.id === inp.a)) return false; this.resolveChoice(c, inp.a, false); return true; }
+        case 'auto': this.state.settings.auto = !!inp.a; return true;
+        case 'advance': this.state.settings.autoAdvance = !!inp.a; return true;
+      }
+      return false;
+    }
+    // Reprodução no servidor: mesma semente, mesmos comandos, mesmo resultado.
+    replaySegment(seg, inputs = [], endTick = 0) {
+      this.replay = true; this.fixedNow = seg.at ?? null;
+      const prep = this.prepareZone(seg.zone, seg.opts || {}); if (!prep || this.zone.kind === 'village') return { ok:false, reason:'zone' };
+      this.beginSegment(seg);
+      const list = (inputs || []).filter(x => x && INPUT_KINDS.has(x.k) && Number.isInteger(x.t) && x.t >= 0).sort((a, b) => a.t - b.t).slice(0, 4000);
+      let i = 0, guard = 0;
+      while (this.seg && this.seg.tick < endTick && guard++ < 400000) {
+        while (i < list.length && list[i].t < this.seg.tick) i++;
+        while (this.seg && i < list.length && list[i].t === this.seg.tick) { KT.Rng.with(this.seg.rng, () => this.applyInput(list[i])); i++; }
+        if (!this.seg) break;
+        if (this.pendingRoute || this.pendingEncounter) break; // escolha sem resposta: para aqui
+        this.tick();
+      }
+      return { ok:true, ended:!this.seg, outcome:this.lastOutcome || (this.seg ? 'partial' : 'end'), tick:this.seg ? this.seg.tick : endTick };
+    }
+    tick() {
+      const seg = this.seg;
+      if (seg) { seg.tick++; KT.Rng.with(seg.rng, () => this.step(DT)); }
+      else this.step(DT);
+    }
+
+    startRunCore() {
       const ctx = this.ctx();
       this.party = this.state.formation.map((uid, slot) => { const rec = uid && this.record(uid); return rec ? this.makeHeroUnit(rec, slot, ctx) : null; }).filter(Boolean);
       this.wave = 0; this.room = 0; this.bossPhase = 0; this.stageMods = {}; this.encounterUsed = false; this.potionCd = 0; this.elixirCd = 0;
@@ -242,7 +370,7 @@
 
     makeEnemyUnit(id, P, extra = {}) {
       const t = D.enemies[id] || D.enemies.fox;
-      const ev = activeEvent(); const atkMod = 1 + (ev.mods?.enemyAtk || 0);
+      const ev = activeEvent(this.now()); const atkMod = 1 + (ev.mods?.enemyAtk || 0);
       const lvl = Math.max(1, Math.round(1 + Math.log(P) / Math.log(1.065)));
       if (!this.state.codex.enemies.includes(id)) this.state.codex.enemies.push(id);
       const u = { uid:U.uid('en'), side:'enemy', id, name:t.name, sprite:t.sprite, el:t.el, cls:t.role, color:D.elements[t.el].color, t,
@@ -274,14 +402,20 @@
         const stage = this.opts.stage, P = zonePower(z, { stage });
         const guardian = this.wave === 4;
         const count = Math.min(4, 2 + Math.floor((stage + 1) / 4));
+        // Cada estágio e onda tem uma criatura "em destaque" e um formato de grupo diferente.
+        const featured = z.pool[(stage - 1 + this.wave - 1) % z.pool.length];
+        const pattern = guardian ? 'guard' : U.pick(['misto', 'misto', 'matilha', 'par']);
+        const partner = U.pick(z.pool.filter(x => x !== featured));
         const ids = [];
         if (guardian) {
           ids.push(z.elites[(stage - 1) % z.elites.length]);
-          if (stage % 4 === 0 || stage >= 12) ids.push(z.elites[stage % z.elites.length]);
+          if (stage % 4 === 0 || stage >= z.stages) ids.push(z.elites[stage % z.elites.length]);
           while (ids.length < Math.min(4, count)) ids.push(U.pick(z.pool));
-        } else for (let i = 0; i < count; i++) ids.push(U.pick(z.pool));
-        this.enemies = ids.map((id, i) => this.makeEnemyUnit(id, P, { guardian:guardian && i === 0 }));
-        this.emit('onWave', { label:guardian ? `Guardião do estágio ${stage}` : `Onda ${this.wave}/4`, detail:guardian ? this.enemies[0].name : `${ids.length} inimigos`, guardian });
+        } else for (let i = 0; i < count; i++) ids.push(pattern === 'matilha' ? featured : pattern === 'par' ? (i % 2 ? partner : featured) : U.weighted(z.pool, x => x === featured ? 2 : 1));
+        this.enemies = ids.map((id, i) => this.spawnEnemy(id, P, { guardian:guardian && i === 0, alpha:!guardian && U.random() < D.ALPHA.chance * (1 + (activeEvent(this.now()).mods?.encounter ? .5 : 0)) }));
+        const alpha = this.enemies.find(e => e.alpha);
+        if (alpha) { this.emit('onWarn', `${alpha.name} apareceu! Loot garantido.`); this.emit('onLog', { text:`Uma variante rara surgiu: ${alpha.name}.`, type:'boss' }); }
+        this.emit('onWave', { label:guardian ? `Guardião do estágio ${stage}` : `Onda ${this.wave}/4`, detail:guardian ? this.enemies[0].name : pattern === 'matilha' ? `Matilha: ${ids.length}× ${D.enemies[featured].name}` : `${ids.length} inimigos`, guardian });
       } else if (z.kind === 'dungeon') {
         this.room++;
         const floor = this.opts.floor, P = zonePower(z, { floor });
@@ -294,7 +428,24 @@
         const riskMult = this.state.routeChoice === 'risk' && this.room >= 3 ? 1.2 : 1;
         this.enemies = ids.map(id => this.makeEnemyUnit(id, P * riskMult));
         this.emit('onWave', { label:`Sala ${this.room}/5`, detail:this.room === 5 ? `Chefe do andar: ${this.enemies[0].name}` : this.room === 3 ? 'Encruzilhada' : 'Avance pelas câmaras' });
-        if (this.room === 3) { this.pendingRoute = 'dungeon'; this.emit('onChoice', { kind:'route', title:z.id === 'dungeon_tide' ? 'Encruzilhada do Arquivo' : 'Encruzilhada do Templo', options:[{ id:'risk', label:'Passagem Carmesim', desc:'Inimigos +20% fortes nas próximas salas, +60% chance de itens e baú extra.' }, { id:'safe', label:'Galeria Silenciosa', desc:'Recupera 35% do HP de todos e revive heróis caídos.' }] }); }
+        if (this.room === 3) { this.pendingRoute = 'dungeon'; this.offerChoice({ kind:'route', title:`Encruzilhada: ${z.title}`, options:[{ id:'risk', label:'Passagem Carmesim', desc:'Inimigos +20% fortes nas próximas salas, +60% chance de itens e baú extra.' }, { id:'safe', label:'Galeria Silenciosa', desc:'Recupera 35% do HP de todos e revive heróis caídos.' }] }); }
+      } else if (z.kind === 'rift') {
+        this.room++;
+        const floor = this.opts.floor, P = zonePower(z, { floor }), mut = this.riftMutation(floor);
+        const pool = z.pool, elites = z.elites, bosses = [z.floorBoss];
+        let ids;
+        if (this.room === 1) ids = Array.from({ length:floor >= 10 ? 4 : 3 }, () => U.pick(pool));
+        else if (this.room === 2) ids = [U.pick(elites), U.pick(pool), U.pick(pool), U.pick(pool)];
+        else ids = floor % 5 === 0 && bosses.length ? [U.pick(bosses), U.pick(pool), U.pick(pool)] : [U.pick(elites), U.pick(elites), U.pick(pool)];
+        this.enemies = ids.map(id => this.spawnEnemy(id, P, { alpha:this.room === 1 && U.random() < D.ALPHA.chance * 2 }));
+        this.enemies.forEach(e => { const m = mut.enemy || {}; if (m.hp) { e.maxHp = Math.round(e.maxHp * (1 + m.hp)); e.hp = e.maxHp; } if (m.atk) e.st.atk *= 1 + m.atk; if (m.spd) e.st.spd *= 1 + m.spd; if (m.lifesteal) e.st.lifesteal += m.lifesteal; if (m.thorns) e.thorns += m.thorns; });
+        if (mut.reward?.drop) this.stageMods.drop = Math.max(this.stageMods.drop || 0, mut.reward.drop);
+        this.emit('onWave', { label:`Andar ${floor} · Sala ${this.room}/${D.RIFT.rooms}`, detail:this.room === D.RIFT.rooms ? (floor % 5 === 0 ? `Guardião do abismo: ${this.enemies[0].name}` : 'Sala dos guardiões') : `Mutação: ${mut.name}. ${mut.text}` });
+      } else if (z.kind === 'worldboss') {
+        this.wave = 1; const tier = D.worldBoss.tiers[this.opts.tier || 0], id = this.wbBossId();
+        this.enemies = [this.makeEnemyUnit(id, tier.P, { worldBoss:true })];
+        this.bossTimer = 0; this.enrageStacks = 0; this.wbDamage = 0;
+        this.emit('onWave', { label:this.enemies[0].name, detail:`Invasão Mundial · ${tier.name} · ${D.worldBoss.duration}s`, boss:true });
       } else if (z.kind === 'boss') {
         this.wave = 1;
         const P = zonePower(z, this.opts);
@@ -306,8 +457,53 @@
       this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; if (u.alive) this.fire(u, 'start', {}); });
     }
 
+    // Cada andar da Fenda tem uma mutação fixa (a mesma para todos os jogadores).
+    riftMutation(floor) { return D.riftMutations[(floor * 7 + 3) % D.riftMutations.length]; }
+    riftZones(floor) { return ['rift']; }
+    spawnEnemy(id, P, extra = {}) {
+      const u = this.makeEnemyUnit(id, P, extra);
+      if (extra.alpha) { u.maxHp = Math.round(u.maxHp * D.ALPHA.hp); u.hp = u.maxHp; u.st.atk *= D.ALPHA.atk; u.name = `${u.name} ${D.ALPHA.prefix}`; u.elite = true; }
+      return u;
+    }
+
+    // ---------- escolhas (rotas e encontros) ----------
+    // Com AUTO ligado a melhor opção é escolhida na hora. Com AUTO desligado a escolha aparece
+    // para o jogador; se ninguém escolher em 2 minutos (ex.: fora da tela), a recomendada é usada.
+    offerChoice(c) {
+      c.recommended = this.recommendChoice(c);
+      if (this.state.settings.auto) { this.resolveChoice(c, c.recommended, true); return; }
+      this.pendingChoice = { ...c, wait:0 };
+      this.emit('onChoice', { ...c, deadline:CHOICE_WAIT });
+    }
+    resolveChoice(c, id, auto = false) {
+      this.pendingChoice = null;
+      const opt = c.options.find(o => o.id === id) || c.options[c.options.length - 1];
+      if (auto) { this.state.stats.autoChoices = (this.state.stats.autoChoices || 0) + 1; this.emit('onLog', { text:`Escolha automática: ${opt.label}.`, type:'system' }); this.emit('onToast', `<b>${c.title}</b>: escolhido automaticamente “${opt.label}”.`); }
+      this.emit('onChoiceResolved', { id:opt.id, auto });
+      if (c.kind === 'route') this.chooseRoute(opt.id); else this.resolveEncounter(opt.id);
+    }
+    partyHealth() { const all = this.party; if (!all.length) return { ratio:0, dead:false }; return { ratio:all.reduce((a, u) => a + (u.alive ? u.hp / u.maxHp : 0), 0) / all.length, dead:all.some(u => !u.alive) }; }
+    powerRatio() { const rec = this.recommendedPower(this.zone.id, this.opts); return rec ? this.getPower() / rec : 1; }
+    recommendChoice(c) {
+      const h = this.partyHealth(), pr = this.powerRatio();
+      if (c.kind === 'route') return h.dead || h.ratio < .6 || pr < .9 ? 'safe' : 'risk';
+      const enc = this.pendingEncounter?.enc?.id;
+      if (enc === 'shrine') return h.dead || h.ratio < .45 ? 'renewal' : pr >= 1.25 ? 'fortune' : 'might';
+      if (enc === 'chest') return h.ratio >= .6 && pr >= .9 ? 'open' : 'leave';
+      if (enc === 'merchant') {
+        let best = null, bestGain = 0;
+        c.options.filter(o => o.item).forEach(o => {
+          if (this.state.player.gold < o.price * 2.5) return;
+          this.heroes.forEach(r => { const g = this.itemGain(r, o.item) || 0; if (g > bestGain) { bestGain = g; best = o.id; } });
+        });
+        return best || 'leave';
+      }
+      return c.options[0].id;
+    }
+
     chooseRoute(choice) {
       if (this.pendingRoute !== 'dungeon') return;
+      this.pendingChoice = null;
       this.state.routeChoice = choice;
       if (choice === 'safe') this.party.forEach(u => { if (!u.alive) { u.alive = true; u.hp = 1; } u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .35); });
       else { this.stageMods.drop = (this.stageMods.drop || 0) + .6; this.enemies.forEach(e => { e.maxHp *= 1.2; e.hp *= 1.2; e.st.atk *= 1.2; }); }
@@ -317,9 +513,24 @@
 
     // ---------- loop principal ----------
     update(dtReal) {
-      const dt = Math.min(.08, dtReal) * (this.state.settings.speed || 1);
-      this.time += dt; this.state.totalPlaySeconds += dtReal;
-      if (!this.active || this.paused || this.pendingRoute || this.pendingEncounter) return;
+      dtReal = Math.min(dtReal, 1);
+      this.time += dtReal; this.state.totalPlaySeconds += dtReal;
+      if (!this.segmentProvider) { this.dailyClock = (this.dailyClock || 0) + dtReal; if (this.dailyClock > 20) { this.dailyClock = 0; this.ensureDaily(); } }
+      if (this.pendingChoice && !this.paused) {
+        this.pendingChoice.wait += dtReal;
+        if (this.state.settings.auto || this.pendingChoice.wait >= CHOICE_WAIT) { const c = this.pendingChoice; this.input('choice', c.recommended); if (this.pendingChoice === c) this.resolveChoice(c, c.recommended, true); }
+      }
+      if (!this.active || this.paused) return;
+      this.acc = Math.min(this.acc + dtReal * U.clamp(this.state.settings.speed || 1, 1, MAX_SPEED), DT * 80);
+      let n = 0;
+      while (this.acc >= DT && n++ < 160) {
+        if (this.pendingRoute || this.pendingEncounter || this.segWaiting || !this.active) { this.acc = 0; break; }
+        this.acc -= DT;
+        this.tick();
+      }
+    }
+    step(dt) {
+      if (!this.active || this.pendingRoute || this.pendingEncounter) return;
       this.zoneElapsed += dt;
       this.potionCd = Math.max(0, this.potionCd - dt); this.elixirCd = Math.max(0, this.elixirCd - dt);
       if (this.phase === 'between') { this.timer -= dt; if (this.timer <= 0) this.nextWave(); return; }
@@ -332,7 +543,8 @@
       this.party.forEach((u, i) => this.actHero(u, i, dt));
       this.enemies.forEach(u => this.actEnemy(u, dt));
       this.enemies.forEach(e => { if (e.treasure && e.alive) { e.fleeT = (e.fleeT || 0) + dt; if (e.fleeT > 12) { e.alive = false; e.fled = true; this.emit('onFx', { type:'text', uid:e.uid, text:'FUGIU!', color:'#ffd76a' }); this.emit('onLog', { text:'A Raposa Dourada fugiu!', type:'system' }); } } });
-      if (this.zone.kind === 'boss') this.tickBossTimer(dt);
+      if (this.zone.kind === 'boss' || this.zone.kind === 'worldboss') this.tickBossTimer(dt);
+      if (this.zone.kind === 'worldboss' && this.phase === 'fight' && this.zoneElapsedFight() >= D.worldBoss.duration) { this.wbFinish(); return; }
       this.checkOutcome();
     }
 
@@ -446,7 +658,6 @@
       u.skillCd = t.skill.cd;
       this.emit('onFx', { type:'cast', source:u.uid, name:t.skill.name, color:u.color, kind:t.skill.fx });
       this.execute(u, t.skill.eff, { isSkill:true });
-      if (u.cls === 'Suporte') this.party.forEach(h => { if (h !== u && h.alive) this.gainEnergy(h, 8); });
       this.fire(u, 'onSkill', {});
       this.emit('onState');
     }
@@ -458,7 +669,7 @@
       this.state.stats.ults++; this.count('ults');
       if (manual) { this.state.stats.manualUlts++; }
       this.emit('onFx', { type:'cast', source:u.uid, heroIndex:i, manual, ult:true, name:u.template.ult.name, color:u.color, kind:'ult' });
-      this.execute(u, u.template.ult.eff, { isUlt:true });
+      this.execute(u, u.template.ult.eff, { isUlt:true, manual });
       this.fire(u, 'onUlt', {});
       this.emit('onFx', { type:'hitstop', time:manual ? .12 : .06 });
       this.emit('onState');
@@ -507,12 +718,12 @@
       const kind = ctx.isUlt ? 'ult' : ctx.isSkill ? 'skill' : 'proc';
       for (const e of effs || []) {
         if (!u.alive && e.k !== 'revive') break;
-        const supportive = !(e.k === 'dmg' || e.k === 'st' || (e.k === 'nrg' && e.v < 0));
+        const supportive = !(e.k === 'dmg' || e.k === 'st' || e.k === 'dispel' || e.k === 'delay' || e.k === 'execute' || e.k === 'chain' || (e.k === 'nrg' && e.v < 0));
         if (e.k === 'dmg') {
           const hits = e.hits || 1;
           for (let h = 0; h < hits; h++) {
             const targets = this.resolve(u, e.to, ctx, false);
-            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m / (e.to === 'randEach' ? 1 : 1), { kind, pierce:e.pierce, crit:e.crit, exec:e.exec, dodgeable:e.to !== 'all' && kind === 'proc' })); });
+            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m, { kind, manual:ctx.manual, pierce:e.pierce, crit:e.crit, exec:e.exec, dodgeable:e.to !== 'all' && kind === 'proc' })); });
             if (targets.length) ctx.target = ctx.target || targets[0];
           }
           if (kind !== 'proc') this.emit('onFx', { type:e.to === 'all' ? 'aoe' : 'burst', source:u.uid, target:(ctx.target || {}).uid, color:u.color });
@@ -521,8 +732,8 @@
         const targets = this.resolve(u, e.to || 'self', ctx, supportive);
         switch (e.k) {
           case 'st': targets.forEach(tg => this.applyStatus(u, tg, e)); break;
-          case 'heal': targets.forEach(tg => this.heal(u, tg, (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (ctx.isSkill ? 1 + (u.st.skillMastery || 0) : 1))); break;
-          case 'shield': targets.forEach(tg => { const amt = (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (1 + (u.st.healPow || 0)); tg.shield = Math.min(tg.maxHp * .7, tg.shield + amt); tg.shieldT = Math.max(tg.shieldT, e.d || 6); this.emit('onFx', { type:'shield', uid:tg.uid, value:Math.round(amt) }); }); break;
+          case 'heal': targets.forEach(tg => this.heal(u, tg, (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (ctx.isSkill ? 1 + (u.st.skillMastery || 0) : 1) * (ctx.isUlt && ctx.manual ? 1.25 : 1))); break;
+          case 'shield': targets.forEach(tg => { const amt = (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (1 + (u.st.healPow || 0)) * (ctx.isUlt && ctx.manual ? 1.25 : 1); tg.shield = Math.min(tg.maxHp * .7, tg.shield + amt); tg.shieldT = Math.max(tg.shieldT, e.d || 6); this.emit('onFx', { type:'shield', uid:tg.uid, value:Math.round(amt) }); }); break;
           case 'buff': targets.forEach(tg => this.addEffect(tg, { s:e.s, v:e.v, d:e.d, stackMax:e.stack, src:u })); break;
           case 'nrg': targets.forEach(tg => { if (tg.side === 'hero') tg.energy = U.clamp(tg.energy + e.v, 0, ULT_COST); }); break;
           case 'cleanse': targets.forEach(tg => { tg.effects = tg.effects.filter(x => !DEBUFFS.has(x.s)); this.emit('onFx', { type:'text', uid:tg.uid, text:'PURIFICADO', color:'#bff4ff' }); }); break;
@@ -531,6 +742,14 @@
           case 'revive': { const dead = (u.side === 'hero' ? this.party : this.enemies).find(x => !x.alive && !x.fled); if (dead) { dead.alive = true; dead.hp = Math.round(dead.maxHp * e.p); dead.effects = []; this.emit('onFx', { type:'revive', uid:dead.uid }); this.emit('onLog', { text:`${dead.name} foi revivido!`, type:'skill' }); } break; }
           case 'cdr': targets.forEach(tg => { tg.skillCd = Math.max(0, tg.skillCd - e.v); }); break;
           case 'cdreset': u.skillCd = 0; break;
+          // Remove escudos e bônus do alvo.
+          case 'dispel': targets.forEach(tg => { tg.shield = 0; tg.effects = tg.effects.filter(x => DEBUFFS.has(x.s)); this.emit('onFx', { type:'text', uid:tg.uid, text:'DISSIPADO', color:'#bff4ff' }); }); break;
+          // Atrasa as habilidades (e ataques preparados) do alvo.
+          case 'delay': targets.forEach(tg => { tg.skillCd = (tg.skillCd || 0) + e.v; (tg.specials || []).forEach(sp => { sp.t += e.v; }); if (tg.windup > 0) tg.windup += e.v * .5; }); break;
+          // Finaliza quem está abaixo do limite de HP (chefes e chefes de andar resistem).
+          case 'execute': targets.forEach(tg => { if (!tg.boss && !tg.miniboss && tg.alive && tg.hp / tg.maxHp <= e.th) { this.emit('onFx', { type:'text', uid:tg.uid, text:'EXECUTADO', color:'#ff5d6c' }); this.applyRawDamage(tg, tg.hp + tg.shield + 1, u, { kind:'skill' }); } }); break;
+          // Dano que salta entre inimigos, perdendo força a cada salto.
+          case 'chain': { let m = e.m, last = null; const pool = this.opponents(u); for (let j = 0; j < (e.n || 3) && pool.some(x => x.alive); j++) { const opts = pool.filter(x => x.alive && x !== last); const tg = j === 0 && ctx.target?.alive ? ctx.target : opts.length ? U.pick(opts) : null; if (!tg) break; dealt += Math.max(0, this.hit(u, tg, m, { kind })); last = tg; m *= (e.fall || .7); } break; }
           case 'hp': u.hp = Math.max(1, u.hp + u.maxHp * e.p); this.emit('onFx', { type:'damage', uid:u.uid, value:Math.round(-u.maxHp * e.p), side:u.side, color:'#ff9aa4' }); break;
         }
       }
@@ -545,7 +764,7 @@
     }
 
     applyStatus(src, tg, e) {
-      if (!tg.alive || Math.random() > (e.ch ?? 1)) return;
+      if (!tg.alive || U.random() > (e.ch ?? 1)) return;
       let d = e.d;
       if (tg.boss && (CC.has(e.s) || e.s === 'silence')) d *= .4;
       else if ((tg.miniboss || tg.elite) && CC.has(e.s)) d *= .7;
@@ -569,7 +788,7 @@
 
     hit(src, tg, mult, o = {}) {
       if (!tg || !tg.alive) return -1;
-      if (o.dodgeable && Math.random() < this.stat(tg, 'dodge')) {
+      if (o.dodgeable && U.random() < this.stat(tg, 'dodge')) {
         this.emit('onFx', { type:'text', uid:tg.uid, text:'ESQUIVA', color:'#9ce9cc' });
         this.fire(tg, 'onDodge', { attacker:src });
         return -1;
@@ -578,13 +797,15 @@
       if (o.kind === 'skill' || o.kind === 'ult') raw *= 1 + (src.st.skill || 0);
       if (o.kind === 'skill') raw *= 1 + (src.st.skillMastery || 0);
       if (o.kind === 'ult') raw *= 1 + (src.st.ultDmg || 0);
+      if (o.kind === 'ult' && o.manual) raw *= 1.25; // comando manual: ultimate no momento certo rende mais
+      if (src.side === 'hero' && tg.worldBoss && this.opts.ally) raw *= 1 + Math.min(.5, this.opts.ally * .02); // Bênção da Aliança
       const critChance = this.stat(src, 'crit') + (o.crit || 0);
-      const crit = Math.random() < critChance;
+      const crit = U.random() < critChance;
       if (crit) raw *= this.stat(src, 'critDmg') + (this.has(tg, 'bleed') ? .1 : 0);
       const em = this.elemMult(src.el, tg.el); raw *= em === 1.3 ? 1.3 + (src.st.elem || 0) : em;
       (src.hooks?.vs || []).forEach(v => { if (this.has(tg, v.s)) raw *= 1 + v.v; });
       if (tg.boss || tg.miniboss) raw *= 1 + (src.st.boss || 0);
-      if (src.cls === 'Atirador' && src.row === 'back') raw *= 1.15;
+      if (src.side === 'hero' && tg.side === 'enemy') { const rl = this.research(tg.id); if (rl) raw *= 1 + rl * D.RESEARCH.dmg; }
       if (o.exec) raw *= 1 + o.exec * (1 - tg.hp / tg.maxHp);
       if (this.has(tg, 'freeze')) raw *= 1.2;
       const pierce = Math.min(1, (o.pierce || 0) + (src.st.pierce || 0));
@@ -609,6 +830,7 @@
       let rest = dmg;
       if (tg.shield > 0) { const ab = Math.min(tg.shield, rest); tg.shield -= ab; rest -= ab; if (tg.side === 'hero') this.emit('onFx', { type:'shieldHit', uid:tg.uid }); }
       tg.hp -= rest;
+      if (tg.worldBoss) { if (src?.side === 'hero') this.wbDamage = (this.wbDamage || 0) + dmg; if (tg.hp < tg.maxHp * .05) tg.hp = tg.maxHp * .05; }
       this.emit('onFx', { type:'damage', uid:tg.uid, value:dmg, crit:o.crit, side:tg.side, kind:o.kind, color:o.color || (o.elem === 1.3 ? '#ffe28a' : o.elem === .8 ? '#aab4c8' : null), weak:o.elem === 1.3, resist:o.elem === .8 });
       if (tg.side === 'hero' && src) { this.gainEnergy(tg, 3 + 40 * dmg / tg.maxHp); }
       if (o.kind !== 'dot' && o.kind !== 'thorns' && src) this.fire(tg, 'onHurt', { attacker:src });
@@ -637,14 +859,13 @@
       if (this.focusUid === tg.uid) this.focusUid = null;
       if (killer?.side === 'hero') {
         this.fire(killer, 'onKill', { target:tg });
-        if (killer.cls === 'Executor') this.gainEnergy(killer, 20);
       }
       this.rewardKill(tg);
     }
 
     fire(u, hook, ctx) {
       if (!u?.alive || !u.hooks) return;
-      (u.hooks[hook] || []).forEach(h => { if (h.ch !== undefined && Math.random() > h.ch) return; this.execute(u, h.eff, { ...ctx, proc:true }); });
+      (u.hooks[hook] || []).forEach(h => { if (h.ch !== undefined && U.random() > h.ch) return; this.execute(u, h.eff, { ...ctx, proc:true }); });
     }
 
     // ---------- consumíveis em combate ----------
@@ -665,21 +886,40 @@
     // ---------- resultado de onda / estágio ----------
     checkOutcome() {
       if (this.phase !== 'fight') return;
+      if (this.zone.kind === 'worldboss') { if (!this.party.some(u => u.alive)) this.wbFinish(); return; }
       if (!this.party.some(u => u.alive)) { this.onDefeat(); return; }
       if (this.enemies.some(e => e.alive)) return;
       const z = this.zone;
       if (z.kind === 'hunt') {
         if (this.wave < 4) {
           this.party.forEach(u => { if (u.alive) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .08); });
-          const chance = (.1 + (activeEvent().mods?.encounter ? .1 : 0));
-          if (this.wave === 2 && !this.encounterUsed && Math.random() < chance) { this.encounterUsed = true; this.triggerEncounter(); return; }
+          const chance = (.1 + (activeEvent(this.now()).mods?.encounter ? .1 : 0));
+          if (this.wave === 2 && !this.encounterUsed && U.random() < chance) { this.encounterUsed = true; this.triggerEncounter(); return; }
           this.phase = 'between'; this.timer = 1.1;
         } else this.stageClear();
       } else if (z.kind === 'dungeon') {
         this.party.forEach(u => { if (u.alive) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .1); });
         if (this.room < 5) { this.phase = 'between'; this.timer = 1.4; }
         else this.floorClear();
+      } else if (z.kind === 'rift') {
+        this.party.forEach(u => { if (u.alive) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .06); });
+        if (this.room < D.RIFT.rooms) { this.phase = 'between'; this.timer = 1.2; }
+        else this.riftClear();
       } else if (z.kind === 'boss') this.bossClear();
+    }
+    riftClear() {
+      const z = this.zone, p = this.state.progress.rift, floor = this.opts.floor, P = zonePower(z, { floor }), ilvl = itemLevelFor(z, { floor });
+      const first = floor > (p.best || 0);
+      const items = U.random() < .5 + Math.min(.4, floor * .01) ? [this.drop('chest', z, ilvl, this.mod('drop'))] : [];
+      const mutGold = 1 + (this.riftMutation(floor).reward?.gold || 0);
+      const rewards = { gold:Math.round(260 * Math.pow(P, .85) * mutGold), ore:2 + Math.floor(floor / 4), crystal:first ? 1 + Math.floor(floor / 5) : 0, keys:first && floor % 10 === 0 ? 1 : 0, items };
+      if (first) p.best = floor;
+      this.grant(rewards); this.dropMats('rift');
+      this.state.stats.floors++; this.count('floors');
+      this.emit('onStageClear', { zone:z, stage:floor, first, rewards, rift:true });
+      this.phase = 'stageClear'; this.timer = 1.8;
+      this.nextStage = this.state.settings.autoAdvance ? floor + 1 : floor;
+      this.endSegment('clear');
     }
 
     stageClear() {
@@ -689,32 +929,35 @@
       const rewards = { gold:0, crystal:0, keys:0, items:[] };
       if (first) {
         p.best = stage;
-        rewards.crystal = 5 + stage * 2 + (z.chapter - 1) * 20;
-        rewards.gold = Math.round(150 * zonePower(z, { stage }));
-        if (stage % 4 === 0) rewards.keys = 1;
-        if (stage === z.stages) { rewards.keys += 1; rewards.items.push(I.rollDrop('guardian', z, itemLevelFor(z, { stage }) + 1, .5)); }
+        rewards.crystal = 2 + stage + (z.chapter - 1) * 6;
+        rewards.gold = Math.round(120 * zonePower(z, { stage }));
+        if (stage === z.stages && !z.side) rewards.keys = 1;
+        if (stage === z.stages) rewards.items.push(this.drop('guardian', z, itemLevelFor(z, { stage }) + 1, .5));
         this.grant(rewards);
       }
       this.emit('onStageClear', { zone:z, stage, first, rewards });
       this.phase = 'stageClear'; this.timer = 1.8;
       this.nextStage = this.state.settings.autoAdvance ? Math.min(z.stages, stage + 1) : stage;
+      this.endSegment('clear');
     }
     afterStageClear() {
-      const p = this.state.progress[this.zone.id];
-      this.opts.stage = this.nextStage || this.opts.stage; p.cur = this.opts.stage;
+      const p = this.state.progress[this.zone.id], key = this.zone.kind === 'rift' ? 'floor' : 'stage';
+      this.opts[key] = this.nextStage || this.opts[key]; p.cur = this.opts[key];
       this.startRun();
     }
     floorClear() {
       const z = this.zone, p = this.state.progress[z.id], floor = this.opts.floor, ilvl = itemLevelFor(z, { floor });
       const first = floor > (p.best || 0);
-      const items = [I.rollDrop('chest', z, ilvl, this.mod('drop'))];
-      if (this.state.routeChoice === 'risk') items.push(I.rollDrop('chest', z, ilvl, this.mod('drop')));
-      const rewards = { gold:Math.round(400 * zonePower(z, { floor })), crystal:first ? 30 + floor * 15 : 0, keys:first ? 1 : (Math.random() < .12 ? 1 : 0), items };
+      const items = [this.drop('chest', z, ilvl, this.mod('drop'))];
+      if (this.state.routeChoice === 'risk') items.push(this.drop('chest', z, ilvl, this.mod('drop')));
+      this.dropMats('chest');
+      const rewards = { gold:Math.round(320 * zonePower(z, { floor })), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .03 ? 1 : 0), items };
       if (first) p.best = floor;
       this.grant(rewards);
       this.state.stats.floors++; this.count('floors');
       this.state.routeChoice = null;
       this.showResult({ kind:'dungeon', zone:z, floor, first, rewards, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
+      this.endSegment('clear');
     }
     bossClear() {
       const z = this.zone, p = this.state.progress[z.id], tier = this.opts.tier || 0, tr = D.bossTiers[tier];
@@ -722,12 +965,14 @@
       p.kills = (p.kills || 0) + 1; p.tierKills[tier] = (p.tierKills[tier] || 0) + 1;
       this.state.stats.bossKills++;
       const ilvl = itemLevelFor(z, this.opts);
-      const items = [I.rollDrop('boss', z, ilvl, this.mod('drop') + tier * .5), I.rollDrop('boss', z, ilvl, this.mod('drop') + tier * .5)];
-      if (tier > 0) items.push(I.rollDrop('boss', z, ilvl, 1));
-      const rewards = { gold:Math.round(2500 * zonePower(z, this.opts) / 3 * tr.reward), crystal:Math.round((firstKill ? 150 : 25) * tr.reward), keys:z.id === 'boss_event' ? 1 : firstKill ? 2 : (Math.random() < .35 ? 1 : 0), items };
+      const items = [this.drop('boss', z, ilvl, this.mod('drop') + tier * .5)];
+      if (tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
+      this.dropMats('boss');
+      const rewards = { gold:Math.round(2000 * zonePower(z, this.opts) / 3 * tr.reward), crystal:Math.round((firstKill ? 80 : 6) * tr.reward), keys:z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
       this.grant(rewards);
       if (firstKill && D.story.bossWin[z.id]) this.emit('onDialog', D.story.bossWin[z.id]);
       this.showResult({ kind:'boss', zone:z, tier, first:firstKill, rewards, boss:D.enemies[z.enemy].name, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
+      this.endSegment('clear');
     }
     showResult(r) {
       this.phase = 'result'; this.timer = 5; this.lastResult = r;
@@ -737,22 +982,36 @@
       if (r.kind === 'defeat') this.timer = 8;
     }
     repeatRun() { this.emit('onResultClose'); this.runLoot = []; this.runGold = 0; this.runXp = 0; this.startRun(); }
+    drop(src, zone, ilvl, luck = 0) { return I.rollDrop(src, zone, ilvl, luck, this.preferWT()); }
+    preferWT() { return [...new Set(this.heroes.flatMap(r => I.allowedWeaponTypes(r.id)).filter(w => w !== 'relic'))]; }
     fallbackToHunt() { this.emit('onResultClose'); const h = this.state.lastHunt || 'hunt'; this.enterZone(h, { stage:Math.max(1, this.state.progress[h].best || 1) }); }
     onDefeat() {
       this.state.stats.deaths++;
       const z = this.zone;
-      if (z.kind === 'hunt') {
-        const stage = this.opts.stage, back = Math.max(1, stage - 1);
+      const p = this.state.progress[z.id] || {};
+      const lvl = z.kind === 'hunt' ? this.opts.stage : z.kind === 'boss' ? `t${this.opts.tier || 0}` : this.opts.floor;
+      const frontier = z.kind === 'boss' ? !(p.tierKills?.[this.opts.tier || 0]) : (this.opts.stage || this.opts.floor) > (p.best || 0);
+      this.trackStuck(`${z.id}:${lvl}`, frontier);
+      if (z.kind === 'hunt' || z.kind === 'rift') {
+        const key = z.kind === 'rift' ? 'floor' : 'stage', stage = this.opts[key], back = Math.max(1, stage - 1);
         this.phase = 'defeat'; this.timer = 3;
         this.nextStage = back;
         this.state.settings.autoAdvance = false;
-        this.emit('onDefeatHunt', { stage, back });
-        this.emit('onLog', { text:`A equipe caiu no estágio ${stage}. Recuando para o estágio ${back} para treinar.`, type:'system' });
+        this.emit('onDefeatHunt', { stage, back, rift:z.kind === 'rift' });
+        this.emit('onLog', { text:`A equipe caiu no ${z.kind === 'rift' ? 'andar' : 'estágio'} ${stage}. Recuando para o ${back} para treinar.`, type:'system' });
       } else {
         this.showResult({ kind:'defeat', zone:z, room:this.room, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
       }
+      this.endSegment('defeat');
     }
-    afterDefeat() { const p = this.state.progress[this.zone.id]; this.opts.stage = this.nextStage; p.cur = this.nextStage; this.startRun(); }
+    afterDefeat() { const p = this.state.progress[this.zone.id], key = this.zone.kind === 'rift' ? 'floor' : 'stage'; this.opts[key] = this.nextStage; p.cur = this.nextStage; this.startRun(); }
+    // Duas derrotas seguidas no mesmo desafio inédito → o Conselheiro aparece com um plano.
+    trackStuck(key, frontier) {
+      const st = this.state.stuck;
+      if (!frontier) { st.key = ''; st.n = 0; return; }
+      if (st.key === key) st.n++; else { st.key = key; st.n = 1; }
+      if (st.n >= 2 && st.n % 2 === 0) this.emit('onStuck', { key, tips:this.advice() });
+    }
 
     // ---------- encontros ----------
     triggerEncounter() {
@@ -763,19 +1022,19 @@
       if (enc.id === 'ambush') { const z = this.zone; const P = zonePower(z, this.opts) * 1.1; this.enemies = [z.elites[0], z.elites[1], U.pick(z.pool)].map(id => this.makeEnemyUnit(id, P, { ambush:true })); this.stageMods.drop = (this.stageMods.drop || 0) + .5; this.phase = 'fight'; this.emit('onWave', { label:enc.name, detail:enc.text, special:true }); return; }
       let options;
       if (enc.id === 'merchant') {
-        const offers = [0, 1, 2].map(() => { const it = I.makeItem({ ilvl:ilvl + 1, rarity:Math.random() < .25 ? 'legendary' : Math.random() < .6 ? 'epic' : 'rare' }); return { item:it, price:Math.round(I.itemScore(it) * 3 + 200 * zonePower(this.zone, this.opts)) }; });
+        const offers = [0, 1, 2].map(() => { const it = I.makeItem({ ilvl:ilvl + 1, rarity:U.random() < .08 ? 'legendary' : U.random() < .45 ? 'epic' : 'rare', prefer:this.preferWT() }); return { item:it, price:Math.round(I.itemScore(it) * 5 + 400 * zonePower(this.zone, this.opts)) }; });
         options = offers.map((o, i) => ({ id:`buy${i}`, label:`${o.item.name}`, desc:`${D.rarities.find(r => r.id === o.item.rarity).label} · Nível ${o.item.ilvl} · ${o.price.toLocaleString('pt-BR')} ouro`, item:o.item, price:o.price })).concat([{ id:'leave', label:'Seguir viagem', desc:'Não comprar nada.' }]);
       } else if (enc.id === 'shrine') options = D.blessings.map(b => ({ id:b.id, label:b.name, desc:b.text }));
       else options = [{ id:'open', label:'Abrir o baú', desc:'Pode conter tesouros... ou não.' }, { id:'leave', label:'Deixar para lá', desc:'Seguir em segurança.' }];
       this.pendingEncounter = { enc, options };
-      this.emit('onChoice', { kind:'encounter', title:enc.name, text:enc.text, options });
+      this.offerChoice({ kind:'encounter', title:enc.name, text:enc.text, options });
     }
     resolveEncounter(id) {
       const pe = this.pendingEncounter; if (!pe) return;
-      this.pendingEncounter = null;
+      this.pendingEncounter = null; this.pendingChoice = null;
       const opt = pe.options.find(o => o.id === id);
       if (pe.enc.id === 'merchant' && opt?.item) {
-        if (this.state.player.gold >= opt.price) { this.state.player.gold -= opt.price; this.addItem(opt.item); this.emit('onLoot', opt.item); this.emit('onToast', `Comprou ${opt.item.name}.`); }
+        if (this.state.player.gold >= opt.price) { this.state.player.gold -= opt.price; opt.item.bound = true; this.addItem(opt.item); this.emit('onLoot', opt.item); this.emit('onToast', `Comprou ${opt.item.name}.`); }
         else this.emit('onToast', 'Ouro insuficiente.');
       } else if (pe.enc.id === 'shrine' && opt) {
         const b = D.blessings.find(x => x.id === id);
@@ -784,8 +1043,8 @@
         if (b.instant === 'heal') this.party.forEach(u => { u.alive = true; u.hp = u.maxHp; u.effects = []; });
         this.emit('onToast', `${b.name} recebida.`);
       } else if (pe.enc.id === 'chest' && id === 'open') {
-        if (Math.random() < .3) { this.enemies = [this.makeEnemyUnit('mimic', zonePower(this.zone, this.opts))]; this.phase = 'fight'; this.emit('onWave', { label:'Era um Mímico!', detail:'O baú tinha dentes...', special:true }); this.emit('onWarn', 'Era um Mímico!'); return; }
-        const it = I.rollDrop('chest', this.zone, itemLevelFor(this.zone, this.opts) + 1, 1); this.addItem(it); this.emit('onLoot', it);
+        if (U.random() < .3) { this.enemies = [this.makeEnemyUnit('mimic', zonePower(this.zone, this.opts))]; this.phase = 'fight'; this.emit('onWave', { label:'Era um Mímico!', detail:'O baú tinha dentes...', special:true }); this.emit('onWarn', 'Era um Mímico!'); return; }
+        const it = this.drop('chest', this.zone, itemLevelFor(this.zone, this.opts) + 1, 1); this.addItem(it); this.emit('onLoot', it);
         const g = Math.round(200 * zonePower(this.zone, this.opts)); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
       }
       this.phase = 'between'; this.timer = .8;
@@ -796,32 +1055,158 @@
       const s = this.state, t = e.t;
       s.stats.kills++; this.count('kills');
       if (e.elite || e.boss) { s.stats.elites++; this.count('elites'); }
-      const mult = e.ambush ? 2 : 1;
-      const gold = Math.round(U.randInt(t.gold[0], t.gold[1]) * Math.pow(e.P, .85) * (1 + this.mod('gold')) * mult);
+      const mult = (e.ambush ? 2 : 1) * (e.alpha ? 4 : 1);
+      if (e.alpha) s.stats.alphas = (s.stats.alphas || 0) + 1;
+      if (s.bounty?.active && s.bounty.active.enemy === e.id) s.bounty.active.progress = Math.min(s.bounty.active.n, s.bounty.active.progress + 1);
+      const research = this.research(e.id); s.bestiary[e.id] = (s.bestiary[e.id] || 0) + 1;
+      if (this.research(e.id) > research) this.emit('onToast', `<b>Bestiário:</b> ${esc(t.name)}, pesquisa nível ${this.research(e.id)} (+${Math.round(this.research(e.id) * D.RESEARCH.dmg * 100)}% de dano contra ela).`);
+      const gold = Math.round(U.randInt(t.gold[0], t.gold[1]) * Math.pow(e.P, .85) * (1 + this.mod('gold')) * mult * .8);
       const xp = Math.round(t.xp * Math.pow(e.P, .92) * (1 + this.mod('xp')) * mult);
       s.player.gold += gold; s.stats.goldEarned += gold; this.runGold += gold; this.runXp += xp;
-      if (activeEvent().mods?.dust) s.player.dust += Math.random() < .3 ? 1 : 0;
+      if (activeEvent(this.now()).mods?.dust) s.player.dust += U.random() < .3 ? 1 : 0;
       this.giveXp(xp);
       this.emit('onFx', { type:'reward', uid:e.uid, gold, xp });
       // Itens.
-      const src = e.boss ? null : e.miniboss ? 'floorBoss' : e.guardian ? 'guardian' : e.elite ? 'elite' : e.treasure ? 'chest' : 'normal';
+      const src = e.boss ? null : e.miniboss ? 'floorBoss' : e.alpha || e.guardian ? 'guardian' : e.elite ? 'elite' : e.treasure ? 'chest' : 'normal';
       if (src) {
-        const chance = { normal:.05, elite:.3, guardian:1, floorBoss:1, chest:1 }[src] * (1 + this.mod('drop'));
+        const chance = e.alpha ? 1 : { normal:.03, elite:.12, guardian:.25, floorBoss:1, chest:1 }[src] * (1 + this.mod('drop'));
         const n = src === 'floorBoss' ? 2 : 1;
-        for (let i = 0; i < n; i++) if (Math.random() < chance) { const it = I.rollDrop(src, this.zone, itemLevelFor(this.zone, this.opts), this.mod('drop') + (activeEvent().mods?.rarity || 0)); it.fromUid = e.uid; this.addItem(it); this.emit('onLoot', it); }
-        if (Math.random() < .12 * (e.elite ? 3 : 1)) { const c = Math.random() < .5 ? 'ore' : 'dust'; s.player[c] += e.elite ? 3 : 1; }
+        for (let i = 0; i < n; i++) if (U.random() < chance) { const it = this.drop(src, this.zone, itemLevelFor(this.zone, this.opts) + (e.alpha ? 2 : 0), this.mod('drop') + (activeEvent(this.now()).mods?.rarity || 0) + (e.alpha ? .8 : 0)); it.fromUid = e.uid; this.addItem(it); this.emit('onLoot', it); }
+        if (U.random() < .07 * (e.elite ? 3 : 1)) { const c = U.random() < .5 ? 'ore' : 'dust'; s.player[c] += e.elite ? 2 : 1; }
+        this.dropMats(src, e.alpha);
       }
       const card = I.cards.find(c => c.enemy === e.id);
-      if (card && Math.random() < card.chance * (1 + this.mod('drop')) * (e.boss ? 1 + (this.opts.tier || 0) : 1)) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
+      const cardMult = (1 + this.mod('drop')) * (e.boss ? 1 + (this.opts.tier || 0) : 1) * (e.alpha ? 5 : 1) * (1 + this.research(e.id) * D.RESEARCH.card);
+      if (card && U.random() < card.chance * cardMult) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
       if (e.boss) this.emit('onToast', `<b>MVP!</b> ${e.name.split(',')[0]} derrotado.`);
       if (e.treasure) { s.player.gold += gold * 4; this.emit('onToast', `Raposa Dourada derrotada: +${(gold * 5).toLocaleString('pt-BR')} ouro!`); }
     }
+    // Materiais raros de refino: Aço Estelar (elites e chefes), Oricalco (chefes), Adamantina (chefes difíceis e eventos).
+    dropMats(src, alpha = false) {
+      const m = this.state.mats, tier = this.opts.tier || 0, deep = this.zone.kind === 'rift' ? (this.opts.floor || 1) : 0, got = {};
+      const give = (k, n) => { if (n > 0) { m[k] = (m[k] || 0) + n; got[k] = (got[k] || 0) + n; } };
+      const r = () => U.random();
+      if (src === 'elite' && r() < .003) give('star', 1);
+      if (src === 'guardian' && r() < (alpha ? .12 : .008)) give('star', 1);
+      if (src === 'guardian' && r() < .0005) give('ori', 1);
+      if (src === 'floorBoss') { if (r() < .12) give('star', 1); if (r() < .01) give('ori', 1); }
+      if (src === 'boss') { give('star', 1 + (r() < .5 ? 1 : 0)); if (r() < .12 + tier * .08) give('ori', 1); if (tier >= 1 && r() < .02 * tier) give('adam', 1); }
+      if (src === 'chest' && r() < .03) give('star', 1);
+      if (src === 'rift') { if (r() < .06) give('star', 1); if (deep >= 10 && r() < .02) give('ori', 1); if (deep >= 25 && r() < .004) give('adam', 1); }
+      Object.entries(got).forEach(([k, n]) => this.emit('onToast', `Material raro: <b>+${n} ${esc(Object.values(I.materials).find(x => x.key === k)?.name || k)}</b>!`));
+      return got;
+    }
+    // ---------- Invasão Mundial ----------
+    wbWindow(now = this.now()) {
+      const l = new Date(now + D.EVENT_TZ_OFFSET_MIN * 60000), h = l.getUTCHours() + l.getUTCMinutes() / 60;
+      const idx = D.worldBoss.windows.findIndex(w => h >= w.from && h < w.to);
+      const day0 = Date.UTC(l.getUTCFullYear(), l.getUTCMonth(), l.getUTCDate()) - D.EVENT_TZ_OFFSET_MIN * 60000;
+      const next = [0, 1].flatMap(d => D.worldBoss.windows.map((w, i) => ({ i, start:day0 + d * 86400000 + w.from * 3600000, end:day0 + d * 86400000 + w.to * 3600000 }))).find(w => w.end > now && w.start > now);
+      return { active:idx >= 0, index:idx, end:idx >= 0 ? day0 + D.worldBoss.windows[idx].to * 3600000 : null, next, day:dayKey(now) };
+    }
+    wbBossId(now = this.now()) { return D.worldBoss.byDay[new Date(now + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCDay()]; }
+    zoneElapsedFight() { return this.bossTimer || 0; }
+    wbFinish() {
+      if (this.phase !== 'fight') return;
+      const w = this.wbWindow(), dmg = Math.round(this.wbDamage || 0);
+      this.state.worldBoss = { day:w.day, window:w.index, boss:this.wbBossId(), tier:this.opts.tier || 0, damage:dmg, claimed:false };
+      this.state.stats.worldBoss = (this.state.stats.worldBoss || 0) + 1;
+      this.showResult({ kind:'worldboss', zone:this.zone, tier:this.opts.tier || 0, damage:dmg, boss:D.enemies[this.wbBossId()].name, loot:[], gold:0, xp:0 });
+      this.autoAfterResult = () => this.fallbackToHunt();
+      this.endSegment('clear');
+    }
+    // Recompensa da Invasão (o servidor informa se a comunidade derrubou o chefe e a posição do jogador).
+    grantWorldBoss(info = {}) {
+      const w = this.state.worldBoss; if (!w || w.claimed || !w.day) return false;
+      const tier = D.worldBoss.tiers[w.tier || 0], m = tier.reward * (info.killed ? 1.6 : 1) * (1 + Math.max(0, .5 - (info.pct ?? 1)) );
+      const P = Math.max(1, this.farmPower());
+      const r = { gold:Math.round(3000 * P * m), crystal:Math.round((info.killed ? 25 : 10) * tier.reward), items:[] };
+      const g = this.state.mats;
+      g.star += 1 + Math.floor(m); if (U.random() < .35 * m) g.ori += 1; if (U.random() < (info.killed ? .06 : .02) * tier.reward) g.adam += 1;
+      const ilvl = Math.max(10, itemLevelFor(D.zones[this.state.lastHunt || 'hunt'], { stage:Math.max(1, this.state.progress[this.state.lastHunt || 'hunt']?.best || 1) }) + 4);
+      const legChance = (info.killed ? .12 : .04) * tier.reward;
+      r.items.push(I.makeItem({ ilvl, rarity:U.random() < legChance ? 'legendary' : U.random() < .5 ? 'epic' : 'rare', prefer:this.preferWT() }));
+      if (info.killed && U.random() < .01 * tier.reward) r.items.push(I.makeItem({ unique:U.pick(I.uniques).id, ilvl }));
+      const card = I.cardById(`card_${w.boss}`); if (card && info.killed && U.random() < .004 * tier.reward) { this.state.cards[card.id] = (this.state.cards[card.id] || 0) + 1; this.state.stats.cards = (this.state.stats.cards || 0) + 1; r.card = card.name; }
+      w.claimed = true; w.reward = { gold:r.gold, crystal:r.crystal, items:r.items.map(i => i.name) };
+      this.grant(r); return { ...w.reward, killed:!!info.killed };
+    }
+
+    // ---------- Expedições (AFK de verdade: contam pelo relógio do servidor) ----------
+    expeditionSlots() { return Math.min(4, 1 + Math.floor((this.state.buildings.guild || 1) / 3)); }
+    startExpedition(zoneId, hours, uids) {
+      const z = D.zones[zoneId], s = this.state;
+      if (!z || z.kind !== 'hunt' || this.zoneLock(zoneId).locked || !(s.progress[zoneId]?.best > 0)) { this.lastError = 'Escolha uma caçada já vencida ao menos uma vez.'; return false; }
+      if (!D.expeditions.durations.includes(hours)) { this.lastError = 'Duração inválida.'; return false; }
+      if (s.expeditions.length >= this.expeditionSlots()) { this.lastError = 'Todas as vagas de expedição estão ocupadas (melhore a Guilda para ter mais).'; return false; }
+      uids = [...new Set(uids || [])].slice(0, D.expeditions.maxHeroes);
+      const busy = new Set(s.expeditions.flatMap(x => x.uids));
+      if (!uids.length || uids.some(u => !this.record(u) || s.formation.includes(u) || busy.has(u))) { this.lastError = 'Use heróis fora da equipe e que não estejam em outra expedição.'; return false; }
+      s.expeditions.push({ id:U.uid('exp'), zone:zoneId, hours, uids, start:this.now() });
+      this.emit('onState'); return true;
+    }
+    claimExpedition(id) {
+      const s = this.state, i = s.expeditions.findIndex(x => x.id === id); if (i < 0) return false;
+      const x = s.expeditions[i]; if (this.now() < x.start + x.hours * 3600000) { this.lastError = 'A expedição ainda não voltou.'; return false; }
+      const z = D.zones[x.zone], P = zonePower(z, { stage:Math.max(1, s.progress[x.zone]?.best || 1) }), n = x.uids.length;
+      const r = { gold:Math.round(700 * x.hours * Math.pow(P, .8) * n / 3), ore:x.hours * 2 * n, dust:x.hours * 3 * n, items:[] };
+      x.uids.forEach(uid => { const h = this.record(uid); if (h) this.gainHeroXp(h, Math.round(heroXpNext(h.level) * .2 * x.hours)); });
+      for (let k = 0; k < Math.floor(x.hours / 2) * n; k++) r.items.push(I.rollDrop('normal', z, itemLevelFor(z, { stage:Math.max(1, s.progress[x.zone]?.best || 1) }), 0, this.preferWT()));
+      if (U.random() < 1 - Math.pow(.97, x.hours * n)) s.mats.star += 1;
+      s.expeditions.splice(i, 1); s.stats.expeditions = (s.stats.expeditions || 0) + 1;
+      this.grant(r); return { gold:r.gold, ore:r.ore, dust:r.dust, items:r.items.map(it => it.name) };
+    }
+
+    // ---------- Quadro de Recompensas (caça a um monstro) ----------
+    ensureBounties() {
+      const b = this.state.bounty; if (b.offers?.length) return b.offers;
+      const zones = Object.values(D.zones).filter(z => (z.kind === 'hunt' || z.kind === 'dungeon') && (this.state.progress[z.id]?.best || 0) > 0);
+      const mons = [...new Set(zones.flatMap(z => z.pool || []))];
+      if (!mons.length) return [];
+      b.offers = Array.from({ length:3 }, () => { const id = U.pick(mons), n = U.pick([150, 250, 400, 600]); return { enemy:id, n, points:Math.round(n / 12) }; });
+      return b.offers;
+    }
+    acceptBounty(i) { const b = this.state.bounty; if (b.active) { this.lastError = 'Conclua ou abandone a caçada atual.'; return false; } const o = this.ensureBounties()[i]; if (!o) return false; b.active = { ...o, progress:0 }; b.offers = []; this.emit('onState'); return true; }
+    abandonBounty() { const b = this.state.bounty; if (!b.active) return false; b.active = null; b.offers = []; return true; }
+    claimBounty() {
+      const b = this.state.bounty; if (!b.active || b.active.progress < b.active.n) return false;
+      const P = this.farmPower(); b.points += b.active.points; b.done++;
+      this.grant({ gold:Math.round(b.active.n * 40 * Math.pow(P, .8)) }); const out = { points:b.active.points }; b.active = null; b.offers = [];
+      return out;
+    }
+    buyBountyItem(id) {
+      const o = D.bountyShop.find(x => x.id === id), b = this.state.bounty; if (!o || b.points < o.cost) return false;
+      b.points -= o.cost; const g = o.give;
+      if (g.star || g.ori) Object.entries(g).forEach(([k, v]) => { this.state.mats[k] += v; });
+      if (g.luck) this.state.consumables.luck += g.luck;
+      if (g.keys) this.state.player.keys += g.keys;
+      if (g.box) { const hz = D.zones[this.state.lastHunt || 'hunt']; const bi = I.makeItem({ ilvl:itemLevelFor(hz, { stage:Math.max(1, this.state.progress[hz.id]?.best || 1) }), rarity:g.box, prefer:this.preferWT() }); bi.bound = true; this.addItem(bi); }
+      this.emit('onState'); return true;
+    }
+
+    // ---------- Oficina: culinária e transmutação de materiais (limites diários) ----------
+    recipes() {
+      const w = this.state.buildings.workshop, d = 1 - Math.min(.4, (w - 1) * .05);
+      return [
+        { id:'potion', name:'Poção de Cura', give:{ potion:1 }, cost:{ gold:180, dust:3 } },
+        { id:'elixir', name:'Elixir de Energia', give:{ elixir:1 }, cost:{ gold:300, dust:6 } },
+        { id:'onigiri', name:'Onigiri do Viajante', give:{ onigiri:1 }, cost:{ gold:500, dust:8 } },
+        { id:'ramen', name:'Ramen Picante', give:{ ramen:1 }, cost:{ gold:650, dust:10 } },
+        { id:'tea', name:'Chá de Jasmim', give:{ tea:1 }, cost:{ gold:800, dust:12 } },
+        { id:'star', name:'Transmutar Aço Estelar', give:{ star:1 }, cost:{ gold:20000, ore:60, dust:20 }, limit:3 },
+        { id:'ori', name:'Transmutar Oricalco', give:{ ori:1 }, cost:{ gold:150000, star:6, dust:60 }, limit:1 }
+      ].map(r => ({ ...r, cost:Object.fromEntries(Object.entries(r.cost).map(([k, v]) => [k, k === 'gold' || k === 'dust' ? Math.max(1, Math.round(v * d)) : v])) }));
+    }
+    craftedToday(id) { const c = this.state.crafted, key = dayKey(this.now()); if (c.date !== key) { c.date = key; c.n = {}; } return c.n[id] || 0; }
+    have(k) { return k === 'gold' || k === 'dust' || k === 'ore' ? this.state.player[k] : k in (this.state.mats || {}) ? this.state.mats[k] : 0; }
+    research(id) { const k = this.state.bestiary?.[id] || 0; return D.RESEARCH.levels.filter(n => k >= n).length; }
+    researchTotal() { return Object.keys(this.state.bestiary || {}).reduce((a, id) => a + this.research(id), 0); }
     giveXp(xp) {
       const party = this.heroes; if (!party.length) return;
       const per = Math.max(1, Math.round(xp / party.length));
       const ups = [];
       party.forEach(r => { if (this.gainHeroXp(r, per)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
-      if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')} — +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
+      if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')}, +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
       // Treino passivo do Dojo para quem está fora da equipe.
       const bench = this.state.collection.filter(h => !this.state.formation.includes(h.uid));
       const rate = .05 + this.state.buildings.dojo * .05;
@@ -840,7 +1225,7 @@
     }
     gainAccountXp(xp) {
       const p = this.state.player; p.xp += xp;
-      while (p.xp >= accountXpNext(p.level)) { p.xp -= accountXpNext(p.level); p.level++; p.crystal += 10; this.emit('onToast', `Conta nível ${p.level}! +1 ponto de talento e +10 cristais.`); this.emit('onAccountLevel', p.level); }
+      while (p.xp >= accountXpNext(p.level)) { p.xp -= accountXpNext(p.level); p.level++; p.crystal += 3; this.emit('onToast', `Conta nível ${p.level}! +3 cristais.`); this.emit('onAccountLevel', p.level); }
     }
     grant(r) {
       const p = this.state.player;
@@ -861,17 +1246,48 @@
       const auto = s.settings.autoSalvage;
       const order = ['common','rare','epic'];
       if (auto !== 'none' && order.indexOf(item.rarity) >= 0 && order.indexOf(item.rarity) <= order.indexOf(auto)) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; s.player.gold += v.gold; s.stats.salvage++; this.count('salvage'); item.autoSalvaged = true; this.runLoot.push(item); return; }
-      if (s.inventory.length >= s.invCap) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; item.autoSalvaged = true; this.emit('onToast', 'Bolsa cheia! Item desmontado automaticamente.'); this.runLoot.push(item); return; }
+      // Bolsa cheia: nada se perde. O item vai para o Baú de Excedentes; se o baú também lotar,
+      // só o item COMUM de menor valor é desmontado para abrir espaço.
+      if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG)) {
+        s.overflow = s.overflow || [];
+        if (s.overflow.length >= I.OVERFLOW_CAP) {
+          const commons = s.overflow.map((x, i) => [x, i]).filter(([x]) => x.rarity === 'common').sort((a, b) => I.itemScore(a[0]) - I.itemScore(b[0]));
+          if (commons.length) { const [junk, idx] = commons[0]; s.overflow.splice(idx, 1); const v = I.salvageValue(junk); s.player.ore += v.ore; s.player.dust += v.dust; }
+          else if (item.rarity === 'common') { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; item.autoSalvaged = true; this.runLoot.push(item); return; }
+        }
+        s.overflow.unshift(item); item.inOverflow = true; this.runLoot.push(item);
+        if (!this.overflowWarned) { this.overflowWarned = true; this.emit('onToast', 'Bolsa cheia! Novos itens estão indo para o <b>Baú de Excedentes</b> (Bolsa → Excedentes).'); }
+        return;
+      }
       s.inventory.unshift(item); this.runLoot.push(item);
+    }
+    // Traz itens do Baú de Excedentes para a bolsa (quantos couberem).
+    takeOverflow(uid = null) {
+      const s = this.state; let n = 0;
+      const list = uid ? s.overflow.filter(x => x.uid === uid) : s.overflow.slice();
+      for (const it of list) { if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG)) break; s.overflow.splice(s.overflow.indexOf(it), 1); delete it.inOverflow; s.inventory.unshift(it); n++; }
+      this.emit('onState'); return n;
+    }
+    salvageOverflow(maxRarity = 'rare') {
+      const order = ['common','rare','epic','legendary'], lim = order.indexOf(maxRarity), tot = { ore:0, dust:0, gold:0, n:0 };
+      this.state.overflow = this.state.overflow.filter(it => { if (it.locked || order.indexOf(it.rarity) < 0 || order.indexOf(it.rarity) > lim) return true; const v = I.salvageValue(it); tot.ore += v.ore; tot.dust += v.dust; tot.gold += v.gold; tot.n++; return false; });
+      this.state.player.ore += tot.ore; this.state.player.dust += tot.dust; this.state.player.gold += tot.gold; this.emit('onState'); return tot;
     }
 
     // ---------- convocação e heróis ----------
     openBox(silent = false) {
       const s = this.state;
       if (s.starterRolls < 1 && s.player.keys < 1) return null;
-      const r = Math.random();
+      const r = U.random();
       const rarity = s.pity >= 29 ? 'legendary' : r < .03 ? 'legendary' : r < .15 ? 'epic' : r < .45 ? 'rare' : 'common';
-      const t = U.pick(D.roster);
+      let t = U.pick(D.roster);
+      if (s.starterRolls > 0) {
+        // Convocações iniciais: nunca repetem e garantem ao menos 1 herói de cada classe.
+        const owned = new Set(s.collection.map(h => h.id)), have = new Set(s.collection.map(h => this.template(h.id).cls));
+        const missing = Object.keys(D.classes).filter(c => !have.has(c));
+        const pool = D.roster.filter(h => !owned.has(h.id) && (missing.length >= s.starterRolls ? missing.includes(h.cls) : true));
+        if (pool.length) t = U.pick(pool);
+      }
       if (s.starterRolls > 0) s.starterRolls--; else s.player.keys--;
       s.boxesOpened++; s.pity = rarity === 'legendary' ? 0 : s.pity + 1;
       const owned = s.collection.find(h => h.id === t.id);
@@ -886,6 +1302,29 @@
       this.emit('onState');
       return result;
     }
+    openBoxes(n = 1) {
+      n = U.clamp(Math.floor(Number(n) || 1), 1, 10); const got = [];
+      for (let i = 0; i < n; i++) { const h = this.openBox(true); if (!h) break; got.push(h); }
+      return got;
+    }
+    // Receitas da Oficina (antes calculadas na interface).
+    craft(id) {
+      const r = this.recipes().find(x => x.id === id); if (!r) return false;
+      if (r.limit && this.craftedToday(id) >= r.limit) { this.lastError = `Limite diário de ${r.limit} atingido.`; return false; }
+      if (Object.entries(r.cost).some(([k, v]) => this.have(k) < v)) { this.lastError = 'Recursos insuficientes.'; return false; }
+      Object.entries(r.cost).forEach(([k, v]) => { if (k in this.state.player) this.state.player[k] -= v; else this.state.mats[k] -= v; });
+      Object.entries(r.give).forEach(([k, v]) => { if (k in this.state.mats) this.state.mats[k] += v; else this.state.consumables[k] = (this.state.consumables[k] || 0) + v; });
+      if (r.limit) this.state.crafted.n[id] = this.craftedToday(id) + 1;
+      this.emit('onState'); return true;
+    }
+    setName(name) { const n = String(name || '').normalize('NFKC').replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 20); if (!n) return false; this.state.player.name = n; return true; }
+    setSetting(key, value) {
+      const st = this.state.settings;
+      if (key === 'auto' || key === 'autoAdvance' || key === 'autoRepeat') { st[key] = !!value; return true; }
+      if (key === 'autoSalvage' && ['none', 'common', 'rare', 'epic'].includes(value)) { st.autoSalvage = value; return true; }
+      return false;
+    }
+    markSeen(key) { if (!['intro', 'intro2', 'team', 'formation'].includes(key)) return false; this.state.story.seen[key] = true; return true; }
     awaken(uid) {
       const r = this.record(uid); if (!r || r.stars >= HERO_MAX_STARS) return false;
       const c = awakenCost(r.stars, this.state.buildings.shrine), have = this.state.shards[r.id] || 0;
@@ -923,7 +1362,7 @@
     talentPoints() { return this.heroes.reduce((s, r) => s + Math.max(0, this.heroTalentPoints(r)), 0); }
     treeSpent(r) { return Object.values(r.talents || {}).reduce((a, b) => a + b, 0); }
     talentState(r, id) {
-      const tree = PR.classTrees[this.template(r.id).cls], n = tree.find(x => x.id === id); if (!n) return { ok:false, reason:'Nó inválido.' };
+      const tree = PR.treeFor(r.id), n = tree.find(x => x.id === id); if (!n) return { ok:false, reason:'Nó inválido.' };
       const rank = r.talents?.[id] || 0;
       if (rank >= n.max) return { ok:false, reason:'Rank máximo.', n, rank };
       if (n.tier === 2 && !r.job) return { ok:false, reason:`Requer a classe avançada (${PR.jobs[this.template(r.id).cls].name}).`, n, rank };
@@ -969,6 +1408,8 @@
     equip(heroUid, itemUid) {
       const r = this.record(heroUid), it = this.state.inventory.find(x => x.uid === itemUid);
       if (!r || !it) return false;
+      const chk = I.equipCheck(it, r);
+      if (!chk.ok) { this.lastError = chk.reason; this.emit('onToast', esc(chk.reason)); return false; }
       this.state.collection.forEach(h => { Object.keys(h.equipped).forEach(k => { if (h.equipped[k] === itemUid) h.equipped[k] = null; }); });
       r.equipped[it.slot] = itemUid; it.isNew = false;
       this.state.guide.flags.equipped = true;
@@ -988,15 +1429,30 @@
       this.state.inventory.slice().forEach(it => { if (order.indexOf(it.rarity) >= 0 && order.indexOf(it.rarity) <= lim && !it.locked && !this.ownerOf(it.uid)) { const v = this.salvage(it.uid); if (v) { tot.ore += v.ore; tot.dust += v.dust; tot.gold += v.gold; tot.n++; } } });
       return tot;
     }
-    upgradeItem(itemUid) {
-      const it = this.state.inventory.find(x => x.uid === itemUid); if (!it) return { ok:false, reason:'Item não encontrado.' };
-      if ((it.plus || 0) >= I.maxPlus(this.state.buildings.forge)) return { ok:false, reason:`Limite +${I.maxPlus(this.state.buildings.forge)}. Melhore a Forja.` };
-      const c = I.upgradeCost(it, this.state.buildings.forge);
-      if (this.state.player.gold < c.gold || this.state.player.ore < c.ore) return { ok:false, reason:'Ouro ou Tamahagane insuficiente.' };
-      this.state.player.gold -= c.gold; this.state.player.ore -= c.ore;
-      if (Math.random() > c.chance) { this.emit('onState'); return { ok:false, failed:true, reason:'O aprimoramento falhou! (o item não foi perdido)' }; }
-      it.plus = (it.plus || 0) + 1; this.state.stats.upgrades++; this.state.stats.maxUpgrade = Math.max(this.state.stats.maxUpgrade, it.plus);
-      this.emit('onState'); return { ok:true, plus:it.plus };
+    // REFINO com materiais: Tamahagane (comum), Aço Estelar (raro), Oricalco (épico), Adamantina (lendário).
+    upgradeItem(itemUid, matId = 'common') {
+      const s = this.state, it = s.inventory.find(x => x.uid === itemUid); if (!it) return { ok:false, reason:'Item não encontrado.' };
+      if ((it.plus || 0) >= 15) return { ok:false, reason:'O item já está no refino máximo (+15).' };
+      if ((it.plus || 0) >= I.maxPlus(s.buildings.forge)) return { ok:false, reason:`Limite +${I.maxPlus(s.buildings.forge)}. Melhore a Forja.` };
+      const c = I.upgradeCost(it, s.buildings.forge, matId);
+      if (!c.allowed) return { ok:false, reason:c.reason };
+      const have = c.key === 'ore' ? s.player.ore : (s.mats?.[c.key] || 0);
+      if (s.player.gold < c.gold || have < c.qty) return { ok:false, reason:`Precisa de ${U.fmt(c.gold)} ouro e ${c.qty} ${I.materials[matId].name}.` };
+      s.player.gold -= c.gold; if (c.key === 'ore') s.player.ore -= c.qty; else s.mats[c.key] -= c.qty;
+      s.stats.upgradeTries = (s.stats.upgradeTries || 0) + 1; this.count('upgrades');
+      if (U.random() > c.chance) {
+        if (c.onFail === 'break') {
+          const owner = this.ownerOf(it.uid); if (owner) Object.keys(owner.equipped).forEach(k => { if (owner.equipped[k] === it.uid) owner.equipped[k] = null; });
+          s.inventory.splice(s.inventory.indexOf(it), 1); s.stats.broken = (s.stats.broken || 0) + 1;
+          this.refreshPartyUnits(); this.emit('onState');
+          return { ok:false, failed:true, broken:true, reason:`O refino falhou e ${it.name} QUEBROU.` };
+        }
+        if (c.onFail === 'regress' && it.plus > 0) { it.plus--; this.refreshPartyUnits(); this.emit('onState'); return { ok:false, failed:true, reason:`O refino falhou e o item voltou para +${it.plus}.` }; }
+        this.emit('onState'); return { ok:false, failed:true, reason:'O refino falhou (o item continua igual).' };
+      }
+      it.plus = (it.plus || 0) + 1; s.stats.upgrades++; s.stats.maxUpgrade = Math.max(s.stats.maxUpgrade, it.plus);
+      if (it.plus >= 10) this.emit('onToast', `<b>${esc(it.name)} +${it.plus}!</b> Um refino desse nível é raríssimo.`);
+      this.refreshPartyUnits(); this.emit('onState'); return { ok:true, plus:it.plus };
     }
     enchantItem(itemUid, idx) {
       const it = this.state.inventory.find(x => x.uid === itemUid); if (!it || !it.affixes?.[idx]) return false;
@@ -1012,7 +1468,7 @@
     buildingCost(id) { const b = D.buildings[id], lv = this.state.buildings[id] || 1; return Math.round(b.baseCost * Math.pow(b.growth, lv - 1)); }
     buildingCap() { return 2 + Math.floor(this.state.player.level / 3); }
     upgradeBuilding(id) {
-      const lv = this.state.buildings[id] || 1; if (lv >= this.buildingCap()) { this.emit('onToast', `Limite de nível ${this.buildingCap()} — suba o nível da conta.`); return false; }
+      const lv = this.state.buildings[id] || 1; if (lv >= this.buildingCap()) { this.emit('onToast', `Limite de nível ${this.buildingCap()}, suba o nível da conta.`); return false; }
       const cost = this.buildingCost(id); if (this.state.player.gold < cost) return false;
       this.state.player.gold -= cost; this.state.buildings[id] = lv + 1;
       this.emit('onToast', `${D.buildings[id].name} alcançou o nível ${lv + 1}.`); this.emit('onState'); return true;
@@ -1021,43 +1477,63 @@
     // ---------- loja ----------
     shopPrice(offer) {
       if (!offer.scale) return offer.price;
-      const best = Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best + 12);
+      const best = Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best + 12, (this.state.progress.hunt_desert?.best || 0) + 24);
       const m = 1 + best * .15;
       return Object.fromEntries(Object.entries(offer.price).map(([k, v]) => [k, Math.round(v * m)]));
     }
+    // Limite diário por oferta (renova à meia-noite de Brasília).
+    shopBoughtToday(id) { const sd = this.state.shopDaily, key = dayKey(this.now()); if (sd.date !== key) { sd.date = key; sd.bought = {}; } return sd.bought[id] || 0; }
+    offerPrice(offer) {
+      if (offer.give.invCap) { const n = Math.max(0, Math.round((this.state.invCap - 150) / 25)); return { crystal:100 + n * 40 }; }
+      return this.shopPrice(offer);
+    }
     buy(offerId) {
       const offer = [...PR.shop.gold, ...PR.shop.crystal].find(o => o.id === offerId); if (!offer) return false;
-      const price = this.shopPrice(offer);
+      const price = this.offerPrice(offer);
       if (Object.entries(price).some(([k, v]) => (this.state.player[k] || 0) < v)) return false;
-      if (offer.give.invCap && this.state.invCap >= 200) return false;
+      if (offer.give.invCap && this.state.invCap >= I.MAX_BAG) return false;
+      if (offer.limit && this.shopBoughtToday(offer.id) >= offer.limit) return false;
       Object.entries(price).forEach(([k, v]) => { this.state.player[k] -= v; });
+      if (offer.limit) this.state.shopDaily.bought[offer.id] = this.shopBoughtToday(offer.id) + 1;
       Object.entries(offer.give).forEach(([k, v]) => {
-        if (['potion','elixir','scroll'].includes(k)) this.state.consumables[k] += v;
-        else if (k === 'invCap') this.state.invCap = Math.min(200, this.state.invCap + v);
-        else if (k === 'boost') this.state.boostUntil = Math.max(Date.now(), this.state.boostUntil) + v * 1000;
+        if (k in (this.state.consumables || {}) || ['potion','elixir','scroll','onigiri','ramen','tea','luck'].includes(k)) this.state.consumables[k] = (this.state.consumables[k] || 0) + v;
+        else if (['star','ori','adam'].includes(k)) this.state.mats[k] = (this.state.mats[k] || 0) + v;
+        else if (k === 'invCap') this.state.invCap = Math.min(I.MAX_BAG, this.state.invCap + v);
+        else if (k === 'boost') this.state.boostUntil = Math.max(this.now(), this.state.boostUntil) + v * 1000;
         else if (k === 'respec') this.state.freeRespec++;
         else this.state.player[k] = (this.state.player[k] || 0) + v;
       });
       this.emit('onState'); return true;
     }
+    // Usa um consumível de buff (comida, pergaminho). Duração acumula.
+    useItem(id) {
+      const b = PR.buffs?.[id], c = this.state.consumables; if (!b || (c[id] || 0) < 1) return false;
+      c[id]--; this.state.buffs[id] = Math.max(this.now(), this.state.buffs[id] || 0) + b.dur * 1000;
+      this.refreshPartyUnits(); this.emit('onToast', `<b>${esc(b.name)}</b> ativo: ${esc(b.text)}`); this.emit('onState'); return true;
+    }
+    // Ofertas do Mercado do Porto: sorteadas por uma semente da conta + janela de 2h, então o navegador
+    // e o servidor mostram exatamente as mesmas ofertas.
     refreshMarket(force = false) {
-      const m = this.state.market, now = Date.now(), slot = Math.floor(now / (2 * 3600 * 1000));
+      const m = this.state.market, now = this.now(), slot = Math.floor(now / (2 * 3600 * 1000));
       if (!force && m.slot === slot && m.offers.length) return m.offers;
+      return KT.Rng.with(KT.Rng.seeded(KT.Rng.hash(`${this.state.created}:${slot}:${this.state.buildings.market}`)), () => this.rollMarket(m, slot, now));
+    }
+    rollMarket(m, slot, now) {
       const lv = this.state.buildings.market;
-      const ilvl = Math.max(1, Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best ? this.state.progress.hunt_tide.best + 13 : 0));
+      const ilvl = Math.max(1, ...Object.values(D.zones).filter(z => z.kind === 'hunt').map(z => (this.state.progress[z.id]?.best || 0) ? itemLevelFor(z, { stage:this.state.progress[z.id].best }) : 0));
       const offers = [];
       for (let i = 0; i < 2 + lv; i++) {
-        const roll = Math.random(), rarity = roll < .04 * lv ? 'legendary' : roll < .35 ? 'epic' : 'rare';
-        const it = I.makeItem({ ilvl:ilvl + 1, rarity }); offers.push({ type:'item', item:it, price:Math.round(I.itemScore(it) * 4 + 300 * ilvl), sold:false });
+        const roll = U.random(), rarity = roll < .012 * lv ? 'legendary' : roll < .25 ? 'epic' : 'rare';
+        const it = I.makeItem({ ilvl:ilvl + 1, rarity, prefer:this.preferWT() }); offers.push({ type:'item', item:it, price:Math.round(I.itemScore(it) * 7 + 500 * ilvl), sold:false });
       }
       const owned = this.state.collection.map(h => h.id);
-      if (owned.length) offers.push({ type:'shards', heroId:U.pick(owned), n:5, price:Math.round(2000 * (1 + ilvl * .2)), sold:false });
+      if (owned.length) offers.push({ type:'shards', heroId:U.pick(owned), n:3, price:Math.round(6000 * (1 + ilvl * .25)), sold:false });
       m.offers = offers; m.slot = slot; m.refreshedAt = now; return offers;
     }
     buyMarket(i) {
       const o = this.state.market.offers[i]; if (!o || o.sold || this.state.player.gold < o.price) return false;
       this.state.player.gold -= o.price; o.sold = true;
-      if (o.type === 'item') { const it = { ...o.item, uid:U.uid('it') }; this.addItem(it); this.emit('onLoot', it); }
+      if (o.type === 'item') { const it = { ...o.item, uid:U.uid('it'), bound:true }; this.addItem(it); this.emit('onLoot', it); }
       if (o.type === 'shards') this.state.shards[o.heroId] = (this.state.shards[o.heroId] || 0) + o.n;
       this.emit('onState'); return true;
     }
@@ -1093,19 +1569,175 @@
       const s = this.state; if (!s.contracts) s.contracts = [];
       while (s.contracts.length < 3) {
         const used = s.contracts.map(c => c.id); const pool = D.contracts.filter(c => !used.includes(c.id));
-        const c = U.pick(pool.length ? pool : D.contracts), tier = U.randInt(0, 2);
-        s.contracts.push({ id:c.id, tier, n:c.n[tier], progress:0 });
+        const rank = s.guildRank?.lv || 1, tier = U.weighted([0, 1, 2], x => [5, 3 + rank * .3, 1 + rank * .4][x]);
+        const c = U.pick(pool.length ? pool : D.contracts);
+        s.contracts.push({ id:c.id, tier, n:Math.round(c.n[tier] * (1 + .3 * (rank - 1))), progress:0, rank });
       }
     }
-    count(type) { (this.state.contracts || []).forEach(c => { const def = D.contracts.find(d => d.id === c.id); if (def?.type === type) c.progress = Math.min(c.n, c.progress + 1); }); }
-    contractReward(c) {
-      const def = D.contracts.find(d => d.id === c.id), m = 1 + c.tier * .8, P = Math.max(1, zonePower(D.zones[this.state.lastHunt || 'hunt'], { stage:Math.max(1, this.state.progress[this.state.lastHunt || 'hunt'].best) }));
-      const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 600 * P * m : v * m); }); return out;
+    count(type) {
+      (this.state.contracts || []).forEach(c => { const def = D.contracts.find(d => d.id === c.id); if (def?.type === type) c.progress = Math.min(c.n, c.progress + 1); });
+      (this.state.daily?.list || []).forEach(d => { const def = D.dailies.find(x => x.id === d.id); if (def?.type === type && !d.claimed) d.progress = Math.min(d.n, d.progress + 1); });
     }
+    farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) })); }
+    contractReward(c) {
+      const def = D.contracts.find(d => d.id === c.id), rank = c.rank || this.state.guildRank?.lv || 1, m = (1 + c.tier * .8) * (1 + .12 * (rank - 1)), P = this.farmPower();
+      const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 450 * P * m : k === 'crystal' ? v * .5 * m : v * m); }); return out;
+    }
+    // Rank da Guilda: sobe sem limite; contratos ficam maiores e mais valiosos a cada rank.
+    guildNeed(lv = this.state.guildRank.lv) { return 3 + lv * 2; }
     claimContract(i) {
       const c = this.state.contracts[i]; if (!c || c.progress < c.n) return false;
-      this.grant(this.contractReward(c)); this.state.contracts.splice(i, 1); this.ensureContracts();
+      this.grant(this.contractReward(c)); this.state.contracts.splice(i, 1);
+      const g = this.state.guildRank; g.xp += 1 + c.tier;
+      while (g.xp >= this.guildNeed(g.lv)) { g.xp -= this.guildNeed(g.lv); g.lv++; this.emit('onToast', `<b>Rank da Guilda ${g.lv}!</b> Contratos maiores e recompensas melhores.`); }
+      this.ensureContracts();
       this.emit('onToast', 'Contrato concluído! Um novo contrato chegou.'); return true;
+    }
+
+    // ---------- missões diárias e login ----------
+    ensureDaily() {
+      const d = this.state.daily, key = dayKey(this.now()); if (d.date === key && d.list?.length) return;
+      let seed = [...key].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) % 2147483647, 7);
+      const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      const pool = D.dailies.slice().sort(() => rnd() - .5).slice(0, 4);
+      d.date = key; d.list = pool.map(x => ({ id:x.id, n:x.n, progress:0, claimed:false }));
+    }
+    dailyReward(dd) { const def = D.dailies.find(x => x.id === dd.id), P = this.farmPower(), out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = k === 'gold' ? Math.round(v * 500 * P) : v; }); return out; }
+    claimDaily(i) {
+      const dd = this.state.daily.list[i]; if (!dd || dd.claimed || dd.progress < dd.n) return false;
+      dd.claimed = true; this.grant(this.dailyReward(dd));
+      if (this.state.daily.list.every(x => x.claimed)) { this.grant({ crystal:5, ore:10 }); this.emit('onToast', '<b>Todas as diárias concluídas!</b> Bônus: 5 cristais e 10 Tamahagane.'); }
+      else this.emit('onToast', 'Missão diária concluída!');
+      return true;
+    }
+    loginStatus() {
+      const l = this.state.login, today = dayKey(this.now()), yesterday = dayKey(this.now() - 86400000);
+      const streak = l.claimed === today ? l.streak : l.last === yesterday ? l.streak + 1 : 1;
+      return { available:l.claimed !== today, streak, day:((streak - 1) % 7) + 1, reward:D.loginRewards[(streak - 1) % 7] };
+    }
+    claimLogin() {
+      const st = this.loginStatus(); if (!st.available) return null;
+      const l = this.state.login; l.streak = st.streak; l.last = dayKey(this.now()); l.claimed = l.last;
+      this.grant({ ...st.reward }); return st;
+    }
+
+    // ---------- crônicas (metas infinitas depois do Guia) ----------
+    riftBest() { return this.state.progress.rift?.best || 0; }
+    chronicleValue(c) {
+      const s = this.state;
+      if (c.type === 'power') return this.getPower();
+      if (c.type === 'rift') return this.riftBest();
+      if (c.type === 'kills') return s.stats.kills;
+      if (c.type === 'upgrade') return s.stats.upgradeTries || 0;
+      if (c.type === 'bossKills') return s.stats.bossKills;
+      if (c.type === 'research') return this.researchTotal();
+      return 0;
+    }
+    ensureChronicle() {
+      if (this.guideStep()) return null;
+      if (!this.state.chronicle) this.newChronicle(1);
+      return this.state.chronicle;
+    }
+    newChronicle(k) {
+      const def = D.chronicles[(k - 1) % D.chronicles.length], s = this.state;
+      const cur = this.chronicleValue(def);
+      const target = def.type === 'power' ? Math.ceil(cur * 1.18 / 500) * 500 : def.type === 'rift' ? Math.max(5, cur + 3) : def.type === 'kills' ? cur + 400 + k * 120
+        : def.type === 'upgrade' ? cur + 3 + Math.floor(k / 3) : def.type === 'bossKills' ? cur + 1 + Math.floor(k / 8) : cur + 2;
+      s.chronicle = { k, type:def.type, title:`${def.title} ${k}`, text:def.text.replace('{n}', U.fmt(def.type === 'kills' || def.type === 'upgrade' || def.type === 'bossKills' ? target - cur : target)), start:cur, target };
+    }
+    chronicleReward(c) { return { gold:Math.round(800 * this.farmPower() * (1 + c.k * .05)), ore:10 + c.k * 2, crystal:Math.min(25, 4 + Math.floor(c.k / 2)), ...(c.k % 10 === 0 ? { keys:1 } : {}) }; }
+    claimChronicle() {
+      const c = this.state.chronicle; if (!c || this.chronicleValue(c) < c.target) return false;
+      this.grant(this.chronicleReward(c)); this.emit('onToast', `Crônica concluída: ${c.title}!`); this.newChronicle(c.k + 1); return true;
+    }
+
+    // ---------- builds recomendadas ----------
+    autoAttr(uid) {
+      const r = this.record(uid); if (!r) return 0;
+      const w = KT.Builds.buildFor(r.id).attr, keys = Object.keys(w); let free = this.freeAttr(r), n = 0;
+      while (free > 0) { const k = keys.slice().sort((a, b) => (r.attr[a] || 0) / w[a] - (r.attr[b] || 0) / w[b])[0]; r.attr[k] = (r.attr[k] || 0) + 1; free--; n++; }
+      if (n) { this.refreshPartyUnits(); this.emit('onState'); }
+      return n;
+    }
+    autoTalents(uid) {
+      const r = this.record(uid); if (!r) return 0;
+      const path = KT.Builds.buildFor(r.id).talents; let n = 0, progress = true;
+      while (progress && this.heroTalentPoints(r) > 0) { progress = false; for (const id of path) { if (this.talentState(r, id).ok) { r.talents[id] = (r.talents[id] || 0) + 1; n++; progress = true; break; } } }
+      if (n) { this.refreshPartyUnits(); this.emit('onState'); }
+      return n;
+    }
+    // Valor exato do herói com um item no espaço dele: recalcula os atributos completos (o conjunto que se forma
+    // ou se desfaz, cartas, refino, talentos, sinergias e buffs) e mede pelo papel da classe. null = não pode usar.
+    itemValue(r, item) {
+      if (!r || !item || !I.equipCheck(item, r).ok) return null;
+      const s = this.state, slot = item.slot, prev = r.equipped[slot], temp = !s.inventory.some(x => x.uid === item.uid);
+      const ctx = teamContext(s, formationRecords(s).filter(x => x !== r).concat(r), this.now());
+      if (temp) s.inventory.push(item);
+      r.equipped[slot] = item.uid;
+      try { return KT.Builds.heroValue(this.template(r.id).cls, heroStats(s, r, ctx)); }
+      finally { r.equipped[slot] = prev; if (temp) s.inventory.splice(s.inventory.indexOf(item), 1); }
+    }
+    heroValueNow(r) { const s = this.state; return KT.Builds.heroValue(this.template(r.id).cls, heroStats(s, r, teamContext(s, formationRecords(s).filter(x => x !== r).concat(r), this.now()))); }
+    // Ganho relativo (0,12 = +12%) de trocar o item atual daquele espaço por este.
+    itemGain(r, item) { const v = this.itemValue(r, item); if (v === null) return null; return v / Math.max(1e-9, this.heroValueNow(r)) - 1; }
+    bestItemFor(r, slot, taken = new Set()) {
+      const cur = this.state.inventory.find(x => x.uid === r.equipped[slot]);
+      let best = null, bestScore = this.heroValueNow(r) * 1.0005;
+      this.state.inventory.forEach(it => {
+        if (it.slot !== slot || it === cur || taken.has(it.uid)) return;
+        const owner = this.ownerOf(it.uid); if (owner && owner !== r && this.state.formation.includes(owner.uid)) return;
+        const sc = this.itemValue(r, it); if (sc !== null && sc > bestScore) { best = it; bestScore = sc; }
+      });
+      return best;
+    }
+    autoEquip(uid) {
+      const r = this.record(uid); if (!r) return 0; let n = 0;
+      Object.keys(I.slots).forEach(slot => { const it = this.bestItemFor(r, slot); if (it && this.equip(r.uid, it.uid)) n++; });
+      if (n) this.refreshPartyUnits();
+      return n;
+    }
+    autoBuild(uid) { return { attr:this.autoAttr(uid), talents:this.autoTalents(uid), items:0 }; }
+    // Modo offline: sem comunidade, a Invasão rende a recompensa básica depois da janela.
+    claimWorldBoss() { const w = this.wbWindow(), wb = this.state.worldBoss; if (!wb.day || wb.claimed) return false; if (w.active && w.day === wb.day && w.index === wb.window) { this.lastError = 'A recompensa sai quando a janela terminar.'; return false; } return this.grantWorldBoss({ killed:false, pct:.5 }); }
+
+    // ---------- conselheiro: o que fazer quando a equipe travar ----------
+    advice() {
+      const s = this.state, tips = [], add = (prio, text, action = null, extra = {}) => tips.push({ prio, text, action, ...extra });
+      const ctx = this.ctx(), zone = this.zone.kind !== 'village' ? this.zone : D.zones[s.lastHunt || 'hunt'];
+      this.heroes.forEach(r => {
+        const name = esc(this.template(r.id).name), fa = this.freeAttr(r), tp = this.heroTalentPoints(r);
+        if (fa > 0) add(10, `<b>${name}</b> tem ${fa} ponto(s) de atributo livres.`, 'autoAttr', { uid:r.uid, label:'Distribuir (build recomendada)' });
+        if (tp > 0) add(9, `<b>${name}</b> tem ${tp} ponto(s) de talento livres.`, 'autoTalents', { uid:r.uid, label:'Aprender (build recomendada)' });
+        if (this.canJobChange(r)) add(8, `<b>${name}</b> pode mudar de classe (+10% atributos e Círculo III).`, 'open', { go:'hero', uid:r.uid, label:'Ver ficha' });
+        const aw = awakenCost(r.stars, s.buildings.shrine);
+        if (r.stars < HERO_MAX_STARS && (s.shards[r.id] || 0) >= aw.shards && s.player.gold >= aw.gold) add(8, `<b>${name}</b> pode Despertar para ${r.stars + 1}★.`, 'awaken', { uid:r.uid, label:'Despertar' });
+      });
+      if (!ctx.clsCount.Suporte) add(7, 'A equipe não tem <b>Suporte</b>: sem cura, lutas longas e chefes ficam muito difíceis.', 'open', { go:'party', label:'Mudar formação' });
+      if (!ctx.clsCount.Vanguarda) add(7, 'A equipe não tem <b>Vanguarda</b>: o dano cai direto nos heróis frágeis.', 'open', { go:'party', label:'Mudar formação' });
+      s.formation.forEach((uid, i) => { const r = uid && this.record(uid); if (!r) return; const t = this.template(r.id); if (i < 2 && ['Arcanista','Suporte','Atirador'].includes(t.cls)) add(6, `${esc(t.name)} (${t.cls}) está na linha de frente, troque com alguém mais resistente.`, 'open', { go:'party', label:'Mudar formação' }); });
+      const weak = zone?.weakTo || [];
+      if (weak.length) { const inTeam = this.heroes.filter(r => weak.includes(this.template(r.id).el)).length; const bench = s.collection.filter(r => !s.formation.includes(r.uid) && weak.includes(this.template(r.id).el)); if (inTeam < 2 && bench.length) add(5, `${esc(zone.title)} é fraco contra ${weak.join(', ')}. Você tem ${bench.map(r => esc(this.template(r.id).name)).slice(0, 3).join(', ')} no banco (+30% de dano).`, 'open', { go:'party', label:'Ver equipe' }); }
+      const cheapTrain = Object.keys(PR.training).filter(k => (s.training[k] || 0) < PR.trainingCap(s.buildings.dojo) && s.player.gold >= PR.trainingCost(s.training[k] || 0));
+      if (cheapTrain.length) add(6, `Dá para treinar a equipe no Dojo agora (${cheapTrain.map(k => PR.training[k].name).join(', ')}).`, 'open', { go:'city:dojo', label:'Ir ao Dojo' });
+      const up = this.heroes.flatMap(r => Object.values(r.equipped)).map(uid => s.inventory.find(x => x.uid === uid)).filter(it => it && (it.plus || 0) < I.maxPlus(s.buildings.forge) && (() => { const c = I.upgradeCost(it, s.buildings.forge); return s.player.gold >= c.gold && s.player.ore >= c.ore; })());
+      if (up.length) add(5, `${up.length} equipamento(s) da equipe podem ser aprimorados na Forja agora.`, 'open', { go:'city:forge', label:'Ir à Forja' });
+      // Onde treinar com segurança.
+      const hz = D.zones[s.lastHunt || 'hunt'], pow = this.getPower();
+      if (hz?.kind === 'hunt') { let safe = 1; for (let n = 1; n <= Math.min(hz.stages, (s.progress[hz.id]?.best || 0) + 1); n++) if (this.recommendedPower(hz.id, { stage:n }) <= pow * 1.05) safe = n; add(4, `Treine no <b>estágio ${safe}</b> de ${esc(hz.title)} (poder seguro) com o Avanço desligado para juntar EXP, ouro e itens.`, 'farm', { zone:hz.id, stage:safe, label:`Treinar no ${safe}` }); }
+      Object.values(D.zones).filter(z => (z.kind === 'hunt' || z.kind === 'dungeon') && z.side && !this.zoneLock(z.id).locked && (s.progress[z.id]?.best || 0) < (z.stages || z.floors)).slice(0, 2)
+        .forEach(z => add(3, `Explore <b>${esc(z.title)}</b>: monstros diferentes e um conjunto próprio (${esc(I.sets.find(st => st.source.includes(z.title.split(' ').pop()))?.name || 'itens novos')}).`, 'open', { go:`destination:${z.id}`, label:'Ver região' }));
+      if (!this.zoneLock('rift').locked) add(2, 'A <b>Fenda Abissal</b> dá Tamahagane e itens em qualquer andar, ótima para fortalecer sem travar.', 'open', { go:'destination:rift', label:'Ver Fenda' });
+      if (s.settings.auto) add(2, 'Com o <b>AUTO</b> desligado você decide a hora das ultimates, guarde escudos e curas para quando o chefe mostrar ⚠.');
+      return tips.sort((a, b) => b.prio - a.prio);
+    }
+    applyAdvice(tip) {
+      if (!tip) return false;
+      if (tip.action === 'autoAttr') return this.autoAttr(tip.uid) > 0;
+      if (tip.action === 'autoTalents') return this.autoTalents(tip.uid) > 0;
+      if (tip.action === 'autoEquip') return this.autoEquip(tip.uid) > 0;
+      if (tip.action === 'awaken') return this.awaken(tip.uid);
+      if (tip.action === 'farm') { this.state.settings.autoAdvance = false; return this.enterZone(tip.zone, { stage:tip.stage }); }
+      return false;
     }
     achievementValue(a) {
       const s = this.state;
@@ -1113,6 +1745,8 @@
       if (a.stat === 'maxLevel') return Math.max(0, ...s.collection.map(h => h.level));
       if (a.stat === 'maxStars') return Math.max(0, ...s.collection.map(h => h.stars));
       if (a.stat === 'bondsActive') return this.ctx().bonds.length;
+      if (a.stat === 'riftBest') return this.riftBest();
+      if (a.stat === 'research') return this.researchTotal();
       return s.stats[a.stat] || 0;
     }
     claimAchievement(id) {
@@ -1122,20 +1756,20 @@
     }
 
     // ---------- offline ----------
-    offlineGains() {
-      const s = this.state, elapsed = Math.max(0, Math.floor((Date.now() - (s.lastSeen || Date.now())) / 1000)), capped = Math.min(elapsed, 12 * 3600);
+    offlineGains(now = Date.now()) {
+      const s = this.state, elapsed = Math.max(0, Math.floor((now - (s.lastSeen || now)) / 1000)), capped = Math.min(elapsed, 12 * 3600);
       if (capped < 120 || this.heroes.length < 4) return null;
-      const zid = s.lastHunt || 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid].best || 1), P = zonePower(z, { stage });
+      const zid = D.zones[s.lastHunt]?.kind === 'hunt' ? s.lastHunt : 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid]?.best || 1), P = zonePower(z, { stage });
       const killsPerSec = .22;
       const kills = Math.floor(capped * killsPerSec);
-      const gold = Math.round(kills * 11 * Math.pow(P, .85) * .6 * (1 + this.mod('gold')));
+      const gold = Math.round(kills * 11 * Math.pow(P, .85) * .45 * (1 + this.mod('gold')));
       const xp = Math.round(kills * 14 * Math.pow(P, .92) * .5 * (1 + this.mod('xp')));
       s.player.gold += gold; s.stats.goldEarned += gold;
       this.giveXp(xp);
       const items = [];
-      const nItems = Math.min(12, Math.floor(capped / 1200));
-      for (let i = 0; i < nItems; i++) { const it = I.rollDrop(Math.random() < .15 ? 'elite' : 'normal', z, itemLevelFor(z, { stage }), 0); this.addItem(it); items.push(it); }
-      const ore = Math.floor(capped / 600), dust = Math.floor(capped / 500);
+      const nItems = Math.min(8, Math.floor(capped / 1800));
+      for (let i = 0; i < nItems; i++) { const it = I.rollDrop(U.random() < .15 ? 'elite' : 'normal', z, itemLevelFor(z, { stage }), 0, this.preferWT()); this.addItem(it); items.push(it); }
+      const ore = Math.floor(capped / 900), dust = Math.floor(capped / 800);
       s.player.ore += ore; s.player.dust += dust;
       return { seconds:capped, gold, xp, items, ore, dust };
     }
@@ -1144,6 +1778,6 @@
     resetSave() { U.safeStorage.remove(SAVE_KEY); }
   }
 
-  KT.State = { setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

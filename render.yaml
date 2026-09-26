@@ -15,6 +15,21 @@ services:
         value: "1"
       - key: SECURE_COOKIE
         value: "1"
+      # Token do painel /admin/ (gerado pelo Render; veja em Environment).
+      - key: ADMIN_TOKEN
+        generateValue: true
+      # Endereço público com https (ex.: https://mythverse.onrender.com ou seu domínio).
+      - key: PUBLIC_ORIGIN
+        sync: false
+      # Dinheiro real começa DESLIGADO. Para ligar: RMT_ENABLED=1 + PAYMENT_PROVIDER=mercadopago + MP_ACCESS_TOKEN + MP_WEBHOOK_SECRET.
+      - key: RMT_ENABLED
+        value: "0"
+      - key: PAYMENT_PROVIDER
+        sync: false
+      - key: MP_ACCESS_TOKEN
+        sync: false
+      - key: MP_WEBHOOK_SECRET
+        sync: false
     disk:
       name: mythverse-data
       mountPath: /data

@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const ROOT = path.resolve(__dirname, '..');
-const FILES = ['src/data.js', 'src/utils.js', 'src/items.js', 'src/progression.js', 'src/roster.js', 'src/engine.js'];
+const FILES = ['src/data.js', 'src/utils.js', 'src/items.js', 'src/progression.js', 'src/roster.js', 'src/builds.js', 'src/engine.js'];
 const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 
 function loadGame() {
@@ -55,8 +55,11 @@ function summarize(state, name) {
   return {
     name, power:Math.round(power),
     bossKills:Number(state.stats?.bossKills) || 0,
-    bestStage:(prog.hunt?.best || 0) + (prog.hunt_tide?.best || 0),
+    bestStage:Object.values(KT.Data.zones).filter(z => z.kind === 'hunt' && !z.side).reduce((a, z) => a + (prog[z.id]?.best || 0), 0),
+    riftBest:Number(prog.rift?.best) || 0,
     accountLevel:Number(state.player?.level) || 1,
+    gold:Math.max(0, Math.floor(Number(state.player?.gold) || 0)),
+    team:JSON.stringify((state.formation || []).map(uid => uid && (state.collection || []).find(h => h.uid === uid)).filter(Boolean).slice(0, 4).map(h => ({ id:String(h.id), stars:Number(h.stars) || 1 }))),
     playSeconds:Number(state.totalPlaySeconds) || 0
   };
 }
@@ -72,4 +75,26 @@ function suspicious(prev, next, elapsedMs) {
   return false;
 }
 
-module.exports = { KT, validateSave, summarize, suspicious, MAX_SAVE_BYTES };
+// ---------------------------------------------------------------------------
+// Utilidades do Mercado: chaves de item, limites de plausibilidade e procedência.
+// ---------------------------------------------------------------------------
+const itemKey = it => it.kind === 'unique' ? `u:${it.uniqueId}` : it.kind === 'set' ? `s:${it.setId}:${it.slot}` : `b:${it.baseId}:${it.rarity}`;
+// Maior nível de item que o progresso do save permite obter (com folga para baús/Alfas/Fenda).
+function maxItemLevel(state) {
+  let m = 1;
+  Object.values(KT.Data.zones).forEach(z => {
+    const p = state.progress?.[z.id] || {};
+    if ((z.kind === 'hunt' || z.kind === 'dungeon' || z.kind === 'rift') && p.best) m = Math.max(m, KT.State.itemLevelFor(z, { stage:p.best + 1, floor:p.best + 1 }));
+    if (z.kind === 'boss' && p.kills) m = Math.max(m, KT.State.itemLevelFor(z, { tier:2 }));
+  });
+  return m + 3;
+}
+// Chaves de procedência de tudo que é negociável num save: uid de cada item e cada cópia de carta.
+function provenanceKeys(state) {
+  const keys = (state.inventory || []).map(it => `i:${it.uid}`);
+  Object.entries(state.cards || {}).forEach(([id, n]) => { for (let i = 1; i <= Math.min(50, Number(n) || 0); i++) keys.push(`c:${id}:${i}`); });
+  return keys;
+}
+const equippedUids = state => new Set((state.collection || []).flatMap(h => Object.values(h.equipped || {})).filter(Boolean));
+
+module.exports = { KT, validateSave, summarize, suspicious, MAX_SAVE_BYTES, itemKey, maxItemLevel, provenanceKeys, equippedUids };

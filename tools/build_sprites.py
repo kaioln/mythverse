@@ -19,12 +19,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_SPRITES = os.path.join(ROOT, 'assets', 'sprites')
 OUT_PORTRAITS = os.path.join(ROOT, 'assets', 'portraits')
 
-ANIME = ['goku', 'vegeta', 'naruto', 'sasuke', 'luffy', 'zoro', 'ichigo', 'rukia', 'tanjiro', 'nezuko',
-         'gojo', 'yuji', 'levi', 'mikasa', 'eren', 'edward', 'roy', 'deku', 'bakugo', 'allmight',
-         'saitama', 'genos', 'gon', 'killua', 'kurapika', 'sailormoon', 'inuyasha', 'kenshin', 'natsu', 'erza']
-GAMES = ['ryu', 'chunli', 'cloud', 'sephiroth', 'tifa', 'lara', 'kratos', 'atreus', 'masterchief', 'doomslayer',
-         'jinx', 'ahri', 'yasuo', 'tracer', 'dva', 'mercy', 'ezio', 'leon', 'jill', 'arthur',
-         'geralt', 'ciri', 'twob', 'atwo', 'dante', 'vergil', 'bayonetta', 'aloy', 'scorpion', 'subzero']
+ANIME = ['solen', 'varyon', 'hayato', 'ren', 'tobias', 'kenji', 'hiro', 'yuki', 'akira', 'hana',
+         'sora', 'daichi', 'lucan', 'mira', 'erik', 'alden', 'ignis', 'toma', 'ryo', 'grant',
+         'kenta', 'volt', 'kai', 'riku', 'elian', 'aiko', 'kiba', 'jin', 'drake', 'sienna']
+GAMES = ['daigo', 'mei', 'kael', 'sael', 'rina', 'nadia', 'thorn', 'bjorn', 'rook', 'warden',
+         'zara', 'kira', 'haru', 'ivy', 'nari', 'aurelia', 'dario', 'cole', 'dana', 'wade',
+         'garrick', 'zira', 'n9', 'unit7', 'rex', 'virel', 'selene', 'tessa', 'kaji', 'kori']
 
 
 def cells():
@@ -208,3 +208,98 @@ def build_variants():
 
 if __name__ == '__main__':
     build_variants()
+
+
+# ---------------------------------------------------------------------------
+# Mundo expandido: monstros e cenários das novas regiões.
+# ---------------------------------------------------------------------------
+WORLD_ENEMIES = [
+    # Pântano das Almas
+    ('spider_bog', 'spider', -120, .7, .75), ('wisp_bog', 'wisp', -70, 1.0, .9), ('oni_moss', 'oni', 100, .8, .9), ('revenant_bog', 'revenant', -80, .6, .8), ('golem_bog', 'golem', 20, .6, .7), ('fox_bog', 'fox', 170, 1.0, .95),
+    # Catacumbas de Jade
+    ('revenant_jade', 'revenant', -60, 1.1, 1.15), ('spider_bone', 'spider', 0, .1, 1.25), ('wisp_jade', 'wisp', -40, 1.1, 1.0), ('oni_jade', 'oni', 120, 1.0, 1.0), ('fox_jade', 'fox', 160, 1.1, 1.1), ('golem_emerald', 'golem', 40, 1.4, 1.05), ('revenant_king', 'revenant', 30, 1.3, 1.1),
+    # Picos de Geada
+    ('fox_snow', 'fox', 0, .15, 1.35), ('golem_ice', 'golem', 110, .45, 1.3), ('wisp_ice', 'wisp', 0, .3, 1.3), ('oni_frost', 'oni', 190, .4, 1.2), ('spider_ice', 'spider', -80, 1.2, 1.2), ('revenant_frost', 'revenant', 10, .3, 1.3),
+    # Forja Vulcânica
+    ('oni_lava', 'oni', 20, 1.4, 1.05), ('spider_lava', 'spider', 100, 1.3, 1.05), ('wisp_lava', 'wisp', -150, 1.4, .95), ('golem_iron', 'golem', 200, .15, .8), ('fox_fire', 'fox', 105, 1.3, 1.05), ('revenant_ash', 'revenant', 0, .1, .6), ('golem_forge', 'golem', -100, 1.3, 1.0),
+    # Deserto de Âmbar
+    ('spider_sand', 'spider', 70, 1.1, 1.1), ('fox_sand', 'fox', 90, .7, 1.05), ('golem_sand', 'golem', -70, .7, 1.15), ('wisp_sand', 'wisp', -140, .8, 1.2), ('oni_sand', 'oni', 40, .9, 1.05), ('revenant_mummy', 'revenant', -150, .9, 1.1),
+    # Cidade Fantasma
+    ('revenant_ghost', 'revenant', 60, .5, 1.2), ('wisp_ghost', 'wisp', 30, .4, 1.2), ('fox_ghost', 'fox', 0, .1, .6), ('oni_ghost', 'oni', 250, .4, .7), ('spider_ghost', 'spider', 40, .5, 1.2), ('golem_ghost', 'golem', 160, .6, .7),
+    # Torre do Relógio
+    ('golem_clock', 'golem', -40, 1.2, 1.1), ('spider_clock', 'spider', 60, .8, 1.0), ('wisp_time', 'wisp', 60, 1.1, 1.0), ('revenant_time', 'revenant', -30, 1.0, 1.05), ('fox_time', 'fox', -30, 1.1, 1.05), ('oni_time', 'oni', 280, 1.0, 1.0), ('revenant_chrono', 'revenant', 120, 1.3, 1.05),
+    # Chefe do Capítulo III
+    ('dragon_amber', 'dragon', 180, 1.1, 1.05),
+]
+WORLD_SCENES = [
+    ('hunt_swamp', 'hunt', 60, .8, .78), ('dungeon_crypt', 'dungeon', -140, 1.0, .95), ('hunt_frost', 'hunt_tide', -20, .35, 1.15),
+    ('dungeon_forge', 'dungeon_tide', 170, 1.2, 1.0), ('hunt_desert', 'hunt_tide', 190, .9, 1.05), ('hunt_ghost', 'village', 195, .55, .6),
+    ('dungeon_clock', 'dungeon_tide', -150, 1.0, 1.05), ('boss_sand', 'boss', 120, 1.0, 1.0),
+]
+MORE_ICON_HUES = [20, 70, 130, 190, 250, 330]
+
+
+def build_world():
+    sp = os.path.join(ROOT, 'assets', 'sprites')
+    for vid, base, h, s, v in WORLD_ENEMIES:
+        shift(Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA'), h, s, v).save(os.path.join(sp, f'{vid}.png'), optimize=True)
+    sc = os.path.join(ROOT, 'assets', 'scenes')
+    for sid, base, h, s, v in WORLD_SCENES:
+        img = shift(Image.open(os.path.join(sc, f'{base}.png')).convert('RGBA'), h, s, v).convert('RGB')
+        img.save(os.path.join(sc, f'{sid}.png'), optimize=True)
+    icons = os.path.join(ROOT, 'assets', 'icons')
+    for f in sorted(os.listdir(icons)):
+        if re.search(r'_h\d+\.png$', f) or not f.endswith('.png'):
+            continue
+        img = Image.open(os.path.join(icons, f)).convert('RGBA')
+        for h in MORE_ICON_HUES:
+            shift(img, h, 1.1, 1.0).save(os.path.join(icons, f.replace('.png', f'_h{h}.png')), optimize=True)
+
+
+if __name__ == '__main__':
+    build_world()
+
+
+# ---------------------------------------------------------------------------
+# Criaturas exclusivas: Fenda Abissal, invocações de chefes, tesouros e chefes mundiais.
+# Cada uma ganha matiz própria, espelhamento opcional e uma aura, para nunca repetir a
+# aparência de um monstro de outra região.
+# ---------------------------------------------------------------------------
+UNIQUE_EXTRA = [
+    # (id, base, matiz, saturação, brilho, espelhar, cor da aura)
+    ('rift_hound', 'fox', 250, 1.3, .8, True, (255, 60, 160)), ('rift_weaver', 'spider', 230, 1.2, .75, True, (200, 80, 255)),
+    ('rift_eye', 'wisp', 200, 1.4, .9, False, (255, 90, 200)), ('rift_devourer', 'oni', 230, 1.1, .7, True, (180, 60, 255)),
+    ('rift_colossus', 'golem', 260, .9, .6, True, (255, 60, 140)), ('rift_herald', 'revenant', 220, 1.2, .8, True, (230, 90, 255)),
+    ('rift_wyrm', 'dragon', 240, 1.3, .75, True, (255, 60, 170)),
+    ('eclipse_shade', 'fox', 215, .5, .55, True, (170, 120, 255)), ('mizuchi_spawn', 'revenant', 150, 1.2, .95, False, (80, 200, 255)),
+    ('sand_servant', 'oni', 35, 1.0, 1.15, True, (255, 190, 90)), ('archive_sentinel', 'revenant', 170, .35, 1.25, False, (150, 220, 255)),
+    ('fox_gold', 'fox', 25, 1.5, 1.25, False, (255, 215, 90)), ('mimic', 'golem', 300, .3, 1.3, True, (255, 170, 60)),
+    ('wb_frost_dragon', 'dragon', 170, .45, 1.3, False, (150, 230, 255)), ('wb_blood_moon', 'eclipse', 150, 1.3, .9, True, (255, 60, 80)),
+    ('wb_storm_kitsune', 'lantern_kitsune', 170, 1.1, 1.05, True, (120, 200, 255)), ('wb_titan', 'golem', 150, .25, .45, False, (255, 200, 90)),
+]
+
+
+def aura(img, color, radius=9):
+    alpha = img.getchannel('A')
+    glow = Image.new('RGBA', img.size, color + (0,))
+    ga = alpha.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.GaussianBlur(radius))
+    glow.putalpha(ga.point(lambda a: int(a * .55)))
+    out = Image.alpha_composite(glow, img)
+    return out
+
+
+def build_unique():
+    sp = os.path.join(ROOT, 'assets', 'sprites')
+    for vid, base, h, s, v, flip, col in UNIQUE_EXTRA:
+        img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
+        pad = 16
+        canvas = Image.new('RGBA', (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
+        canvas.paste(img, (pad, pad))
+        img = shift(canvas, h, s, v)
+        if flip:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        aura(img, col).save(os.path.join(sp, f'{vid}.png'), optimize=True)
+
+
+if __name__ == '__main__':
+    build_unique()

@@ -1,5 +1,5 @@
 # Uso: docker compose up -d --build   →   http://localhost:8080
-# Em produção coloque um proxy HTTPS na frente (Caddy/Nginx/Cloudflare) — veja DEPLOY.md.
+# Em produção coloque um proxy HTTPS na frente (Caddy/Nginx/Cloudflare); veja DEPLOY.md.
 services:
   mythverse:
     build: .

@@ -1,4 +1,4 @@
-# Pacotes recebidos — triagem de 2026-09-23
+# Pacotes recebidos, triagem de 2026-09-23
 
 Os ZIPs originais permanecem intactos. Esta triagem separa material realmente integrado, candidatos a adaptação manual e pacotes que não servem ao teste 3/4 atual. A possibilidade de ajustar paleta, contraste e efeitos não transforma um asset em arte final aprovada.
 

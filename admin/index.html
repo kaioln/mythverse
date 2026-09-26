@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel Econômico: Mythverse</title>
+  <style>
+    :root{--bg:#120e22;--card:#1c1733;--line:rgba(255,255,255,.1);--text:#f3f1ff;--muted:#a79fc6;--gold:#ffcf6b;--pink:#ff7eb6;--red:#ff6b7a;--green:#5fe39a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 system-ui,Segoe UI,sans-serif}
+    main{max-width:1200px;margin:0 auto;padding:20px 16px 60px}h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;margin:22px 0 10px;color:var(--gold)}
+    .muted{color:var(--muted)}.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+    input,button,select{font:inherit;color:inherit;background:#0c0918;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+    button{cursor:pointer;background:#2a2150}button.primary{background:var(--gold);color:#241304;border-color:transparent;font-weight:700}button.danger{background:#4a1a26}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+    .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.kpi b{display:block;font-size:20px;margin-top:2px}.kpi small{color:var(--muted)}
+    table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(255,107,122,.16);color:#ffb0b8}
+    .scroll{overflow-x:auto}.err{color:var(--red)}.ok{color:var(--green)}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Painel Econômico</h1>
+  <p class="muted">Acesso restrito. O token de administração fica só nesta aba do navegador e é enviado apenas a este servidor.</p>
+  <form class="bar" id="login"><input id="token" type="password" placeholder="ADMIN_TOKEN" autocomplete="off" size="40"><button class="primary" type="submit">Entrar</button><button type="button" id="logout">Sair</button><span id="status" class="muted"></span></form>
+  <section id="app" hidden>
+    <div class="bar"><button type="button" id="refresh">↻ Atualizar</button><span class="muted" id="when"></span></div>
+    <h2>Ouro (economia do jogo)</h2><div class="grid" id="gold"></div>
+    <h2>Gemas (dinheiro real)</h2><div class="grid" id="gems"></div>
+    <h2>Mercado</h2><div class="grid" id="market"></div>
+    <h2>Mais negociados (7 dias)</h2><div class="scroll"><table id="top"></table></div>
+    <h2>Maiores estoques de ouro</h2><div class="scroll"><table id="rich"></table></div>
+    <h2>Alertas econômicos</h2><p class="muted">Compras na mesma rede (bloqueadas), preços muito acima da mediana e pares que negociam demais entre si. Revise antes de aprovar saques dessas contas.</p><div class="scroll"><table id="flags"></table></div>
+    <h2>Saques pendentes</h2><div class="scroll"><table id="withdrawals"></table></div>
+  </section>
+</main>
+<script src="admin.js"></script>
+</body>
+</html>

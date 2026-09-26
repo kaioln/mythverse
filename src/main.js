@@ -60,24 +60,18 @@
   KT.askBox = askBox;
 
   // Decide de onde vem o save: nuvem (conta) ou navegador (modo offline).
+  // Online, o estado vem sempre do servidor (fonte única da verdade): não existe mais conflito
+  // entre "local" e "nuvem". Offline (arquivo aberto direto), o progresso fica neste navegador.
   async function resolveState() {
     const online = await KT.Net.detect();
     if (!online) { KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' }; }
     let user = await KT.Net.me();
     if (!user) user = await KT.Auth.show('login');
-    const key = `${KT.State.SAVE_KEY}:${user.id}`;
-    KT.State.setSaveKey(key); KT.Cloud.storageKey = key;
-    const localRaw = KT.Utils.safeStorage.get(key);
-    const local = localRaw ? KT.State.loadState(localRaw) : null;
-    const remote = await KT.Net.getSave();
-    if (!remote.ok) return { state:local || KT.State.createState(), mode:'cloud-error', revision:0, user, error:remote.error };
-    let state = remote.save ? KT.State.loadState(remote.save) : null, pushLocal = false;
-    if (!state && local && local.collection.length) { state = local; pushLocal = true; }
-    else if (state && local && (local.totalPlaySeconds || 0) > (state.totalPlaySeconds || 0) + 60) {
-      const pick = await askBox('Progresso local mais recente', `Este navegador tem progresso que ainda não foi para a nuvem (${Math.round(local.totalPlaySeconds / 60)} min de jogo, contra ${Math.round(state.totalPlaySeconds / 60)} min na nuvem). Qual deseja usar?`, [{ id:'local', label:'Usar o deste navegador', primary:true }, { id:'remote', label:'Usar o da nuvem' }]);
-      if (pick === 'local') { state = local; pushLocal = true; }
-    }
-    return { state:state || KT.State.createState(), mode:'cloud', revision:remote.revision || 0, user, pushLocal };
+    KT.State.setSaveKey(`${KT.State.SAVE_KEY}:srv:${user.id}`);
+    let remote = await KT.Net.getState();
+    for (let i = 0; !remote.ok && remote.status !== 401 && i < 3; i++) { await new Promise(r => setTimeout(r, 1500)); remote = await KT.Net.getState(); }
+    if (!remote.ok) throw new Error(`Não foi possível carregar seu progresso do servidor: ${remote.error}`);
+    return { state:KT.State.mergeState(remote.state), mode:'cloud', revision:remote.revision || 0, user, offline:remote.offline };
   }
 
   async function boot() {
@@ -89,7 +83,7 @@
       const state = session.state;
       const assets = new KT.AssetBank();
       const engine = new KT.CombatEngine(state, {});
-      const offline = engine.offlineGains();
+      const offline = session.mode === 'cloud' ? session.offline : engine.offlineGains();
       const renderer = new KT.GameRenderer(document.querySelector('#game-canvas'), assets, engine);
       const sound = new SoundEngine();
       const ui = new KT.UIController(state, engine, assets, renderer, {
@@ -103,12 +97,12 @@
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); sound.fx(fx); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
         onResult:r => ui.onResult(r), onResultClose:() => ui.onResultClose(),
-        onChoice:c => ui.onChoice(c), onDialog:l => ui.onDialog(l),
+        onChoice:c => ui.onChoice(c), onChoiceResolved:c => ui.onChoiceResolved(c), onStuck:p => ui.onStuck(p), onDialog:l => ui.onDialog(l),
         onStageClear:r => ui.onStageClear(r), onDefeatHunt:r => ui.onDefeatHunt(r),
         onAccountLevel:l => ui.onAccountLevel(l),
         onState:() => { ui.renderResources(); ui.renderSide(); }
       };
-      if (session.mode === 'cloud') { KT.Cloud.start(session.revision, ui); engine.save(); if (session.pushLocal) KT.Cloud.push(true, true); }
+      if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 
       assets.onProgress = (done, total) => { fill.style.width = `${Math.round(done / total * 100)}%`; label.textContent = `Abrindo a Fenda… ${done}/${total}`; };
       let booted = false;
@@ -117,14 +111,9 @@
         bootEl.classList.add('done'); setTimeout(() => bootEl.remove(), 700);
         ui.renderAll();
         if (session.mode === 'offline') ui.toast(location.protocol === 'file:' ? '<b>Modo offline</b>: progresso salvo só neste navegador. Rode o servidor para contas e saves na nuvem.' : 'Servidor indisponível: jogando no <b>modo offline</b>.');
-        if (session.mode === 'cloud-error') ui.toast(`Não foi possível carregar a nuvem (${session.error}). Jogando com a cópia local.`);
-        if (session.mode === 'cloud' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso é salvo na nuvem.`, 'gold');
-        if (!state.story.seen.intro) { state.story.seen.intro = true; ui.onDialog(KT.Data.story.intro); }
-        if (offline) {
-          const h = (offline.seconds / 3600).toFixed(1).replace('.0', '').replace('.', ',');
-          ui.toast(`<b>Bem-vindo de volta!</b> Em ${h}h sua equipe caçou: +${KT.Utils.fmt(offline.gold)} ouro, +${KT.Utils.fmt(offline.xp)} EXP, ${offline.items.length} itens, +${offline.ore} Tamahagane e +${offline.dust} Éter.`, 'gold');
-          offline.items.forEach(it => ui.lootHistory.unshift(it)); ui.newItems += offline.items.length;
-        }
+        if (session.mode === 'cloud' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica protegido no servidor.`, 'gold');
+        if (!state.story.seen.intro) { ui.cmd('markSeen', 'intro'); ui.onDialog(KT.Data.story.intro); }
+        if (offline) ui.showOffline(offline);
       };
       assets.loadAll().then(ready);
       setTimeout(ready, 9000);
@@ -141,14 +130,14 @@
         renderer.update(dt); renderer.render();
         uiClock += dt; slowClock += dt; saveClock += dt;
         if (uiClock > .08) { uiClock = 0; ui.renderParty(); ui.renderBoss(); }
-        if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); }
+        if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); ui.renderChoiceTimer(); }
         if (saveClock > 5) { saveClock = 0; engine.save(); }
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
-      // Com a aba em segundo plano o requestAnimationFrame pausa: mantém a caçada rodando.
+      // Com a aba em segundo plano (ou a janela coberta) o requestAnimationFrame pausa: mantém a caçada rodando.
       let bgSave = 0;
-      setInterval(() => { if (!document.hidden) return; engine.update(.5); if (++bgSave >= 20) { bgSave = 0; engine.save(); } }, 500);
+      setInterval(() => { if (!document.hidden && performance.now() - last < 1000) return; engine.update(.5); if (++bgSave >= 20) { bgSave = 0; engine.save(); } }, 500);
       addEventListener('beforeunload', () => engine.save());
       document.addEventListener('visibilitychange', () => { if (document.hidden) engine.save(); last = performance.now(); });
       if (state.settings.sound) document.addEventListener('pointerdown', () => sound.enable(true).then(() => document.querySelector('#sound-btn').classList.add('on')), { once:true });
