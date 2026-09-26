@@ -1,0 +1,22 @@
+# Blueprint do Render (render.com), versão paga: New → Blueprint → aponte para o repositório
+# e troque o caminho do Blueprint para render.starter.yaml.
+# O disco persistente guarda o banco SQLite e os backups.
+services:
+  - type: web
+    name: mythverse
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /data
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SECURE_COOKIE
+        value: "1"
+    disk:
+      name: mythverse-data
+      mountPath: /data
+      sizeGB: 1

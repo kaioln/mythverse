@@ -4,9 +4,23 @@
 
 RPG de equipe com combate automático e decisões estratégicas. Sessenta heróis de animes e jogos atravessam a **Fenda** para salvar Tsukimori do eclipse. Convoque, forme laços, monte builds e derrube chefes que exigem preparo de verdade.
 
+## 🆓 Testar online de graça (Neon + Render)
+
+O jogo roda no plano **Free** do [Render](https://render.com), e as contas e os saves ficam num banco PostgreSQL grátis no [Neon](https://neon.com). O Neon não pede cartão. O Render às vezes pede um para verificar a conta, mas não cobra nada no plano Free. Leva uns 10 minutos.
+
+1. **Banco (Neon):** crie a conta, clique em **Create project** e escolha a região **AWS US East 1 (N. Virginia)**. No projeto, clique em **Connect** e copie a *connection string* (começa com `postgresql://` e termina com `sslmode=require…`).
+2. **Servidor (Render):** entre com o GitHub e clique em **New +** → **Blueprint**. Escolha o repositório **mythverse** e a branch que tem este arquivo (`claude/charming-goldberg-975nzq`). O `render.yaml` já vem configurado para o plano Free.
+3. Quando o Render pedir **`DATABASE_URL`**, cole a connection string do Neon e clique em **Apply**.
+4. Espere aparecer **Live** (3 a 5 minutos) e abra o link `https://mythverse-xxxx.onrender.com`. As tabelas são criadas sozinhas no primeiro início.
+5. Para conferir, abra `https://mythverse-xxxx.onrender.com/api/health`. Tem que aparecer `"db":"postgres"`.
+
+> ⏳ **Limites do grátis:** o Render desliga o servidor depois de 15 minutos sem acessos, e o próximo acesso demora cerca de 1 minuto para acordar. O Neon também dorme quando ninguém joga e acorda sozinho. Serve para testar, não para lançar: o Neon grátis guarda 0,5 GB e só permite restaurar as últimas 6 horas. Confira os limites atuais em [render.com/pricing](https://render.com/pricing) e [neon.com/pricing](https://neon.com/pricing).
+
+Para rodar com Neon no próprio computador, crie um arquivo `.env` com `DATABASE_URL=...` e rode `npm install` e `npm start`. Sem `DATABASE_URL`, o servidor usa o SQLite local de sempre.
+
 ---
 
-## 🌐 Como colocar o jogo online (passo a passo no Render)
+## 🌐 Como colocar o jogo online de vez (Render pago, com disco)
 
 Siga na ordem. Não precisa saber programar. Leva uns **20 minutos** na primeira vez.
 
@@ -18,7 +32,7 @@ Siga na ordem. Não precisa saber programar. Leva uns **20 minutos** na primeira
 | **GitHub Desktop** | Programa que envia os arquivos para o GitHub | Grátis |
 | **Render** | O servidor onde o jogo fica ligado 24h | Plano **Starter** (cerca de US$ 7/mês) + disco (cerca de US$ 0,25 por GB/mês) |
 
-> ⚠️ **Por que não usar o plano grátis do Render?** O plano grátis **não tem disco permanente**: toda vez que o servidor reinicia, **todas as contas e saves são apagados**. Para um jogo com contas de verdade, use o plano Starter com disco. Os preços podem mudar; confira em [render.com/pricing](https://render.com/pricing).
+> ⚠️ **Por que pagar?** O plano grátis do Render **não tem disco permanente** e dorme sem acessos. Para testar, use o modo grátis com Neon descrito acima. Para um jogo com contas de verdade, use o plano Starter com disco. Os preços podem mudar; confira em [render.com/pricing](https://render.com/pricing).
 
 ### Passo 1 — Criar a conta no GitHub
 
@@ -49,7 +63,7 @@ Siga na ordem. Não precisa saber programar. Leva uns **20 minutos** na primeira
 
 1. No painel do Render, clique em **New +** → **Blueprint**.
 2. Escolha o repositório **mythverse** (se ele não aparecer, clique em **Configure account** e libere o acesso a ele).
-3. O Render lê sozinho o arquivo `render.yaml` que já vem no projeto e mostra:
+3. No campo do caminho do Blueprint, troque `render.yaml` (a versão grátis) por **`render.starter.yaml`**. O Render lê esse arquivo e mostra:
    - um **Web Service** chamado `mythverse`;
    - um **Disk** chamado `mythverse-data` (é onde ficam as contas e os saves).
 4. Clique em **Apply** (ou **Deploy Blueprint**).
@@ -105,7 +119,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Save na nuvem** automático a cada 30s e ao fechar a aba. Cada save tem revisão, com resolução de conflito entre dispositivos e **20 cópias de segurança** restauráveis.
 - **Ranking** por poder, chefes derrotados e progresso. O poder é recalculado pelo servidor.
 - **Conta**: trocar senha, gerar novo código de recuperação, encerrar outras sessões, exportar dados e excluir a conta (LGPD).
-- **Servidor** sem dependências (Node + SQLite embutido): WAL, migrações, verificação de integridade, backups automáticos, scrypt, sessões HttpOnly, CSRF, limites de tentativa e CSP.
+- **Servidor** em Node puro com SQLite embutido (WAL, verificação de integridade, backups automáticos) ou PostgreSQL/Neon via `DATABASE_URL`, além de migrações, scrypt, sessões HttpOnly, CSRF, limites de tentativa e CSP.
 
 ## O que existe no jogo
 
@@ -177,7 +191,7 @@ Sem frameworks nem dependências de runtime. Os scripts são clássicos, carrega
 - `src/roster.js`: os 60 kits (linguagem de efeitos) e o gerador de descrições.
 - `src/engine.js`: estado, cálculo de atributos, combate com efeitos e status, estágios, chefes, talentos, cartas, economia e offline.
 - `src/net.js` e `src/auth.js`: cliente da API, sincronização na nuvem e tela de entrada.
-- `server/`: servidor HTTP (`index.js`), banco (`db.js`), segurança (`security.js`) e validação de saves com o mesmo código do jogo (`game.js`).
+- `server/`: servidor HTTP (`index.js`), banco SQLite ou PostgreSQL (`db.js`), segurança (`security.js`) e validação de saves com o mesmo código do jogo (`game.js`).
 - `src/renderer.js`: palco em Canvas (câmera, auras em silhueta, VFX, telegraph, cut-ins).
 - `src/ui.js` e `src/panels.js`: HUD, diálogos, resultados e todas as telas.
 - `src/main.js`: boot, loop, sons sintetizados e save automático.
@@ -185,7 +199,8 @@ Sem frameworks nem dependências de runtime. Os scripts são clássicos, carrega
 ## Ferramentas
 
 ```bash
-npm test                    # 538 verificações do jogo + 43 do servidor (contas, CSRF, conflitos, LGPD, backup)
+npm test                    # 538 verificações do jogo + 46 do servidor (contas, CSRF, conflitos, LGPD, backup)
+TEST_DATABASE_URL=postgresql://… node tests/server.test.js   # os mesmos testes do servidor no PostgreSQL
 node tools/sim.js 6 7       # simula 6h de um jogador automático e mostra os marcos de progressão
 python tools/build_sprites.py  # regenera sprites, retratos, ícones e variantes a partir dos atlas
 ```

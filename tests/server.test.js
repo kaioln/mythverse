@@ -1,11 +1,14 @@
 // Testes do servidor: contas, sessões, CSRF, limites, saves com revisão, histórico, ranking e exclusão.
-// Uso: node tests/server.test.js
+// Uso: node tests/server.test.js   (SQLite temporário)
+//      TEST_DATABASE_URL=postgresql://… node tests/server.test.js   (PostgreSQL, num schema temporário apagado no fim)
 'use strict';
 const os = require('node:os'), fs = require('node:fs'), path = require('node:path'), assert = require('node:assert');
 const { createServer } = require('../server/index.js');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mythverse-test-'));
-const server = createServer({ dataDir:dir, quiet:true, noBackups:true, secureCookie:false });
+const pgUrl = process.env.TEST_DATABASE_URL || '';
+const schema = `mythverse_test_${process.pid}_${Date.now()}`;
+const server = createServer({ dataDir:dir, databaseUrl:pgUrl, dbSchema:pgUrl ? schema : undefined, quiet:true, noBackups:true, secureCookie:false });
 let base, checks = 0;
 const ok = (c, m) => { checks++; assert.ok(c, m); };
 
@@ -29,7 +32,14 @@ function saveFor(name, extra = {}) {
   Object.assign(st, extra); return JSON.parse(JSON.stringify(st));
 }
 
+async function cleanup() {
+  if (pgUrl && server.store.pool && !server.store.closed) await server.store.pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`).catch(() => {});
+  await server.shutdown();
+  fs.rmSync(dir, { recursive:true, force:true });
+}
+
 (async () => {
+  await server.ready;
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
   const a = new Client(), b = new Client(), anon = new Client();
@@ -39,7 +49,7 @@ function saveFor(name, extra = {}) {
   r = await fetch(base + '/server/db.js'); ok(r.status === 404, 'código do servidor não é público');
   r = await fetch(base + '/../package.json'); ok(r.status === 404 || r.status === 400, 'path traversal bloqueado');
   r = await fetch(base + '/data/mythverse.db'); ok(r.status === 404, 'banco não é público');
-  ok((await anon.req('GET', '/api/health')).data.ok, 'health');
+  r = await anon.req('GET', '/api/health'); ok(r.data.ok && r.data.db === (pgUrl ? 'postgres' : 'sqlite') && r.data.users === 0, 'health');
 
   // Cadastro
   ok((await a.req('POST', '/api/auth/register', { username:'ab', password:'senha1234', confirm:'senha1234', acceptTerms:true })).status === 400, 'nome curto rejeitado');
@@ -49,6 +59,8 @@ function saveFor(name, extra = {}) {
   r = await a.req('POST', '/api/auth/register', { username:'Heroi01', email:'heroi@example.com', password:'Kizuna2026x', confirm:'Kizuna2026x', acceptTerms:true });
   ok(r.status === 201 && r.data.recoveryCode && a.cookie.startsWith('mv_session='), 'cadastro cria sessão e código de recuperação');
   const recovery = r.data.recoveryCode;
+  const sess = await server.store.q.sessionByHash.get(require('../server/security').sha256(a.cookie.split('=')[1]), 0);
+  ok(sess && sess.last_seen === sess.created_at && sess.ip === '127.0.0.1', 'sessão grava last_seen e IP nas colunas certas');
   ok((await b.req('POST', '/api/auth/register', { username:'heroi01', password:'Outra2026x', confirm:'Outra2026x', acceptTerms:true })).status === 409, 'usuário duplicado (sem diferenciar maiúsculas)');
   ok((await a.req('GET', '/api/auth/me')).data.user.username === 'Heroi01', 'me');
 
@@ -104,10 +116,18 @@ function saveFor(name, extra = {}) {
   const e = new Client(); await e.req('POST', '/api/auth/register', { username:'Outro_2', password:'Kizuna2026x', confirm:'Kizuna2026x', acceptTerms:true });
   await e.req('POST', '/api/auth/logout'); ok((await e.req('GET', '/api/auth/me')).status === 401, 'logout');
 
-  // Backup
-  const file = server.store.backup(); ok(fs.existsSync(file), 'backup do banco');
+  // Saves simultâneos da mesma conta: um grava, o outro recebe conflito (nunca erro interno).
+  const f = new Client(); await f.req('POST', '/api/auth/register', { username:'Paralelo', password:'Kizuna2026x', confirm:'Kizuna2026x', acceptTerms:true });
+  const sp = saveFor('Paralelo');
+  let both = await Promise.all([f.req('PUT', '/api/save', { save:sp, revision:0 }), f.req('PUT', '/api/save', { save:sp, revision:0 })]);
+  ok(both.every(x => x.status === 200 || x.status === 409) && both.some(x => x.status === 200), 'primeiro save simultâneo sem erro');
+  const rev = (await f.req('GET', '/api/save')).data.revision;
+  both = await Promise.all([f.req('PUT', '/api/save', { save:sp, revision:rev }), f.req('PUT', '/api/save', { save:sp, revision:rev })]);
+  ok(both.filter(x => x.status === 200).length === 1 && both.filter(x => x.status === 409).length === 1, 'saves simultâneos: um grava, outro tem conflito');
 
-  await server.shutdown();
-  fs.rmSync(dir, { recursive:true, force:true });
-  console.log(JSON.stringify({ ok:true, checks }));
-})().catch(async err => { console.error(err); try { await server.shutdown(); } catch (_) {} process.exit(1); });
+  // Backup (no PostgreSQL fica com o provedor)
+  const file = await server.store.backup(); ok(pgUrl ? file === null : fs.existsSync(file), 'backup do banco');
+
+  await cleanup();
+  console.log(JSON.stringify({ ok:true, checks, db:pgUrl ? 'postgres' : 'sqlite' }));
+})().catch(async err => { console.error(err); try { await cleanup(); } catch (_) {} process.exit(1); });

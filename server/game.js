@@ -52,11 +52,13 @@ function summarize(state, name) {
     power = recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0);
   } catch (_) { power = 0; }
   const prog = state.progress || {};
+  // Inteiros dentro dos limites das colunas do banco (o PostgreSQL recusa frações e estouros).
+  const int = (v, max) => Math.max(0, Math.min(max, Math.round(Number(v) || 0)));
   return {
-    name, power:Math.round(power),
-    bossKills:Number(state.stats?.bossKills) || 0,
-    bestStage:(prog.hunt?.best || 0) + (prog.hunt_tide?.best || 0),
-    accountLevel:Number(state.player?.level) || 1,
+    name, power:int(power, 9e15),
+    bossKills:int(state.stats?.bossKills, 2e9),
+    bestStage:int((prog.hunt?.best || 0) + (prog.hunt_tide?.best || 0), 2e9),
+    accountLevel:int(state.player?.level, 2e9) || 1,
     playSeconds:Number(state.totalPlaySeconds) || 0
   };
 }
