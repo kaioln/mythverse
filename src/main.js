@@ -126,7 +126,12 @@
       if (session.mode === 'neon') {
         const save0 = engine.save.bind(engine);
         engine.save = () => { const local = save0(), queued = KT.Neon.queue(state); return local && queued; };
-        KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo da nuvem foi mantido e esta cópia local foi preservada.', 'red');
+        KT.Neon.onRemote = remote => {
+          const fresh = KT.State.mergeState(remote);
+          Object.keys(state).forEach(k => { delete state[k]; }); Object.assign(state, fresh);
+          engine.refreshPartyUnits?.(); ui.renderAll();
+        };
+        KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo foi sincronizado; a cópia local anterior ficou preservada.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });

@@ -286,8 +286,8 @@
   // ---------------------------------------------------------------------------
   const STAGE_GROWTH = 1.2;
   const zones = {
-    village: { id:'village', kind:'village', chapter:0, title:'Cidade de Tsukimori', subtitle:'Portões abertos para as terras do Véu.', kicker:'REFÚGIO · TSUKIMORI', difficulty:'Refúgio', theme:'village',
-      lore:'A última cidade sob a proteção do Véu. Aqui os heróis convocados descansam, forjam armas e se preparam para enfrentar o eclipse.' },
+    village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'CAPITAL · TSUKIMORI', difficulty:'Capital', theme:'village', scene:'village-expanded',
+      lore:'A capital sob a proteção do Véu cresceu em torno da Praça da Lua. Guilda, dojo, forja, mercado, santuário e oficinas recebem heróis antes de cada expedição.' },
     hunt: { id:'hunt', kind:'hunt', chapter:1, title:'Bosque das Lanternas', subtitle:'Raposas, onis e guardiões antigos entre cerejeiras.', kicker:'CAPÍTULO I · CAÇADA', difficulty:'Estágios 1 a 12', theme:'forest',
       pool:['fox','golem','spider_jade','oni'], elites:['golem_elder','fox_nine'], stages:12, basePower:1, ilvl:1,
       weakTo:['Fogo','Vento','Luz'], lore:'Desde que o eclipse começou, as lanternas do bosque atraem criaturas. Os guardiões de musgo já não reconhecem amigos.',

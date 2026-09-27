@@ -18,6 +18,18 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
 
 (async () => {
   const { State, Neon, Server } = global.KT;
+  const nativeFetch = global.fetch;
+  global.KT.CONFIG = { neon:'https://ep-test.region.aws.neon.tech/neondb' };
+  Neon.jwt = 'teste'; Neon.jwtExp = Date.now() + 60 * 60_000;
+  let requestOptions = null;
+  global.fetch = async (_url, options) => { requestOptions = options; return { ok:true, status:200, headers:{ get:() => null }, json:async () => [] }; };
+  await Neon.api('PATCH', '/mv_saves', { data:'x'.repeat(70 * 1024) });
+  assert.equal(requestOptions.keepalive, false, 'save grande não usa keepalive limitado a 64 KiB');
+  await Neon.api('PATCH', '/mv_saves', { data:'ok' });
+  assert.equal(requestOptions.keepalive, true, 'requisição pequena pode concluir durante troca de página');
+  await Neon.api('GET', '/mv_ranking');
+  assert.equal(requestOptions.cache, 'no-store', 'ranking sempre consulta dados atuais');
+  global.fetch = nativeFetch; Neon.jwt = null; Neon.jwtExp = 0;
   State.setSaveKey('persistence-test');
   const state = State.createState();
   state.player.gold = 10;
@@ -50,6 +62,23 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   assert.equal(await Neon.flush(), true, 'reenvio grava o mesmo snapshot');
   assert.equal(Neon.row.revision, 8);
   assert.equal(Neon.readJournal(), null, 'confirmação limpa o diário');
+
+  const newerLocal = State.createState(); newerLocal.totalPlaySeconds = 20; newerLocal.player.gold = 222;
+  State.saveState(newerLocal); Neon.row = { revision:8 }; Neon.conflict = false; Neon.queue(newerLocal); clearTimeout(Neon.timer); Neon.timer = null;
+  let patches = 0;
+  const olderRemote = State.createState(); olderRemote.totalPlaySeconds = 10; olderRemote.saveGeneration = 1;
+  Neon.api = async (method) => method === 'GET' ? ({ ok:true, data:[{ revision:9, data:olderRemote }] }) : (++patches === 1 ? { ok:true, data:[] } : { ok:true, data:[{ revision:10 }] });
+  assert.equal(await Neon.flush(), true, 'conflito com save remoto antigo é reconciliado e reenviado');
+  assert.equal(Neon.row.revision, 10);
+  assert.equal(Neon.conflict, false, 'conflito recuperável não bloqueia autosaves futuros');
+
+  const staleLocal = State.createState(); staleLocal.totalPlaySeconds = 5; State.saveState(staleLocal); Neon.row = { revision:10 }; Neon.queue(staleLocal); clearTimeout(Neon.timer); Neon.timer = null;
+  const newerRemote = State.createState(); newerRemote.totalPlaySeconds = 50; newerRemote.player.gold = 777; newerRemote.saveGeneration = 50;
+  let adopted = null; Neon.onRemote = s => { adopted = s; };
+  Neon.api = async method => method === 'GET' ? ({ ok:true, data:[{ revision:11, data:newerRemote }] }) : ({ ok:true, data:[] });
+  assert.equal(await Neon.flush(), true, 'save remoto mais novo é adotado sem travar a fila');
+  assert.equal(adopted.player.gold, 777);
+  assert.equal(Neon.conflict, false);
 
   const pending = State.createState(); pending.player.gold = 123;
   State.saveState(pending); Neon.queue(pending); clearTimeout(Neon.timer); Neon.timer = null; Neon.pending = null;

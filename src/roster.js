@@ -31,8 +31,15 @@
   const execute = (th, to = 'tgt') => ({ k:'execute', th, to });
   const chain = (m, n = 3, fall = .7) => ({ k:'chain', m, n, fall });
 
-  // [id, nome, mundo de origem, origem, classe, elemento, perfil de atributos, passiva, habilidade, ultimate]
-  const H = (id, name, world, origin, cls, el, prof, passive, skill, ult, color) => ({ id, name, world, origin, cls, el, prof, passive, skill, ult, color });
+  const ORIGINAL_NAMES = {
+    solen:'Goku', varyon:'Vegeta', hayato:'Naruto Uzumaki', ren:'Sasuke Uchiha', tobias:'Monkey D. Luffy', kenji:'Roronoa Zoro',
+    hiro:'Ichigo Kurosaki', yuki:'Rukia Kuchiki', akira:'Tanjiro Kamado', hana:'Nezuko Kamado', sora:'Satoru Gojo', daichi:'Yuji Itadori',
+    lucan:'Levi Ackerman', mira:'Mikasa Ackerman', erik:'Eren Yeager', alden:'Edward Elric', ignis:'Roy Mustang', toma:'Izuku Midoriya',
+    ryo:'Katsuki Bakugo', grant:'All Might', kenta:'Saitama', volt:'Genos', kai:'Gon Freecss', riku:'Killua Zoldyck', elian:'Kurapika',
+    aiko:'Sailor Moon', kiba:'Inuyasha', jin:'Kenshin Himura', drake:'Natsu Dragneel', sienna:'Erza Scarlet'
+  };
+  // Os ids permanecem estáveis para preservar todos os saves existentes; só o nome exibido volta ao original.
+  const H = (id, name, world, origin, cls, el, prof, passive, skill, ult, color) => ({ id, name:ORIGINAL_NAMES[id] || name, world, origin, cls, el, prof, passive, skill, ult, color });
   const P = (name, hooks) => ({ name, hooks });
   const S = (name, cd, eff, fx = 'burst') => ({ name, cd, eff, fx });
   const Ult = (name, eff, fx = 'ult') => ({ name, eff, fx });

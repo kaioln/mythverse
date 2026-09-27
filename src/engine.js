@@ -1228,7 +1228,7 @@
       // Treino passivo do Dojo para quem está fora da equipe.
       const bench = this.state.collection.filter(h => !this.state.formation.includes(h.uid));
       const rate = .05 + this.state.buildings.dojo * .05;
-      bench.forEach(r => this.gainHeroXp(r, Math.round(per * rate)));
+      bench.forEach(r => this.gainHeroXp(r, Math.max(1, Math.round(per * rate))));
       this.gainAccountXp(Math.round(xp * .35));
     }
     gainHeroXp(r, amount) {

@@ -55,10 +55,19 @@
     readJournal() { const raw = this.journalKey() && KT.Utils.safeStorage.get(this.journalKey()); try { return raw ? JSON.parse(raw) : null; } catch (_) { return null; } },
     writeJournal(entry) { return !!this.journalKey() && KT.Utils.safeStorage.set(this.journalKey(), JSON.stringify({ id:entry.id, baseRevision:entry.baseRevision, generation:entry.generation, queuedAt:entry.queuedAt })); },
     clearJournal(id) { const j = this.readJournal(); if (!id || !j || j.id === id) KT.Utils.safeStorage.remove(this.journalKey()); },
+    compareSaves(a, b) {
+      const keys = ['totalPlaySeconds', 'saveGeneration', 'lastSeen'];
+      for (const k of keys) { const d = (Number(a?.[k]) || 0) - (Number(b?.[k]) || 0); if (d) return Math.sign(d); }
+      return 0;
+    },
     async api(method, path, body, prefer) {
       const jwt = await this.token(); if (!jwt) return { ok:false, status:401, error:'Sessão expirada. Entre de novo.' };
       let res;
-      try { res = await fetch(this.url('api') + path, { method, keepalive:method !== 'GET', headers:{ Authorization:`Bearer ${jwt}`, 'Content-Type':'application/json', ...(prefer ? { Prefer:prefer } : {}) }, body:body ? JSON.stringify(body) : undefined }); }
+      const payload = body ? JSON.stringify(body) : undefined;
+      // Navegadores rejeitam fetch keepalive com corpo acima de ~64 KiB. Saves grandes
+      // pareciam perda de conexão e nunca chegavam ao Neon.
+      const keepalive = method !== 'GET' && payload && new Blob([payload]).size <= 60 * 1024;
+      try { res = await fetch(this.url('api') + path, { method, cache:method === 'GET' ? 'no-store' : 'default', keepalive:!!keepalive, headers:{ Authorization:`Bearer ${jwt}`, 'Content-Type':'application/json', ...(prefer ? { Prefer:prefer } : {}) }, body:payload }); }
       catch (_) { return { ok:false, status:0, error:'Sem conexão com o Neon.' }; }
       let data = null; try { data = await res.json(); } catch (_) { data = null; }
       return { ok:res.ok, status:res.status, data, error:res.ok ? null : (data?.message || `Erro ${res.status}`) };
@@ -68,18 +77,14 @@
       if (!r.ok) throw new Error(`Não foi possível carregar seu progresso do Neon: ${r.error}`);
       this.row = r.data?.[0] ? { revision:r.data[0].revision } : null;
       const remote = r.data?.[0]?.data || null, journal = this.readJournal(), remoteRevision = this.row?.revision || 0;
-      if (journal && journal.baseRevision === remoteRevision) {
+      if (journal) {
         const local = KT.State.loadState();
-        if ((Number(local.saveGeneration) || 0) >= (Number(journal.generation) || 0)) {
-          this.pending = { ...journal, json:JSON.stringify(local) };
+        if (!remote || journal.baseRevision === remoteRevision || this.compareSaves(local, remote) > 0) {
+          this.pending = { ...journal, baseRevision:remoteRevision, generation:Number(local.saveGeneration) || 0, json:JSON.stringify(local) };
           this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 0);
           return local;
         }
-      }
-      if (journal) {
-        const local = KT.State.loadState();
-        KT.Utils.safeStorage.set(`${this.journalKey()}:conflict`, JSON.stringify(local));
-        this.conflict = true;
+        this.clearJournal(journal.id);
       }
       return remote;
     },
@@ -107,7 +112,7 @@
       this.inflight = (async () => { let ok = true; while (this.pending && ok) ok = await this.flushNow(this.pending); return ok; })();
       try { return await this.inflight; } finally { this.inflight = null; }
     },
-    async flushNow(entry) {
+    async flushNow(entry, reconciled = false) {
       if (!entry || !this.user || this.conflict) return !this.conflict;
       const state = JSON.parse(entry.json);
       const body = { data:state, updated_at:new Date().toISOString(), ...this.summary(state) };
@@ -115,7 +120,24 @@
       if (!this.row) { r = await this.api('POST', '/mv_saves', { ...body, revision:1 }, 'return=representation'); if (r.ok) this.row = { revision:Number(r.data?.[0]?.revision) || 1 }; }
       else {
         r = await this.api('PATCH', `/mv_saves?revision=eq.${this.row.revision}`, { ...body, revision:this.row.revision + 1 }, 'return=representation');
-        if (r.ok && !r.data?.length) { this.conflict = true; this.pending = null; this.onConflict?.(); return false; }
+        if (r.ok && !r.data?.length) {
+          const latest = await this.api('GET', '/mv_saves?select=data,revision');
+          const current = latest.ok ? latest.data?.[0] : null;
+          if (!current) { r = latest.ok ? { ok:false, error:'Save remoto não encontrado.' } : latest; }
+          else {
+            this.row = { revision:Number(current.revision) || 0 };
+            if (this.pending?.id !== entry.id) return true;
+            if (!reconciled && this.compareSaves(state, current.data) > 0) {
+              entry.baseRevision = this.row.revision;
+              this.writeJournal(entry);
+              return this.flushNow(entry, true);
+            }
+            KT.Utils.safeStorage.set(`${this.journalKey()}:conflict`, entry.json);
+            this.pending = null; this.clearJournal(entry.id); this.conflict = false;
+            this.onRemote?.(current.data); this.onConflict?.('remote');
+            return true;
+          }
+        }
         if (r.ok) this.row.revision = Number(r.data?.[0]?.revision) || this.row.revision + 1;
       }
       if (r.ok) { if (this.pending?.id === entry.id) this.pending = null; this.clearJournal(entry.id); }

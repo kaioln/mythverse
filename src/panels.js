@@ -134,12 +134,12 @@
   P.journeyPanel = function() {
     return `<div class="map-wrap"><div class="illustrated-map"><img src="assets/scenes/world-map.png" alt="Mapa do mundo">${Object.keys(MAP_PINS).map(id => { const st = this.zoneStatus(id), z = D.zones[id]; return `<button class="map-pin ${id === this.state.zone ? 'current' : ''} ${st.cls} ${z.side ? 'side' : ''} ch${z.chapter}" style="left:${MAP_PINS[id][0]}%;top:${MAP_PINS[id][1]}%" data-preview-zone="${id}" type="button">${MAP_LABELS[id]}<small>${st.txt}</small></button>`; }).join('')}</div>
       <div class="chapters">${CHAPTERS.map(([n, title, ids, side]) => `<section class="chapter"><h4>${title}</h4><div class="chapter-steps">${ids.map((id, i) => `${i ? '<span class="arrow">→</span>' : ''}${this.journeyCard(id)}`).join('')}</div>${side.length ? `<div class="chapter-side"><small>Rotas secundárias · monstros, itens e conjuntos próprios</small><div>${side.map(id => this.journeyCard(id, true)).join('')}</div></div>` : ''}</section>`).join('')}
-      <button class="journey-card village" data-enter="village" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97),rgba(9,8,22,.2) 75%),url('assets/scenes/village.png')"><span>REFÚGIO</span><b>Voltar para Tsukimori</b><small>Formação, cidade e loja</small></button></div></div>`;
+      <button class="journey-card village" data-enter="village" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97),rgba(9,8,22,.2) 75%),url('assets/scenes/village-expanded.png')"><span>CAPITAL</span><b>Voltar para Tsukimori</b><small>8 distritos, atividades e melhorias</small></button></div></div>`;
   };
 
   P.destinationPanel = function(id) {
     const z = D.zones[id]; if (!z) return this.journeyPanel();
-    if (z.kind === 'village') return `<button class="map-back" data-go="journey" type="button">← Mapa</button><div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('assets/scenes/village.png')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Ir para a cidade</button></div>`;
+    if (z.kind === 'village') return `<button class="map-back" data-go="journey" type="button">← Mapa</button><div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('assets/scenes/village-expanded.png')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Entrar na capital</button></div>`;
     const e = this.engine, p = this.state.progress[id], lock = e.zoneLock(id), pow = e.getPower();
     let selector = '', opts = {}, recNote = '';
     if (z.kind === 'hunt') {
@@ -509,7 +509,8 @@
     if (tab === 'guild') {
       return `${bHead('guild')}<p class="note">Bônus atual de ouro em combate: <b>+${(b.guild - 1) * 3}%</b>. Contratos renovam ao serem resgatados.</p>${this.contractsHtml()}`;
     }
-    return `<div class="building-list">${Object.keys(D.buildings).map(id => bHead(id)).join('')}</div><p class="note">O nível máximo das construções é ${e.buildingCap()} (aumenta 1 a cada 3 níveis de conta).</p>`;
+    const cityLevel = Object.values(b).reduce((sum, lv) => sum + lv, 0), ready = Object.keys(D.buildings).filter(id => b[id] < e.buildingCap() && s.player.gold >= e.buildingCost(id)).length;
+    return `<section class="city-overview"><span class="eyebrow">CAPITAL EM EXPANSÃO</span><h3>Grande Tsukimori</h3><p>Escolha um distrito no mapa ou desenvolva suas construções para fortalecer toda a conta.</p><div class="city-kpis"><span><b>${cityLevel}</b>níveis urbanos</span><span><b>${ready}</b>melhorias disponíveis</span><span><b>${s.collection.length}</b>heróis residentes</span></div></section><div class="building-list">${Object.keys(D.buildings).map(id => bHead(id)).join('')}</div><p class="note">O nível máximo das construções é ${e.buildingCap()} (aumenta 1 a cada 3 níveis de conta).</p>`;
   };
   P.contractsHtml = function() {
     return `<div class="grid2">${this.state.contracts.map((c, i) => { const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n; return `<article class="panel ${done ? 'done' : ''}"><span class="eyebrow">${['Simples','Médio','Difícil'][c.tier]}</span><h3>${def.title}</h3><p>${def.text.replace('{n}', c.n)}</p><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div><p>${c.progress}/${c.n}</p><div class="guide-reward">${this.rewardPills(this.engine.contractReward(c))}</div><button class="action ${done ? 'primary' : ''}" data-claim-contract="${i}" type="button" ${done ? '' : 'disabled'}>${done ? 'Resgatar' : 'Em andamento'}</button></article>`; }).join('')}</div>`;
@@ -522,7 +523,17 @@
     if (this.session?.mode !== 'cloud' && this.session?.mode !== 'neon') return '<div class="empty-state"><h3>Ranking online</h3><p>O ranking fica disponível quando o jogo roda no servidor com uma conta. No modo offline o progresso fica só neste navegador.</p></div>';
     const cache = this.rankCache?.[tab];
     if (!cache || Date.now() - cache.at > 30_000) {
-      (this.session.mode === 'neon' ? KT.Neon.leaderboard(tab) : KT.Net.leaderboard(tab)).then(r => { this.rankCache = { ...(this.rankCache || {}), [tab]:{ at:Date.now(), data:r } }; if (this.view.panel === 'ranking' && this.view.tab === tab) this.refreshPanel(); });
+      this.rankLoading = this.rankLoading || {};
+      if (!this.rankLoading[tab]) {
+        this.rankLoading[tab] = (async () => {
+          if (this.session.mode === 'neon') {
+            this.engine.save();
+            if (!await KT.Neon.flush()) return { ok:false, error:'Não foi possível sincronizar seu save antes de atualizar o ranking.' };
+            return KT.Neon.leaderboard(tab);
+          }
+          return KT.Net.leaderboard(tab);
+        })().then(r => { this.rankCache = { ...(this.rankCache || {}), [tab]:{ at:Date.now(), data:r } }; if (this.view.panel === 'ranking' && this.view.tab === tab) this.refreshPanel(); return r; }).finally(() => { this.rankLoading[tab] = null; });
+      }
       if (!cache) return '<div class="empty-state"><p>Carregando ranking…</p></div>';
     }
     const r = cache.data; if (!r.ok) return `<div class="empty-state"><p>Não foi possível carregar o ranking: ${esc(r.error)}</p></div>`;

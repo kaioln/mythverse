@@ -143,7 +143,7 @@
     renderZone() {
       const z = this.engine.zone, e = this.engine;
       this.el.zoneTitle.textContent = z.title; this.el.zoneKick.textContent = z.kicker;
-      let diff = z.difficulty, wave = 'Cidade segura';
+      let diff = z.difficulty, wave = z.kind === 'village' ? '8 distritos ativos' : 'Cidade segura';
       if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido!' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
       if (z.kind === 'dungeon') { diff = `Andar ${['I','II','III'][e.opts.floor - 1]}`; wave = `Sala ${e.room}/5`; }
       if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido!' : `Sala ${e.room}/${D.RIFT.rooms}`; }

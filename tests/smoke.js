@@ -10,6 +10,7 @@ const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };
 
 // ---------- conteúdo ----------
 ok(D.roster.length === 60 && new Set(D.roster.map(h => h.id)).size === 60, '60 heróis únicos');
+ok(D.roster.find(h => h.id === 'solen').name === 'Goku' && D.roster.find(h => h.id === 'sienna').name === 'Erza Scarlet', 'nomes originais dos personagens de anime');
 ok(new Set(D.roster.map(h => h.skill.name)).size === 60 && new Set(D.roster.map(h => h.ult.name)).size === 60, 'habilidades e ultimates únicas');
 D.roster.forEach(h => { ok(h.passiveText && h.skillText && h.ultText, `kit descrito: ${h.id}`); ok(fs.existsSync(path.join(root, 'assets/sprites', `${h.sprite}.png`)) && fs.existsSync(path.join(root, 'assets/portraits', `${h.id}.png`)), `arte: ${h.id}`); });
 ok(Object.keys(D.classes).every(c => D.roster.filter(h => h.cls === c).length >= 8), 'todas as classes têm heróis');
@@ -55,6 +56,7 @@ const byCls = cls => D.roster.find(h => h.cls === cls);
 ['Vanguarda','Executor','Suporte','Arcanista'].forEach((cls, i) => { let r = state.collection.find(x => engine.template(x.id).cls === cls && !state.formation.includes(x.uid)); if (!r) { r = State.newHeroRecord(byCls(cls), 'epic'); state.collection.push(r); } ok(engine.setParty(i, r.uid), 'escalar herói'); });
 ok(engine.heroes.length === 4 && engine.getPower() > 0, 'equipe formada com poder');
 ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 4, 'herói não duplica na formação');
+{ const reserve = State.newHeroRecord(D.roster.find(h => !state.collection.some(r => r.id === h.id)), 'rare'); state.collection.push(reserve); const xp0 = reserve.xp; engine.giveXp(1); ok(reserve.xp > xp0, 'herói fora da equipe sempre recebe EXP passiva'); }
 
 // ---------- caçada ----------
 ok(engine.enterZone('hunt', { stage:1 }) && engine.active && engine.enemies.length >= 2, 'caçada inicia');
