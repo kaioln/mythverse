@@ -43,7 +43,7 @@ ok(evAt('2026-09-26T12:10:00-03:00').ends === Date.parse('2026-09-26T14:00:00-03
 ok(State.upcomingEvents(Date.parse('2026-09-26T12:00:00-03:00')).length >= 20, 'agenda da semana');
 
 // ---------- início ----------
-const state = State.createState();
+const state = State.createState(); state.settings.autoPoints = false; // os testes abaixo distribuem pontos à mão
 const events = { loot:0, results:[], dialogs:0 };
 const engine = new CombatEngine(state, { onLoot(){ events.loot++; }, onResult(r){ events.results.push(r); }, onDialog(){ events.dialogs++; } });
 ok(state.starterRolls === 10 && !state.collection.length && state.player.gold === 0, 'jornada começa vazia');
@@ -510,5 +510,23 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
 
 { const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8')).v, cfg = fs.readFileSync(path.join(root, 'src/config.js'), 'utf8'), html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   ok(cfg.includes(`KT.VERSION = '${v}'`) && html.includes(`?v=${v}`), 'version.json, KT.VERSION e o cache do index.html na mesma versão (atualização automática)'); }
+
+{
+  const X = KT.State, st = X.createState(), e = new CombatEngine(st, {});
+  for (let i = 0; i < 10; i++) e.openBox(true);
+  ok(e.autoTeam() === 4 && e.heroes.some(r => e.template(r.id).cls === 'Vanguarda') && e.heroes.some(r => e.template(r.id).cls === 'Suporte'), 'Montar melhor equipe: 4 heróis com Vanguarda e Suporte');
+  ok(['Vanguarda', 'Executor'].includes(e.template(e.record(st.formation[0]).id).cls) || !e.heroes.some(r => ['Vanguarda', 'Executor'].includes(e.template(r.id).cls)), 'linha de frente com quem aguenta dano');
+  const h = e.heroes[0]; h.level = 20; const it = I.makeItem({ ilvl:3, rarity:'rare', slot:'charm' }); e.addItem(it);
+  const o = e.optimizeTeam(); ok(e.freeAttr(h) === 0 && o.attr > 0 && o.after >= o.before, 'Fortalecer equipe distribui pontos e não reduz o Poder');
+  ok(e.setAfk(true) && st.settings.auto && st.settings.autoAdvance && st.settings.autoRepeat, 'AFK liga automático, avanço e repetição');
+  e.enterZone('hunt', { stage:1 }); for (let k = 0; k < 400 && e.phase !== 'fight'; k++) e.update(.1);
+  e.party.forEach(u => { u.hp = Math.round(u.maxHp * .2); }); st.consumables.potion = 3; e.potionCd = 0; e.afkTick();
+  ok(st.consumables.potion === 2, 'AFK usa poção quando a vida está baixa');
+  st.settings.autoAdvance = false; st.afkTrain = 0; st.progress.hunt.best = 5; e.opts.stage = 2; e.stageClear(); e.stageClear(); e.stageClear();
+  ok(st.settings.autoAdvance === true, 'AFK: depois de 3 vitórias treinando, tenta avançar de novo');
+  ok(e.applyInput({ k:'afk', a:false }) && !st.settings.afk, 'AFK liga e desliga por comando gravável (replay do servidor)');
+  const st2 = X.createState(), e2 = new CombatEngine(st2, {}); for (let i = 0; i < 10; i++) e2.openBox(true); e2.autoTeam();
+  const r2 = e2.heroes[0]; e2.giveXp(9e9, 0); ok(r2.level > 1 && e2.freeAttr(r2) === 0 && st2.settings.autoPoints, 'ao subir de nível, pontos vão sozinhos para a build recomendada');
+}
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

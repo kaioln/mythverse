@@ -257,6 +257,7 @@
     const owned = this.filterHeroes(this.state.collection.slice(), ctx).sort((a, b) => f.includes(b.uid) - f.includes(a.uid));
     return `<div class="party-layout"><section>
       <div class="section-title"><h3>Formação <span>${e.heroes.length}/4</span></h3><small>Poder total: <b>${compact(e.getPower())}</b></small></div>
+      <div class="team-quick"><button class="action primary" data-auto-team type="button" ${this.state.collection.length ? '' : 'disabled'}>⚡ Montar melhor equipe</button><button class="action" data-optimize type="button" ${e.heroes.length ? '' : 'disabled'}>⚡ Fortalecer equipe</button><small class="dim">Montar: escolhe 4 heróis (frente e retaguarda certas). Fortalecer: equipa o melhor e distribui pontos.</small></div>
       <div class="formation-slots">${slots}</div>
       ${canEdit ? '' : '<p class="note">A formação só pode ser alterada na cidade (Tsukimori).</p>'}
       ${warns.length ? `<ul class="warn-list">${warns.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
@@ -905,7 +906,7 @@
     return `<div class="record-banner"><span class="eyebrow">PERFIL</span><h3>${esc(p.name)}</h3><p>Conta nível ${p.level} · Poder ${compact(this.engine.getPower())} · ${this.state.collection.length} heróis</p><div class="player-name-edit"><input id="player-name-entry" maxlength="20" placeholder="Seu nome de viajante" value="${esc(p.name)}" aria-label="Nome"><button class="action primary" data-save-name type="button">Salvar nome</button></div></div>
       <div class="record-grid">${stats.map(([n, v]) => `<article><b>${typeof v === 'number' ? U.fmt(v) : v}</b><span>${n}</span></article>`).join('')}</div>
       ${this.accountHtml()}
-      <h4 class="sub-title">Configurações</h4><div class="settings"><label><input type="checkbox" id="set-sound" ${this.state.settings.sound ? 'checked' : ''}> Som</label><label><input type="checkbox" id="set-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir dungeons/chefes automaticamente</label><button class="action" data-save type="button">💾 Salvar agora</button><button class="action red" data-reset-save type="button">Apagar save e recomeçar</button></div>`;
+      <h4 class="sub-title">Configurações</h4><div class="settings"><label data-tip="Ao subir de nível, os pontos de atributo e de talento vão sozinhos para a build recomendada de cada herói."><input type="checkbox" id="set-points" ${this.state.settings.autoPoints ? 'checked' : ''}> Distribuir pontos automaticamente</label><label><input type="checkbox" id="set-sound" ${this.state.settings.sound ? 'checked' : ''}> Som</label><label><input type="checkbox" id="set-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir dungeons/chefes automaticamente</label><button class="action" data-save type="button">💾 Salvar agora</button><button class="action red" data-reset-save type="button">Apagar save e recomeçar</button></div>`;
   };
   P.accountHtml = function() {
     const ses = this.session || {}, c = KT.Server || {};
@@ -924,7 +925,8 @@
     </div>`;
   };
   P.helpPanel = function() {
-    return `<div class="help-grid">
+    return `<div class="help-top"><button class="action primary" data-coach-restart type="button">▶ Rever tutorial</button><span class="dim">O tutorial guiado mostra, na tela, o que fazer em cada passo.</span></div>
+      <div class="help-grid">
       <article class="panel"><h3>1 · Convoque e forme a equipe</h3><p>Use as 10 convocações grátis. Escolha 4 heróis: vagas 1 e 2 são a <b>linha de frente</b> (Vanguardas), 3 e 4 a <b>retaguarda</b> (Suportes, Arcanistas, Atiradores). Sinergias de classe, elemento e laços deixam a equipe mais forte.</p><button class="action primary" data-go="collection" type="button">Convocar</button></article>
       <article class="panel"><h3>2 · Combate</h3><p>Os heróis atacam e usam habilidades sozinhos. A <b>ultimate</b> carrega com energia (barra dourada): use com <b>Q W E R</b> ou deixe no AUTO. Clique num inimigo para focar. <b>1</b> = poção, <b>2</b> = elixir. Quando um inimigo mostrar <b>⚠</b>, prepare escudos e curas.</p></article>
       <article class="panel"><h3>3 · Progressão</h3><p>Cada região tem 12 estágios de dificuldade crescente e um <b>chefe final</b> que libera o próximo capítulo. Se a equipe cair, ela recua um estágio e treina sozinha. Fortaleça-se com <b>atributos</b>, <b>itens</b>, <b>Forja</b>, <b>Dojo</b>, <b>talentos</b> e <b>qualidade</b>.</p><button class="action" data-go="journey" type="button">Abrir mapa</button></article>
@@ -1052,6 +1054,7 @@
     if (t.id === 'auto-salvage' && e.type === 'change') { this.cmd('setSetting', 'autoSalvage', t.value); this.toast(t.value === 'none' ? 'Auto-desmontar desligado.' : `Itens ${t.value === 'common' ? 'comuns' : t.value === 'rare' ? 'comuns e raros' : 'até épicos'} serão desmontados automaticamente.`); }
     if (t.id === 'set-sound' && e.type === 'change') document.querySelector('#sound-btn').click();
     if (t.id === 'set-repeat' && e.type === 'change') this.cmd('setSetting', 'autoRepeat', t.checked);
+    if (t.id === 'set-points' && e.type === 'change') { this.cmd('setSetting', 'autoPoints', t.checked); this.toast(t.checked ? 'Pontos serão distribuídos sozinhos ao subir de nível.' : 'Distribuição automática desligada: distribua na ficha do herói.'); }
     if (t.id === 'equip-target-other' && e.type === 'change' && t.value) { this.equipTarget = t.value; this.refreshPanel(); }
     if (t.id === 'inv-usable' && e.type === 'change') { this.invFilter.usable = t.checked; this.refreshPanel(); }
     if ((t.id === 'mkt-slot' || t.id === 'mkt-rarity') && e.type === 'change') { this.mktFilter[t.id === 'mkt-slot' ? 'slot' : 'rarity'] = t.value; this.loadMarket(true); }
@@ -1198,6 +1201,9 @@
     if (d.invSlot) { this.invFilter.slot = d.invSlot; this.refreshPanel(); return; }
     if (d.invSort) { this.invFilter.sort = d.invSort; this.refreshPanel(); return; }
     if (d.invTab) { this.invFilter.tab = d.invTab; this.refreshPanel(); return; }
+    if (b.hasAttribute('data-auto-team')) { run('autoTeam', [], n => { if (n) { this.toast(`<b>Equipe montada!</b> ${n} heróis: frente e retaguarda no lugar certo.`, 'gold'); this.dockKey = ''; this.callbacks.reward?.(); } else this.toast(esc(e.lastError || 'Não foi possível montar a equipe agora (saia da luta).')); }); return; }
+    if (b.hasAttribute('data-optimize')) { this.optimizeTeam(); return; }
+    if (b.hasAttribute('data-coach-restart')) { this.coachRestart(); return; }
     if (d.store) { run('storeItem', [d.store], r => { if (!r) this.toast(esc(e.lastError || 'Não foi possível guardar.')); }); return; }
     if (d.storeMany) { run('storeMany', [d.storeMany], n => this.toast(n ? `${n} item(ns) guardados no Armazém.` : 'Nada para guardar (ou o Armazém está cheio).')); return; }
     if (d.retrieve) { run('retrieveItem', [d.retrieve], r => { if (!r) this.toast(esc(e.lastError || 'A bolsa está cheia.')); }); return; }

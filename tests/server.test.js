@@ -54,6 +54,7 @@ async function suite(name, opts) {
   r = await fetch(base + '/../package.json'); ok(r.status === 404 || r.status === 400, 'path traversal bloqueado');
   r = await fetch(base + '/data/mythverse.db'); ok(r.status === 404, 'banco não é público');
   ok((await anon.req('GET', '/api/health')).data.ok, 'health');
+  { const v = await anon.req('GET', '/version.json'); ok(v.status === 200 && v.data && v.data.v, 'version.json servido (atualização automática do jogo)'); }
 
   // Cadastro
   ok((await a.req('POST', '/api/auth/register', { username:'ab', password:'senha1234', confirm:'senha1234', acceptTerms:true })).status === 400, 'nome curto rejeitado');

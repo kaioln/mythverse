@@ -16,7 +16,7 @@
   const CHOICE_WAIT = 120; // segundos até a escolha recomendada ser feita sozinha (AUTO desligado)
   const DT = .05;           // passo fixo da simulação (20 passos por segundo de jogo)
   const MAX_SPEED = 3;
-  const INPUT_KINDS = new Set(['ult', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance']);
+  const INPUT_KINDS = new Set(['ult', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance', 'afk']);
   // Quebra de postura (elites e chefes) e Elo Kizuna (ultimates encadeadas).
   const BREAK = { gain:5, max:100, grow:1.3, time:4, dmg:.35, kindMult:{ ult:2.2, skill:1.5, basic:1, proc:.6 } };
   const CHAIN = { window:4, per:.15, finale:4, finaleMult:.9 };
@@ -40,7 +40,7 @@
       prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
-      settings:{ auto:true, autoAdvance:true, autoRepeat:true, speed:1, sound:false, autoSalvage:'none' },
+      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:true, speed:1, sound:false, autoSalvage:'none' }, afkTrain:0,
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
       buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 },
@@ -452,6 +452,7 @@
         case 'choice': { const c = this.pendingChoice; if (!c || !c.options.some(o => o.id === inp.a)) return false; this.resolveChoice(c, inp.a, false); return true; }
         case 'auto': this.state.settings.auto = !!inp.a; return true;
         case 'advance': this.state.settings.autoAdvance = !!inp.a; return true;
+        case 'afk': this.setAfk(!!inp.a); return true;
       }
       return false;
     }
@@ -700,6 +701,7 @@
       if (this.phase === 'defeat') { this.timer -= dt; if (this.timer <= 0) this.afterDefeat(); return; }
       if (this.phase === 'result') { this.timer -= dt; if (this.timer <= 0 && this.autoAfterResult) { const f = this.autoAfterResult; this.autoAfterResult = null; f(); } return; }
       if (this.phase !== 'fight') return;
+      if (this.state.settings.afk) this.afkTick();
       const all = [...this.party, ...this.enemies];
       all.forEach(u => this.tickEffects(u, dt));
       this.party.forEach((u, i) => this.actHero(u, i, dt));
@@ -1064,6 +1066,17 @@
     }
 
     // ---------- consumíveis em combate ----------
+    // ---------- Modo AFK Total ----------
+    // Liga tudo o que é automático. Derrota recua um estágio; depois de 3 vitórias treinando, tenta avançar de novo.
+    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoAdvance = true; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
+    // Durante a luta: poção quando a equipe está mal, elixir contra chefes com a energia baixa.
+    afkTick() {
+      const alive = this.party.filter(u => u.alive); if (!alive.length) return;
+      const avg = alive.reduce((a, u) => a + u.hp / u.maxHp, 0) / this.party.length, low = alive.some(u => u.hp / u.maxHp < .22);
+      if ((avg < .45 || low) && this.potionCd <= 0 && (this.state.consumables.potion || 0) > 0) this.usePotion();
+      const big = this.enemies.some(e => e.alive && (e.boss || e.miniboss)), nrg = alive.reduce((a, u) => a + u.energy, 0) / alive.length;
+      if (big && nrg < 40 && this.elixirCd <= 0 && (this.state.consumables.elixir || 0) > 0) this.useElixir();
+    }
     usePotion() {
       if (!this.active || this.phase !== 'fight' || this.potionCd > 0 || (this.state.consumables.potion || 0) < 1) return false;
       this.state.consumables.potion--; this.potionCd = 20;
@@ -1125,6 +1138,10 @@
       this.state.stats.stages++; this.count('stages');
       const first = stage > (p.best || 0);
       const rewards = { gold:0, crystal:0, keys:0, items:[] };
+      if (this.state.settings.afk && !this.state.settings.autoAdvance) {
+        this.state.afkTrain = (this.state.afkTrain || 0) + 1;
+        if (this.state.afkTrain >= 3) { this.state.afkTrain = 0; this.state.settings.autoAdvance = true; this.emit('onLog', { text:'AFK: a equipe treinou o bastante e vai tentar avançar de novo.', type:'system' }); }
+      }
       if (first) {
         p.best = stage;
         rewards.crystal = 2 + stage + (z.chapter - 1) * 6;
@@ -1184,7 +1201,8 @@
     showResult(r) {
       this.phase = 'result'; this.timer = 5; this.lastResult = r;
       this.emit('onResult', r);
-      if (this.state.settings.autoRepeat && r.kind !== 'defeat') this.autoAfterResult = () => this.repeatRun();
+      if (this.state.settings.afk) this.autoAfterResult = r.kind === 'defeat' || r.lootLocked || r.kind === 'worldboss' ? () => this.fallbackToHunt() : () => this.repeatRun();
+      else if (this.state.settings.autoRepeat && r.kind !== 'defeat') this.autoAfterResult = () => this.repeatRun();
       else if (r.kind === 'defeat') this.autoAfterResult = () => this.fallbackToHunt();
       if (r.kind === 'defeat') this.timer = 8;
     }
@@ -1203,7 +1221,7 @@
         const key = z.kind === 'rift' ? 'floor' : 'stage', stage = this.opts[key], back = Math.max(1, stage - 1);
         this.phase = 'defeat'; this.timer = 3;
         this.nextStage = back;
-        this.state.settings.autoAdvance = false;
+        this.state.settings.autoAdvance = false; this.state.afkTrain = 0;
         this.emit('onDefeatHunt', { stage, back, rift:z.kind === 'rift' });
         this.emit('onLog', { text:`A equipe caiu no ${z.kind === 'rift' ? 'andar' : 'estágio'} ${stage}. Recuando para o ${back} para treinar.`, type:'system' });
       } else {
@@ -1427,7 +1445,7 @@
         let amt = per * xpFactor(r.level, enemyLv);
         if (enemyLv && r.level < HERO_LEVEL_CAP) amt = Math.min(amt, heroXpNext(r.level) * XP_RULES.perKill * Math.max(1, kills));
         amt = Math.max(1, Math.round(amt));
-        this.gainClassXp(r, Math.max(1, Math.round(amt * .20))); if (this.gainHeroXp(r, amt)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
+        this.gainClassXp(r, Math.max(1, Math.round(amt * .20))); if (this.gainHeroXp(r, amt)) { if (this.state.settings.autoPoints) { this.autoAttr(r.uid); this.autoTalents(r.uid); } const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
       if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')}, +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
       // Só quem está na equipe ganha EXP de combate; heróis do banco evoluem apenas em expedições.
       this.gainAccountXp(Math.round(xp * .35));
@@ -1613,6 +1631,8 @@
     setSetting(key, value) {
       const st = this.state.settings;
       if (key === 'auto' || key === 'autoAdvance' || key === 'autoRepeat') { st[key] = !!value; return true; }
+      if (key === 'afk') { this.setAfk(!!value); return true; }
+      if (key === 'autoPoints') { st.autoPoints = !!value; if (st.autoPoints) this.heroes.forEach(r => { this.autoAttr(r.uid); this.autoTalents(r.uid); }); return true; }
       if (key === 'autoSalvage' && ['none', 'common', 'rare', 'epic'].includes(value)) { st.autoSalvage = value; return true; }
       return false;
     }
@@ -2135,6 +2155,31 @@
         const sc = this.itemValue(r, it); if (sc !== null && sc > bestScore) { best = it; bestScore = sc; }
       });
       return best;
+    }
+    // "⚡ Fortalecer equipe": equipa o melhor, distribui atributos e talentos de toda a equipe de uma vez.
+    optimizeTeam() {
+      const before = this.getPower(), out = { items:0, attr:0, talents:0 };
+      this.heroes.forEach(r => { out.items += this.autoEquip(r.uid); if (this.freeAttr(r) > 0) out.attr += this.autoAttr(r.uid) || 0; if (this.heroTalentPoints(r) > 0) out.talents += this.autoTalents(r.uid) || 0; });
+      this.refreshPartyUnits(); this.emit('onState');
+      return { ...out, before, after:this.getPower() };
+    }
+    // Quanto dá para melhorar agora (para mostrar o botão com destaque).
+    optimizeHint() {
+      let items = 0, pts = 0; this.heroes.forEach(r => { pts += Math.max(0, this.freeAttr(r)) + Math.max(0, this.heroTalentPoints(r)); Object.keys(I.slots).forEach(sl => { if (this.bestItemFor(r, sl)) items++; }); });
+      return { items, pts, any:items + pts > 0 };
+    }
+    // "Montar melhor equipe": 1 Vanguarda e 1 Suporte garantidos, depois os de maior poder; frente e retaguarda certas.
+    autoTeam() {
+      if (!this.canEditParty() || this.state.collection.length < 1) return false;
+      const ctx = teamContext(this.state, []), score = r => statPower(heroStats(this.state, r, ctx));
+      const list = this.state.collection.map(r => ({ r, t:this.template(r.id), p:score(r) })).sort((a, b) => b.p - a.p);
+      const pick = [], bases = new Set(), add = x => { if (x && pick.length < 4 && !pick.includes(x) && !bases.has(x.t.base || x.t.id)) { pick.push(x); bases.add(x.t.base || x.t.id); } };
+      add(list.find(x => x.t.cls === 'Vanguarda')); add(list.find(x => x.t.cls === 'Suporte')); list.forEach(add);
+      const front = pick.filter(x => ['Vanguarda', 'Executor'].includes(x.t.cls)), back = pick.filter(x => !front.includes(x)), order = [...front, ...back];
+      const old = this.state.formation.slice();
+      this.state.formation = [0, 1, 2, 3].map(i => order[i]?.r.uid || null);
+      old.forEach(uid => { if (uid && !this.state.formation.includes(uid)) this.stashHeroGear(uid); });
+      this.emit('onState'); return this.state.formation.filter(Boolean).length;
     }
     autoEquip(uid) {
       const r = this.record(uid); if (!r) return 0; let n = 0;

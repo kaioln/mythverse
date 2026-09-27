@@ -1621,3 +1621,32 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .decor>span{font-size:24px}.decor b{display:block;color:#f7e6c4}.decor small{color:#cdb894;font-size:11px}.decor div{flex:1}
 .decor.own{border-color:#e9c98a}.decor em{font-style:normal;color:#9fe3b0;font-weight:800;font-size:12px}
 @media (max-width:560px){.storage-hero{flex-direction:column;align-items:flex-start}}
+
+/* ---------- Modo AFK Total, Fortalecer e dificuldade ---------- */
+.ctl.afk.active{background:linear-gradient(135deg,#3b2a7a,#1b1446);border-color:#b79cff;box-shadow:0 0 0 2px rgba(183,156,255,.35),0 0 18px rgba(183,156,255,.45)}
+.ctl.afk.active b{color:#d9c8ff}
+.ctl.boost{position:relative}.ctl.boost span{font-size:14px}
+.ctl.boost.pulse{animation:boostPulse 1.6s ease-in-out infinite;border-color:#ffd76a}
+.ctl-dot{position:absolute;top:3px;right:3px;width:9px;height:9px;border-radius:50%;background:#ff5d8f;box-shadow:0 0 6px #ff5d8f}
+@keyframes boostPulse{50%{box-shadow:0 0 0 3px rgba(255,215,106,.35),0 0 16px rgba(255,215,106,.5)}}
+#afk-banner{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);z-index:30;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 14px;border-radius:999px;
+  background:linear-gradient(135deg,rgba(40,26,96,.95),rgba(20,14,50,.95));border:1px solid #b79cff;box-shadow:0 8px 30px rgba(0,0,0,.45),0 0 22px rgba(183,156,255,.35);max-width:calc(100% - 24px)}
+#afk-banner b{display:block;font:15px var(--display);letter-spacing:.06em;color:#e7dcff}#afk-banner small{color:#c9bdf2;font-size:12px}
+.afk-moon{font-size:22px;animation:afkMoon 3s ease-in-out infinite}@keyframes afkMoon{50%{transform:translateY(-3px) rotate(-8deg)}}
+body.afk-on #viewport{box-shadow:inset 0 0 0 3px rgba(183,156,255,.55),inset 0 0 60px rgba(120,90,255,.18)}
+.afk-explain ul{margin:8px 0;padding-left:18px}.afk-explain li{margin:4px 0}
+#power-check{cursor:help}
+.team-quick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}.team-quick small{flex-basis:100%}
+.help-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+@media (max-width:560px){#afk-banner{bottom:6px;padding:4px 6px 4px 10px;gap:6px;border-radius:12px;white-space:nowrap}#afk-banner b{font-size:12px;letter-spacing:.03em}#afk-banner small{display:none}#afk-banner .afk-moon{font-size:16px}#afk-banner .action{padding:4px 8px;font-size:11px}}
+
+/* ---------- Tutorial guiado ---------- */
+#coach{position:fixed;inset:0;z-index:9000;pointer-events:none}
+#coach.no-target.blocking:not(.float){background:rgba(6,4,18,.62);pointer-events:auto}
+.coach-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 9999px rgba(6,4,18,.62),0 0 0 3px #ffd76a,0 0 24px 6px rgba(255,215,106,.55);animation:coachGlow 1.4s ease-in-out infinite;pointer-events:none}
+@keyframes coachGlow{50%{box-shadow:0 0 0 9999px rgba(6,4,18,.62),0 0 0 3px #fff1b8,0 0 34px 10px rgba(255,215,106,.7)}}
+.coach-bubble{position:fixed;pointer-events:auto;padding:14px 16px;border-radius:16px;background:linear-gradient(160deg,#2a1f55,#171233);border:1px solid #ffd76a;box-shadow:0 18px 50px rgba(0,0,0,.55);color:#f4f1ff}
+.coach-bubble small{color:#ffd76a;letter-spacing:.14em;font-size:10.5px;font-weight:800}.coach-title{display:block;font:19px var(--display);font-weight:400;margin:3px 0 6px}.coach-bubble p b{color:#ffe7a3}
+.coach-bubble p{margin:0 0 10px;font-size:14px;line-height:1.45;color:#e6e0ff}
+.coach-actions{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.coach-wait{font-weight:800;color:#ffd76a;font-size:13px}
+.action.ghost{background:transparent;border:1px solid var(--line2);color:var(--muted)}

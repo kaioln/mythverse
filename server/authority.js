@@ -34,7 +34,7 @@ const OPS = {
   train:[V.str], upgradeBuilding:[V.str], buy:[V.str], buyMarket:[V.int(0, 20)], craft:[V.str], craftProf:[V.str, v => v === undefined || v === null || V.slot(v)],
   claimGuide:[], claimContract:[V.int(0, 9)], claimAchievement:[V.str], claimDaily:[V.int(0, 9)], claimLogin:[], claimChronicle:[],
   openBoxes:[V.int(1, 10), v => ['worlds', 'class', 'season', 'astral'].includes(v), v => v === null || ['Vanguarda', 'Executor', 'Arcanista', 'Atirador', 'Suporte'].includes(v)], setName:[V.name], setSetting:[V.str, V.any], markSeen:[V.str],
-  takeOverflow:[V.uid], storeItem:[V.uid], retrieveItem:[V.uid], storeMany:[V.rarity], buyDecor:[V.str], salvageOverflow:[V.rarity], useItem:[V.str],
+  takeOverflow:[V.uid], optimizeTeam:[], autoTeam:[], storeItem:[V.uid], retrieveItem:[V.uid], storeMany:[V.rarity], buyDecor:[V.str], salvageOverflow:[V.rarity], useItem:[V.str],
   startExpedition:[V.str, V.int(1, 12), v => Array.isArray(v) && v.length >= 1 && v.length <= 3 && v.every(V.uid)], claimExpedition:[V.uid],
   acceptBounty:[V.int(0, 2)], abandonBounty:[], claimBounty:[], buyBountyItem:[V.str], ensureBounties:[]
 };

@@ -160,7 +160,9 @@
       if (z.kind !== 'village' && z.kind !== 'arena') {
         const rec = e.recommendedPower(z.id, e.opts), pow = e.getPower(), ratio = pow / rec;
         this.el.powerCheck.hidden = false; this.el.powerCheck.className = ratio >= 1 ? 'ok' : ratio >= .8 ? 'warn' : 'bad';
-        this.el.powerCheck.textContent = `⚔ ${compact(pow)} / ${compact(rec)}`;
+        const dl = KT.difficultyLabel ? KT.difficultyLabel(ratio) : null;
+        this.el.powerCheck.textContent = `⚔ ${compact(pow)} / ${compact(rec)}${dl ? ` · ${dl[0]}` : ''}`;
+        this.el.powerCheck.dataset.tip = 'Seu Poder / Poder recomendado. Fácil ou Justo: pode seguir. Difícil: arrisque. Muito difícil: fique mais forte (⚡ FORÇA, Forja, Dojo, nível).';
         this.el.powerCheck.dataset.tip = `Poder da equipe / poder recomendado.${ratio < .8 ? ' Sua equipe está fraca para esta região, treine em estágios anteriores.' : ''}`;
       } else this.el.powerCheck.hidden = true;
       this.el.locations.hidden = z.kind !== 'village' || this.engine.heroes.length < 4;
@@ -274,7 +276,7 @@
       this.el.speed.querySelector('b').textContent = `x${s.speed}`; this.el.speed.classList.toggle('active', s.speed > 1);
       const village = z.kind === 'village';
       this.el.auto.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';
-      this.renderChoiceTimer();
+      this.renderChoiceTimer(); this.renderAfk?.();
     }
 
     // ======================= PAINEL LATERAL =======================
