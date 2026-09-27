@@ -1650,3 +1650,42 @@ body.afk-on #viewport{box-shadow:inset 0 0 0 3px rgba(183,156,255,.55),inset 0 0
 .coach-bubble p{margin:0 0 10px;font-size:14px;line-height:1.45;color:#e6e0ff}
 .coach-actions{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}.coach-wait{font-weight:800;color:#ffd76a;font-size:13px}
 .action.ghost{background:transparent;border:1px solid var(--line2);color:var(--muted)}
+
+/* ---------- HUD limpo (padrão) ---------- */
+body.hud-clean .side-nav .nav-extra{display:none}
+body.hud-clean .side-nav.more-open .nav-extra{display:flex;animation:navIn .18s ease}
+body:not(.hud-clean) .nav-more{display:none}
+.nav-more{position:relative}.nav-more-badge{position:absolute;top:4px;right:10px;min-width:14px;height:14px;border-radius:7px;background:var(--sakura);color:#fff;font:800 9px var(--ui);display:grid;place-items:center}
+.side-nav.more-open .nav-more{background:rgba(255,255,255,.08)}
+@keyframes navIn{from{opacity:0;transform:translateX(-6px)}}
+body.hud-clean .res.dust,body.hud-clean .res.ore,body.hud-clean .res.gem{display:none}
+body.hud-clean #auto-btn,body.hud-clean #advance-btn{display:none}
+body.hud-clean .stage-controls.adv-open #auto-btn,body.hud-clean .stage-controls.adv-open #advance-btn{display:flex}
+body:not(.hud-clean) #adv-ctl-btn{display:none}
+.stage-controls.adv-open #adv-ctl-btn{background:rgba(255,255,255,.12)}
+body.hud-clean .dock .skill-line{display:none}
+body.hud-clean .signpost small{display:none}
+body.hud-clean .signpost{padding-top:6px;padding-bottom:6px}
+#goal-chip{position:absolute;right:12px;top:66px;z-index:12;display:flex;align-items:center;gap:10px;max-width:min(360px,calc(100% - 24px));padding:9px 10px 9px 12px;border-radius:14px;
+  background:rgba(14,11,34,.88);border:1px solid rgba(255,215,106,.45);box-shadow:0 8px 24px rgba(0,0,0,.4);backdrop-filter:blur(6px)}
+#goal-chip.done{border-color:#5fe39a;box-shadow:0 0 0 2px rgba(95,227,154,.3),0 8px 24px rgba(0,0,0,.4);animation:goalPulse 1.8s ease-in-out infinite}
+@keyframes goalPulse{50%{box-shadow:0 0 0 4px rgba(95,227,154,.25),0 8px 24px rgba(0,0,0,.4)}}
+.goal-ic{font-size:20px}.goal-txt{min-width:0;flex:1}.goal-txt small{display:block;color:var(--gold);font-size:10px;letter-spacing:.14em;font-weight:800}
+.goal-txt b{display:block;font:15px var(--display);font-weight:400;line-height:1.15}.goal-txt em{display:block;font-style:normal;color:var(--muted);font-size:11.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+body.hud-clean .zone-meta #wave-label{opacity:.85}
+@media (max-width:760px){#goal-chip{top:auto;bottom:10px;right:8px;left:8px;max-width:none;padding:7px 8px}.goal-txt em{-webkit-line-clamp:1}body.afk-on #goal-chip{display:none}}
+@media (max-width:760px){
+  body.hud-clean .side-nav{-webkit-mask-image:none;mask-image:none;justify-content:space-between}
+  body.hud-clean .side-nav .nav:not(.nav-extra),body.hud-clean .side-nav .nav-more{flex:1 1 0;min-width:0}
+  body.hud-clean .side-nav.more-open{flex-wrap:wrap;row-gap:4px}
+  body.hud-clean .side-nav.more-open .nav-extra{flex:1 1 22%}
+  #afk-banner{max-width:calc(100% - 16px)}#afk-banner>div{min-width:0}#afk-banner b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+#more-sheet{position:fixed;inset:0;z-index:60;background:rgba(6,4,18,.55);display:flex;align-items:flex-end}
+#more-sheet[hidden]{display:none}
+.more-grid{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 12px calc(76px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#1d1840,#120f2a);border-top:1px solid var(--line2);border-radius:18px 18px 0 0;animation:sheetUp .2s ease}
+.more-grid>b{grid-column:1/-1;font:16px var(--display);font-weight:400;color:var(--gold)}
+.more-grid button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--text)}
+.more-grid svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+.more-grid em{position:absolute;top:4px;right:8px;min-width:14px;height:14px;border-radius:7px;background:var(--sakura);font:800 9px var(--ui);font-style:normal;display:grid;place-items:center}
+@keyframes sheetUp{from{transform:translateY(30px);opacity:0}}

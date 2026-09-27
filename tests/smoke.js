@@ -518,12 +518,12 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   ok(['Vanguarda', 'Executor'].includes(e.template(e.record(st.formation[0]).id).cls) || !e.heroes.some(r => ['Vanguarda', 'Executor'].includes(e.template(r.id).cls)), 'linha de frente com quem aguenta dano');
   const h = e.heroes[0]; h.level = 20; const it = I.makeItem({ ilvl:3, rarity:'rare', slot:'charm' }); e.addItem(it);
   const o = e.optimizeTeam(); ok(e.freeAttr(h) === 0 && o.attr > 0 && o.after >= o.before, 'Fortalecer equipe distribui pontos e não reduz o Poder');
-  ok(e.setAfk(true) && st.settings.auto && st.settings.autoAdvance && st.settings.autoRepeat, 'AFK liga automático, avanço e repetição');
+  ok(e.setAfk(true) && st.settings.auto && !st.settings.autoAdvance && st.settings.autoRepeat, 'AFK = farm: liga automático e repetição, desliga o avanço');
   e.enterZone('hunt', { stage:1 }); for (let k = 0; k < 400 && e.phase !== 'fight'; k++) e.update(.1);
   e.party.forEach(u => { u.hp = Math.round(u.maxHp * .2); }); st.consumables.potion = 3; e.potionCd = 0; e.afkTick();
   ok(st.consumables.potion === 2, 'AFK usa poção quando a vida está baixa');
-  st.settings.autoAdvance = false; st.afkTrain = 0; st.progress.hunt.best = 5; e.opts.stage = 2; e.stageClear(); e.stageClear(); e.stageClear();
-  ok(st.settings.autoAdvance === true, 'AFK: depois de 3 vitórias treinando, tenta avançar de novo');
+  st.settings.autoAdvance = true; st.progress.hunt.best = 5; e.opts.stage = 2; e.stageClear(); e.stageClear(); e.stageClear();
+  ok(st.settings.autoAdvance === false && e.nextStage === 2, 'AFK nunca avança: continua farmando o mesmo estágio');
   ok(e.applyInput({ k:'afk', a:false }) && !st.settings.afk, 'AFK liga e desliga por comando gravável (replay do servidor)');
   const st2 = X.createState(), e2 = new CombatEngine(st2, {}); for (let i = 0; i < 10; i++) e2.openBox(true); e2.autoTeam();
   const r2 = e2.heroes[0]; e2.giveXp(9e9, 0); ok(r2.level > 1 && e2.freeAttr(r2) === 0 && st2.settings.autoPoints, 'ao subir de nível, pontos vão sozinhos para a build recomendada');

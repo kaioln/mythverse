@@ -272,7 +272,7 @@
     renderControls() {
       const s = this.state.settings, z = this.engine.zone;
       this.el.auto.classList.toggle('active', s.auto); this.el.auto.querySelector('b').textContent = s.auto ? 'ON' : 'OFF';
-      this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.autoAdvance ? 'ON' : 'OFF';
+      this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.afk ? 'FARM' : s.autoAdvance ? 'ON' : 'OFF'; this.el.advance.disabled = !!s.afk;
       this.el.speed.querySelector('b').textContent = `x${s.speed}`; this.el.speed.classList.toggle('active', s.speed > 1);
       const village = z.kind === 'village';
       this.el.auto.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';

@@ -114,7 +114,7 @@
         summon:r => sound.summon(r), reward:() => sound.chord([784, 988, 1175], .05, 'sine', .04), click:() => sound.tone(660, .05, 'triangle', .03)
       });
       ui.session = session; ui.ask = askBox;
-      ui.initAfk?.(); ui.initCoach?.();
+      ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => ui.onZone(z), onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.summon(c.mvp ? 'legendary' : 'epic'); },

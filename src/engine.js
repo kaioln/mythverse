@@ -1067,8 +1067,8 @@
 
     // ---------- consumíveis em combate ----------
     // ---------- Modo AFK Total ----------
-    // Liga tudo o que é automático. Derrota recua um estágio; depois de 3 vitórias treinando, tenta avançar de novo.
-    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoAdvance = true; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
+    // AFK Total = FARM: fica no estágio atual repetindo (nunca avança sozinho). Se perder, recua um estágio e farma ali.
+    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoAdvance = false; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
     // Durante a luta: poção quando a equipe está mal, elixir contra chefes com a energia baixa.
     afkTick() {
       const alive = this.party.filter(u => u.alive); if (!alive.length) return;
@@ -1138,10 +1138,7 @@
       this.state.stats.stages++; this.count('stages');
       const first = stage > (p.best || 0);
       const rewards = { gold:0, crystal:0, keys:0, items:[] };
-      if (this.state.settings.afk && !this.state.settings.autoAdvance) {
-        this.state.afkTrain = (this.state.afkTrain || 0) + 1;
-        if (this.state.afkTrain >= 3) { this.state.afkTrain = 0; this.state.settings.autoAdvance = true; this.emit('onLog', { text:'AFK: a equipe treinou o bastante e vai tentar avançar de novo.', type:'system' }); }
-      }
+      if (this.state.settings.afk) this.state.settings.autoAdvance = false;
       if (first) {
         p.best = stage;
         rewards.crystal = 2 + stage + (z.chapter - 1) * 6;

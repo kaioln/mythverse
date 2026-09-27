@@ -11,7 +11,7 @@
   P.initAfk = function() {
     const ctl = document.querySelector('.stage-controls'); if (!ctl || document.querySelector('#afk-btn')) return;
     const afk = document.createElement('button'); afk.id = 'afk-btn'; afk.className = 'ctl afk'; afk.type = 'button';
-    afk.dataset.tip = 'Modo AFK Total: luta, avança, recua para treinar, usa poções, equipa itens e distribui pontos sozinho.';
+    afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual sem parar, usa poções, equipa itens e distribui pontos sozinho. Não avança.';
     afk.innerHTML = '<span>AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
     boost.dataset.tip = 'Fortalecer equipe: equipa os melhores itens e distribui atributos e talentos de todos de uma vez.';
@@ -37,7 +37,7 @@
     if (on) {
       const ok = await this.ask('🌙 Ativar o Modo AFK Total?', `<div class="afk-explain"><p>Sua equipe passa a jogar <b>sozinha</b>, sem parar:</p><ul>
         <li>⚔ Luta com ultimates automáticas e escolhe os eventos sozinha.</li>
-        <li>⏫ Avança de estágio ao vencer. Se perder, recua um estágio, treina 3 vitórias e tenta de novo.</li>
+        <li>🔁 <b>Farma</b> o estágio atual sem parar (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
         <li>🧪 Usa poções quando a vida fica baixa e elixires contra chefes.</li>
         <li>⚡ A cada ~45 s equipa itens melhores e distribui pontos de atributo e talento.</li>
         <li>🔁 Masmorras e chefes se repetem enquanto derem espólio; depois volta a caçar.</li></ul>
@@ -46,7 +46,7 @@
       if (ok !== 'yes') return;
     }
     if (this.engine.seg) this.engine.input('afk', on); else { this.engine.setAfk(on); this.cmd('setSetting', 'afk', on); }
-    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>🌙 Modo AFK Total ativado.</b> Pode deixar rolando!', 'gold'); }
+    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>🌙 Modo AFK Total ativado.</b> Farmando este estágio: pode deixar rolando!', 'gold'); }
     else { const r = this.afkSummary(); this.afkSession = null; this.toast(`<b>AFK encerrado.</b> ${r ? `Em ${r.time}: +${U.fmt(r.gold)} ouro, ${U.fmt(r.kills)} abates, ${r.loot} itens, +${r.lv} níveis.` : ''}`); }
     this.renderControls(); this.renderAfk();
   };
@@ -76,7 +76,7 @@
     if (this._afkPending && this.engine.phase !== 'fight') this.afkManage();
     const r = this.afkSummary() || { time:'0 min', gold:0, kills:0, loot:0, lv:0, power:0 };
     b.hidden = false;
-    b.innerHTML = `<span class="afk-moon">🌙</span><div><b>MODO AFK TOTAL ATIVO</b><small>${r.time} · +${U.fmt(r.gold)} ouro · ${U.fmt(r.kills)} abates · ${r.loot} itens · +${r.lv} níveis${r.power > 0 ? ` · +${U.fmt(r.power)} Poder` : ''}</small></div><button class="action small" data-afk-off type="button">Sair do AFK</button>`;
+    b.innerHTML = `<span class="afk-moon">🌙</span><div><b>AFK · FARMANDO ${esc(this.engine.zone?.title || '')}${this.engine.opts?.stage ? ` ${this.engine.opts.stage}` : this.engine.opts?.floor ? ` · andar ${this.engine.opts.floor}` : ''}</b><small>${r.time} · +${U.fmt(r.gold)} ouro · ${U.fmt(r.kills)} abates · ${r.loot} itens · +${r.lv} níveis${r.power > 0 ? ` · +${U.fmt(r.power)} Poder` : ''}</small></div><button class="action small" data-afk-off type="button">Sair do AFK</button>`;
   };
 
   P.optimizeTeam = function() {
