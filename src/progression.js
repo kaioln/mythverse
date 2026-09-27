@@ -179,7 +179,8 @@
     def: { name:'Treino de Guarda', per:.02, stat:'def', text:'+2% DEF para todos os heróis por nível.' },
     crit:{ name:'Treino de Precisão', per:.005, stat:'crit', text:'+0,5% crítico para todos os heróis por nível.' }
   };
-  const trainingCost = lvl => Math.round(400 * Math.pow(1.32, lvl));
+  // Custo acompanha a renda dos capítulos (antes ×1,32 por nível: o nível 40 custava 26 milhões).
+  const trainingCost = lvl => Math.round(450 * Math.pow(1.24, lvl));
   const trainingCap = dojoLevel => 5 + dojoLevel * 5;
 
   // ---------------------------------------------------------------------------

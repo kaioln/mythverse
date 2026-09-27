@@ -49,7 +49,7 @@ function summarize(state, name) {
   let power = 0;
   try {
     const recs = KT.State.formationRecords(state), ctx = KT.State.teamContext(state, recs);
-    power = recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0);
+    power = KT.State.powerScore(recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0));
   } catch (_) { power = 0; }
   const prog = state.progress || {};
   return {

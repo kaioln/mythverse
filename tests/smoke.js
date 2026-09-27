@@ -486,4 +486,22 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   ok(D.SEASON.heroes.every(id => { const t = D.roster.find(h => h.id === id); return t.base !== id && D.roster.some(h => h.id === t.base); }), 'toda forma despertada aponta para o herói original');
 }
 
+{
+  const X = KT.State, st = X.createState(), e = new CombatEngine(st, {});
+  for (let i = 0; i < 10; i++) e.openBox(true); [0, 1, 2, 3].forEach(i => e.setParty(i, st.collection[i].uid));
+  const h = e.heroes[0]; h.level = 40; Object.keys(h.attr).forEach(k => { h.attr[k] = 19; }); let it; for (let k = 0; k < 50 && !(it && I.equipCheck(it, h).ok); k++) it = I.makeItem({ ilvl:10, rarity:'epic', slot:'weapon', prefer:I.allowedTypes(h.id) }); e.addItem(it);
+  ok(e.equip(h.uid, it.uid) && e.bagCount() === 0 && st.inventory.length === 1, 'item equipado não ocupa a bolsa');
+  ok(e.unequip(h.uid, 'weapon') && st.storage.some(x => x.uid === it.uid) && !st.inventory.some(x => x.uid === it.uid), 'desequipar manda o item ao Armazém');
+  ok(!e.salvageMany('legendary').n && st.storage.length === 1, 'desmontar em massa nunca toca o Armazém');
+  ok(e.equip(h.uid, it.uid) && !st.storage.length && h.equipped.weapon === it.uid, 'equipar direto do Armazém');
+  ok(e.removeFromParty(h.uid) && st.storage.some(x => x.uid === it.uid) && !h.equipped.weapon, 'herói que sai da equipe devolve os itens ao Armazém');
+  const it2 = I.makeItem({ ilvl:10, rarity:'legendary', slot:'charm' }); e.addItem(it2); ok(e.storeMany('epic') >= 1 && st.storage.some(x => x.uid === it2.uid), 'guardar épicos+ em massa');
+  ok(e.retrieveItem(it2.uid) && st.inventory.some(x => x.uid === it2.uid), 'trazer do Armazém para a bolsa');
+  const cap0 = e.storageCap(); st.player.crystal = 5000; ok(e.buyDecor('lanterns') && e.storageCap() === cap0 + 50 && !e.buyDecor('lanterns'), 'enfeite do Armazém aumenta o espaço (compra única)');
+  ok(X.mergeState(JSON.parse(JSON.stringify(st))).storage.length === st.storage.length && X.mergeState(JSON.parse(JSON.stringify(st))).decor.lanterns, 'Armazém e enfeites persistem no save');
+  // Poder compacto.
+  ok(X.powerScore(10.3e6) < 100000 && X.powerScore(4800) < 500 && X.powerScore(2e6) > X.powerScore(1e6), 'Poder exibido em escala compacta e na mesma ordem');
+  ok(e.recommendedPower('boss_sky', { tier:0 }) < 100000 && e.recommendedPower('hunt', { stage:1 }) < 500, 'mapas: do começo ao chefe final abaixo de 100 mil de Poder');
+}
+
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

@@ -296,6 +296,13 @@
     const defense = st.maxHp * (1 + st.def / 400) * (1 + st.dodge) / Math.max(.3, 1 - st.dr);
     return Math.round(offense * 3.2 + defense * .32);
   }
+  // Poder exibido (compacto): a força bruta cresce multiplicando muitos fatores e chegava a dezenas de milhões.
+  // O Poder mostrado é força^0,7 (mesma ordem, escala humana: ~400 no começo, ~80 mil no chefe final).
+  // A força bruta continua sendo a base de todas as comparações internas.
+  const POWER_EXP = .7;
+  const powerScore = raw => Math.round(Math.pow(Math.max(0, Number(raw) || 0), POWER_EXP));
+  // Poder de um herói: a parte dele numa equipe de 4 iguais (4 heróis iguais somam o Poder da equipe).
+  const heroScore = raw => Math.round(powerScore(4 * raw) / 4);
   function formationRecords(state) { return state.formation.map(uid => uid && state.collection.find(h => h.uid === uid)).filter(Boolean); }
 
   // ===========================================================================
@@ -322,12 +329,14 @@
     record(uid) { return this.state.collection.find(h => h.uid === uid); }
     ctx() { return teamContext(this.state, this.heroes, this.now()); }
     heroStats(rec, ctx) { return heroStats(this.state, rec, ctx); }
-    heroPower(rec, ctx) { return statPower(this.heroStats(rec, ctx)); }
-    getPower() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
+    heroPower(rec, ctx) { return heroScore(statPower(this.heroStats(rec, ctx))); }
+    getPowerRaw() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
+    getPower() { return powerScore(this.getPowerRaw()); }
     event() { return activeEvent(this.now()); }
     mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .20 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return key === 'xp' || key === 'gold' ? Math.min(.50, v) : v; }
 
-    recommendedPower(zoneId, opts = {}) {
+    recommendedPower(zoneId, opts = {}) { const r = this.recommendedPowerRaw(zoneId, opts); return r ? Math.max(10, Math.round(powerScore(r) / 10) * 10) : 0; }
+    recommendedPowerRaw(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z || z.kind === 'village') return 0;
       const P = zonePower(z, opts);
       const ref = z.kind === 'boss' ? 3.1 : z.kind === 'dungeon' || z.kind === 'rift' ? 1.35 : 1;
@@ -626,7 +635,7 @@
       if (c.kind === 'route') this.chooseRoute(opt.id); else this.resolveEncounter(opt.id);
     }
     partyHealth() { const all = this.party; if (!all.length) return { ratio:0, dead:false }; return { ratio:all.reduce((a, u) => a + (u.alive ? u.hp / u.maxHp : 0), 0) / all.length, dead:all.some(u => !u.alive) }; }
-    powerRatio() { const rec = this.recommendedPower(this.zone.id, this.opts); return rec ? this.getPower() / rec : 1; }
+    powerRatio() { const rec = this.recommendedPowerRaw(this.zone.id, this.opts); return rec ? this.getPowerRaw() / rec : 1; }
     recommendChoice(c) {
       const h = this.partyHealth(), pr = this.powerRatio();
       if (c.kind === 'route') return h.dead || h.ratio < .6 || pr < .9 ? 'safe' : 'risk';
@@ -1902,7 +1911,7 @@
     shopPrice(offer) {
       if (!offer.scale) return offer.price;
       const best = Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best + 12, (this.state.progress.hunt_desert?.best || 0) + 24, (this.state.progress.hunt_sky?.best || 0) + 36);
-      const m = 1 + best * .15;
+      const m = Math.min(6, 1 + best * .12);
       return Object.fromEntries(Object.entries(offer.price).map(([k, v]) => [k, Math.round(v * m)]));
     }
     // Limite diário por oferta (renova à meia-noite de Brasília).
@@ -2060,13 +2069,15 @@
     }
     ensureChronicle() {
       if (this.guideStep()) return null;
-      if (!this.state.chronicle) this.newChronicle(1);
+      const ch = this.state.chronicle;
+      if (!ch) this.newChronicle(1);
+      else if (ch.type === 'power' && ch.target > Math.max(1000, this.getPower() * 3)) this.newChronicle(ch.k);
       return this.state.chronicle;
     }
     newChronicle(k) {
       const def = D.chronicles[(k - 1) % D.chronicles.length], s = this.state;
       const cur = this.chronicleValue(def);
-      const target = def.type === 'power' ? Math.ceil(cur * 1.18 / 500) * 500 : def.type === 'rift' ? Math.max(5, cur + 3) : def.type === 'kills' ? cur + 400 + k * 120
+      const target = def.type === 'power' ? Math.ceil(cur * 1.12 / 50) * 50 : def.type === 'rift' ? Math.max(5, cur + 3) : def.type === 'kills' ? cur + 400 + k * 120
         : def.type === 'upgrade' ? cur + 3 + Math.floor(k / 3) : def.type === 'bossKills' ? cur + 1 + Math.floor(k / 8) : cur + 2;
       s.chronicle = { k, type:def.type, title:`${def.title} ${k}`, text:def.text.replace('{n}', U.fmt(def.type === 'kills' || def.type === 'upgrade' || def.type === 'bossKills' ? target - cur : target)), start:cur, target };
     }
@@ -2203,6 +2214,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

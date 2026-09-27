@@ -133,3 +133,9 @@ Antes o fim do jogo exigia inimigos acima do nível 100, e o único jeito de aco
 Do lado do jogador: refino acima de +10 rende +14% por nível (o +15 multiplica o atributo principal por ~3, antes 4,25); bônus percentuais de HP/ATK/DEF somados acima de +200% valem metade; o poder do ranking ignora comidas e buffs temporários. Diagnóstico por conta: `node --env-file=.env tools/neon_power_report.js [conta]`.
 
 **Temporada I · Despertares:** as 12 figuras da temporada são formas despertadas de heróis do elenco (Goku Instinto Superior, Luffy Gear 5, Naruto Modo Kurama…), com a arte do próprio personagem recolorida (pele e contorno preservados). Forma e original não entram juntos na equipe. Os ids da primeira versão (itachi, kakashi…) migram sozinhos nos saves.
+
+## Escala compacta, custos e Armazém (2026-09-29, revisão 3)
+
+- **Poder exibido** = força bruta^0,7 (`KT.State.powerScore`). Mesma ordem, escala humana: equipe inicial ~400, chefe do Cap. I ~4,8 mil, chefe final (Cap. IV) ~80 mil. O combate não mudou; `getPowerRaw`/`recommendedPowerRaw` seguem para a lógica interna. Invasão Heroica/Mítica pede 4 mil/20 mil de Poder.
+- **Custos em ouro** acompanham a renda (~50 mil/h no fim do Cap. I, ~230 mil/h no II, ~675 mil/h no III, ~1,6 mi/h no IV): obras ×1,42–1,5 por nível (antes ×1,75–1,95: a nível 14 custava 1,9 milhão), treino 450·1,24^nível (antes 400·1,32^nível), loja com multiplicador de progresso até ×6.
+- **Armazém do Tanuki**: 300 espaços de base + enfeites cosméticos (Lanternas +50, Biombo +100, Baú Laqueado +150, Cofre do Dragão +200; cristais, compra única). Desequipar ou tirar um herói da equipe manda os itens para lá; nada no Armazém é desmontado nem ocupa a bolsa; "Equipar melhor" também procura no Armazém. Itens equipados deixaram de ocupar a bolsa.

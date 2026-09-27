@@ -433,8 +433,8 @@
     duration:90,
     tiers:[
       { id:0, name:'Normal', P:8, minPower:0, reward:1, pool:25 },
-      { id:1, name:'Heroico', P:80, minPower:150000, reward:2.2, pool:25, ally:true },
-      { id:2, name:'Mítico', P:700, minPower:1500000, reward:4, pool:25, ally:true }
+      { id:1, name:'Heroico', P:80, minPower:4000, reward:2.2, pool:25, ally:true },
+      { id:2, name:'Mítico', P:700, minPower:20000, reward:4, pool:25, ally:true }
     ]
   };
   // Expedições: heróis fora da equipe saem em missão e voltam com recursos (funciona offline).
@@ -644,13 +644,13 @@
   // CIDADE, construções com bônus permanentes.
   // ---------------------------------------------------------------------------
   const buildings = {
-    forge:    { id:'forge', name:'Forja de Ren', icon:'⚒', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.8 },
-    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.8 },
-    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e qualidade dos heróis. Cada nível reduz em 5% o custo da evolução.', baseCost:1200, growth:1.9 },
-    workshop: { id:'workshop', name:'Oficina de Aoi', icon:'⚗', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.75 },
-    guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'🏯', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.8 },
-    market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.9 },
-    house:    { id:'house', name:'Casa do Time', icon:'🏡', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.95 }
+    forge:    { id:'forge', name:'Forja de Ren', icon:'⚒', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.45 },
+    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.45 },
+    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e qualidade dos heróis. Cada nível reduz em 5% o custo da evolução.', baseCost:1200, growth:1.5 },
+    workshop: { id:'workshop', name:'Oficina de Aoi', icon:'⚗', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.42 },
+    guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'🏯', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.45 },
+    market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.5 },
+    house:    { id:'house', name:'Casa do Time', icon:'🏡', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.5 }
   };
   // Casa do Time: Galeria de cartas expostas e Álbum (coleção, como o livro de cartas do Ragnarok).
   const HOUSE = {

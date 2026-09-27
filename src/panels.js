@@ -279,7 +279,7 @@
   // ---------------------------------------------------------------------------
   P.heroPanel = function(uid, tab) {
     const e = this.engine, r = e.record(uid); if (!r) return this.partyPanel();
-    const t = e.template(r.id), st = e.heroStats(r), pw = S().statPower(st);
+    const t = e.template(r.id), st = e.heroStats(r), pw = S().heroScore(S().statPower(st));
     const xpNext = S().heroXpNext(r.level), cap = S().heroMaxLevel(), classNext = S().classXpNext(r.classLevel || 1), aw = S().awakenCost(r.stars, this.state.buildings.shrine), shards = this.state.shards[r.id] || 0, scrollUses = e.shopBoughtToday('scroll_use');
     const head = `<div class="hero-head rarity-${r.rarity}" style="--hc:${t.color}"><div class="hero-art"><img src="${KT.spriteUrl(t.sprite)}" alt=""></div><div class="hero-meta">
       <span class="eyebrow">${esc(t.world)}</span><h3>${esc(t.name)} ${stars(r.stars)}</h3>
