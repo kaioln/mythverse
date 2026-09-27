@@ -564,6 +564,12 @@
   function enchantCost(item, workshopLevel = 1) { const disc = 1 - Math.min(.4, (workshopLevel - 1) * .05); return { dust:Math.round((12 + item.ilvl * 2.2) * disc), gold:Math.round(60 * item.ilvl * disc) }; }
   const maxPlus = forgeLevel => Math.min(15, 4 + forgeLevel * 2);
   const MAX_BAG = 400, OVERFLOW_CAP = 300;
+  // Material negociável: de refino (Aço Estelar, Oricalco, Adamantina) ou de profissão (coleta).
+  const matInfo = id => {
+    const m = materials[id]; if (m) return m.tradeable ? { id, name:m.name, color:m.color, text:m.text, have:s => s.mats?.[m.key] || 0, add:(s, n) => { s.mats[m.key] = (s.mats[m.key] || 0) + n; } } : null;
+    const p = KT.Data.PROF_MATS.find(x => x.id === id); if (!p) return null;
+    return { id, name:p.name, color:p.color, text:`Material de ${KT.Data.PROF.gather[p.prof].name}${p.rare ? ' (raro)' : `, nível ${p.tier}`}.`, have:s => s.prof?.mats?.[id] || 0, add:(s, n) => { s.prof.mats[id] = (s.prof.mats[id] || 0) + n; } };
+  };
 
   function itemScore(item) {
     const s = itemStats(item); let v = 0;
@@ -576,6 +582,6 @@
     return Math.round(v);
   }
 
-  KT.Items = { implicitValue, setSources, itemTypes, weaponTypes, heroWeaponExtra, typeOf, weaponTypeOf, allowedTypes, allowedWeaponTypes, canEquip, equipCheck, reqFor,
+  KT.Items = { matInfo, implicitValue, setSources, itemTypes, weaponTypes, heroWeaponExtra, typeOf, weaponTypeOf, allowedTypes, allowedWeaponTypes, canEquip, equipCheck, reqFor,
     REFINE_BONUS, REFINE_CHANCE, materials, refineRule, cardTiers, rarityCap, MAX_BAG, OVERFLOW_CAP, DROP_TABLES, slots, bases, affixes, sets, uniques, cards, cardById, makeItem, itemStats, rollDrop, rollAffix, salvageValue, upgradeCost, enchantCost, maxPlus, itemScore, primaryValue };
 })();

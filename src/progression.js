@@ -188,7 +188,11 @@
     onigiri:{ name:'Onigiri do Viajante', text:'+10% HP por 30 min.', stats:{ hp:.10 }, dur:1800, icon:'magic_dust_01', hue:130 },
     ramen:{ name:'Ramen Picante', text:'+10% ATK por 30 min.', stats:{ atk:.10 }, dur:1800, icon:'potion_red_01', hue:20 },
     tea:{ name:'Chá de Jasmim', text:'+15% EXP por 30 min.', mods:{ xp:.15 }, dur:1800, icon:'potion_blue_01', hue:130 },
-    luck:{ name:'Pergaminho da Sorte', text:'+20% chance de itens por 30 min.', mods:{ drop:.20 }, dur:1800, icon:'tome_01', hue:45 }
+    luck:{ name:'Pergaminho da Sorte', text:'+20% chance de itens por 30 min.', mods:{ drop:.20 }, dur:1800, icon:'tome_01', hue:45 },
+    flask_fury:{ name:'Frasco de Fúria', text:'+12% ATK e +6% crítico por 30 min.', stats:{ atk:.12, crit:.06 }, dur:1800, icon:'potion_red_01', hue:330 },
+    flask_stone:{ name:'Frasco de Pedra', text:'+12% HP e +12% DEF por 30 min.', stats:{ hp:.12, def:.12 }, dur:1800, icon:'potion_blue_01', hue:45 },
+    flask_sage:{ name:'Frasco do Sábio', text:'+25% EXP por 30 min.', mods:{ xp:.25 }, dur:1800, icon:'potion_blue_01', hue:250 },
+    flask_fortune:{ name:'Frasco da Fortuna', text:'+30% chance de itens e +10% de ouro por 30 min.', mods:{ drop:.30, gold:.10 }, dur:1800, icon:'potion_red_01', hue:45 }
   };
   const shop = {
     gold: [

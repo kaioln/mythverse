@@ -11,7 +11,8 @@ const fs = require('fs'), path = require('path'), pg = require('pg');
   if (roles.rowCount < 2) { console.error('Os papéis authenticated/anonymous ainda não existem: ative a Data API e rode de novo.'); await c.end(); process.exit(2); }
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_setup.sql'), 'utf8'));
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_social.sql'), 'utf8'));
+  await c.query(fs.readFileSync(path.join(__dirname, 'neon_economy.sql'), 'utf8'));
   await c.query("NOTIFY pgrst, 'reload schema'");
-  console.log('Modo Neon pronto: saves (RLS), ranking, Mercado de Jogadores, Arena PvP, Loja de Honra, Guildas e Guerra de Guildas.');
+  console.log('Modo Neon pronto: saves (RLS), ranking, Mercado de Jogadores, Arena PvP, Loja de Honra, Guildas, Guerra de Guildas, Banco Central e ordens de compra.');
   await c.end();
 })().catch(e => { console.error('Falhou:', e.message); process.exit(1); });

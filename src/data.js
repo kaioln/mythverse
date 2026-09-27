@@ -675,8 +675,43 @@
     { id:'glad_charm', name:'Omamori do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (omamori). Negociável.' }
   ];
   // Guildas: bônus por nível (valem para quem está na guilda) e janelas da guerra.
-  const GUILD = { createCost:50000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
+  const GUILD = { createCost:1500000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
     war:{ days:[3, 6], from:20, to:22, attacks:3 } };
+  // Profissões (coleta e criação, como ESO, GW2 e WoW). Materiais de coleta são negociáveis.
+  const PROF = {
+    gather:{ mining:{ name:'Mineração', icon:'⛏', color:'#c9b38a', text:'Veios de minério surgem entre as ondas de caçadas e masmorras.' },
+      herbalism:{ name:'Herbalismo', icon:'🌿', color:'#7fe39a', text:'Ervas raras crescem onde a Fenda tocou o chão.' },
+      essence:{ name:'Extração de Essências', icon:'✨', color:'#b99bff', text:'Monstros derrotados deixam essências que só um extrator treinado recolhe.' } },
+    craft:{ alchemy:{ name:'Alquimia', icon:'⚗', color:'#6fd8b8', text:'Poções maiores e frascos de batalha.' },
+      smithing:{ name:'Artesania', icon:'🔨', color:'#ffb35c', text:'Equipamentos criados à mão, negociáveis no Mercado.' } },
+    maxLevel:50, gatherChance:.3, rareChance:.02,
+    next:lv => Math.round(60 * Math.pow(lv, 1.35)),
+    tierIlvl:[0, 8, 20, 34, 50]
+  };
+  const PROF_MATS = [
+    { id:'ore1', prof:'mining', tier:1, name:'Minério de Ferro', color:'#b9c2d6' }, { id:'ore2', prof:'mining', tier:2, name:'Prata das Marés', color:'#8fd3ff' },
+    { id:'ore3', prof:'mining', tier:3, name:'Âmbar Fóssil', color:'#ffb938' }, { id:'ore4', prof:'mining', tier:4, name:'Mithril Celeste', color:'#c6fff0' },
+    { id:'ore_rare', prof:'mining', tier:0, rare:true, name:'Cristal Lunar', color:'#e6d6ff' },
+    { id:'herb1', prof:'herbalism', tier:1, name:'Erva-Lanterna', color:'#ffcf6b' }, { id:'herb2', prof:'herbalism', tier:2, name:'Alga Lunar', color:'#6fe3ff' },
+    { id:'herb3', prof:'herbalism', tier:3, name:'Flor do Deserto', color:'#ff9a6b' }, { id:'herb4', prof:'herbalism', tier:4, name:'Pétala Eterna', color:'#ffb3d6' },
+    { id:'herb_rare', prof:'herbalism', tier:0, rare:true, name:'Raiz do Mundo', color:'#7fe39a' },
+    { id:'ess1', prof:'essence', tier:1, name:'Essência Selvagem', color:'#9fe38a' }, { id:'ess2', prof:'essence', tier:2, name:'Essência Abissal', color:'#4fb3ff' },
+    { id:'ess3', prof:'essence', tier:3, name:'Essência Temporal', color:'#e0c77d' }, { id:'ess4', prof:'essence', tier:4, name:'Essência Tempestuosa', color:'#8fd3ff' },
+    { id:'ess_rare', prof:'essence', tier:0, rare:true, name:'Essência Primordial', color:'#ff7eb6' }
+  ];
+  // Receitas: custo em materiais e ouro, nível mínimo da profissão e o que entregam.
+  const PROF_RECIPES = [
+    { id:'potion_plus', prof:'alchemy', lv:1, name:'Poções Maiores ×3', cost:{ herb1:3, ess1:1, gold:300 }, give:{ potion:3 }, xp:15 },
+    { id:'elixir_plus', prof:'alchemy', lv:8, name:'Elixires Maiores ×2', cost:{ herb2:2, ess2:2, gold:900 }, give:{ elixir:2 }, xp:30 },
+    { id:'flask_fury', prof:'alchemy', lv:5, name:'Frasco de Fúria', cost:{ herb2:2, ess2:1, gold:1200 }, give:{ flask_fury:1 }, xp:35 },
+    { id:'flask_stone', prof:'alchemy', lv:5, name:'Frasco de Pedra', cost:{ herb2:2, ore2:1, gold:1200 }, give:{ flask_stone:1 }, xp:35 },
+    { id:'flask_sage', prof:'alchemy', lv:15, name:'Frasco do Sábio', cost:{ herb3:2, ess3:1, gold:4000 }, give:{ flask_sage:1 }, xp:60 },
+    { id:'flask_fortune', prof:'alchemy', lv:25, name:'Frasco da Fortuna', cost:{ herb4:2, ess4:1, herb_rare:1, gold:12000 }, give:{ flask_fortune:1 }, xp:110 },
+    ...[1, 2, 3, 4].map(t => ({ id:'forge_t' + t, prof:'smithing', lv:[1, 10, 20, 32][t - 1], name:'Equipamento de ' + ['Ferro', 'Prata', 'Âmbar', 'Mithril'][t - 1], cost:{ ['ore' + t]:4, ['ess' + t]:2, gold:[800, 6000, 30000, 120000][t - 1] }, gear:t, xp:[40, 90, 160, 260][t - 1] })),
+    { id:'forge_lunar', prof:'smithing', lv:40, name:'Obra-prima Lunar', cost:{ ore4:6, ess4:3, ore_rare:2, ess_rare:1, gold:400000 }, gear:4, masterwork:true, xp:600 }
+  ];
+  // Economia: fator base de todas as fontes de ouro e limites do ajuste dinâmico (Banco Central da Fenda).
+  const ECON = { faucet:.5, faucetMin:.6, faucetMax:1.15, priceMin:1, priceMax:1.6 };
   // Paragão (estilo Diablo): EXP de heróis no nível máximo vira nível de conta sem limite prático.
   const PARAGON = { cap:300, per:.004, next:lv => Math.round(180000 * Math.pow(1.11, lv)) };
 
@@ -722,5 +757,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

@@ -103,12 +103,50 @@ CREATE OR REPLACE VIEW public.mv_sales AS
 REVOKE ALL ON public.mv_sales FROM anonymous, authenticated;
 GRANT SELECT ON public.mv_sales TO authenticated;
 
+-- Banco Central da Fenda: cada fotografia da economia guarda os ajustes vigentes (ver tools/neon_economy.sql).
+CREATE TABLE IF NOT EXISTS public.mv_econ (
+  id         bigserial PRIMARY KEY,
+  taken_at   timestamptz NOT NULL DEFAULT now(),
+  players    integer NOT NULL DEFAULT 0,
+  money      numeric NOT NULL DEFAULT 0,
+  per_player numeric NOT NULL DEFAULT 0,
+  avg_level  numeric NOT NULL DEFAULT 1,
+  target     numeric NOT NULL DEFAULT 1,
+  idx        numeric NOT NULL DEFAULT 1,
+  faucet     numeric NOT NULL DEFAULT 1,
+  price      numeric NOT NULL DEFAULT 1,
+  tax_bps    integer NOT NULL DEFAULT 500,
+  volume24   numeric NOT NULL DEFAULT 0,
+  trades24   integer NOT NULL DEFAULT 0
+);
+ALTER TABLE public.mv_econ ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.mv_econ FROM anonymous, authenticated;
+-- Imposto de venda vigente (5% a 12%, sobe com a inflação).
+CREATE OR REPLACE FUNCTION public.mv_market_tax_bps() RETURNS integer LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN RETURN coalesce((SELECT tax_bps FROM public.mv_econ ORDER BY id DESC LIMIT 1), 500); END $$;
+
+-- Anúncios com mais de 7 dias voltam ao correio do vendedor.
+CREATE OR REPLACE FUNCTION public.mv_market_expire() RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE l public.mv_listings; n integer := 0;
+BEGIN
+  FOR l IN UPDATE public.mv_listings SET status = 'cancelled', closed_at = now() WHERE id IN (SELECT id FROM public.mv_listings WHERE status = 'open' AND created_at < now() - interval '7 days' LIMIT 200) RETURNING * LOOP
+    INSERT INTO public.mv_mail (user_id, kind, payload, reason) VALUES (l.seller, l.kind, l.payload, 'Anúncio expirou (7 dias): ' || l.name);
+    n := n + 1;
+  END LOOP;
+  RETURN n;
+END $$;
+
 CREATE OR REPLACE FUNCTION public.mv_market_list(p_kind text, p_key text, p_name text, p_rarity text, p_slot text, p_payload jsonb, p_price bigint, p_seller_name text)
 RETURNS bigint LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE me text := auth.user_id(); new_id bigint;
+DECLARE me text := auth.user_id(); new_id bigint; med numeric; n integer;
 BEGIN
   IF me IS NULL THEN RAISE EXCEPTION 'não autenticado'; END IF;
+  PERFORM public.mv_market_expire();
   IF (SELECT count(*) FROM public.mv_listings WHERE seller = me AND status = 'open') >= 20 THEN RAISE EXCEPTION 'Limite de 20 anúncios abertos.'; END IF;
+  IF (SELECT count(*) FROM public.mv_listings WHERE seller = me AND seller_name <> 'ordem' AND created_at > now() - interval '1 day') >= 60 THEN RAISE EXCEPTION 'Limite de 60 anúncios por dia.'; END IF;
+  -- Contra manipulação: com histórico de vendas, o preço não pode passar de 15× a mediana.
+  SELECT count(*), percentile_cont(0.5) WITHIN GROUP (ORDER BY price) INTO n, med FROM (SELECT price FROM public.mv_listings WHERE item_key = left(p_key, 80) AND status = 'sold' ORDER BY closed_at DESC LIMIT 15) s;
+  IF n >= 3 AND p_price > med * 15 THEN RAISE EXCEPTION 'Preço muito acima do mercado (mediana %, teto %).', round(med), round(med * 15); END IF;
   INSERT INTO public.mv_listings (seller, seller_name, kind, item_key, name, rarity, slot, payload, price)
     VALUES (me, left(coalesce(nullif(p_seller_name, ''), 'Viajante'), 24), p_kind, left(p_key, 80), left(p_name, 80), left(coalesce(p_rarity, ''), 16), left(coalesce(p_slot, ''), 16), p_payload, p_price)
     RETURNING id INTO new_id;
@@ -125,7 +163,9 @@ BEGIN
   UPDATE public.mv_listings SET status = 'sold', buyer = me, closed_at = now()
     WHERE id = p_id AND status = 'open' AND seller <> me RETURNING * INTO l;
   IF l.id IS NULL THEN RAISE EXCEPTION 'Anúncio indisponível (já vendido, cancelado ou é seu).'; END IF;
-  tax := ceil(l.price * 0.05);
+  -- Contra lavagem entre contas amigas: no máximo 5 compras por dia do mesmo vendedor.
+  IF (SELECT count(*) FROM public.mv_listings WHERE buyer = me AND seller = l.seller AND status = 'sold' AND closed_at > now() - interval '1 day') > 5 THEN RAISE EXCEPTION 'Limite de 5 compras por dia do mesmo vendedor.'; END IF;
+  tax := ceil(l.price * public.mv_market_tax_bps() / 10000.0);
   INSERT INTO public.mv_mail (user_id, kind, payload, reason) VALUES (me, l.kind, l.payload, 'Compra: ' || l.name);
   INSERT INTO public.mv_mail (user_id, kind, payload, reason) VALUES (l.seller, 'gold', jsonb_build_object('amount', l.price - tax, 'name', l.name), 'Venda: ' || l.name || ' (imposto ' || tax || ')');
   RETURN jsonb_build_object('id', l.id, 'price', l.price, 'kind', l.kind, 'name', l.name);

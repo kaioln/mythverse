@@ -137,6 +137,8 @@
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
         KT.Neon.onStatus = () => ui.renderCloud();
         KT.Social?.attach(engine, ui);
+        // Banco Central da Fenda: ajustes de ouro, preços e impostos (a cada 30 min).
+        const econ = () => KT.NeonMarket?.economy(engine).catch(() => {}); econ(); setInterval(econ, 30 * 60_000);
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });

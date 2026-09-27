@@ -119,6 +119,20 @@ ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 
   const e5 = new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {}), star0 = e5.state.mats.star, inv0 = e5.state.inventory.length;
   ok(e5.pvpGrant('star') && e5.state.mats.star === star0 + 1 && e5.pvpGrant('glad_weapon') && e5.state.inventory.length === inv0 + 1 && e5.state.inventory[0].setId === 'gladiator', 'Loja de Honra entrega material e peça do Gladiador');
   ok(D.PVP_SHOP.every(o => fs.readFileSync(path.join(root, 'tools/neon_social.sql'), 'utf8').includes(`('${o.id}', ${o.price}, ${o.limit})`)), 'preços da Loja de Honra batem com o banco'); }
+// Profissões: coleta entre ondas, criação e comércio dos materiais.
+{ const st = State.mergeState(JSON.parse(JSON.stringify(state))), e6 = new CombatEngine(st, {});
+  ok(st.prof.lv.mining === 1 && st.consumables.flask_fury === 0, 'saves antigos ganham profissões e frascos');
+  e6.zone = D.zones.hunt_tide; let got = 0; for (let k = 0; k < 400; k++) if (e6.gather()) got++;
+  ok(got > 60 && got < 200 && Object.keys(st.prof.mats).some(id => D.PROF_MATS.find(m => m.id === id)?.tier === 2), 'coleta ~30% das vezes, no nível do capítulo');
+  e6.zone = D.zones.boss; ok(!e6.gather(), 'não há coleta em chefes');
+  st.prof.mats = { herb1:3, ess1:1, ore1:8, ess1b:0 }; st.prof.mats.ess1 = 3; st.player.gold = 1e7;
+  const pots = st.consumables.potion; ok(e6.craftProf('potion_plus') && st.consumables.potion === pots + 3 && st.prof.mats.herb1 === 0, 'Alquimia cria poções consumindo materiais');
+  ok(!e6.craftProf('flask_sage') && /nível/.test(e6.lastError), 'receita exige nível da profissão');
+  const inv = st.inventory.length; ok(e6.craftProf('forge_t1', 'weapon') && st.inventory.length === inv + 1 && st.inventory[0].crafter && st.inventory[0].slot === 'weapon' && !st.inventory[0].bound, 'Artesania forja item negociável assinado');
+  ok(!e6.craftProf('forge_t1', 'nada'), 'Artesania exige espaço válido');
+  st.prof.mats.ore2 = 5; const pay = e6.marketTake('mat', 'ore2', 3); ok(pay && st.prof.mats.ore2 === 2, 'material de coleta sai para o mercado');
+  e6.marketReceive('mat', { id:'ore2', qty:4 }); ok(st.prof.mats.ore2 === 6 && I.matInfo('ore2').name === 'Prata das Marés', 'material de coleta chega pelo mercado');
+  ok(D.PROF_RECIPES.every(r => Object.keys(r.cost).every(k => k === 'gold' || D.PROF_MATS.some(m => m.id === k))), 'receitas só usam materiais existentes'); }
 // Capítulo IV
 ['hunt_sky','hunt_sakura','dungeon_sky','boss_sky'].forEach(id => ok(D.zones[id] && fs.existsSync(path.join(root, 'assets/scenes', id + '.png')), 'região do Capítulo IV: ' + id));
 ok(D.zones.hunt_sky.unlock.kills.boss_sand === 1 && D.enemies.boss_sky.boss && D.guide.some(g => g.id === 'g_raijin'), 'Capítulo IV liberado depois de Apep, com chefe e guia');

@@ -71,8 +71,8 @@
     collection:{ k:'HERÓIS', t:'Convocação e Coleção', tabs:[['summon','Convocar'], ['owned','Meus heróis'], ['catalog','Catálogo']] },
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
     ranking:{ k:'RANKING', t:'Ranking da Fenda', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
-    city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['house','Casa do Time'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
-    shop:{ k:'LOJA', t:'Loja da Fenda', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['gems','Carteira 💠']] },
+    city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['house','Casa do Time'], ['prof','Profissões'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
+    shop:{ k:'LOJA', t:'Loja da Fenda', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['econ','Economia'], ['gems','Carteira 💠']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
     wiki:{ k:'WIKI', t:'Enciclopédia da Fenda', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado'], ['security','Segurança']] },
     arena:{ k:'PvP', t:'Arena da Fenda', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
@@ -204,6 +204,35 @@
   // ---------------------------------------------------------------------------
   // EQUIPE
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Busca e filtros de heróis (Equipe e Coleção): nome, raridade, classe, elemento, fora da equipe e ordem.
+  // ---------------------------------------------------------------------------
+  const RAR_RANK = { legendary:0, epic:1, rare:2, common:3 };
+  P.heroFilterState = function() { return this.heroFilter || (this.heroFilter = { q:'', rarity:'all', cls:'all', el:'all', sort:'power', free:false }); };
+  P.filterHeroes = function(list, ctx) {
+    const f = this.heroFilterState(), e = this.engine, team = this.state.formation, q = f.q.trim().toLocaleLowerCase('pt-BR');
+    const power = new Map(list.map(r => [r.uid, e.heroPower(r, ctx)]));
+    return list.filter(r => { const t = e.template(r.id); return (f.rarity === 'all' || r.rarity === f.rarity) && (f.cls === 'all' || t.cls === f.cls) && (f.el === 'all' || t.el === f.el) && (!f.free || !team.includes(r.uid)) && (!q || t.name.toLocaleLowerCase('pt-BR').includes(q)); })
+      .sort((a, b) => f.sort === 'rarity' ? (RAR_RANK[a.rarity] - RAR_RANK[b.rarity]) || power.get(b.uid) - power.get(a.uid)
+        : f.sort === 'stars' ? (b.stars - a.stars) || power.get(b.uid) - power.get(a.uid)
+        : f.sort === 'level' ? (b.level - a.level) || power.get(b.uid) - power.get(a.uid)
+        : f.sort === 'name' ? e.template(a.id).name.localeCompare(e.template(b.id).name, 'pt-BR')
+        : power.get(b.uid) - power.get(a.uid));
+  };
+  P.heroFilterBar = function(total, shown) {
+    const f = this.heroFilterState(), opt = (v, n, cur) => `<option value="${v}" ${cur === v ? 'selected' : ''}>${esc(n)}</option>`;
+    const count = r => this.state.collection.filter(h => h.rarity === r).length;
+    return `<div class="hero-filter">
+      <input id="hf-q" type="search" placeholder="Buscar herói pelo nome…" value="${esc(f.q)}" autocomplete="off">
+      <div class="hf-rarity">${[['all', 'Todas'], ...D.heroRarities.slice().reverse().map(r => [r.id, r.label])].map(([id, n]) => `<button class="rar-pill r-${id} ${f.rarity === id ? 'active' : ''}" data-hf-rarity="${id}" type="button">${esc(n)}${id === 'all' ? '' : ` <em>${count(id)}</em>`}</button>`).join('')}</div>
+      <select id="hf-cls" aria-label="Classe">${opt('all', 'Todas as classes', f.cls)}${Object.keys(D.classes).map(c => opt(c, c, f.cls)).join('')}</select>
+      <select id="hf-el" aria-label="Elemento">${opt('all', 'Todos os elementos', f.el)}${Object.keys(D.elements).map(el => opt(el, el, f.el)).join('')}</select>
+      <select id="hf-sort" aria-label="Ordenar">${[['power', 'Maior poder'], ['rarity', 'Raridade'], ['stars', 'Estrelas'], ['level', 'Nível'], ['name', 'Nome']].map(([v, n]) => opt(v, n, f.sort)).join('')}</select>
+      <label class="check"><input type="checkbox" id="hf-free" ${f.free ? 'checked' : ''}> Só fora da equipe</label>
+      <small class="dim">${shown} de ${total}</small></div>`;
+  };
+  const rarChip = r => `<span class="rar-chip r-${r}">${esc(D.heroRarities.find(x => x.id === r)?.label || r)}</span>`;
+
   P.partyPanel = function() {
     const e = this.engine, ctx = e.ctx(), f = this.state.formation, canEdit = e.canEditParty();
     if (!this.state.collection.length) return `<div class="empty-state"><h3>Você ainda não tem heróis</h3><p>Abra a Caixa dos Mundos para convocar seus primeiros heróis.</p><button class="action pink big" data-go="collection" type="button">Convocar heróis</button></div>`;
@@ -218,14 +247,15 @@
       f.forEach((uid, i) => { const r = uid && e.record(uid); if (!r) return; const t = e.template(r.id); if (i < 2 && ['Arcanista','Suporte','Atirador'].includes(t.cls)) warns.push(`${esc(t.name)} (${t.cls}) está na <b>frente</b>: classes frágeis rendem mais na retaguarda.`); if (i >= 2 && t.cls === 'Vanguarda') warns.push(`${esc(t.name)} (Vanguarda) está na <b>retaguarda</b>, não protegerá ninguém.`); });
     }
     const syn = this.synergyHtml(ctx);
-    const owned = this.state.collection.slice().sort((a, b) => (f.includes(b.uid) - f.includes(a.uid)) || e.heroPower(b, ctx) - e.heroPower(a, ctx));
+    const owned = this.filterHeroes(this.state.collection.slice(), ctx).sort((a, b) => f.includes(b.uid) - f.includes(a.uid));
     return `<div class="party-layout"><section>
       <div class="section-title"><h3>Formação <span>${e.heroes.length}/4</span></h3><small>Poder total: <b>${compact(e.getPower())}</b></small></div>
       <div class="formation-slots">${slots}</div>
       ${canEdit ? '' : '<p class="note">A formação só pode ser alterada na cidade (Tsukimori).</p>'}
       ${warns.length ? `<ul class="warn-list">${warns.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
       <div class="section-title"><h3>Heróis disponíveis</h3><small>${canEdit ? 'Toque em “Escalar” para colocar na vaga selecionada.' : ''}</small></div>
-      <div class="roster-list">${owned.map(r => { const t = e.template(r.id), inTeam = f.includes(r.uid), pts = e.freeAttr(r); return `<article class="roster-row rarity-${r.rarity} ${inTeam ? 'in-team' : ''}"><img src="${portrait(t.id)}" alt="" data-hero="${r.uid}"><div data-hero="${r.uid}"><b>${esc(t.name)} ${stars(r.stars)}</b><small>${clsTag(t.cls)} ${elTag(t.el)} Nv.${r.level}${pts > 0 ? ` · <span class="pts">${pts} pts</span>` : ''}</small></div><span class="pow">${compact(e.heroPower(r, ctx))}</span>${inTeam ? '<span class="tag green">NA EQUIPE</span>' : canEdit ? `<button class="action small primary" data-assign="${r.uid}" type="button">Escalar</button>` : ''}<button class="action small" data-hero="${r.uid}" type="button">Ficha</button></article>`; }).join('')}</div>
+      ${this.heroFilterBar(this.state.collection.length, owned.length)}
+      <div class="roster-list">${owned.map(r => { const t = e.template(r.id), inTeam = f.includes(r.uid), pts = e.freeAttr(r); return `<article class="roster-row rarity-${r.rarity} ${inTeam ? 'in-team' : ''}"><img src="${portrait(t.id)}" alt="" data-hero="${r.uid}"><div data-hero="${r.uid}"><b>${esc(t.name)} ${stars(r.stars)} ${rarChip(r.rarity)}</b><small>${clsTag(t.cls)} ${elTag(t.el)} Nv.${r.level}${pts > 0 ? ` · <span class="pts">${pts} pts</span>` : ''}</small></div><span class="pow">${compact(e.heroPower(r, ctx))}</span>${inTeam ? '<span class="tag green">NA EQUIPE</span>' : canEdit ? `<button class="action small primary" data-assign="${r.uid}" type="button">Escalar</button>` : ''}<button class="action small" data-hero="${r.uid}" type="button">Ficha</button></article>`; }).join('')}</div>
     </section><aside>${syn}</aside></div>`;
   };
   P.synergyHtml = function(ctx) {
@@ -317,7 +347,8 @@
     const e = this.engine, owned = this.state.collection, free = this.state.starterRolls, keys = this.state.player.keys, avail = free + keys;
     if (tab === 'owned') {
       const ctx = e.ctx();
-      return `<div class="collection-grid">${owned.slice().sort((a, b) => ({ legendary:0, epic:1, rare:2, common:3 }[a.rarity] - { legendary:0, epic:1, rare:2, common:3 }[b.rarity]) || b.level - a.level).map(r => { const t = e.template(r.id), sh = this.state.shards[r.id] || 0, aw = S().awakenCost(r.stars, this.state.buildings.shrine); return `<button class="collection-card rarity-${r.rarity} ${this.state.formation.includes(r.uid) ? 'active' : ''}" data-hero="${r.uid}" type="button"><div class="art"><span class="badge">${rarLabel(r.rarity)}</span>${this.state.formation.includes(r.uid) ? '<span class="in-party">EQUIPE</span>' : ''}<img src="${KT.spriteUrl(t.sprite)}" alt="" loading="lazy"></div><div class="info"><b>${esc(t.name)}</b><small>${stars(r.stars)} Nv.${r.level}</small><small>${D.classes[t.cls].icon} ${t.cls} · ${D.elements[t.el].icon} ${t.el}</small><small class="${sh >= aw.shards && r.stars < 6 ? 'txt-pink' : 'dim'}">Fragmentos ${sh}/${r.stars >= 6 ? ', ' : aw.shards}</small></div></button>`; }).join('') || '<p class="collection-empty">Nenhum herói ainda.</p>'}</div>`;
+      const list = this.filterHeroes(owned.slice(), ctx);
+      return `${this.heroFilterBar(owned.length, list.length)}<div class="collection-grid">${list.map(r => { const t = e.template(r.id), sh = this.state.shards[r.id] || 0, aw = S().awakenCost(r.stars, this.state.buildings.shrine); return `<button class="collection-card rarity-${r.rarity} ${this.state.formation.includes(r.uid) ? 'active' : ''}" data-hero="${r.uid}" type="button"><div class="art"><span class="badge">${rarLabel(r.rarity)}</span>${this.state.formation.includes(r.uid) ? '<span class="in-party">EQUIPE</span>' : ''}<img src="${KT.spriteUrl(t.sprite)}" alt="" loading="lazy"></div><div class="info"><b>${esc(t.name)}</b><small>${stars(r.stars)} Nv.${r.level}</small><small>${D.classes[t.cls].icon} ${t.cls} · ${D.elements[t.el].icon} ${t.el}</small><small class="${sh >= aw.shards && r.stars < 6 ? 'txt-pink' : 'dim'}">Fragmentos ${sh}/${r.stars >= 6 ? ', ' : aw.shards}</small></div></button>`; }).join('') || '<p class="collection-empty">Nenhum herói ainda.</p>'}</div>`;
     }
     if (tab === 'catalog') {
       const ids = new Set(owned.map(r => r.id));
@@ -391,6 +422,7 @@
     } else if (tab === 'mats') {
       const mats = [{ key:'ore', name:'Tamahagane', have:s.player.ore, text:I.materials.common.text, color:I.materials.common.color }, ...['rare', 'epic', 'legendary'].map(id => { const m = I.materials[id]; return { key:m.key, id, name:m.name, have:s.mats[m.key] || 0, text:m.text, color:m.color, trade:true }; }), { key:'dust', name:'Pó de Éter', have:s.player.dust, text:'Usado para encantar afixos e na culinária da Oficina.', color:'#9fb3ff' }];
       body = `<div class="mat-grid">${mats.map(m => `<article class="mat-card" style="--mc:${m.color}"><b>${esc(m.name)}</b><em>${U.fmt(m.have)}</em><small>${esc(m.text)}</small>${m.trade && tradeMode(this) ? `<button class="action small" data-go="shop:p2p" type="button">Negociar</button>` : ''}</article>`).join('')}</div>
+        <h4 class="sub-title">Materiais de profissão</h4>${this.profMatsGrid ? this.profMatsGrid() : ''}
         <p class="note">Aço Estelar cai de elites, guardiões e chefes; Oricalco de chefes de andar e chefes; Adamantina só de chefes em Pesadelo/Inferno, Invasões Mundiais e andares profundos da Fenda. A Oficina transmuta materiais com limite diário.</p>`;
     } else {
       const cons = [['potion', 'Poção de Cura', 'Usada em combate (tecla 1).'], ['elixir', 'Elixir de Energia', 'Usado em combate (tecla 2).'], ['scroll', 'Pergaminho de EXP', 'Use na ficha do herói.'], ...Object.entries(PR.buffs).map(([id, b]) => [id, b.name, b.text, true])];
@@ -534,6 +566,7 @@
         <h4 class="sub-title">Encantamento</h4><div class="split"><div class="pick-list">${s.inventory.filter(x => x.affixes?.length).map(it => `<button class="pick-item rarity-${it.rarity} ${it.uid === this.forgeSel ? 'selected' : ''}" data-forge-item="${it.uid}" type="button">${KT.itemIcon(it)}<span><b class="rtext">${esc(it.name)}</b><small>${it.affixes.length} afixo(s)</small></span></button>`).join('') || '<p class="dim">Nenhum item com afixos.</p>'}</div><div>${enchant}</div></div>`;
     }
     if (tab === 'house') return this.houseHtml(bHead);
+    if (tab === 'prof') return this.profHtml();
     if (tab === 'dojo') {
       const cap = PR.trainingCap(b.dojo);
       return `${bHead('dojo')}<p class="note">Treino da equipe: melhorias permanentes para <b>todos</b> os heróis. Limite atual: nível ${cap} (melhore o Dojo para aumentar). Só os heróis da equipe ganham EXP em combate; os do banco evoluem em <b>Expedições</b>.</p>
@@ -601,6 +634,7 @@
   // ---------------------------------------------------------------------------
   P.shopPanel = function(_, tab) {
     const e = this.engine, s = this.state;
+    if (tab === 'econ') return this.econPanel();
     if (tab === 'market') {
       const offers = e.refreshMarket(); const next = (Math.floor(Date.now() / 7200000) + 1) * 7200000;
       return `<p class="note">Mercado do Porto: ofertas renovam em <b>${fmtTime((next - Date.now()) / 1000)}</b>. Nível do Mercado ${s.buildings.market}: ${2 + s.buildings.market} equipamentos por rodada.</p><div class="inventory-grid">${offers.map((o, i) => o.type === 'item' ? this.itemCard(o.item, { flavor:true, actions:`<button class="action small ${s.player.gold >= o.price && !o.sold ? 'primary' : ''}" data-market="${i}" type="button" ${o.sold || s.player.gold < o.price ? 'disabled' : ''}>${o.sold ? 'Vendido' : `Comprar · ${compact(o.price)} ouro`}</button>` }) : `<article class="item"><div class="item-head"><img class="item-art round" src="${portrait(o.heroId)}" alt=""><div><b>${o.n} fragmentos</b><small>${esc(e.template(o.heroId).name)}</small></div></div><p class="dim">Use para Despertar este herói.</p><footer><button class="action small ${s.player.gold >= o.price && !o.sold ? 'primary' : ''}" data-market="${i}" type="button" ${o.sold || s.player.gold < o.price ? 'disabled' : ''}>${o.sold ? 'Vendido' : `Comprar · ${compact(o.price)} ouro`}</button></footer></article>`).join('')}</div>`;
@@ -642,25 +676,26 @@
     const me = this.session.user?.id, bal = gold ? this.state.player.gold : (this.wallet?.balance || 0);
     const sel = this.state.inventory.find(x => x.uid === this.sellSel);
     const ownCards = I.cards.filter(c => (this.state.cards[c.id] || 0) > 0);
-    const ownMats = Object.values(I.materials).filter(m => m.tradeable && (this.state.mats?.[m.key] || 0) > 0);
+    const ownMats = [...Object.keys(I.materials), ...D.PROF_MATS.map(m => m.id)].map(id => I.matInfo(id)).filter(m => m && m.have(this.state) > 0);
     const sellerBtn = l => `<button class="linkish" data-seller="${l.sellerId}" type="button" title="Ver perfil">${esc(l.seller)}</button>`;
     const minP = gold ? (cfg.goldMinPrice || 100) : (cfg.minPrice || 10), unit = gold ? 'ouro' : 'Gemas';
     const feeLine = gold ? `Taxa de anúncio: ${pct((cfg.goldListFeeBps || 100) / 10000, 1)} do preço (mín. ${U.fmt(cfg.goldListFeeMin || 50)} ouro), paga ao anunciar. Imposto na venda: ${pct((cfg.goldTaxBps || 500) / 10000, 1)}.` : `Você recebe o preço menos ${pct((cfg.feeBps || 500) / 10000, 1)} de taxa. Vendas ficam ${cfg.holdHours ?? 72}h em análise antes do saque.`;
     const sell = `<section class="sell-box"><h4 class="sub-title">Anunciar em ${gold ? 'ouro' : 'Gemas'}</h4>${sel ? `<div class="split">${this.itemCard(sel)}<div class="forge-box"><label>Preço em ${unit} <input id="sell-price" type="number" min="${minP}" step="1" value="${this.sellPrice || ''}" placeholder="${gold ? 'ex.: 25000' : 'ex.: 500 (= R$ 5,00)'}"></label><p class="dim" id="sell-preview">${feeLine}</p>${this.priceHint(sel, cur)}<div class="box-actions"><button class="action primary" data-list-item="${sel.uid}" type="button">Anunciar item</button><button class="action" data-sell-clear type="button">Cancelar</button></div></div></div>` : '<p class="dim">Na Bolsa, use o botão de venda em um item para anunciá-lo aqui. Itens <b>vinculados</b> (loja e recompensas) não podem ser vendidos.</p>'}
-      ${ownMats.length ? `<div class="card-sell"><select id="sell-mat">${ownMats.map(m => `<option value="${m.id}">${esc(m.name)} (×${U.fmt(this.state.mats[m.key])})</option>`).join('')}</select><input id="sell-mat-qty" type="number" min="1" max="9999" step="1" placeholder="Quantidade"><input id="sell-mat-price" type="number" min="${minP}" step="1" placeholder="Preço do lote em ${unit}"><button class="action" data-list-mat type="button">Anunciar material</button></div>` : ''}
+      ${ownMats.length ? `<div class="card-sell"><select id="sell-mat">${ownMats.map(m => `<option value="${m.id}">${esc(m.name)} (×${U.fmt(m.have(this.state))})</option>`).join('')}</select><input id="sell-mat-qty" type="number" min="1" max="9999" step="1" placeholder="Quantidade"><input id="sell-mat-price" type="number" min="${minP}" step="1" placeholder="Preço do lote em ${unit}"><button class="action" data-list-mat type="button">Anunciar material</button></div>` : ''}
       ${ownCards.length ? `<div class="card-sell"><select id="sell-card">${ownCards.map(c => `<option value="${c.id}">${esc(c.name)} (×${this.state.cards[c.id]})</option>`).join('')}</select><input id="sell-card-price" type="number" min="${minP}" step="1" placeholder="Preço em ${unit}"><button class="action" data-list-card type="button">Anunciar carta</button></div>` : ''}
       <p class="dim small-note">${feeLine}</p></section>`;
-    const listing = l => { const own = l.sellerId === me, lc = l.currency || 'gems'; const body = l.kind === 'item' ? this.itemCard(l.payload, { compare:`<span class="compare">Vendedor: ${sellerBtn(l)}</span>` }) : l.kind === 'mat' ? `<article class="item mat-listing"><div class="item-head"><span class="mat-dot" style="--c:${I.materials[l.payload.id]?.color || '#aaa'}"></span><div><b>${esc(I.materials[l.payload.id]?.name || l.payload.id)} ×${U.fmt(l.payload.qty)}</b><small>Material · Vendedor: ${sellerBtn(l)}</small></div></div><p class="dim">${esc(I.materials[l.payload.id]?.text || '')}</p><p class="dim">≈ ${priceTxt(Math.ceil(l.price / Math.max(1, l.payload.qty)), lc)} por unidade</p></article>` : `<article class="item card-listing ${l.payload.mvp ? 'mvp' : ''}"><div class="item-head"><span class="card-art"><img src="${KT.spriteUrl(I.cardById(l.payload.id)?.sprite)}" alt=""></span><div><b>${esc(I.cardById(l.payload.id)?.name || l.payload.id)}</b><small>${l.payload.mvp ? 'Carta MVP' : 'Carta'} · Vendedor: ${sellerBtn(l)}</small></div></div><ul class="item-stats">${Object.entries(I.cardById(l.payload.id)?.stats || {}).map(([k, v]) => `<li>${statValue(k, v)}</li>`).join('')}</ul></article>`;
+    const listing = l => { const own = l.sellerId === me, lc = l.currency || 'gems'; const body = l.kind === 'item' ? this.itemCard(l.payload, { compare:`<span class="compare">Vendedor: ${sellerBtn(l)}</span>` }) : l.kind === 'mat' ? `<article class="item mat-listing"><div class="item-head"><span class="mat-dot" style="--c:${I.matInfo(l.payload.id)?.color || '#aaa'}"></span><div><b>${esc(I.matInfo(l.payload.id)?.name || l.payload.id)} ×${U.fmt(l.payload.qty)}</b><small>Material · Vendedor: ${sellerBtn(l)}</small></div></div><p class="dim">${esc(I.matInfo(l.payload.id)?.text || '')}</p><p class="dim">≈ ${priceTxt(Math.ceil(l.price / Math.max(1, l.payload.qty)), lc)} por unidade</p></article>` : `<article class="item card-listing ${l.payload.mvp ? 'mvp' : ''}"><div class="item-head"><span class="card-art"><img src="${KT.spriteUrl(I.cardById(l.payload.id)?.sprite)}" alt=""></span><div><b>${esc(I.cardById(l.payload.id)?.name || l.payload.id)}</b><small>${l.payload.mvp ? 'Carta MVP' : 'Carta'} · Vendedor: ${sellerBtn(l)}</small></div></div><ul class="item-stats">${Object.entries(I.cardById(l.payload.id)?.stats || {}).map(([k, v]) => `<li>${statValue(k, v)}</li>`).join('')}</ul></article>`;
       const can = (lc === 'gold' ? this.state.player.gold : (this.wallet?.balance || 0)) >= l.price;
       return `<div class="listing">${body}<footer><b class="price">${priceTxt(l.price, lc)}</b>${own ? `<button class="action small" data-cancel-listing="${l.id}" type="button">Cancelar</button>` : `<button class="action small primary" ${lc === 'gold' ? 'data-buy-gold' : 'data-buy-listing'}="${l.id}" data-price="${l.price}" data-name="${esc(l.name || l.payload?.name || '')}" type="button" ${can ? '' : 'disabled'}>Comprar</button>`}</footer></div>`; };
     const mail = this.myMkt?.mailbox || [];
-    const mailName = m => m.kind === 'item' ? esc(m.payload.name) : m.kind === 'gold' ? `<span class="coin-ic" aria-hidden="true"></span> ${U.fmt(m.payload.amount)} ouro` : m.kind === 'mat' ? `${esc(I.materials[m.payload.id]?.name || 'Material')} ×${U.fmt(m.payload.qty)}` : esc(I.cardById(m.payload.id)?.name || 'Carta');
+    const mailName = m => m.kind === 'item' ? esc(m.payload.name) : m.kind === 'gold' ? `<span class="coin-ic" aria-hidden="true"></span> ${U.fmt(m.payload.amount)} ouro` : m.kind === 'mat' ? `${esc(I.matInfo(m.payload.id)?.name || 'Material')} ×${U.fmt(m.payload.qty)}` : esc(I.cardById(m.payload.id)?.name || 'Carta');
     const curTabs = `<div class="cur-switch" role="tablist">${cfg.goldMarket !== false ? `<button class="${gold ? 'active' : ''}" data-mkt-cur="gold" type="button"><span class="coin-ic" aria-hidden="true"></span> Ouro</button>` : ''}${cfg.enabled !== false ? `<button class="${!gold ? 'active' : ''}" data-mkt-cur="gems" type="button">💠 Gemas</button>` : ''}</div>`;
     return `<div class="wallet-strip">${curTabs}<span>Saldo: <b>${gold ? priceTxt(bal, 'gold') : gemTxt(bal)}</b></span>${gold ? '' : '<button class="action small" data-tab-go="gems" type="button">Carteira</button>'}<button class="action small" data-mkt-refresh type="button">↻ Atualizar</button></div>
       ${mail.length ? `<section class="mailbox"><h4 class="sub-title">📬 Correio (${mail.length})</h4>${mail.map(m => `<div class="mail-row"><span>${mailName(m)} <small class="dim">${esc(m.reason)}</small></span><button class="action small primary" data-claim-mail="${m.id}" type="button">Resgatar</button></div>`).join('')}</section>` : ''}
       ${sell}
       <div class="inv-top"><div class="filter-tabs">${[['all','Tudo'], ['item','Itens'], ['card','Cartas'], ['mat','Materiais']].map(([id, n]) => `<button class="${f.type === id ? 'active' : ''}" data-mkt-type="${id}" type="button">${n}</button>`).join('')}</div>${f.type === 'item' ? `<select id="mkt-slot" aria-label="Espaço"><option value="all">Todo espaço</option>${Object.entries(I.slots).map(([id, sl]) => `<option value="${id}" ${f.slot === id ? 'selected' : ''}>${esc(sl.name)}</option>`).join('')}</select><select id="mkt-rarity" aria-label="Raridade"><option value="all">Toda raridade</option>${D.rarities.map(r => `<option value="${r.id}" ${f.rarity === r.id ? 'selected' : ''}>${esc(r.label)}</option>`).join('')}</select>` : ''}<div class="filter-tabs">${[['recent','Recentes'], ['price','Menor preço'], ['-price','Maior preço']].map(([id, n]) => `<button class="${f.sort === id ? 'active' : ''}" data-mkt-sort="${id}" type="button">${n}</button>`).join('')}</div><input id="mkt-search" type="search" placeholder="Buscar pelo nome…" value="${esc(f.q)}"></div>
       ${this.mktErr ? `<p class="note warn-note">${esc(this.mktErr)}</p>` : ''}
+      ${this.session?.mode === 'neon' ? this.ordersHtml() : ''}
       <div class="listing-grid">${(this.mktList || []).filter(l => l.sellerId !== me && (l.currency || 'gems') === cur).map(listing).join('') || '<p class="empty-note">Nenhum anúncio de outros jogadores encontrado.</p>'}</div>
       ${this.myMkt?.listings?.length ? `<h4 class="sub-title">Meus anúncios</h4><div class="listing-grid">${this.myMkt.listings.map(listing).join('')}</div>` : ''}
       <p class="note">Itens anunciados saem da sua bolsa e voltam pelo Correio se você cancelar ou se o anúncio expirar. Compras em ouro chegam direto na bolsa; o ouro das suas vendas chega pelo Correio.</p>`;
@@ -680,7 +715,7 @@
     const p = r.profile, me = String(this.session.user?.id) === String(p.id), bal = this.wallet?.balance || 0;
     const since = new Date(p.since).toLocaleDateString('pt-BR');
     const team = p.team.map(h => { const t = this.engine.template(h.id); if (!t) return ''; return `<div class="pf-hero"><span class="pf-portrait" style="background-image:url('${portrait(t.id)}')"></span><div><b>${esc(t.name)}</b><small>${'★'.repeat(h.stars)} · Nv. ${h.level}</small>${clsTag(t.cls)}<div class="pf-gear">${h.gear.map(g => `<span class="rtext rarity-${esc(g.rarity)}" title="${esc(I.slots[g.slot]?.name || g.slot)}">${esc(g.name)}${g.plus ? ` +${g.plus}` : ''}</span>`).join('') || '<span class="dim">Sem equipamento</span>'}</div></div></div>`; }).join('');
-    const listing = l => `<div class="listing">${l.kind === 'item' ? this.itemCard(l.payload) : `<article class="item"><b>${esc(l.kind === 'mat' ? `${I.materials[l.payload.id]?.name || l.payload.id} ×${U.fmt(l.payload.qty)}` : I.cardById(l.payload.id)?.name || l.payload.id)}</b></article>`}<footer><b class="price">${priceTxt(l.price, l.currency)}</b>${me ? '' : `<button class="action small primary" ${l.currency === 'gold' ? 'data-buy-gold' : 'data-buy-listing'}="${l.id}" data-price="${l.price}" data-name="${esc(l.name || l.payload?.name || '')}" type="button" ${(l.currency === 'gold' ? this.state.player.gold : bal) >= l.price ? '' : 'disabled'}>Comprar</button>`}</footer></div>`;
+    const listing = l => `<div class="listing">${l.kind === 'item' ? this.itemCard(l.payload) : `<article class="item"><b>${esc(l.kind === 'mat' ? `${I.matInfo(l.payload.id)?.name || l.payload.id} ×${U.fmt(l.payload.qty)}` : I.cardById(l.payload.id)?.name || l.payload.id)}</b></article>`}<footer><b class="price">${priceTxt(l.price, l.currency)}</b>${me ? '' : `<button class="action small primary" ${l.currency === 'gold' ? 'data-buy-gold' : 'data-buy-listing'}="${l.id}" data-price="${l.price}" data-name="${esc(l.name || l.payload?.name || '')}" type="button" ${(l.currency === 'gold' ? this.state.player.gold : bal) >= l.price ? '' : 'disabled'}>Comprar</button>`}</footer></div>`;
     return `<div class="profile-head"><div><h3>${esc(p.name)}${me ? ' <small class="dim">(você)</small>' : ''}</h3><small class="dim">Viajante desde ${since} · ${U.fmt(p.playHours)} h de jornada</small></div>
       <div class="pf-stats"><span><b>Nv. ${p.level}</b>Conta</span><span><b>${compact(p.power)}</b>Poder</span><span><b>${U.fmt(p.bossKills)}</b>Chefes</span><span><b>${U.fmt(p.bestStage)}</b>Estágios</span><span><b>${U.fmt(p.riftBest)}</b>Fenda</span><span><b>${U.fmt(p.sales)}</b>Vendas</span></div></div>
       <h4 class="sub-title">Equipe atual</h4><div class="pf-team">${team || '<p class="dim">Sem equipe formada.</p>'}</div>
@@ -984,6 +1019,8 @@
   // ---------------------------------------------------------------------------
   P.handleInput = function(e) {
     const t = e.target;
+    if (t.id === 'hf-q') { this.heroFilterState().q = t.value; clearTimeout(this.hfTimer); this.hfTimer = setTimeout(() => { const pos = t.selectionStart; this.refreshPanel(); const n = this.el.modalBody.querySelector('#hf-q'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } }, 180); return; }
+    if (['hf-cls', 'hf-el', 'hf-sort', 'hf-free'].includes(t.id) && e.type === 'change') { const f = this.heroFilterState(); f[t.id.slice(3)] = t.type === 'checkbox' ? t.checked : t.value; this.refreshPanel(); return; }
     if (t.id === 'wiki-search') { this.wikiQuery = t.value; const q = t.value.trim().toLocaleLowerCase('pt-BR'); this.el.modalBody.querySelectorAll('[data-wiki-entry]').forEach(n => { n.hidden = !!q && !n.textContent.toLocaleLowerCase('pt-BR').includes(q); }); }
     if (t.id === 'auto-salvage' && e.type === 'change') { this.cmd('setSetting', 'autoSalvage', t.value); this.toast(t.value === 'none' ? 'Auto-desmontar desligado.' : `Itens ${t.value === 'common' ? 'comuns' : t.value === 'rare' ? 'comuns e raros' : 'até épicos'} serão desmontados automaticamente.`); }
     if (t.id === 'set-sound' && e.type === 'change') document.querySelector('#sound-btn').click();
@@ -1005,6 +1042,7 @@
   P.handleAction = function(ev) {
     const b = ev.target.closest('button,[data-talent-node],[data-remove],[data-hero]'); if (!b) return;
     if (this.socialAction?.(b)) return;
+    if (b.dataset.hfRarity) { this.heroFilterState().rarity = b.dataset.hfRarity; this.refreshPanel(); return; }
     const d = b.dataset, e = this.engine, s = this.state;
     const refresh = () => { this.refreshPanel(); this.renderResources(); };
     const c = (op, ...a) => this.cmd(op, ...a);

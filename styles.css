@@ -1519,3 +1519,46 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .war-score small{color:var(--muted)}.war-score>span{font:28px var(--display);color:var(--sakura)}
 @media (max-width:900px){.guild-grid{grid-template-columns:minmax(0,1fr)}.war-score em{font-size:40px}.arena-crest{width:80px;height:80px}}
 .foe-card header .tier-tag{align-self:flex-start}
+
+/* ---------- Economia viva ---------- */
+.eco-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:20px;border:1px solid rgba(111,216,184,.35);background:var(--grain),radial-gradient(600px 220px at 0% 0%,rgba(111,216,184,.16),transparent 60%),linear-gradient(135deg,rgba(24,20,48,.96),rgba(14,11,30,.96))}
+.eco-hero.hot{border-color:rgba(255,93,108,.5);background:var(--grain),radial-gradient(600px 220px at 0% 0%,rgba(255,93,108,.18),transparent 60%),linear-gradient(135deg,rgba(40,16,28,.96),rgba(14,11,30,.96))}
+.eco-hero.warm{border-color:rgba(255,179,92,.5)}.eco-hero.cold{border-color:rgba(143,211,255,.5)}
+.eco-hero h3{margin:4px 0 6px;font:26px var(--display)}.eco-hero p{margin:0;color:#ddd6f3;max-width:640px}
+.eco-gauge{display:grid;place-items:center;width:120px;height:120px;border-radius:50%;text-align:center;background:radial-gradient(circle,rgba(255,255,255,.08),rgba(0,0,0,.3));border:3px solid rgba(255,207,107,.5)}
+.eco-gauge b{font:32px var(--display);color:var(--gold)}.eco-gauge small{font-size:10.5px;color:var(--muted);margin-top:-18px}
+.eco-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:6px}
+.eco-kpis span{display:flex;flex-direction:column;padding:12px 14px;border-radius:14px;background:var(--grain),var(--card-bg);border:1px solid var(--line);font-weight:700;font-size:13px}
+.eco-kpis b{font:24px var(--display);color:var(--jade)}.eco-kpis small{color:var(--muted);font-weight:500;font-size:11.5px;margin-top:2px}
+.eco-chart{padding:12px;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid var(--line)}.eco-chart svg{width:100%;height:120px;display:block}
+.eco-mid{stroke:rgba(255,255,255,.18);stroke-dasharray:6 6}
+.eco-legend{display:flex;gap:14px;margin-top:6px;font-size:12px;font-weight:700}.eco-legend small{color:var(--dim);margin-left:auto}
+.eco-legend .l-index::before,.eco-legend .l-faucet::before{content:"";display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle;background:#ff7eb6}.eco-legend .l-faucet::before{background:#6fd8b8}
+.eco-prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.eco-price{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.eco-price em{font:20px var(--display);font-style:normal;color:var(--gold)}.eco-price small{color:var(--muted);font-size:11px}
+.orders-box{margin:14px 0;padding:14px;border-radius:16px;background:rgba(111,216,184,.04);border:1px solid rgba(111,216,184,.25)}
+.order-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.order-row{display:grid;grid-template-columns:minmax(0,1.2fr) auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.order-row.mine{border-color:rgba(255,207,107,.45)}.order-row small{color:var(--muted)}
+@media (max-width:760px){.order-row{grid-template-columns:minmax(0,1fr) auto}.order-row small{grid-column:1/-1}}
+
+/* ---------- Profissões ---------- */
+.prof-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.prof-card{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--grain),var(--card-bg);border:1px solid var(--line);border-left:3px solid var(--pc)}
+.prof-card>div{flex:1}.prof-card small{display:block;color:var(--muted);font-size:12px;margin:2px 0 6px}
+.prof-ico{display:grid;place-items:center;width:44px;height:44px;flex:none;border-radius:12px;font-size:22px;background:rgba(255,255,255,.06)}
+.craft-row.locked{opacity:.55}.craft-row small .cost-ok{color:var(--green)}.craft-row small .cost-bad{color:#ffb0b8}
+
+/* ---------- Busca e filtros de heróis ---------- */
+.hero-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.hero-filter input[type=search]{flex:1 1 220px;min-height:38px;padding:0 12px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:var(--text)}
+.hero-filter select{min-height:36px}.hero-filter small{margin-left:auto}
+.hf-rarity{display:flex;gap:4px;flex-wrap:wrap}
+.rar-pill{display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:0 11px;border-radius:999px;font-size:12px;font-weight:800;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.rar-pill em{font-style:normal;font-size:10.5px;opacity:.8}
+.rar-pill.r-common{--rc:var(--common)}.rar-pill.r-rare{--rc:var(--rare)}.rar-pill.r-epic{--rc:var(--epic)}.rar-pill.r-legendary{--rc:var(--legendary)}.rar-pill.r-all{--rc:var(--gold)}
+.rar-pill:hover{color:var(--text);border-color:var(--rc)}
+.rar-pill.active{color:#1a0f2e;background:var(--rc);border-color:transparent}
+.rar-chip{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;font:800 9.5px var(--ui);letter-spacing:.06em;text-transform:uppercase;vertical-align:2px;color:#1a0f2e;background:var(--common)}
+.rar-chip.r-rare{background:var(--rare)}.rar-chip.r-epic{background:var(--epic)}.rar-chip.r-legendary{background:var(--legendary)}

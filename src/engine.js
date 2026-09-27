@@ -35,7 +35,8 @@
       starterRolls:10, boxesOpened:0, pity:0,
       formation:[null, null, null, null], collection:[], shards:{},
       inventory:[], invCap:150, overflow:[], mats:{ star:0, ori:0, adam:0 }, buffs:{}, shopDaily:{ date:'', bought:{} },
-      consumables:{ potion:0, elixir:0, scroll:0, onigiri:0, ramen:0, tea:0, luck:0 }, cards:{},
+      consumables:{ potion:0, elixir:0, scroll:0, onigiri:0, ramen:0, tea:0, luck:0, flask_fury:0, flask_stone:0, flask_sage:0, flask_fortune:0 },
+      prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
       settings:{ auto:true, autoAdvance:true, autoRepeat:true, speed:1, sound:false, autoSalvage:'none' },
@@ -60,7 +61,7 @@
     const fresh = createState();
     if (!raw || raw.version !== 3) return fresh;
     const s = { ...fresh, ...raw };
-    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon','bossLoot','matDaily']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon','bossLoot','matDaily','prof']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
     s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
@@ -70,6 +71,7 @@
     s.formation = [0, 1, 2, 3].map(i => (raw.formation || [])[i] && uids.has(raw.formation[i]) ? raw.formation[i] : null);
     s.inventory = (raw.inventory || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
     s.cards = { ...(raw.cards || {}) };
+    s.prof.lv = { ...fresh.prof.lv, ...(raw.prof?.lv || {}) }; s.prof.xp = { ...fresh.prof.xp, ...(raw.prof?.xp || {}) }; s.prof.mats = { ...(raw.prof?.mats || {}) };
     s.house.display = (Array.isArray(s.house.display) ? s.house.display : []).slice(0, 6).map(id => (id && I.cardById(id) ? id : null));
     s.house.seen = { ...(s.house.seen || {}) }; albumIds(s).forEach(id => { s.house.seen[id] = 1; });
     s.collection.forEach(h => { h.talents = h.talents || {}; h.job = h.job || 0; });
@@ -1012,12 +1014,14 @@
       const z = this.zone;
       if (z.kind === 'hunt') {
         if (this.wave < 4) {
+          this.gather();
           this.party.forEach(u => { if (u.alive) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .08); });
           const chance = (.1 + (activeEvent(this.now()).mods?.encounter ? .1 : 0));
           if (this.wave === 2 && !this.encounterUsed && U.random() < chance) { this.encounterUsed = true; this.triggerEncounter(); return; }
           this.phase = 'between'; this.timer = 1.1;
         } else this.stageClear();
       } else if (z.kind === 'dungeon') {
+        this.gather();
         this.party.forEach(u => { if (u.alive) u.hp = Math.min(u.maxHp, u.hp + u.maxHp * .1); });
         if (this.room < 5) { this.phase = 'between'; this.timer = 1.4; }
         else this.floorClear();
@@ -1173,7 +1177,7 @@
       } else if (pe.enc.id === 'chest' && id === 'open') {
         if (U.random() < .3) { this.enemies = [this.makeEnemyUnit('mimic', zonePower(this.zone, this.opts))]; this.phase = 'fight'; this.emit('onWave', { label:'Era um Mímico!', detail:'O baú tinha dentes...', special:true }); this.emit('onWarn', 'Era um Mímico!'); return; }
         const it = this.drop('chest', this.zone, itemLevelFor(this.zone, this.opts) + 1, 1); this.addItem(it); this.emit('onLoot', it);
-        const g = Math.round(200 * zonePower(this.zone, this.opts)); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
+        const g = this.goldIn(200 * zonePower(this.zone, this.opts)); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
       }
       this.phase = 'between'; this.timer = .8;
     }
@@ -1188,7 +1192,7 @@
       if (s.bounty?.active && s.bounty.active.enemy === e.id) s.bounty.active.progress = Math.min(s.bounty.active.n, s.bounty.active.progress + 1);
       const research = this.research(e.id); s.bestiary[e.id] = (s.bestiary[e.id] || 0) + 1;
       if (this.research(e.id) > research) this.emit('onToast', `<b>Bestiário:</b> ${esc(t.name)}, pesquisa nível ${this.research(e.id)} (+${Math.round(this.research(e.id) * D.RESEARCH.dmg * 100)}% de dano contra ela).`);
-      const gold = Math.round(U.randInt(t.gold[0], t.gold[1]) * Math.pow(e.P, .85) * (1 + this.mod('gold')) * mult * .8);
+      const gold = this.goldIn(U.randInt(t.gold[0], t.gold[1]) * Math.pow(e.P, .85) * (1 + this.mod('gold')) * mult * .8);
       const xp = Math.round(t.xp * Math.pow(e.P, .92) * (1 + this.mod('xp')) * mult);
       s.player.gold += gold; s.stats.goldEarned += gold; this.runGold += gold; this.runXp += xp;
       if (activeEvent(this.now()).mods?.dust) s.player.dust += U.random() < .3 ? 1 : 0;
@@ -1365,9 +1369,11 @@
       const p = this.state.player; p.xp += xp;
       while (p.xp >= accountXpNext(p.level)) { p.xp -= accountXpNext(p.level); p.level++; p.crystal += 3; this.emit('onToast', `Conta nível ${p.level}! +3 cristais.`); this.emit('onAccountLevel', p.level); }
     }
+    // Torneira única de ouro: toda recompensa passa por aqui (base do jogo × ajuste do Banco Central da Fenda).
+    goldIn(n) { return Math.max(0, Math.round(n * D.ECON.faucet * U.clamp(Number(this.state.econ?.faucet) || 1, D.ECON.faucetMin, D.ECON.faucetMax))); }
     grant(r) {
-      const p = this.state.player;
-      if (r.gold) { p.gold += r.gold; this.runGold += r.gold; }
+      const p = this.state.player, s = this.state;
+      if (r.gold) { r.gold = this.goldIn(r.gold); p.gold += r.gold; this.runGold += r.gold; s.stats.goldEarned += r.gold; }
       if (r.crystal) p.crystal += r.crystal;
       if (r.keys) p.keys += r.keys;
       if (r.dust) p.dust += r.dust;
@@ -1549,9 +1555,9 @@
       }
       if (kind === 'card') { if (!I.cardById(arg) || (s.cards[arg] || 0) < 1) { this.lastError = 'Você não tem essa carta livre.'; return null; } s.cards[arg]--; return { id:arg }; }
       if (kind === 'mat') {
-        const m = I.materials[arg]; qty = Math.floor(qty);
-        if (!m?.tradeable || !(qty > 0) || (s.mats[m.key] || 0) < qty) { this.lastError = 'Quantidade de material indisponível.'; return null; }
-        s.mats[m.key] -= qty; return { id:arg, qty };
+        const m = I.matInfo(arg); qty = Math.floor(qty);
+        if (!m || !(qty > 0) || m.have(s) < qty) { this.lastError = 'Quantidade de material indisponível.'; return null; }
+        m.add(s, -qty); return { id:arg, qty };
       }
       return null;
     }
@@ -1559,9 +1565,51 @@
       const s = this.state;
       if (kind === 'gold') { const n = Math.max(0, Math.floor(Number(payload?.amount) || 0)); s.player.gold += n; return n > 0; }
       if (kind === 'item' && payload?.slot && I.slots[payload.slot]) { const it = { cards:[], ...payload, locked:false }; if (s.inventory.some(x => x.uid === it.uid)) it.uid = U.uid('it'); this.addItem(it); return true; }
-      if (kind === 'card' && I.cardById(payload?.id)) { s.cards[payload.id] = (s.cards[payload.id] || 0) + 1; if (s.house) s.house.seen[payload.id] = 1; return true; }
-      if (kind === 'mat' && I.materials[payload?.id]?.tradeable) { const k = I.materials[payload.id].key; s.mats[k] = (s.mats[k] || 0) + Math.max(0, Math.floor(Number(payload.qty) || 0)); return true; }
+      if (kind === 'card' && I.cardById(payload?.id)) { s.cards[payload.id] = (s.cards[payload.id] || 0) + Math.min(50, Math.max(1, Math.floor(Number(payload.qty) || 1))); if (s.house) s.house.seen[payload.id] = 1; return true; }
+      if (kind === 'mat' && I.matInfo(payload?.id)) { I.matInfo(payload.id).add(s, Math.max(0, Math.floor(Number(payload.qty) || 0))); return true; }
       return false;
+    }
+
+    // ---------- Profissões ----------
+    profXp(id, amount) {
+      const p = this.state.prof; let up = false;
+      if ((p.lv[id] || 1) >= D.PROF.maxLevel) return false;
+      p.xp[id] = (p.xp[id] || 0) + amount;
+      while ((p.lv[id] || 1) < D.PROF.maxLevel && p.xp[id] >= D.PROF.next(p.lv[id] || 1)) { p.xp[id] -= D.PROF.next(p.lv[id] || 1); p.lv[id] = (p.lv[id] || 1) + 1; up = true; }
+      if (up) this.emit('onToast', `<b>${esc((D.PROF.gather[id] || D.PROF.craft[id]).name)}</b> nível ${p.lv[id]}!`);
+      return up;
+    }
+    // Coleta: entre ondas, chance de achar um veio, erva ou essência do nível do capítulo.
+    gather() {
+      const z = this.zone; if (!(z.kind === 'hunt' || z.kind === 'dungeon') || U.random() >= D.PROF.gatherChance) return null;
+      const s = this.state, prof = U.pick(Object.keys(D.PROF.gather)), lv = s.prof.lv[prof] || 1, tier = U.clamp(z.chapter || 1, 1, 4);
+      const rare = U.random() < D.PROF.rareChance + lv * .0004;
+      const mat = D.PROF_MATS.find(m => m.prof === prof && (rare ? m.rare : m.tier === tier));
+      const qty = rare ? 1 : 1 + Math.floor(lv / 20);
+      s.prof.mats[mat.id] = (s.prof.mats[mat.id] || 0) + qty;
+      this.profXp(prof, rare ? 40 : 8 * tier);
+      this.emit('onLog', { text:`${D.PROF.gather[prof].icon} Coletou ${qty}× ${mat.name}.`, type:'reward' });
+      if (rare) this.emit('onToast', `Coleta rara: <b>${esc(mat.name)}</b>!`);
+      return { id:mat.id, qty };
+    }
+    profHave(k) { return k === 'gold' ? this.state.player.gold : this.state.prof.mats[k] || 0; }
+    // Criação: consome materiais e ouro. Artesania gera equipamento negociável com raridade pela habilidade.
+    craftProf(recipeId, slot) {
+      const r = D.PROF_RECIPES.find(x => x.id === recipeId), s = this.state; if (!r) return false;
+      if ((s.prof.lv[r.prof] || 1) < r.lv) { this.lastError = `Requer ${D.PROF.craft[r.prof].name} nível ${r.lv}.`; return false; }
+      const cost = { ...r.cost, gold:Math.round((r.cost.gold || 0) * this.priceMult()) };
+      if (Object.entries(cost).some(([k, v]) => this.profHave(k) < v)) { this.lastError = 'Materiais ou ouro insuficientes.'; return false; }
+      if (r.gear && !I.slots[slot]) { this.lastError = 'Escolha o espaço do equipamento.'; return false; }
+      Object.entries(cost).forEach(([k, v]) => { if (k === 'gold') s.player.gold -= v; else s.prof.mats[k] -= v; });
+      let out;
+      if (r.gear) {
+        const lv = s.prof.lv.smithing || 1, roll = U.random();
+        const rarity = r.masterwork ? (roll < .25 ? 'legendary' : 'epic') : roll < .002 + lv * .0002 ? 'legendary' : roll < .05 + lv * .004 ? 'epic' : 'rare';
+        const it = I.makeItem({ ilvl:D.PROF.tierIlvl[r.gear] + Math.floor(lv / 5), rarity, slot, prefer:this.preferWT() });
+        it.crafter = String(s.player.name || 'Viajante').slice(0, 20); this.addItem(it); this.emit('onLoot', it); out = it.name;
+      } else Object.entries(r.give).forEach(([k, v]) => { s.consumables[k] = (s.consumables[k] || 0) + v; out = r.name; });
+      this.profXp(r.prof, r.xp);
+      this.emit('onState'); return { name:out };
     }
 
     // ---------- Loja de Honra (PvP) ----------
@@ -1674,7 +1722,9 @@
     toggleLock(itemUid) { const it = this.state.inventory.find(x => x.uid === itemUid); if (it) { it.locked = !it.locked; this.emit('onState'); } }
 
     // ---------- cidade ----------
-    buildingCost(id) { const b = D.buildings[id], lv = this.state.buildings[id] || 1; return Math.round(b.baseCost * Math.pow(b.growth, lv - 1)); }
+    // Multiplicador de preços de NPC e obras definido pelo Banco Central da Fenda (inflação alta = mais caro).
+    priceMult() { return U.clamp(Number(this.state.econ?.price) || 1, D.ECON.priceMin, D.ECON.priceMax); }
+    buildingCost(id) { const b = D.buildings[id], lv = this.state.buildings[id] || 1; return Math.round(b.baseCost * Math.pow(b.growth, lv - 1) * this.priceMult()); }
     buildingCap() { return 2 + Math.floor(this.state.player.level / 3); }
     upgradeBuilding(id) {
       const lv = this.state.buildings[id] || 1; if (lv >= this.buildingCap()) { this.emit('onToast', `Limite de nível ${this.buildingCap()}, suba o nível da conta.`); return false; }
@@ -1694,7 +1744,8 @@
     shopBoughtToday(id) { const sd = this.state.shopDaily, key = dayKey(this.now()); if (sd.date !== key) { sd.date = key; sd.bought = {}; } return sd.bought[id] || 0; }
     offerPrice(offer) {
       if (offer.give.invCap) { const n = Math.max(0, Math.round((this.state.invCap - 150) / 25)); return { crystal:100 + n * 40 }; }
-      return this.shopPrice(offer);
+      const p = this.shopPrice(offer), m = this.priceMult();
+      return m === 1 ? p : Object.fromEntries(Object.entries(p).map(([k, v]) => [k, k === 'gold' ? Math.round(v * m) : v]));
     }
     buy(offerId) {
       const offer = [...PR.shop.gold, ...PR.shop.crystal].find(o => o.id === offerId); if (!offer) return false;
@@ -1971,7 +2022,7 @@
       const zid = D.zones[s.lastHunt]?.kind === 'hunt' ? s.lastHunt : 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid]?.best || 1), P = zonePower(z, { stage });
       const killsPerSec = .16; // AFK rende bem menos que jogar (ativo: ~0,5 a 1 abate/s)
       const kills = Math.floor(capped * killsPerSec);
-      const gold = Math.round(kills * 11 * Math.pow(P, .85) * .35 * (1 + this.mod('gold')));
+      const gold = this.goldIn(kills * 11 * Math.pow(P, .85) * .35 * (1 + this.mod('gold')));
       const xp = Math.round(kills * 14 * Math.pow(P, .92) * .3 * (1 + this.mod('xp')));
       s.player.gold += gold; s.stats.goldEarned += gold;
       this.giveXp(xp);

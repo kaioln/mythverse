@@ -189,6 +189,7 @@
       return r.ok ? { ok:true, config:CFG, listings:(r.data || []).map(toListing) } : { ok:false, error:r.error, listings:[] };
     },
     async myMarket() {
+      await rpc('mv_market_expire', {});
       const [l, m] = await Promise.all([Neon.api('GET', '/mv_market?select=*&mine=is.true&order=created_at.desc'), Neon.api('GET', '/mv_mail?select=*&order=created_at.asc')]);
       if (!l.ok || !m.ok) return { ok:false, error:l.error || m.error };
       return { ok:true, listings:(l.data || []).map(toListing), mailbox:(m.data || []).map(x => ({ id:Number(x.id), kind:x.kind, payload:x.payload, reason:x.reason })) };
@@ -210,7 +211,7 @@
         if (!payload) return { ok:false, error:engine.lastError || 'Não foi possível anunciar.' };
         const meta = a.kind === 'item' ? { key:itemKey(payload), name:payload.name, rarity:payload.rarity, slot:payload.slot }
           : a.kind === 'card' ? { key:`c:${payload.id}`, name:KT.Items.cardById(payload.id).name, rarity:'', slot:'' }
-          : { key:`m:${payload.id}`, name:`${KT.Items.materials[payload.id].name} ×${payload.qty}`, rarity:'', slot:'' };
+          : { key:`m:${payload.id}`, name:`${KT.Items.matInfo(payload.id).name} ×${payload.qty}`, rarity:'', slot:'' };
         const r = await rpc('mv_market_list', { p_kind:a.kind, p_key:meta.key, p_name:meta.name, p_rarity:meta.rarity || '', p_slot:meta.slot || '', p_payload:payload, p_price:price, p_seller_name:String(s.player.name || 'Viajante').slice(0, 24) });
         if (!r.ok) { engine.marketReceive(a.kind, payload); engine.save(); return { ok:false, error:r.error }; }
         s.player.gold -= fee; engine.save(); Neon.flush();
@@ -230,6 +231,51 @@
       }
       if (op === 'marketClaim') return this.claim(engine, Number(args[0]));
       return { ok:false, error:'Ação indisponível no modo Neon.' };
+    },
+    // ---------- Banco Central da Fenda ----------
+    async economy(engine) {
+      const r = await rpc('mv_economy', {}); if (!r.ok) return r;
+      this.econ = r.data; CFG.goldTaxBps = r.data.taxBps || 500;
+      if (engine) engine.state.econ = { faucet:Number(r.data.faucet) || 1, price:Number(r.data.price) || 1, taxBps:r.data.taxBps || 500, at:Date.now() };
+      return { ok:true, data:r.data };
+    },
+    async dailyHistory(key) { const r = await rpc('mv_price_history', { p_key:key }); return r.ok ? r.data || [] : []; },
+    // ---------- Ordens de compra (materiais e cartas) ----------
+    async orders() {
+      const r = await Neon.api('GET', '/mv_orders_open?select=*&order=price_each.desc&limit=150');
+      return r.ok ? (r.data || []).map(o => ({ id:Number(o.id), kind:o.kind, key:o.item_key, name:o.name, payload:o.payload, qtyLeft:o.qty_left, qty:o.qty, price:Number(o.price_each), buyer:o.buyer_name, mine:!!o.mine })) : [];
+    },
+    goodsMeta(kind, id) {
+      if (kind === 'card') { const cd = KT.Items.cardById(id); return cd ? { key:`c:${id}`, name:cd.name, payload:{ id } } : null; }
+      const m = KT.Items.matInfo(id); return m ? { key:`m:${id}`, name:m.name, payload:{ id } } : null;
+    },
+    async placeOrder(engine, o) {
+      const s = engine.state, qty = Math.floor(Number(o.qty)), price = Math.floor(Number(o.price)), meta = this.goodsMeta(o.kind, o.id);
+      if (!meta) return { ok:false, error:'Escolha um material ou carta negociável.' };
+      if (!(qty >= 1 && qty <= 9999) || !(price >= 100)) return { ok:false, error:'Quantidade de 1 a 9.999 e preço mínimo de 100 por unidade.' };
+      const total = qty * price; if (s.player.gold < total) return { ok:false, error:`A ordem reserva ${total.toLocaleString('pt-BR')} de ouro.` };
+      s.player.gold -= total; engine.save();
+      const r = await rpc('mv_order_place', { p_kind:o.kind, p_key:meta.key, p_name:meta.name, p_payload:meta.payload, p_qty:qty, p_price:price, p_buyer_name:String(s.player.name || 'Viajante').slice(0, 24) });
+      if (!r.ok) { s.player.gold += total; engine.save(); return r; }
+      Neon.flush(); return { ok:true };
+    },
+    async fillOrder(engine, order, qty) {
+      qty = Math.min(order.qtyLeft, Math.floor(Number(qty)) || 0); if (qty < 1) return { ok:false, error:'Quantidade inválida.' };
+      const id = order.payload?.id, got = order.kind === 'card' ? (qty === 1 ? engine.marketTake('card', id) : null) : engine.marketTake('mat', id, qty);
+      if (!got) return { ok:false, error:order.kind === 'card' && qty > 1 ? 'Venda cartas uma de cada vez.' : engine.lastError || 'Você não tem o suficiente.' };
+      const r = await rpc('mv_order_fill', { p_id:order.id, p_qty:qty });
+      if (!r.ok) { engine.marketReceive(order.kind, order.kind === 'card' ? { id } : { id, qty }); engine.save(); return r; }
+      engine.save(); Neon.flush();
+      // O ouro vem pelo correio: resgata na hora.
+      const mail = await this.myMarket();
+      for (const m of (mail.mailbox || []).filter(x => x.kind === 'gold')) await this.claim(engine, m.id);
+      return { ok:true, result:r.data };
+    },
+    async cancelOrder(engine, id) {
+      const r = await rpc('mv_order_cancel', { p_id:id }); if (!r.ok) return r;
+      const mail = await this.myMarket();
+      for (const m of (mail.mailbox || []).filter(x => x.kind === 'gold')) await this.claim(engine, m.id);
+      return { ok:true, refund:r.data?.refund };
     },
     async claim(engine, id) {
       const r = await rpc('mv_mail_claim', { p_id:id }); if (!r.ok) return r;

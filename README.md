@@ -172,6 +172,12 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Guildas completas**: fundar, entrar (aberta ou por pedido), cargos (líder, oficial, membro), expulsar, transferir liderança, doações que sobem o nível (até 30 membros), bônus de ouro/EXP/itens por nível, mural e registro de eventos.
 - **Guerra de Guildas** (quarta e sábado, 20h às 22h de Brasília): pareamento por rating, 3 investidas manuais por membro, pontos por defensor derrotado, placar ao vivo e recompensas de Honra, EXP e rating.
 
+### Economia viva e profissões
+- **Banco Central da Fenda**: a cada 20 min mede o ouro em circulação por jogador ativo (bolsos, cofres de guilda, correio e ordens) contra a meta do nível médio. Com inflação, a torneira de ouro fecha aos poucos (até 60%), preços de NPC e obras sobem (até ×1,6) e o imposto do mercado sobe (5% a 12%); com deflação, tudo afrouxa. Painel em **Loja → Economia** com índice, histórico e preços de referência.
+- **Mercado de Jogadores completo**: anúncios, **ordens de compra** (materiais e cartas, ouro reservado no banco), histórico diário de preços, expiração em 7 dias, teto de 15× a mediana contra manipulação e limite de 5 compras por dia do mesmo vendedor contra lavagem.
+- **Profissões** (coleta e criação): Mineração, Herbalismo e Extração de Essências coletam entre as ondas; Alquimia (frascos de batalha) e Artesania (equipamentos assinados e negociáveis) transformam isso em produtos para o Mercado. Nível até 50.
+- **Ouro mais escasso**: todas as fontes passam por uma torneira única; fundar guilda custa 1,5 milhão.
+
 ### Guia, missões e loja
 - **Guia do Viajante** com 27 passos e recompensas, e o menu **Aventuras**, que mostra tudo o que dá para fazer agora (invasão, expedições, recompensas, eventos, Fenda, chefes).
 - **Contratos da Guilda** com **Rank da Guilda** sem limite, **missões diárias** (meia-noite de Brasília), **login diário** em ciclo de 7 dias, **Crônicas** infinitas depois do Guia e 43 conquistas.
