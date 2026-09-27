@@ -757,6 +757,15 @@
       rates:{ legendary:.20, epic:.45, rare:.35, common:0 }, text:'Sem comuns. Qualquer herói, inclusive os da temporada.' }
   ];
 
+  // ARMAZÉM DO TANUKI: guarda de itens (como o armazém do Ragnarok). Itens desequipados e os de heróis que saem da
+  // equipe vão para lá; nada no Armazém é desmontado nem ocupa a bolsa. Enfeites cosméticos (compra única) aumentam o espaço.
+  const STORAGE = { base:300, decor:[
+    { id:'lanterns', name:'Lanternas de Papel', icon:'🏮', slots:50, price:{ crystal:250 }, text:'Um corredor iluminado de lanternas vermelhas.' },
+    { id:'screen', name:'Biombo das Garças', icon:'🪭', slots:100, price:{ crystal:500 }, text:'Biombo pintado a ouro que divide as prateleiras.' },
+    { id:'chest', name:'Baú Laqueado de Sakura', icon:'🌸', slots:150, price:{ crystal:900 }, text:'Laca negra com cerejeiras em madrepérola.' },
+    { id:'dragon', name:'Cofre do Dragão Dourado', icon:'🐉', slots:200, price:{ crystal:1500 }, text:'O cofre lendário dos mercadores de Tsukimori.' }
+  ] };
+
   // Efeitos de status, texto usado na UI e na wiki.
   const statusInfo = {
     burn:{ name:'Queimadura', icon:'🔥', color:'#ff7a4f', text:'Dano por segundo baseado no ATK de quem aplicou. Ignora defesa.' },
@@ -784,5 +793,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

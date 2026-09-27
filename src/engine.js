@@ -35,7 +35,7 @@
       player:{ name:'Viajante', level:1, xp:0, gold:0, crystal:0, dust:0, ore:0, gems:0, keys:0 },
       starterRolls:10, boxesOpened:0, pity:0,
       formation:[null, null, null, null], collection:[], shards:{},
-      inventory:[], invCap:150, overflow:[], mats:{ star:0, ori:0, adam:0 }, buffs:{}, shopDaily:{ date:'', bought:{} },
+      inventory:[], invCap:150, overflow:[], storage:[], decor:{}, mats:{ star:0, ori:0, adam:0 }, buffs:{}, shopDaily:{ date:'', bought:{} },
       consumables:{ potion:0, elixir:0, scroll:0, onigiri:0, ramen:0, tea:0, luck:0, flask_fury:0, flask_stone:0, flask_sage:0, flask_fortune:0 },
       prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
@@ -66,6 +66,8 @@
     s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
+    s.storage = (Array.isArray(raw.storage) ? raw.storage : []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
+    s.decor = Object.fromEntries(Object.keys(raw.decor || {}).filter(id => D.STORAGE.decor.some(d => d.id === id)).map(id => [id, 1]));
     s.progress = { ...fresh.progress }; Object.keys(raw.progress || {}).forEach(k => { s.progress[k] = { ...(fresh.progress[k] || {}), ...raw.progress[k] }; });
     // Heróis da primeira versão da temporada viram as formas despertadas correspondentes.
     const ren = D.SEASON?.renamed || {};
@@ -1456,6 +1458,9 @@
       (r.items || []).forEach(it => { this.addItem(it); this.emit('onLoot', it); });
       this.emit('onState');
     }
+    // Espaço da bolsa: itens equipados não contam (ficam com o herói).
+    bagCount() { const eq = new Set(this.state.collection.flatMap(h => Object.values(h.equipped).filter(Boolean))); return this.state.inventory.filter(x => !eq.has(x.uid)).length; }
+    bagFull() { return this.bagCount() >= Math.min(this.state.invCap, I.MAX_BAG); }
     addItem(item) {
       const s = this.state;
       s.stats.loot++; this.count('loot');
@@ -1465,12 +1470,12 @@
       if (auto !== 'none' && order.indexOf(item.rarity) >= 0 && order.indexOf(item.rarity) <= order.indexOf(auto)) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; s.player.gold += v.gold; s.stats.salvage++; this.count('salvage'); item.autoSalvaged = true; this.runLoot.push(item); return; }
       // Bolsa cheia: nada se perde. O item vai para o Baú de Excedentes; se o baú também lotar,
       // só o item COMUM de menor valor é desmontado para abrir espaço.
-      if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG) && (RARITY_RANK[item.rarity] || 0) >= 2) {
+      if (this.bagFull() && (RARITY_RANK[item.rarity] || 0) >= 2) {
         // Item valioso com a bolsa cheia: o item comum/raro mais fraco (livre e destrancado) cede a vaga e vai para os Excedentes.
         const weak = s.inventory.filter(x => (RARITY_RANK[x.rarity] || 0) <= 1 && !x.locked && !this.ownerOf(x.uid)).sort((a, b) => (RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]) || I.itemScore(a) - I.itemScore(b))[0];
         if (weak) { s.inventory.splice(s.inventory.indexOf(weak), 1); s.overflow = s.overflow || []; s.overflow.unshift(weak); weak.inOverflow = true; }
       }
-      if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG)) {
+      if (this.bagFull()) {
         s.overflow = s.overflow || [];
         if (s.overflow.length >= I.OVERFLOW_CAP) {
           const commons = s.overflow.map((x, i) => [x, i]).filter(([x]) => x.rarity === 'common').sort((a, b) => I.itemScore(a[0]) - I.itemScore(b[0]));
@@ -1493,7 +1498,7 @@
     takeOverflow(uid = null) {
       const s = this.state; let n = 0;
       const list = uid ? s.overflow.filter(x => x.uid === uid) : s.overflow.slice();
-      for (const it of list) { if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG)) break; s.overflow.splice(s.overflow.indexOf(it), 1); delete it.inOverflow; s.inventory.unshift(it); n++; }
+      for (const it of list) { if (this.bagFull()) break; s.overflow.splice(s.overflow.indexOf(it), 1); delete it.inOverflow; s.inventory.unshift(it); n++; }
       this.emit('onState'); return n;
     }
     salvageOverflow(maxRarity = 'rare') {
@@ -1608,12 +1613,15 @@
       const f = this.state.formation;
       const baseOf = id => this.template(id)?.base || id;
       if (f.some((u, i) => u && i !== slot && u !== uid && baseOf(this.record(u)?.id) === baseOf(r.id))) { this.emit('onToast', 'Esse personagem (ou outra forma dele) já está na equipe.'); return false; }
-      const prev = f.indexOf(uid);
+      const prev = f.indexOf(uid), out = f[slot];
       if (prev >= 0) { f[prev] = f[slot]; }
       f[slot] = uid;
+      if (out && out !== uid && !f.includes(out)) this.stashHeroGear(out);
       this.emit('onState'); return true;
     }
-    removeFromParty(uid) { if (!this.canEditParty()) return false; const i = this.state.formation.indexOf(uid); if (i < 0) return false; this.state.formation[i] = null; this.emit('onState'); return true; }
+    removeFromParty(uid) { if (!this.canEditParty()) return false; const i = this.state.formation.indexOf(uid); if (i < 0) return false; this.state.formation[i] = null; this.stashHeroGear(uid); this.emit('onState'); return true; }
+    // Herói que sai da equipe devolve os itens ao Armazém (protegidos da desmontagem e sem ocupar a bolsa).
+    stashHeroGear(uid) { const r = this.record(uid); if (!r) return 0; let n = 0; Object.keys(r.equipped).forEach(k => { const it = r.equipped[k]; if (!it) return; r.equipped[k] = null; if (this.stashItem(it)) n++; }); return n; }
     rebuildIfVillage() { }
 
     addAttr(uid, key, n = 1) {
@@ -1786,16 +1794,50 @@
 
     // ---------- itens ----------
     equip(heroUid, itemUid) {
-      const r = this.record(heroUid), it = this.state.inventory.find(x => x.uid === itemUid);
+      const s = this.state, r = this.record(heroUid);
+      let it = s.inventory.find(x => x.uid === itemUid), fromStorage = false;
+      if (!it) { it = s.storage.find(x => x.uid === itemUid); fromStorage = !!it; }
       if (!r || !it) return false;
       const chk = I.equipCheck(it, r);
       if (!chk.ok) { this.lastError = chk.reason; this.emit('onToast', esc(chk.reason)); return false; }
-      this.state.collection.forEach(h => { Object.keys(h.equipped).forEach(k => { if (h.equipped[k] === itemUid) h.equipped[k] = null; }); });
-      r.equipped[it.slot] = itemUid; it.isNew = false;
+      if (fromStorage) { s.storage.splice(s.storage.indexOf(it), 1); s.inventory.unshift(it); }
+      s.collection.forEach(h => { Object.keys(h.equipped).forEach(k => { if (h.equipped[k] === itemUid) h.equipped[k] = null; }); });
+      const prev = r.equipped[it.slot]; r.equipped[it.slot] = itemUid; it.isNew = false;
+      if (prev && prev !== itemUid) this.stashItem(prev);
       this.state.guide.flags.equipped = true;
       this.emit('onState'); return true;
     }
-    unequip(heroUid, slot) { const r = this.record(heroUid); if (!r || !r.equipped[slot]) return false; r.equipped[slot] = null; this.emit('onState'); return true; }
+    unequip(heroUid, slot) { const r = this.record(heroUid); if (!r || !r.equipped[slot]) return false; const uid = r.equipped[slot]; r.equipped[slot] = null; this.stashItem(uid); this.refreshPartyUnits(); this.emit('onState'); return true; }
+    // ---------- Armazém do Tanuki ----------
+    storageCap() { return D.STORAGE.base + D.STORAGE.decor.filter(d => this.state.decor?.[d.id]).reduce((a, d) => a + d.slots, 0); }
+    // Item que ninguém usa mais vai para o Armazém (se houver espaço); se não, fica na bolsa.
+    stashItem(itemUid) {
+      const s = this.state, i = s.inventory.findIndex(x => x.uid === itemUid); if (i < 0 || this.ownerOf(itemUid)) return false;
+      if (s.storage.length >= this.storageCap()) return false;
+      const [it] = s.inventory.splice(i, 1); s.storage.unshift(it); return true;
+    }
+    storeItem(itemUid) {
+      const s = this.state, it = s.inventory.find(x => x.uid === itemUid); if (!it) return false;
+      if (s.storage.length >= this.storageCap()) { this.lastError = 'O Armazém está cheio. Enfeites do Armazém aumentam o espaço.'; return false; }
+      const owner = this.ownerOf(itemUid); if (owner) { Object.keys(owner.equipped).forEach(k => { if (owner.equipped[k] === itemUid) owner.equipped[k] = null; }); this.refreshPartyUnits(); }
+      s.inventory.splice(s.inventory.indexOf(it), 1); s.storage.unshift(it); this.emit('onState'); return true;
+    }
+    // Guarda de uma vez os itens livres da bolsa a partir de uma raridade (padrão: épicos ou melhores).
+    storeMany(minRarity = 'epic') {
+      const min = RARITY_RANK[minRarity] ?? 2; let n = 0;
+      this.state.inventory.slice().forEach(it => { if ((RARITY_RANK[it.rarity] || 0) >= min && !this.ownerOf(it.uid) && this.state.storage.length < this.storageCap()) { this.state.inventory.splice(this.state.inventory.indexOf(it), 1); this.state.storage.unshift(it); n++; } });
+      if (n) this.emit('onState'); return n;
+    }
+    retrieveItem(itemUid) {
+      const s = this.state, it = s.storage.find(x => x.uid === itemUid); if (!it) return false;
+      if (this.bagFull()) { this.lastError = 'A bolsa está cheia.'; return false; }
+      s.storage.splice(s.storage.indexOf(it), 1); s.inventory.unshift(it); this.emit('onState'); return true;
+    }
+    buyDecor(id) {
+      const d = D.STORAGE.decor.find(x => x.id === id), s = this.state; if (!d || s.decor[id]) return false;
+      if (s.player.crystal < d.price.crystal) { this.lastError = `Faltam cristais (${d.price.crystal}).`; return false; }
+      s.player.crystal -= d.price.crystal; s.decor[id] = 1; this.emit('onToast', `<b>${esc(d.name)}</b> enfeita o Armazém: +${d.slots} espaços.`); this.emit('onState'); return true;
+    }
     ownerOf(itemUid) { return this.state.collection.find(h => Object.values(h.equipped).includes(itemUid)); }
     salvage(itemUid) {
       const i = this.state.inventory.findIndex(x => x.uid === itemUid); if (i < 0) return null;
@@ -2066,7 +2108,7 @@
     bestItemFor(r, slot, taken = new Set()) {
       const cur = this.state.inventory.find(x => x.uid === r.equipped[slot]);
       let best = null, bestScore = this.heroValueNow(r) * 1.0005;
-      this.state.inventory.forEach(it => {
+      [...this.state.inventory, ...(this.state.storage || [])].forEach(it => {
         if (it.slot !== slot || it === cur || taken.has(it.uid)) return;
         const owner = this.ownerOf(it.uid); if (owner && owner !== r && this.state.formation.includes(owner.uid)) return;
         const sc = this.itemValue(r, it); if (sc !== null && sc > bestScore) { best = it; bestScore = sc; }

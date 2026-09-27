@@ -1607,3 +1607,17 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .bank-quote.q-est em{color:#cdbb8a}.bank-quote.q-est{border-style:dashed}
 .signpost.bank .sp-icon{background:linear-gradient(135deg,#12352e,#1d5a4b);box-shadow:0 0 0 2px #e8b64c inset}
 @media (max-width:560px){.bank-hero{flex-direction:column;align-items:flex-start}.bank-crest{width:48px;height:48px}}
+
+/* ---------- Armazém do Tanuki: madeira escura, papel washi e latão ---------- */
+.storage-tab{color:#e9c98a}
+.storage-hero{display:flex;gap:14px;align-items:center;padding:14px 16px;margin-bottom:8px;border-radius:16px;border:1px solid rgba(233,201,138,.4);
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 2px,transparent 2px 26px),linear-gradient(135deg,#3a2616,#1d140f 75%)}
+.storage-hero .eyebrow{color:#e9c98a}.storage-hero h3{margin:3px 0;font:20px var(--kanji);font-weight:800;color:#f7e6c4}.storage-hero p{margin:0 0 6px;color:#e6d6bb;font-size:12.5px;font-style:italic}
+.storage-hero .meter span{background:linear-gradient(90deg,#c98b3a,#e9c98a)}
+.storage-deco{display:grid;grid-template-columns:repeat(2,28px);gap:4px;flex:none;padding:8px;border-radius:12px;background:rgba(0,0,0,.28);font-size:22px;text-align:center;min-width:72px}
+.decor-box{margin:0 0 10px}.decor-box summary{cursor:pointer;font-weight:800;color:#e9c98a;padding:6px 2px}
+.decor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.decor{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(58,38,22,.55);border:1px solid rgba(233,201,138,.25)}
+.decor>span{font-size:24px}.decor b{display:block;color:#f7e6c4}.decor small{color:#cdb894;font-size:11px}.decor div{flex:1}
+.decor.own{border-color:#e9c98a}.decor em{font-style:normal;color:#9fe3b0;font-weight:800;font-size:12px}
+@media (max-width:560px){.storage-hero{flex-direction:column;align-items:flex-start}}
