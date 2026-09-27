@@ -345,3 +345,34 @@ def build_chapter4():
     sc = os.path.join(ROOT, 'assets', 'scenes')
     for sid, base, h, s, v in CHAPTER4_SCENES:
         shift(Image.open(os.path.join(sc, f'{base}.png')).convert('RGBA'), h, s, v).convert('RGB').save(os.path.join(sc, f'{sid}.png'), optimize=True)
+
+
+# ---------------------------------------------------------------------------
+# Temporada I: heróis da Caixa da Temporada, derivados de bases existentes com matiz, espelho e aura próprios.
+# Uso: python -c "import sys; sys.path.insert(0, 'tools'); import build_sprites as b; b.build_season()"
+# Silhuetas realmente novas exigem arte nova (ver docs/ARTE_ORIGINAL.md).
+# ---------------------------------------------------------------------------
+SEASON_HEROES = [
+    # (id, base, matiz, saturação, brilho, espelhar, aura)
+    ('itachi', 'ren', -30, 1.15, .8, True, (220, 40, 60)), ('kakashi', 'hayato', 175, .25, 1.15, True, (160, 170, 255)),
+    ('yor', 'mira', -40, 1.2, .8, True, (200, 40, 80)), ('denji', 'tobias', 20, 1.1, 1.0, True, (255, 140, 60)),
+    ('frieren', 'yuki', 0, .2, 1.3, True, (230, 240, 255)), ('makima', 'sienna', -15, 1.1, .95, True, (255, 180, 120)),
+    ('asta', 'kai', 180, .35, .8, True, (120, 255, 140)), ('rem', 'rina', 200, 1.1, 1.1, True, (120, 170, 255)),
+    ('lux', 'aiko', 20, 1.2, 1.15, True, (255, 240, 170)), ('sage', 'aurelia', 140, .8, 1.05, True, (140, 255, 230)),
+    ('link', 'tessa', 60, 1.1, 1.05, True, (140, 255, 140)), ('jett', 'ivy', 160, .6, 1.2, True, (180, 240, 255)),
+]
+
+
+def build_season():
+    sp = os.path.join(ROOT, 'assets', 'sprites')
+    for vid, base, h, s, v, flip, col in SEASON_HEROES:
+        img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
+        pad = 16
+        canvas = Image.new('RGBA', (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
+        canvas.paste(img, (pad, pad))
+        img = shift(canvas, h, s, v)
+        if flip:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        img = aura(img, col)
+        img.save(os.path.join(sp, f'{vid}.png'), optimize=True)
+        portrait(img).save(os.path.join(OUT_PORTRAITS, f'{vid}.png'), optimize=True)

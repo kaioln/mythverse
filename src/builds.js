@@ -76,6 +76,18 @@
     selene:X('Trama Maligna', 'wings', { dodge:.02 }, r => ({ onDodge:{ eff:[buff('atk', .08 * r, 4)] } }), r => `Ao esquivar: +${pc(.08 * r)} ATK por 4s.`),
     tessa:X('Lança de Foco', 'spear', { pierce:.03 }, r => ({ onKill:{ eff:[st('armorBreak', 4, .1 * r, 1, 'all')] } }), r => `Ao abater: quebra a armadura de todos os inimigos (−${pc(.1 * r)} DEF, 4s).`),
     kaji:X('Fogo do Submundo', 'flame', { dot:.05 }, r => ({ vs:{ s:'burn', v:.05 * r } }), r => `+${pc(.05 * r)} de dano contra alvos em Queimadura.`),
+    itachi:X('Genjutsu', 'eye', { dodge:.02 }, r => ({ onDodge:{ eff:[st('silence', 1.5, 0, .1 * r, 'attacker')] } }), r => `Ao esquivar: ${pc(.1 * r)} de chance de silenciar quem atacou (1,5s).`),
+    kakashi:X('Mil Técnicas', 'book', { cdr:.03 }, r => ({ onCrit:{ ch:.08 * r, eff:[{ k:'cdr', v:1, to:'self' }] } }), r => `Críticos têm ${pc(.08 * r)} de chance de tirar 1s da recarga da habilidade.`),
+    yor:X('Assassina Discreta', 'skull', { crit:.015 }, r => ({ onKill:{ eff:[buff('crit', .05 * r, 6)] } }), r => `Ao abater: +${pc(.05 * r)} de crítico por 6s.`),
+    denji:X('Pacto com Pochita', 'heart', { hp:.03 }, r => ({ onKill:{ eff:[heal(.03 * r)] } }), r => `Ao abater: cura ${pc(.03 * r)} do HP.`),
+    frieren:X('Grimório Antigo', 'book', { skill:.04 }, r => ({ onUlt:{ eff:[nrg(6 * r)] } }), r => `Ao usar a ultimate: recupera ${6 * r} de energia.`),
+    makima:X('Corrente de Controle', 'gem', { atk:.02 }, r => ({ onSkill:{ eff:[st('weaken', 4, .05 * r, 1, 'all')] } }), r => `Ao usar a habilidade: enfraquece todos os inimigos (−${pc(.05 * r)} ATK, 4s).`),
+    asta:X('Grimório de Cinco Folhas', 'shield', { def:.03 }, r => ({ onHurt:{ ch:.06 * r, eff:[shield(.05)] } }), r => `Ao ser atingido (${pc(.06 * r)}): escudo de 5% do HP.`),
+    rem:X('Chifre Oni', 'fang', { atk:.02 }, r => ({ low:{ th:.4, eff:[buff('atk', .12 * r, 8)] } }), r => `Abaixo de 40% de HP (1× por onda): +${pc(.12 * r)} ATK por 8s.`),
+    lux:X('Varinha Prismática', 'sparkle', { healPow:.04 }, r => ({ onSkill:{ eff:[buff('crit', .03 * r, 6, 'allies')] } }), r => `Ao usar a habilidade: +${pc(.03 * r)} de crítico para a equipe por 6s.`),
+    sage:X('Muro de Barreira', 'wall', { hp:.03 }, r => ({ allyLow:{ th:.3, eff:[shield(.05 * r, 'lowAlly')] } }), r => `Quando um aliado cai abaixo de 30%: escudo de ${pc(.05 * r)} do HP nele.`),
+    link:X('Tríade da Coragem', 'target', { boss:.04 }, r => ({ onCrit:{ ch:.1 * r, eff:[st('armorBreak', 4, .15)] } }), r => `Críticos têm ${pc(.1 * r)} de chance de quebrar a armadura (−15% DEF, 4s).`),
+    jett:X('Rajada de Vento', 'wind', { spd:.03 }, r => ({ onDodge:{ eff:[dmg(.5 * r, 'attacker')] } }), r => `Ao esquivar: contra-ataca com ${pc(.5 * r)} do ATK.`),
     kori:X('Clone de Gelo', 'star', { def:.03 }, r => ({ onHurt:{ eff:[st('freeze', 1, 0, .06 * r, 'attacker')] } }), r => `Ao ser atingido: ${pc(.06 * r)} de chance de congelar quem atacou (1s).`)
   };
 

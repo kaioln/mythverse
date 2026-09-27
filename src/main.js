@@ -89,6 +89,7 @@
     let user = await KT.Neon.currentUser();
     if (!user) user = await KT.Auth.show('login', 'neon');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:neon:${user.id}`);
+    await KT.Neon.syncClock().catch(() => false);
     const data = await KT.Neon.loadSave();
     const state = data ? KT.State.mergeState(data) : KT.State.createState();
     if (!data) state.player.name = String(user.username || 'Viajante').slice(0, 20);
@@ -104,7 +105,8 @@
       const state = session.state;
       const assets = new KT.AssetBank();
       const engine = new KT.CombatEngine(state, {});
-      const offline = session.mode === 'cloud' ? session.offline : engine.offlineGains();
+      // No modo Neon o AFK só conta com a hora do banco (relógio do aparelho pode ser adiantado).
+      const offline = session.mode === 'cloud' ? session.offline : session.mode === 'neon' && !KT.Clock.trusted ? null : engine.offlineGains();
       const renderer = new KT.GameRenderer(document.querySelector('#game-canvas'), assets, engine);
       const sound = new SoundEngine();
       const ui = new KT.UIController(state, engine, assets, renderer, {
@@ -139,6 +141,13 @@
         KT.Social?.attach(engine, ui);
         // Tesouro Imperial: ajustes de ouro, preços e impostos (a cada 30 min).
         const econ = () => KT.NeonMarket?.economy(engine).catch(() => {}); econ(); setInterval(econ, 30 * 60_000);
+        setInterval(() => KT.Neon.syncClock().catch(() => {}), 10 * 60_000);
+        const gifts = () => KT.NeonMarket?.claimGifts(engine).then(list => list.forEach(g => {
+          const t = g.kind === 'hero' && engine.template(g.payload.id);
+          ui.toast(g.kind === 'keys' ? `🎁 <b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação!` : `🎁 <b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção!`, 'gold');
+          ui.callbacks.summon?.(g.kind === 'hero' ? g.payload.rarity : 'epic'); ui.renderResources();
+        })).catch(() => {});
+        setTimeout(gifts, 2500); setInterval(gifts, 5 * 60_000);
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });

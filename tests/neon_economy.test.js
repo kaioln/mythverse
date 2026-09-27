@@ -21,7 +21,8 @@ const path = require('node:path');
   const one = async (uid, fn, params = []) => Object.values((await as(uid, `SELECT public.${fn}`, params))[0])[0];
   const fails = async (p, msg) => { let err = null; try { await p; } catch (e) { err = e; } assert.ok(err, msg); checks++; return err; };
   const ok = (cond, msg) => { assert.ok(cond, msg); checks++; };
-  const save = (uid, gold, level) => db.query(`INSERT INTO public.mv_saves (user_id, data) VALUES ($1, $2::jsonb) ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, revision = public.mv_saves.revision + 1`, [uid, JSON.stringify({ player:{ gold, level } })]);
+  // Renda de 500 mil/h (5 milhões em 10 h de jogo): reserva saudável de 3 milhões.
+  const save = (uid, gold, level) => db.query(`INSERT INTO public.mv_saves (user_id, data) VALUES ($1, $2::jsonb) ON CONFLICT (user_id) DO UPDATE SET data = EXCLUDED.data, revision = public.mv_saves.revision + 1`, [uid, JSON.stringify({ player:{ gold, level }, stats:{ goldEarned:5000000 }, totalPlaySeconds:36000 })]);
 
   // ---------- Banco Central ----------
   await save('ana', 100000, 20); await save('bia', 120000, 20);

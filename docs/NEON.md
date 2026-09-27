@@ -32,3 +32,10 @@ Rodar `node --env-file=.env tools/neon_setup.js` também cria o mercado: `mv_lis
 ## Limites deste modo
 
 Sem servidor Node, o combate e as recompensas são calculados no navegador e o save é enviado pelo jogador. Isso serve para **testar contas, login, cadastro, saves e ranking**, mas não tem a proteção antitrapaça do servidor autoritativo: um jogador técnico consegue editar o próprio save e o ranking. Neste modo quem informa o resultado da luta PvP é o navegador (o banco recusa durações impossíveis e conta abandono como derrota, mas um jogador técnico ainda poderia forjar uma vitória). Para lançar, rode o servidor Node, que refaz cada luta. Gemas (dinheiro real), perfis públicos completos e a Invasão Mundial compartilhada dependem do servidor Node. No Mercado em ouro, o banco protege a troca (nada é vendido ou resgatado duas vezes), mas o ouro e os itens continuam no save do jogador, que ele consegue editar e ficam indisponíveis neste modo. Para lançar com dinheiro real, rode o servidor (`DEPLOY.md`) usando o mesmo Neon como banco (`DATABASE_URL`).
+
+## Administração, relógio e segurança (`tools/neon_admin.sql`)
+
+- `mv_now()`: hora oficial. O jogo sincroniza o relógio por ela; sem ela, o AFK não é concedido.
+- Guarda do save: recusa relógio adiantado (mais de 15 min), herói acima do nível 100 ou 6★ e recursos negativos; saltos grandes (níveis, chaves, cristais) vão para `mv_audit` (só o dono do banco lê).
+- Tabelas do servidor Node no mesmo banco (`users`, `saves`, `save_history`…) ficam fechadas para a Data API (antes qualquer conta logada lia e apagava, inclusive hashes de senha).
+- Presentes: `node --env-file=.env tools/neon_gift.js <conta> keys 1000` ou `... hero kakashi legendary`. O presente vai para o correio e o jogo resgata sozinho ao abrir.

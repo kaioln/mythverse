@@ -6,41 +6,94 @@
   const M = () => KT.NeonMarket;
   const pct = v => `${(Number(v) * 100).toFixed(0)}%`;
 
-  // Gráfico de linha simples em SVG (índice de inflação e torneira de ouro).
-  const spark = (pts, key, color, lo, hi) => {
-    if (!pts?.length) return '';
-    const W = 560, H = 120, xs = i => pts.length === 1 ? W / 2 : i / (pts.length - 1) * W, ys = v => H - (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo) * H;
-    const path = pts.map((p, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(Number(p[key])).toFixed(1)}`).join(' ');
-    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
-  };
-  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Tesouro está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'Ajustes leves em andamento para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'Ouro em circulação perto da meta para o nível médio dos jogadores.'];
+  // ---------------------------------------------------------------------------
+  // BANCO KOGANE: o banco central de Tsukimori (índice, torneira de ouro, cotações e carteira).
+  // ---------------------------------------------------------------------------
+  const CREST = '<svg class="bank-crest" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="29" class="c-ring"/><circle cx="32" cy="32" r="21" class="c-coin"/><rect x="27" y="27" width="10" height="10" rx="1.5" class="c-hole"/><path d="M14 44c6-3 10-9 18-9s12 6 18 9" class="c-wave"/><path d="M20 20l4 4M44 20l-4 4" class="c-wave"/></svg>';
+  const fmtAt = iso => { const d = new Date(iso); return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}h${String(d.getMinutes()).padStart(2, '0')}`; };
+  const num2 = v => Number(v).toFixed(2).replace('.', ',');
 
-  P.econPanel = function() {
-    if (this.session?.mode !== 'neon') return this.cloudOnly('Economia');
-    const eco = M().econ;
-    if (!eco && !this.econLoading) { this.econLoading = true; M().economy(this.engine).then(() => { this.econLoading = false; if (this.view.tab === 'econ') this.refreshPanel(); }); }
-    if (!eco) return '<div class="empty-state"><p>Consultando o Tesouro Imperial…</p></div>';
-    const v = verdict(Number(eco.index)), hist = eco.history || [];
-    const mats = Object.values(I.materials).filter(m => m.tradeable).map(m => { const p = eco.prices?.[`m:${m.id}`]; return `<div class="eco-price"><b>${esc(m.name)}</b><em>${p ? `${U.fmt(p.median)}` : '–'}</em><small>${p ? `${p.n} venda(s) na semana` : 'sem vendas recentes'}</small></div>`; }).join('');
-    const rar = ['rare', 'epic', 'legendary', 'mythic', 'set'].map(r => `<div class="eco-price"><b class="rtext rarity-${r}">${esc(KT.Data.rarities.find(x => x.id === r)?.label || r)}</b><em>${eco.rarity?.[r] ? U.fmt(eco.rarity[r]) : '–'}</em><small>mediana de itens</small></div>`).join('');
-    return `<section class="eco-hero ${v[1]}"><div><span class="eyebrow">TESOURO IMPERIAL</span><h3>${v[0]}</h3><p>${v[2]}</p></div>
-        <div class="eco-gauge"><b>${Number(eco.index).toFixed(2)}</b><small>índice (1,00 = meta)</small></div></section>
-      <div class="eco-kpis">
-        <span><b>${pct(eco.faucet)}</b>Torneira de ouro<small>quanto as caçadas e recompensas pagam</small></span>
-        <span><b>×${Number(eco.price).toFixed(2)}</b>Preços de NPC<small>loja e construções</small></span>
-        <span><b>${(eco.taxBps / 100).toFixed(1)}%</b>Imposto do mercado<small>sai de circulação</small></span>
-        <span><b>${compact(eco.perPlayer)}</b>Ouro por jogador<small>meta ${compact(eco.target)} · nível médio ${eco.avgLevel}</small></span>
-        <span><b>${compact(eco.volume24)}</b>Volume 24 h<small>${eco.trades24} negócio(s) · ${eco.listings} anúncios · ${eco.orders} ordens</small></span>
-        <span><b>${eco.growth24 === null || eco.growth24 === undefined ? '–' : `${eco.growth24 > 0 ? '+' : ''}${eco.growth24}%`}</b>Variação 24 h<small>ouro por jogador</small></span>
-      </div>
-      <h4 class="sub-title">Histórico</h4><div class="eco-chart"><svg viewBox="0 0 560 120" preserveAspectRatio="none"><line x1="0" x2="560" y1="60" y2="60" class="eco-mid"/>${spark(hist, 'index', '#ff7eb6', 0, 2)}${spark(hist, 'faucet', '#6fd8b8', 0, 2)}</svg><div class="eco-legend"><span class="l-index">Índice de inflação</span><span class="l-faucet">Torneira de ouro</span><small>linha do meio = 1,00</small></div></div>
-      <div class="guild-grid"><div><h4 class="sub-title">Preço de referência (unidade)</h4><div class="eco-prices">${mats}</div></div><div><h4 class="sub-title">Itens por raridade</h4><div class="eco-prices">${rar}</div></div></div>
-      <div class="panel arena-rules"><b>Como a economia se regula</b><ul>
-        <li>A cada 20 minutos o Tesouro mede o ouro em circulação (bolsos, cofres de guilda, correio e ordens) por jogador ativo e compara com a meta para o nível médio da comunidade.</li>
-        <li>Acima da meta (inflação): a torneira de ouro fecha aos poucos (até 60%), preços de NPC e obras sobem (até ×1,6) e o imposto do mercado sobe (até 12%). Abaixo: tudo afrouxa. O ajuste é gradual, no máximo 3% por medição.</li>
-        <li>Sumidouros permanentes: impostos e taxas de anúncio, refino (que pode quebrar itens), construções, treino, culinária e evolução de qualidade.</li>
-        <li>Mercado protegido: um anúncio só é vendido uma vez; preço acima de 15× a mediana é recusado; no máximo 5 compras por dia do mesmo vendedor; anúncios expiram em 7 dias.</li></ul></div>`;
+  // Gráfico de linhas com escala automática, grade, rótulos de valor e de tempo (SVG sem distorção).
+  function lineChart(pts, series, { ref = null, fmt = num2, h = 210 } = {}) {
+    if (!pts || pts.length < 2) return `<div class="bank-chart empty"><p>O Banco ainda está coletando medições (uma a cada 20 minutos). O gráfico aparece a partir da 2ª medição.</p></div>`;
+    const W = 680, H = h, L = 52, R = 16, T = 16, B = 30, iw = W - L - R, ih = H - T - B;
+    const vals = pts.flatMap(p => series.map(s => Number(p[s.key]))).filter(Number.isFinite).concat(ref !== null ? [ref] : []);
+    let lo = Math.min(...vals), hi = Math.max(...vals); const span = Math.max((hi - lo) * .15, Math.abs(hi) * .05, .05); lo -= span; hi += span; if (lo < 0 && Math.min(...vals) >= 0) lo = 0;
+    const x = i => L + i / (pts.length - 1) * iw, y = v => T + (1 - (v - lo) / (hi - lo)) * ih;
+    const ticks = Array.from({ length:5 }, (_, i) => lo + (hi - lo) * i / 4);
+    const grid = ticks.map(v => `<line x1="${L}" x2="${W - R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" class="g"/><text x="${L - 6}" y="${(y(v) + 4).toFixed(1)}" class="yl">${fmt(v)}</text>`).join('');
+    const xi = [0, Math.floor((pts.length - 1) / 2), pts.length - 1];
+    const xl = xi.map((i, k) => `<text x="${x(i).toFixed(1)}" y="${H - 8}" class="xl" text-anchor="${k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}">${fmtAt(pts[i].at)}</text>`).join('');
+    const refLine = ref !== null ? `<line x1="${L}" x2="${W - R}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" class="ref"/><text x="${W - R}" y="${(y(ref) - 5).toFixed(1)}" class="rl" text-anchor="end">meta ${fmt(ref)}</text>` : '';
+    const lines = series.map(s => {
+      const d = pts.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(Number(p[s.key])).toFixed(1)}`).join(' ');
+      const area = s.area ? `<path d="${d} L${x(pts.length - 1).toFixed(1)},${(T + ih).toFixed(1)} L${L},${(T + ih).toFixed(1)} Z" fill="${s.color}" opacity=".12"/>` : '';
+      const last = pts[pts.length - 1], lx = x(pts.length - 1), ly = y(Number(last[s.key]));
+      const dots = pts.length <= 40 ? pts.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(Number(p[s.key])).toFixed(1)}" r="2.2" fill="${s.color}"><title>${fmtAt(p.at)} · ${s.label}: ${fmt(Number(p[s.key]))}</title></circle>`).join('') : '';
+      return `${area}<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>${dots}<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="${s.color}" class="last"/><text x="${(lx - 8).toFixed(1)}" y="${(ly - 8).toFixed(1)}" class="vl" fill="${s.color}" text-anchor="end">${fmt(Number(last[s.key]))}</text>`;
+    }).join('');
+    return `<div class="bank-chart"><svg viewBox="0 0 ${W} ${H}" role="img">${grid}${refLine}${lines}${xl}</svg><div class="bank-legend">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('')}</div></div>`;
+  }
+  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Banco está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'Ajustes leves em andamento para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'O ouro guardado pelos jogadores está perto de 6 horas da própria renda: saudável.'];
+
+  // Estimativa de valor quando ainda não há negócios: custo de produzir (receitas da Oficina) ou de desmontar.
+  P.bankEstimate = function(kind, id) {
+    const eco = M().econ || {}, px = Number(eco.price) || 1, e = this.engine;
+    const star = (20000 + 60 * 150 + 20 * 80) * px, ori = (150000 + 6 * star + 60 * 80) * px;
+    if (kind === 'mat') return { star, ori, adam:ori * 4 }[({ rare:'star', epic:'ori', legendary:'adam' })[id] || id] || 0;
+    const z = KT.Data.zones[this.state.lastHunt] || KT.Data.zones.hunt, il = KT.State.itemLevelFor(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) });
+    const v = I.salvageValue({ rarity:id === 'mythic' || id === 'set' ? 'legendary' : id, ilvl:il, plus:0 }), base = v.gold + v.ore * 150 + v.dust * 80;
+    return Math.round(base * ({ rare:3, epic:12, legendary:60, mythic:150, set:40 }[id] || 3) * px);
   };
+  const quote = (sold, ask, bid, est) => sold ? { v:sold.median, src:`mediana de ${sold.n} venda(s) em 7 dias`, cls:'q-sold' } : ask ? { v:ask, src:'menor anúncio aberto', cls:'q-ask' } : bid ? { v:bid, src:'maior ordem de compra', cls:'q-bid' } : { v:est, src:'estimativa do Banco (custo de produção)', cls:'q-est' };
+
+  P.bankPanel = function(_, tab) {
+    if (tab === 'wallet') return this.walletPanel();
+    if (this.session?.mode !== 'neon') return this.cloudOnly('Banco Kogane');
+    const eco = M().econ;
+    if (!eco && !this.econLoading) { this.econLoading = true; M().economy(this.engine).then(() => { this.econLoading = false; if (this.view.panel === 'bank') this.refreshPanel(); }); }
+    const head = `<section class="bank-hero">${CREST}<div><span class="eyebrow">BANCO KOGANE · 黄金 · desde a fundação de Tsukimori</span><h3>Tesoureira Oharu</h3><p>“Guardo o valor do ouro da cidade. Quando sobra ouro, fecho a torneira; quando falta, abro. Aqui você vê o pulso da economia e quanto vale cada coisa.”</p></div></section>`;
+    if (!eco) return `${head}<div class="empty-state"><p>Consultando os livros do Banco…</p></div>`;
+    if (tab === 'quotes') return head + this.bankQuotes(eco);
+    const ix = Number(eco.index) || 1, v = verdict(ix), hist = eco.history || [];
+    return `${head}<section class="bank-status ${v[1]}"><div><small>SITUAÇÃO</small><h3>${v[0]}</h3><p>${v[2]}</p></div><div class="bank-gauge"><b>${num2(ix)}</b><small>índice · meta 1,00</small></div></section>
+      <div class="bank-kpis">
+        <span><b>${pct(eco.faucet)}</b>Torneira de ouro<small>quanto caçadas e recompensas pagam agora</small></span>
+        <span><b>×${num2(eco.price)}</b>Preços de NPC<small>loja e construções</small></span>
+        <span><b>${(eco.taxBps / 100).toFixed(1).replace('.', ',')}%</b>Imposto do mercado<small>sai de circulação</small></span>
+        <span><b>${compact(eco.perPlayer)}</b>Ouro guardado (mediana)<small>reserva saudável ${compact(eco.target)} = 6 h de renda</small></span>
+        <span><b>${compact(eco.income || 0)}/h</b>Renda típica<small>ouro ganho por hora de jogo (mediana)</small></span>
+        <span><b>${U.fmt(eco.players || 0)}</b>Jogadores ativos<small>últimos 7 dias · ouro total ${compact(eco.money)}</small></span>
+        <span><b>${compact(eco.volume24)}</b>Volume 24 h<small>${eco.trades24} negócio(s) · ${eco.listings} anúncios · ${eco.orders} ordens</small></span>
+        <span><b>${eco.growth24 === null || eco.growth24 === undefined ? '–' : `${eco.growth24 > 0 ? '+' : ''}${String(eco.growth24).replace('.', ',')}%`}</b>Variação 24 h<small>ouro guardado por jogador</small></span>
+      </div>
+      <h4 class="sub-title">Índice de inflação e torneira de ouro</h4>
+      ${lineChart(hist, [{ key:'index', label:'Índice (suavizado)', color:'#e8b64c', area:true }, { key:'raw', label:'Medição', color:'#8f86c9' }, { key:'faucet', label:'Torneira', color:'#4fc9a4' }], { ref:1 })}
+      <h4 class="sub-title">Ouro guardado por jogador × reserva saudável</h4>
+      ${lineChart(hist, [{ key:'perPlayer', label:'Ouro guardado (mediana)', color:'#e8b64c', area:true }, { key:'target', label:'Reserva saudável', color:'#4fc9a4' }], { fmt:v => compact(v), h:180 })}
+      <div class="panel arena-rules"><b>Como o Banco calcula</b><ul>
+        <li>Para cada jogador ativo, a <b>reserva saudável</b> é 6 horas da própria renda (ouro ganho ÷ horas jogadas). A razão é o ouro no bolso ÷ essa reserva.</li>
+        <li>O <b>índice</b> é a mediana dessas razões: um jogador muito rico não distorce a economia de todos. Ele é suavizado (70% anterior + 30% nova medição) para não dar trancos.</li>
+        <li>Acima de 1,00 (inflação): a torneira fecha até 3% por medição (mínimo 60%), NPCs e obras sobem até ×1,6 e o imposto até 12%. Abaixo: tudo afrouxa até 115%.</li>
+        <li>Sumidouros permanentes: impostos e taxas de anúncio, refino (que pode quebrar itens), construções, treino, culinária e evolução de qualidade.</li></ul></div>`;
+  };
+
+  P.bankQuotes = function(eco) {
+    const mats = Object.values(I.materials).filter(m => m.tradeable).map(m => {
+      const k = `m:${m.id}`, q = quote(eco.prices?.[k], eco.asks?.[k], eco.bids?.[k], this.bankEstimate('mat', m.id));
+      return `<div class="bank-quote ${q.cls}"><b>${esc(m.name)}</b><em>${U.fmt(Math.round(q.v))}</em><small>${q.src}</small></div>`; }).join('');
+    const rar = ['rare', 'epic', 'legendary', 'mythic', 'set'].map(r => {
+      const sold = eco.rarity?.[r] && typeof eco.rarity[r] === 'object' ? eco.rarity[r] : eco.rarity?.[r] ? { median:eco.rarity[r], n:'?' } : null;
+      const q = quote(sold, eco.rarityAsk?.[r], null, this.bankEstimate('item', r));
+      return `<div class="bank-quote ${q.cls}"><b class="rtext rarity-${r}">${esc(KT.Data.rarities.find(x => x.id === r)?.label || r)}</b><em>${U.fmt(Math.round(q.v))}</em><small>${q.src}</small></div>`; }).join('');
+    const top = Object.entries(eco.prices || {}).filter(([k]) => !k.startsWith('m:')).slice(0, 12).map(([k, p]) => `<div class="order-row"><b>${esc(k.replace(/^[a-z]:/, '').replace(/_/g, ' '))}</b><span><b class="price"><span class="coin-ic" aria-hidden="true"></span> ${U.fmt(p.median)}</b></span><small>${p.n} venda(s)</small></div>`).join('');
+    return `<p class="note">Cotação em ouro por unidade. Ordem de confiança: <b>vendas reais</b> → menor anúncio → maior ordem de compra → <b>estimativa</b> do Banco pelo custo de produção (nível da sua melhor caçada).</p>
+      <div class="guild-grid"><div><h4 class="sub-title">Materiais raros</h4><div class="bank-quotes">${mats}</div></div><div><h4 class="sub-title">Equipamentos por raridade</h4><div class="bank-quotes">${rar}</div></div></div>
+      <h4 class="sub-title">Mais negociados (7 dias)</h4><div class="order-list">${top || '<p class="empty-note">Nenhum item ou carta vendido nos últimos 7 dias. Anuncie no Mercado de Jogadores (Loja) para abrir as cotações.</p>'}</div>
+      <button class="action" data-go="shop:p2p" type="button">Ir ao Mercado de Jogadores →</button>`;
+  };
+  // Compatibilidade: telas antigas chamavam o painel da economia.
+  P.econPanel = function() { return this.bankPanel(null, 'overview'); };
 
   // Ordens de compra: quem quer comprar reserva o ouro; quem tem o material vende na hora.
   P.ordersHtml = function() {

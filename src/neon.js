@@ -158,6 +158,13 @@
       else { this.setStatus('error', r.error); this.onError?.(r.error); if (!this.retryTimer) this.retryTimer = setTimeout(() => { this.retryTimer = null; this.flush(); }, 10_000); }
       return r.ok;
     },
+    // Hora oficial (Neon): sem ela o jogo não confia no relógio do aparelho para AFK e limites diários.
+    async syncClock() {
+      const t0 = Date.now(), r = await this.api('POST', '/rpc/mv_now', {});
+      const ms = Number(r.data);
+      if (r.ok && Number.isFinite(ms) && ms > 0) { KT.Clock.sync(ms + (Date.now() - t0) / 2); KT.Clock.trusted = true; }
+      return !!KT.Clock.trusted;
+    },
     async leaderboard(type) {
       const col = { power:'power', bosses:'boss_kills', stage:'best_stage', rift:'rift_best' }[type] || 'power';
       const r = await this.api('GET', `/mv_ranking?select=*&order=${col}.desc&limit=50`);
@@ -276,6 +283,14 @@
       const mail = await this.myMarket();
       for (const m of (mail.mailbox || []).filter(x => x.kind === 'gold')) await this.claim(engine, m.id);
       return { ok:true, refund:r.data?.refund };
+    },
+    // Presentes (chaves e heróis) são resgatados sozinhos ao abrir o jogo.
+    async claimGifts(engine) {
+      const r = await Neon.api('GET', '/mv_mail?select=id,kind,payload,reason&kind=in.(keys,hero)&order=id.asc'); if (!r.ok) return [];
+      const got = [];
+      for (const m of r.data || []) { const c = await rpc('mv_mail_claim', { p_id:Number(m.id) }); if (c.ok && engine.marketReceive(c.data.kind, c.data.payload)) got.push({ kind:c.data.kind, payload:c.data.payload, reason:m.reason }); }
+      if (got.length) { engine.save(); Neon.flush(); }
+      return got;
     },
     async claim(engine, id) {
       const r = await rpc('mv_mail_claim', { p_id:id }); if (!r.ok) return r;

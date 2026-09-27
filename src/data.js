@@ -52,6 +52,9 @@
     { id:'aurum', name:'Rivais de Aurum', ids:['solen','varyon'], text:'+15% ATK e +20 de energia inicial', stats:{ atk:.15, startNrg:20 } },
     { id:'oath', name:'Irmãos de Juramento', ids:['hayato','ren'], text:'+12% ATK e +12% HP', stats:{ atk:.12, hp:.12 } },
     { id:'sails', name:'Tripulação das Velas', ids:['tobias','kenji'], text:'+10% ATK, +10% HP e +5% roubo de vida', stats:{ atk:.10, hp:.10, lifesteal:.05 } },
+    { id:'konoha', name:'Shinobis da Folha', ids:['itachi','kakashi'], text:'+12% ATK e +15% dano de habilidade', stats:{ atk:.12, skill:.15 } },
+    { id:'publicsafety', name:'Segurança Pública', ids:['denji','makima'], text:'+12% ATK e +8% roubo de vida', stats:{ atk:.12, lifesteal:.08 } },
+    { id:'protocol', name:'Protocolo Valorant', ids:['jett','sage'], text:'+10% velocidade e +12% cura e escudos', stats:{ spd:.10, healPow:.12 } },
     { id:'souls', name:'Guardiões das Almas', ids:['hiro','yuki'], text:'+15% dano de habilidade e +10% DEF', stats:{ skill:.15, def:.10 } },
     { id:'minase', name:'Irmãos Minase', ids:['akira','hana'], text:'+1% HP/s de regeneração e +10% ATK', stats:{ regen:.01, atk:.10 } },
     { id:'veil', name:'Academia do Véu', ids:['sora','daichi'], text:'+10% crítico e +15% dano crítico', stats:{ crit:.10, critDmg:.15 } },
@@ -600,7 +603,7 @@
     { id:'d_stages', title:'Avanço', text:'Conclua {n} estágios de caçada.', type:'stages', n:12, reward:{ potion:2, gold:1 } }
   ];
   // Recompensa diária de login (ciclo de 7 dias, sequência zera se faltar um dia).
-  const loginRewards = [{ gold:1500 }, { potion:3 }, { ore:12 }, { dust:15 }, { elixir:2 }, { crystal:8 }, { crystal:15, ore:20 }];
+  const loginRewards = [{ gold:1500 }, { potion:3 }, { ore:12 }, { dust:15, keys:1 }, { elixir:2 }, { crystal:8 }, { crystal:15, ore:20, keys:2 }];
 
   // Bestiário, abates liberam níveis de pesquisa (+dano e +chance de carta contra aquela criatura).
   const RESEARCH = { levels:[25, 100, 400, 1500, 5000], dmg:.03, card:.10 };
@@ -730,6 +733,24 @@
     { id:'legendary', label:'Lendário', color:'#ffb938', mult:1.42, chance:.03, shards:16 }
   ];
 
+  // ---------------------------------------------------------------------------
+  // CONVOCAÇÃO: caixas de heróis. Cada caixa tem custo em chaves, chances próprias e garantia (pity) própria.
+  // Heróis de temporada só saem da Caixa da Temporada (e da Astral) enquanto a temporada estiver aberta;
+  // depois dela entram na Caixa dos Mundos.
+  // ---------------------------------------------------------------------------
+  const SEASON = { id:'s1', name:'Temporada I · Ecos do Eclipse', ends:'2027-01-31T03:00:00Z',
+    heroes:['itachi', 'kakashi', 'yor', 'denji', 'frieren', 'makima', 'asta', 'rem', 'lux', 'sage', 'link', 'jett'] };
+  const BOXES = [
+    { id:'worlds', name:'Caixa dos Mundos', icon:'✦', cost:1, color:'#c07dff', pity:30, pool:'base',
+      rates:{ legendary:.03, epic:.12, rare:.30, common:.55 }, text:'A convocação clássica: todos os heróis fora da temporada.' },
+    { id:'class', name:'Caixa de Classe', icon:'⚔', cost:2, color:'#4fb3ff', pity:25, pool:'class',
+      rates:{ legendary:.05, epic:.17, rare:.33, common:.45 }, text:'Você escolhe a classe. Só saem heróis dela (fora da temporada).' },
+    { id:'season', name:'Caixa da Temporada', icon:'🌒', cost:3, color:'#ff7eb6', pity:20, pool:'season', featured:.6,
+      rates:{ legendary:.08, epic:.22, rare:.35, common:.35 }, text:'60% de chance de um herói novo da temporada. A garantia de lendário é sempre um herói da temporada.' },
+    { id:'astral', name:'Caixa Astral', icon:'🌟', cost:10, color:'#ffb938', pity:8, pool:'all',
+      rates:{ legendary:.20, epic:.45, rare:.35, common:0 }, text:'Sem comuns. Qualquer herói, inclusive os da temporada.' }
+  ];
+
   // Efeitos de status, texto usado na UI e na wiki.
   const statusInfo = {
     burn:{ name:'Queimadura', icon:'🔥', color:'#ff7a4f', text:'Dano por segundo baseado no ATK de quem aplicou. Ignora defesa.' },
@@ -757,5 +778,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

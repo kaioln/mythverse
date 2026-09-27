@@ -4,53 +4,75 @@
 -- ===========================================================================
 
 -- ---------------------------------------------------------------------------
--- BANCO CENTRAL DA FENDA
--- A cada 20 minutos (sob demanda) fotografa a economia: ouro em circulação por jogador ativo,
--- comparado com a meta para o nível médio da comunidade. Acima da meta (inflação) a torneira de
--- ouro fecha aos poucos e preços de NPC e impostos sobem; abaixo (deflação) tudo afrouxa.
+-- BANCO KOGANE (banco central de Tsukimori)
+-- A cada 20 minutos (sob demanda) fotografa a economia. Cálculo (versão 2):
+--  · cada jogador ativo (7 dias) tem uma "reserva saudável" = 6 horas da PRÓPRIA renda média
+--    (ouro ganho na vida ÷ horas jogadas); a razão dele é ouro no bolso ÷ reserva saudável;
+--  · o índice é a MEDIANA dessas razões (um jogador muito rico não distorce a comunidade)
+--    e é suavizado (70% anterior + 30% nova medição) para o gráfico e os ajustes não darem tranco;
+--  · acima de 1 (inflação) a torneira de ouro fecha até 3% por medição e preços/impostos sobem; abaixo, afrouxa.
+-- Medições da versão 1 (média simples, meta pelo nível) ficam guardadas, mas saem do gráfico.
 -- ---------------------------------------------------------------------------
+ALTER TABLE public.mv_econ ADD COLUMN IF NOT EXISTS raw_idx numeric;
+ALTER TABLE public.mv_econ ADD COLUMN IF NOT EXISTS income numeric NOT NULL DEFAULT 0;
+ALTER TABLE public.mv_econ ADD COLUMN IF NOT EXISTS calc integer NOT NULL DEFAULT 1;
+
 CREATE OR REPLACE FUNCTION public.mv_econ_refresh() RETURNS public.mv_econ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE last public.mv_econ; snap public.mv_econ; pl integer; mon numeric; lvl numeric; tgt numeric; ix numeric; f numeric; vol numeric; trd integer;
+DECLARE last public.mv_econ; snap public.mv_econ; pl integer; mon numeric; med_gold numeric; lvl numeric; inc numeric; raw numeric; ix numeric; f numeric; vol numeric; trd integer;
 BEGIN
-  SELECT * INTO last FROM public.mv_econ ORDER BY id DESC LIMIT 1;
+  SELECT * INTO last FROM public.mv_econ WHERE calc = 2 ORDER BY id DESC LIMIT 1;
   IF last.id IS NOT NULL AND last.taken_at > now() - interval '20 minutes' THEN RETURN last; END IF;
   IF NOT pg_try_advisory_xact_lock(hashtext('mv_econ_refresh')) THEN RETURN last; END IF;
-  -- Ouro em circulação: saves ativos (14 dias) + cofres de guilda + ouro parado no correio e em ordens de compra.
-  SELECT count(*), coalesce(sum(greatest(0, coalesce((data->'player'->>'gold')::numeric, 0))), 0), coalesce(avg(greatest(1, coalesce((data->'player'->>'level')::numeric, 1))), 1)
-    INTO pl, mon, lvl FROM public.mv_saves WHERE updated_at > now() - interval '14 days';
+  WITH p AS (
+    SELECT greatest(0, coalesce((data->'player'->>'gold')::numeric, 0)) AS gold,
+           greatest(1, coalesce((data->'player'->>'level')::numeric, 1)) AS plv,
+           -- renda por hora de jogo; mínimo de 1 h para contas novas e piso de 2.000/h
+           greatest(2000, coalesce((data->'stats'->>'goldEarned')::numeric, 0) / greatest(1, coalesce((data->>'totalPlaySeconds')::numeric, 0) / 3600)) AS inc_h
+    FROM public.mv_saves WHERE updated_at > now() - interval '7 days'
+  )
+  SELECT count(*), coalesce(sum(p.gold), 0), coalesce(percentile_cont(0.5) WITHIN GROUP (ORDER BY p.gold), 0), coalesce(avg(plv), 1),
+         coalesce(percentile_cont(0.5) WITHIN GROUP (ORDER BY inc_h), 2000), coalesce(percentile_cont(0.5) WITHIN GROUP (ORDER BY p.gold / (6 * inc_h)), 1)
+    INTO pl, mon, med_gold, lvl, inc, raw FROM p;
   mon := mon + coalesce((SELECT sum(bank) FROM public.mv_guilds), 0)
              + coalesce((SELECT sum((payload->>'amount')::numeric) FROM public.mv_mail WHERE kind = 'gold'), 0)
              + coalesce((SELECT sum(qty_left * price_each) FROM public.mv_orders WHERE status = 'open'), 0);
-  -- Meta: cerca de 6 horas de renda de um jogador do nível médio (a renda cresce ~5,6% por nível de conta); poupar para guilda e obras é normal.
-  tgt := 6 * 27500 * power(1.056, lvl);
-  ix := CASE WHEN pl = 0 THEN 1 ELSE (mon / pl) / tgt END;
-  -- Ajuste gradual (no máximo 3% por fotografia) para a economia nunca "dar tranco".
-  f := least(1.15, greatest(0.6, coalesce(last.faucet, 1) * (1 - 0.03 * least(1, greatest(-1, ix - 1)))));
+  IF pl = 0 THEN raw := 1; END IF;
+  raw := least(20, greatest(0.01, raw));
+  ix := CASE WHEN last.id IS NULL THEN raw ELSE 0.7 * last.idx + 0.3 * raw END;
+  -- Ajuste proporcional ao log do índice (dobrar e cair pela metade pesam igual), no máximo 3% por medição.
+  f := least(1.15, greatest(0.6, coalesce(last.faucet, 1) * (1 - 0.03 * least(1, greatest(-1, ln(ix) / ln(2))))));
   SELECT coalesce(sum(price), 0), count(*) INTO vol, trd FROM public.mv_listings WHERE status = 'sold' AND closed_at > now() - interval '1 day';
-  INSERT INTO public.mv_econ (players, money, per_player, avg_level, target, idx, faucet, price, tax_bps, volume24, trades24)
-    VALUES (pl, mon, CASE WHEN pl = 0 THEN 0 ELSE mon / pl END, lvl, tgt, round(ix, 4), round(f, 4),
+  INSERT INTO public.mv_econ (players, money, per_player, avg_level, target, idx, raw_idx, income, calc, faucet, price, tax_bps, volume24, trades24)
+    VALUES (pl, mon, med_gold, lvl, 6 * inc, round(ix, 4), round(raw, 4), round(inc), 2, round(f, 4),
       round(least(1.6, greatest(1, 1 + greatest(0, ix - 1) * 0.15)), 4), least(1200, greatest(500, 500 + round(greatest(0, ix - 1) * 250)))::integer, vol, trd)
     RETURNING * INTO snap;
   DELETE FROM public.mv_econ WHERE taken_at < now() - interval '30 days';
   RETURN snap;
 END $$;
 
--- Painel público da economia: índice, ajustes vigentes, histórico e preços de referência.
+-- Painel público do Banco: índice, ajustes vigentes, histórico e cotações (vendas, anúncios e ordens).
 CREATE OR REPLACE FUNCTION public.mv_economy() RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE e public.mv_econ; d24 public.mv_econ;
 BEGIN
   e := public.mv_econ_refresh();
-  SELECT * INTO d24 FROM public.mv_econ WHERE taken_at <= now() - interval '20 hours' ORDER BY id DESC LIMIT 1;
+  SELECT * INTO d24 FROM public.mv_econ WHERE calc = 2 AND taken_at <= now() - interval '20 hours' ORDER BY id DESC LIMIT 1;
   RETURN jsonb_build_object(
-    'at', e.taken_at, 'players', e.players, 'money', round(e.money), 'perPlayer', round(e.per_player), 'target', round(e.target), 'avgLevel', round(e.avg_level, 1),
-    'index', e.idx, 'faucet', e.faucet, 'price', e.price, 'taxBps', e.tax_bps, 'volume24', round(e.volume24), 'trades24', e.trades24,
+    'at', e.taken_at, 'players', e.players, 'money', round(e.money), 'perPlayer', round(e.per_player), 'target', round(e.target), 'income', round(e.income), 'avgLevel', round(e.avg_level, 1),
+    'index', e.idx, 'rawIndex', e.raw_idx, 'faucet', e.faucet, 'price', e.price, 'taxBps', e.tax_bps, 'volume24', round(e.volume24), 'trades24', e.trades24,
     'growth24', CASE WHEN d24.id IS NULL OR d24.per_player = 0 THEN NULL ELSE round((e.per_player / d24.per_player - 1) * 100, 1) END,
-    'history', (SELECT coalesce(jsonb_agg(jsonb_build_object('at', h.taken_at, 'index', h.idx, 'faucet', h.faucet, 'perPlayer', round(h.per_player)) ORDER BY h.id), '[]'::jsonb) FROM (SELECT * FROM public.mv_econ ORDER BY id DESC LIMIT 72) h),
+    'history', (SELECT coalesce(jsonb_agg(jsonb_build_object('at', h.taken_at, 'index', h.idx, 'raw', h.raw_idx, 'faucet', h.faucet, 'price', h.price, 'perPlayer', round(h.per_player), 'target', round(h.target)) ORDER BY h.id), '[]'::jsonb)
+                FROM (SELECT * FROM public.mv_econ WHERE calc = 2 ORDER BY id DESC LIMIT 144) h),
     'prices', (SELECT coalesce(jsonb_object_agg(k, v), '{}'::jsonb) FROM (
       SELECT item_key AS k, jsonb_build_object('median', round(percentile_cont(0.5) WITHIN GROUP (ORDER BY price / greatest(1, coalesce((payload->>'qty')::numeric, 1)))), 'n', count(*)) AS v
-      FROM public.mv_listings WHERE status = 'sold' AND closed_at > now() - interval '7 days' GROUP BY item_key ORDER BY count(*) DESC LIMIT 30) p),
-    'rarity', (SELECT coalesce(jsonb_object_agg(rarity, med), '{}'::jsonb) FROM (
-      SELECT rarity, round(percentile_cont(0.5) WITHIN GROUP (ORDER BY price)) AS med FROM public.mv_listings WHERE kind = 'item' AND status = 'sold' AND closed_at > now() - interval '7 days' AND rarity <> '' GROUP BY rarity) r),
+      FROM public.mv_listings WHERE status = 'sold' AND closed_at > now() - interval '7 days' GROUP BY item_key ORDER BY count(*) DESC LIMIT 60) p),
+    'asks', (SELECT coalesce(jsonb_object_agg(item_key, lo), '{}'::jsonb) FROM (
+      SELECT item_key, round(min(price / greatest(1, coalesce((payload->>'qty')::numeric, 1)))) AS lo FROM public.mv_listings WHERE status = 'open' GROUP BY item_key) a),
+    'bids', (SELECT coalesce(jsonb_object_agg(item_key, hi), '{}'::jsonb) FROM (
+      SELECT item_key, max(price_each) AS hi FROM public.mv_orders WHERE status = 'open' AND qty_left > 0 GROUP BY item_key) o),
+    'rarity', (SELECT coalesce(jsonb_object_agg(rarity, jsonb_build_object('median', med, 'n', n)), '{}'::jsonb) FROM (
+      SELECT rarity, round(percentile_cont(0.5) WITHIN GROUP (ORDER BY price)) AS med, count(*) AS n FROM public.mv_listings WHERE kind = 'item' AND status = 'sold' AND closed_at > now() - interval '7 days' AND rarity <> '' GROUP BY rarity) r),
+    'rarityAsk', (SELECT coalesce(jsonb_object_agg(rarity, lo), '{}'::jsonb) FROM (
+      SELECT rarity, min(price) AS lo FROM public.mv_listings WHERE kind = 'item' AND status = 'open' AND rarity <> '' GROUP BY rarity) r),
     'orders', (SELECT count(*) FROM public.mv_orders WHERE status = 'open'), 'listings', (SELECT count(*) FROM public.mv_listings WHERE status = 'open'));
 END $$;
 

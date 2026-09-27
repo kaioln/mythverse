@@ -1562,3 +1562,48 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .rar-pill.active{color:#1a0f2e;background:var(--rc);border-color:transparent}
 .rar-chip{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:999px;font:800 9.5px var(--ui);letter-spacing:.06em;text-transform:uppercase;vertical-align:2px;color:#1a0f2e;background:var(--common)}
 .rar-chip.r-rare{background:var(--rare)}.rar-chip.r-epic{background:var(--epic)}.rar-chip.r-legendary{background:var(--legendary)}
+
+/* ---------- Convocação: temporada e caixas ---------- */
+.season-banner{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:20px;border:1px solid rgba(255,126,182,.4);background:radial-gradient(520px 200px at 0% 0%,rgba(255,126,182,.2),transparent 60%),linear-gradient(135deg,rgba(34,16,44,.96),rgba(14,10,34,.96))}
+.season-banner h3{margin:4px 0 10px;font:22px var(--display)}
+.season-faces{display:flex;flex-wrap:wrap;gap:8px}
+.season-faces span{display:flex;flex-direction:column;align-items:center;width:58px;font-size:10.5px;color:var(--muted);text-align:center}
+.season-faces img{width:52px;height:52px;border-radius:14px;border:2px solid rgba(255,126,182,.55);object-fit:cover;background:rgba(0,0,0,.3)}
+.box-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:10px}
+.box-card{display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:16px;border:1px solid color-mix(in srgb,var(--bc) 45%,transparent);background:radial-gradient(260px 120px at 100% 0%,color-mix(in srgb,var(--bc) 20%,transparent),transparent 70%),rgba(18,16,40,.92)}
+.box-card header{display:flex;align-items:center;gap:10px}.box-card header b{display:block;font:18px var(--display);color:var(--bc)}.box-card header small{color:var(--muted);font-size:11.5px}
+.box-ico{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;font-size:20px;background:color-mix(in srgb,var(--bc) 18%,transparent)}
+.box-card p{margin:0;font-size:12.5px;color:#ddd6f3}.box-rates{font-size:11.5px;color:var(--gold)}
+.box-card .meter span{background:var(--bc)}.box-card .box-actions{display:flex;gap:6px;margin-top:auto}.box-card .box-actions .action{flex:1}
+.box-class{padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid var(--line2)}
+@media (max-width:560px){.season-faces span{width:46px}.season-faces img{width:42px;height:42px}}
+
+/* ---------- Banco Kogane: identidade própria (laca verde-jade, ouro velho, papel de arroz) ---------- */
+.bank-hero{display:flex;align-items:center;gap:16px;padding:18px 20px;margin-bottom:12px;border-radius:18px;border:1px solid rgba(232,182,76,.45);
+  background:repeating-linear-gradient(90deg,rgba(232,182,76,.05) 0 1px,transparent 1px 22px),radial-gradient(420px 180px at 0% 0%,rgba(79,201,164,.22),transparent 65%),linear-gradient(135deg,#0f2a25,#11151f 70%)}
+.bank-hero .eyebrow{color:#e8b64c;letter-spacing:.14em}
+.bank-hero h3{margin:4px 0 4px;font:24px var(--kanji);color:#f6e7c1;font-weight:800}
+.bank-hero p{margin:0;color:#cfe3da;font-size:13.5px;max-width:640px;font-style:italic}
+.bank-crest{flex:none;width:64px;height:64px;filter:drop-shadow(0 4px 12px rgba(232,182,76,.35))}
+.bank-crest .c-ring{fill:#12352e;stroke:#e8b64c;stroke-width:3}.bank-crest .c-coin{fill:#e8b64c}.bank-crest .c-hole{fill:#12352e}.bank-crest .c-wave{fill:none;stroke:#4fc9a4;stroke-width:3;stroke-linecap:round}
+.bank-status{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 18px;margin-bottom:10px;border-radius:16px;border:1px solid rgba(79,201,164,.4);background:rgba(15,42,37,.55)}
+.bank-status small{color:#8fbfb0;letter-spacing:.12em;font-size:11px}.bank-status h3{margin:2px 0 4px;font:22px var(--display);color:#f6e7c1}.bank-status p{margin:0;color:#cfe3da;font-size:13px}
+.bank-status.hot{border-color:rgba(255,93,108,.55);background:rgba(58,18,26,.55)}.bank-status.warm{border-color:rgba(232,182,76,.6)}.bank-status.cold{border-color:rgba(143,211,255,.55);background:rgba(16,32,52,.55)}
+.bank-gauge{display:grid;place-items:center;min-width:110px;padding:8px 14px;border-radius:14px;background:#0c201c;border:2px solid #e8b64c;text-align:center}
+.bank-gauge b{font:30px var(--display);color:#e8b64c}.bank-gauge small{color:#8fbfb0;font-size:10.5px}
+.bank-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:6px}
+.bank-kpis span{display:flex;flex-direction:column;padding:11px 13px;border-radius:12px;background:linear-gradient(180deg,rgba(18,53,46,.7),rgba(14,20,30,.8));border:1px solid rgba(79,201,164,.25);font-weight:700;font-size:12.5px;color:#dfeee8}
+.bank-kpis b{font:22px var(--display);color:#e8b64c}.bank-kpis small{color:#8fbfb0;font-weight:500;font-size:11px;margin-top:2px}
+.bank-chart{padding:10px 12px 8px;border-radius:14px;background:#0b1a18;border:1px solid rgba(79,201,164,.25);margin-bottom:10px}
+.bank-chart svg{width:100%;height:auto;display:block}
+.bank-chart .g{stroke:rgba(207,227,218,.09)}.bank-chart .ref{stroke:#e8b64c;stroke-dasharray:6 5;opacity:.7}
+.bank-chart .yl{fill:#8fbfb0;font-size:11px;text-anchor:end}.bank-chart .xl{fill:#8fbfb0;font-size:11px}.bank-chart .rl{fill:#e8b64c;font-size:11px}
+.bank-chart .vl{font-size:12px;font-weight:800;paint-order:stroke;stroke:#0b1a18;stroke-width:3px}.bank-chart .last{stroke:#0b1a18;stroke-width:2}
+.bank-chart.empty p{margin:0;padding:26px 10px;text-align:center;color:#8fbfb0}
+.bank-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px;font-size:12px;font-weight:700;color:#dfeee8}.bank-legend i{display:inline-block;width:14px;height:3px;margin-right:6px;vertical-align:middle;border-radius:2px}
+.bank-quotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.bank-quote{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:rgba(18,53,46,.45);border:1px solid rgba(79,201,164,.22)}
+.bank-quote em{font:20px var(--display);font-style:normal;color:#e8b64c}.bank-quote small{color:#8fbfb0;font-size:11px}
+.bank-quote.q-est em{color:#cdbb8a}.bank-quote.q-est{border-style:dashed}
+.signpost.bank .sp-icon{background:linear-gradient(135deg,#12352e,#1d5a4b);box-shadow:0 0 0 2px #e8b64c inset}
+@media (max-width:560px){.bank-hero{flex-direction:column;align-items:flex-start}.bank-crest{width:48px;height:48px}}

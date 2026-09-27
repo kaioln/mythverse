@@ -30,11 +30,47 @@ CREATE POLICY mv_saves_update ON public.mv_saves FOR UPDATE TO authenticated USI
 REVOKE ALL ON public.mv_saves FROM anonymous, authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.mv_saves TO authenticated;
 
--- A revisão só pode subir de 1 em 1 (evita que um aparelho antigo sobrescreva um save mais novo).
-CREATE OR REPLACE FUNCTION public.mv_saves_guard() RETURNS trigger LANGUAGE plpgsql AS $$
+-- Auditoria: saltos suspeitos de progresso ficam registrados para revisão (não bloqueiam o jogo).
+CREATE TABLE IF NOT EXISTS public.mv_audit (
+  id       bigserial PRIMARY KEY,
+  user_id  text NOT NULL,
+  at       timestamptz NOT NULL DEFAULT now(),
+  kind     text NOT NULL,
+  detail   jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+CREATE INDEX IF NOT EXISTS mv_audit_user_idx ON public.mv_audit (user_id, at DESC);
+ALTER TABLE public.mv_audit ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.mv_audit FROM anonymous, authenticated;
+
+-- Guarda do save:
+--  · a revisão só sobe de 1 em 1 (um aparelho antigo não sobrescreve um save mais novo);
+--  · recusa relógio adiantado (lastSeen mais de 15 min no futuro): era assim que se pulavam expedições, limites diários e o AFK;
+--  · recusa valores impossíveis (nível > 100, qualidade > 6★, recursos negativos);
+--  · registra em mv_audit ganhos grandes demais entre dois saves seguidos.
+CREATE OR REPLACE FUNCTION public.mv_saves_guard() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE seen numeric; lv_old numeric; lv_new numeric; dt numeric;
 BEGIN
   IF TG_OP = 'INSERT' THEN NEW.revision := 1;
   ELSIF NEW.revision <> OLD.revision + 1 THEN RAISE EXCEPTION 'revisão inválida';
+  END IF;
+  seen := coalesce((NEW.data->>'lastSeen')::numeric, 0);
+  IF seen > extract(epoch FROM now()) * 1000 + 15 * 60000 THEN RAISE EXCEPTION 'O relógio deste aparelho está adiantado. Acerte a data e a hora e recarregue o jogo.'; END IF;
+  IF EXISTS (SELECT 1 FROM jsonb_array_elements(CASE WHEN jsonb_typeof(NEW.data->'collection') = 'array' THEN NEW.data->'collection' ELSE '[]'::jsonb END) h
+             WHERE coalesce((h->>'level')::numeric, 1) > 100 OR coalesce((h->>'stars')::numeric, 1) > 6 OR coalesce((h->>'level')::numeric, 1) < 1) THEN
+    RAISE EXCEPTION 'save inválido (herói acima do limite)';
+  END IF;
+  IF coalesce((NEW.data->'player'->>'gold')::numeric, 0) < 0 OR coalesce((NEW.data->'player'->>'keys')::numeric, 0) < 0 OR coalesce((NEW.data->'player'->>'crystal')::numeric, 0) < 0 THEN
+    RAISE EXCEPTION 'save inválido (recurso negativo)';
+  END IF;
+  IF TG_OP = 'UPDATE' THEN
+    dt := greatest(1, extract(epoch FROM now() - OLD.updated_at));
+    SELECT coalesce(sum((h->>'level')::numeric), 0) INTO lv_old FROM jsonb_array_elements(CASE WHEN jsonb_typeof(OLD.data->'collection') = 'array' THEN OLD.data->'collection' ELSE '[]'::jsonb END) h;
+    SELECT coalesce(sum((h->>'level')::numeric), 0) INTO lv_new FROM jsonb_array_elements(CASE WHEN jsonb_typeof(NEW.data->'collection') = 'array' THEN NEW.data->'collection' ELSE '[]'::jsonb END) h;
+    IF lv_new - lv_old > 25 + dt / 60 THEN INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'levels', jsonb_build_object('from', lv_old, 'to', lv_new, 'seconds', round(dt))); END IF;
+    IF coalesce((NEW.data->'player'->>'keys')::numeric, 0) - coalesce((OLD.data->'player'->>'keys')::numeric, 0) > 40 THEN
+      INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'keys', jsonb_build_object('from', OLD.data->'player'->'keys', 'to', NEW.data->'player'->'keys', 'seconds', round(dt))); END IF;
+    IF coalesce((NEW.data->'player'->>'crystal')::numeric, 0) - coalesce((OLD.data->'player'->>'crystal')::numeric, 0) > 2000 THEN
+      INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'crystal', jsonb_build_object('from', OLD.data->'player'->'crystal', 'to', NEW.data->'player'->'crystal', 'seconds', round(dt))); END IF;
   END IF;
   NEW.updated_at := now();
   RETURN NEW;
@@ -79,11 +115,14 @@ REVOKE ALL ON public.mv_listings FROM anonymous, authenticated;
 CREATE TABLE IF NOT EXISTS public.mv_mail (
   id         bigserial PRIMARY KEY,
   user_id    text NOT NULL,
-  kind       text NOT NULL CHECK (kind IN ('gold', 'item', 'card', 'mat')),
+  kind       text NOT NULL CHECK (kind IN ('gold', 'item', 'card', 'mat', 'keys', 'hero')),
   payload    jsonb NOT NULL,
   reason     text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now()
 );
+-- Presentes da administração (chaves e heróis) chegam pelo correio; o jogo resgata sozinho ao abrir.
+ALTER TABLE public.mv_mail DROP CONSTRAINT IF EXISTS mv_mail_kind_check;
+ALTER TABLE public.mv_mail ADD CONSTRAINT mv_mail_kind_check CHECK (kind IN ('gold', 'item', 'card', 'mat', 'keys', 'hero'));
 CREATE INDEX IF NOT EXISTS mv_mail_user_idx ON public.mv_mail (user_id);
 ALTER TABLE public.mv_mail ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS mv_mail_select ON public.mv_mail;

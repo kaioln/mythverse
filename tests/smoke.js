@@ -3,15 +3,15 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = path.resolve(__dirname, '..');
 global.setTimeout = fn => { fn(); return 0; };
-for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js','src/assets.js','src/ui.js','src/panels.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
+for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js','src/assets.js','src/ui.js','src/panels.js','src/economy-ui.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
 const { State, CombatEngine, Data:D, Items:I, Progression:PR } = global.KT;
 let checks = 0;
 const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };
 
 // ---------- conteúdo ----------
-ok(D.roster.length === 60 && new Set(D.roster.map(h => h.id)).size === 60, '60 heróis únicos');
+ok(D.roster.length === 60 + D.SEASON.heroes.length && new Set(D.roster.map(h => h.id)).size === D.roster.length && D.SEASON.heroes.every(id => D.roster.some(h => h.id === id)), '60 heróis + temporada, todos únicos');
 ok(D.roster.find(h => h.id === 'solen').name === 'Goku' && D.roster.find(h => h.id === 'sienna').name === 'Erza Scarlet', 'nomes originais dos personagens de anime');
-ok(new Set(D.roster.map(h => h.skill.name)).size === 60 && new Set(D.roster.map(h => h.ult.name)).size === 60, 'habilidades e ultimates únicas');
+ok(new Set(D.roster.map(h => h.skill.name)).size === D.roster.length && new Set(D.roster.map(h => h.ult.name)).size === D.roster.length, 'habilidades e ultimates únicas');
 D.roster.forEach(h => { ok(h.passiveText && h.skillText && h.ultText, `kit descrito: ${h.id}`); ok(fs.existsSync(path.join(root, 'assets/sprites', `${h.sprite}.png`)) && fs.existsSync(path.join(root, 'assets/portraits', `${h.id}.png`)), `arte: ${h.id}`); });
 ok(Object.keys(D.classes).every(c => D.roster.filter(h => h.cls === c).length >= 8), 'todas as classes têm heróis');
 Object.values(D.enemies).forEach(e => ok(fs.existsSync(path.join(root, 'assets/sprites', `${e.sprite}.png`)), `sprite de monstro: ${e.sprite}`));
@@ -35,7 +35,7 @@ ok(I.canEquip(I.makeItem({ ilvl:5, slot:'weapon', wt:'ranged', rarity:'rare' }),
 ok(I.itemStats(I.makeItem({ ilvl:10, slot:'weapon', wt:'holy', rarity:'common' })).healPow > 0, 'arma sagrada tem atributo implícito de cura');
 // Builds e Essências
 D.roster.forEach(h => { const b = KT.Builds.buildFor(h.id); ok(b && KT.Builds.essences[h.id] && PR.treeFor(h.id).find(n => n.id === 'ess').name !== 'Essência', `build e essência de ${h.id}`); ok(b.allowedWeapons.includes(b.weapon), `arma recomendada válida: ${h.id}`); });
-ok(new Set(Object.values(KT.Builds.essences).map(e => e.name)).size === 60, 'essências únicas');
+ok(new Set(Object.values(KT.Builds.essences).map(e => e.name)).size === D.roster.length, 'essências únicas');
 // Eventos por calendário (data e hora de Brasília)
 const evAt = (iso) => State.activeEvent(Date.parse(iso));
 ok(evAt('2026-09-26T23:30:00-03:00').id === 'bloodmoon' && evAt('2026-09-26T20:00:00-03:00').id === 'festival' && evAt('2026-09-24T07:00:00-03:00').id === 'calm' && evAt('2026-09-24T20:30:00-03:00').id === 'oninight' && evAt('2026-09-25T15:00:00-03:00').id === 'sakura' && evAt('2026-09-23T21:00:00-03:00').id === 'festival', 'calendário de eventos');
@@ -424,6 +424,58 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   state.bounty.active.progress = state.bounty.active.n; const got = engine.claimBounty(); ok(got && state.bounty.points === got.points && state.bounty.done === 1, 'recompensa entregue com Marcas');
   state.bounty.points = 100; const star0 = state.mats.star; ok(engine.buyBountyItem('b_star') && state.mats.star === star0 + 1 && state.bounty.points === 60, 'loja de Marcas');
   ok(!engine.buyBountyItem('nao_existe'), 'item inexistente na loja de Marcas');
+}
+
+// ---------- Travas de EXP, caixas de convocação, presentes e Banco Kogane ----------
+{
+  const X = KT.State;
+  ok(X.heroXpNext(33) > X.heroXpNext(32) && X.heroXpNext(99) / X.heroXpNext(98) > 1.05, 'curva de EXP sempre cresce, inclusive no fim');
+  const kills = L => X.heroXpNext(L) / (3.5 * Math.pow(1.065, .92 * (L - 1)));
+  ok(kills(99) > kills(60) && kills(60) > kills(40), 'níveis altos custam mais abates que os do meio (antes ficavam mais rápidos)');
+  ok(X.xpFactor(10, 60) <= .1 && X.xpFactor(50, 55) === 1 && X.xpFactor(90, 20) <= .1, 'EXP cai para herói carregado muito abaixo e para farm de mapa fácil');
+  ok(X.xpFactor(100, 150) === 1, 'inimigos acima do nível 100 não punem heróis no teto');
+  const st = X.createState(), en = new CombatEngine(st, {});
+  for (let i = 0; i < 10; i++) en.openBox(true);
+  [0, 1, 2, 3].forEach(i => en.setParty(i, st.collection[i].uid));
+  const h = en.heroes[0]; h.level = 1; h.xp = 0;
+  en.giveXp(1e9, 80, 1);
+  ok(h.level <= 2, 'um abate nunca rende mais que 5% de um nível (sem power-leveling)');
+  // Expedição não passa do nível da região.
+  st.progress.hunt.best = 12; const bench = st.collection.find(r => !st.formation.includes(r.uid)); bench.level = 1; bench.xp = 0;
+  st.expeditions = [{ id:'x1', zone:'hunt', hours:12, uids:[bench.uid], start:en.now() - 13 * 3600000 }];
+  en.claimExpedition('x1');
+  const zl = X.enemyLevel(X.zonePower(D.zones.hunt, { stage:12 }));
+  ok(bench.level > 1 && bench.level <= zl, `expedição dá EXP mas para no nível da região (${bench.level}/${zl})`);
+  // Caixas.
+  ok(D.BOXES.length >= 4 && D.BOXES.every(b => Math.abs(Object.values(b.rates).reduce((a, v) => a + v, 0) - 1) < 1e-9), 'caixas com chances somando 100%');
+  st.player.keys = 0; ok(!en.openBoxes(1, 'astral').length && /chaves/.test(en.lastError), 'sem chaves não convoca');
+  st.player.keys = 1000;
+  const ten = en.openBoxes(10, 'astral'); ok(ten.length === 10 && st.player.keys === 900 && ten.every(r => r.rarityRolled !== 'common'), 'Caixa Astral: 10 chaves cada, sem comuns');
+  let seasonHits = 0; for (let k = 0; k < 10; k++) seasonHits += en.openBoxes(10, 'season').filter(r => r.season).length;
+  ok(seasonHits > 35, `Caixa da Temporada prioriza heróis novos (${seasonHits}/100)`);
+  const cls = en.openBoxes(10, 'class', 'Suporte'); ok(cls.every(r => D.roster.find(t => t.id === r.id).cls === 'Suporte'), 'Caixa de Classe só sorteia a classe escolhida');
+  ok(!en.openBoxes(10, 'worlds').some(r => D.SEASON.heroes.includes(r.id)), 'heróis da temporada não saem na Caixa dos Mundos durante a temporada');
+  st.pityBy.season = 19; const pityRoll = en.openBoxes(1, 'season')[0]; ok(pityRoll.rarityRolled === 'legendary' && pityRoll.season, 'garantia da temporada entrega lendário da temporada');
+  for (let k = 0; k < 20; k++) { const r10 = en.openBoxes(10, 'worlds'); if (!r10.length) break; ok(r10.some(r => ['epic', 'legendary'].includes(r.rarityRolled)), '10× garante um Épico'); }
+  // Presentes do correio.
+  const st2 = X.createState(), e2 = new CombatEngine(st2, {});
+  ok(e2.marketReceive('keys', { n:1000 }) && st2.player.keys === 1000, 'presente de 1000 chaves');
+  ok(e2.marketReceive('hero', { id:'kakashi', rarity:'legendary' }) && st2.collection.some(r => r.id === 'kakashi' && r.rarity === 'legendary'), 'presente de herói lendário');
+  ok(D.roster.find(t => t.id === 'kakashi').cls === 'Executor', 'Kakashi é Executor');
+  ok(!e2.marketReceive('hero', { id:'nao_existe', rarity:'legendary' }), 'herói inexistente é recusado');
+  // Save adulterado volta ao possível.
+  const bad = JSON.parse(JSON.stringify(st2)); bad.collection[0].stars = 99; bad.collection[0].attr.str = 9999; bad.collection[0].talents = { v1:99 }; bad.training.atk = 9999; bad.paragon.lv = 9999; bad.player.keys = -5;
+  const fixed = X.mergeState(bad);
+  ok(fixed.collection[0].stars === 6 && fixed.collection[0].attr.str === 0 && !Object.keys(fixed.collection[0].talents).length && fixed.training.atk <= 10 && fixed.paragon.lv <= D.PARAGON.cap && fixed.player.keys === 0, 'saves impossíveis são corrigidos ao carregar');
+  // Telas.
+  ui.session = { mode:'offline' };
+  const sum = ui.collectionPanel(null, 'summon'); ok(D.BOXES.every(b => sum.includes(`data-open-box="${b.id}"`)) && sum.includes('Temporada'), 'tela de convocação mostra as quatro caixas');
+  ui.session = { mode:'neon' }; KT.NeonMarket = { econ:{ index:1.2, faucet:.97, price:1.03, taxBps:550, perPlayer:900000, target:1200000, income:200000, players:2, money:5e6, volume24:0, trades24:0, listings:0, orders:0, growth24:null,
+    history:[{ at:'2026-09-27T10:00:00Z', index:1, raw:1, faucet:1, perPlayer:8e5, target:1e6 }, { at:'2026-09-27T10:20:00Z', index:1.2, raw:1.6, faucet:.97, perPlayer:9e5, target:1.2e6 }], prices:{}, asks:{}, bids:{}, rarity:{} }, economy:() => Promise.resolve() };
+  const bank = ui.bankPanel(null, 'overview'); ok(bank.includes('Banco Kogane') || bank.includes('BANCO KOGANE'), 'Banco Kogane com identidade própria');
+  ok((bank.match(/<svg viewBox/g) || []).length === 2 && !bank.includes('preserveAspectRatio="none"'), 'gráficos com escala e sem distorção');
+  const q = ui.bankPanel(null, 'quotes'); ok(!/<em>–<\/em>/.test(q) && q.includes('estimativa do Banco'), 'cotações nunca ficam vazias (estimativa quando não há vendas)');
+  ui.session = { mode:'offline' };
 }
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

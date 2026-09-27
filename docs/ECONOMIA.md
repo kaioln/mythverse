@@ -74,3 +74,45 @@ Itens em 10 h: ~1.000 comuns, ~290 raros, ~8 épicos, 2 conjuntos e ~1 lendário
 ## Como recalibrar
 
 Os pesos ficam em `src/items.js` (`DROP_TABLES`, `rarityCap`, `cardTiers`, `materials`, `REFINE_BONUS`) e em `src/engine.js` (`dropMats`, `offlineGains`, `claimExpedition`). Depois de mudar, rode `node tools/sim.js 10 7` e compare as tabelas por hora com as deste documento.
+
+## Progressão de EXP (versão 2, 2026-09-29)
+
+A EXP de um inimigo cresce ~6% por nível dele (1,065^0,92), mas a curva antiga dos heróis (60·N^1,9) crescia devagar: **o fim ficava mais rápido que o meio**. Abates por nível, com a equipe de 4 no nível da região:
+
+| Nível | Antes | Agora |
+|---|---|---|
+| 10 | 808 | 808 |
+| 30 | 2.046 | 2.046 |
+| 50 | 1.695 | 2.500 |
+| 70 | 1.008 | 3.000 |
+| 90 | 510 | 3.500 |
+| 99 | 363 | 3.725 |
+
+Até o nível 32 nada mudou; depois cada nível custa um pouco mais que o anterior. Travas (em `src/engine.js`, `XP_RULES`):
+
+- **Herói muito abaixo do inimigo** (mais de 15 níveis): −4% de EXP por nível extra, mínimo 10%. Acaba o "carregar" herói nível 1 numa região difícil.
+- **Herói muito acima do inimigo** (mais de 8 níveis): −10% por nível extra, mínimo 10%. Farm de mapa fácil não rende.
+- **Teto por abate**: nenhum abate dá mais que 5% de um nível.
+- **Chefe sem espólio no dia**: a EXP cai para 30% (antes o chefe repetido era o melhor farm de EXP do jogo).
+- **Invocações de chefe**: 25% de ouro/EXP e sem itens, cartas ou materiais.
+- **Expedições**: antes davam 20% de um nível por hora em qualquer nível (2,4 níveis em 12 h, até no 99). Agora equivalem a caçar a região devagar e **nunca passam do nível dos inimigos da região**.
+- **AFK**: usa o nível da região e o mesmo teto por abate.
+- **Integridade do save**: ao carregar, qualidade > 6★, atributos ou talentos acima dos pontos, treino acima do Dojo e Paragão acima do teto são corrigidos.
+- **Relógio** (modo Neon): a hora vem do banco (`mv_now`); o banco recusa saves com relógio adiantado. Antes, adiantar o relógio do aparelho pulava expedições, renovava limites diários e dava AFK infinito.
+
+A tela de destino mostra o nível dos inimigos e quanto da EXP a equipe recebe ali.
+
+## Convocação (caixas)
+
+| Caixa | Custo | Lendário | Épico | Raro | Comum | Garantia |
+|---|---|---|---|---|---|---|
+| Caixa dos Mundos | 1 chave | 3% | 12% | 30% | 55% | lendário em 30 |
+| Caixa de Classe (escolhe a classe) | 2 chaves | 5% | 17% | 33% | 45% | lendário em 25 |
+| Caixa da Temporada (60% herói novo) | 3 chaves | 8% | 22% | 35% | 35% | lendário **da temporada** em 20 |
+| Caixa Astral (inclui temporada) | 10 chaves | 20% | 45% | 35% | 0% | lendário em 8 |
+
+Cada caixa tem garantia própria e 10× garante ao menos um Épico. Heróis da temporada (12, `D.SEASON`) só saem da Temporada e da Astral enquanto ela estiver aberta. Novas fontes de chaves: a cada 4 estágios novos, Fenda a cada 5 andares (2 nos múltiplos de 10), todas as diárias, login nos dias 4 (1) e 7 (2) e a cada 5 níveis de conta.
+
+## Banco Kogane
+
+Saiu da Loja e virou um distrito próprio da cidade (Tesoureira Oharu). Cálculo novo do índice (`tools/neon_economy.sql`): para cada jogador ativo, reserva saudável = 6 h da **própria** renda (ouro ganho ÷ horas jogadas); o índice é a **mediana** das razões ouro/reserva (um jogador rico não distorce), suavizado 70/30. Cotações nunca ficam vazias: vendas → menor anúncio → maior ordem → estimativa pelo custo de produção.

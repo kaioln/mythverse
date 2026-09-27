@@ -72,7 +72,8 @@
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
     ranking:{ k:'RANKING', t:'Ranking', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
     city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['house','Casa do Time'], ['prof','Profissões'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
-    shop:{ k:'LOJA', t:'Empório Sakura', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['econ','Economia'], ['gems','Carteira 💠']] },
+    shop:{ k:'LOJA', t:'Empório Sakura', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores']] },
+    bank:{ k:'BANCO', t:'Banco Kogane', tabs:[['overview','Panorama','crown'], ['quotes','Cotações','scale'], ['wallet','Carteira 💠','gem']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
     wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
     arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
@@ -108,7 +109,7 @@
     this.el.modalBackNav.hidden = v.panel !== 'destination';
     this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
     const top = this.el.modalBody.scrollTop;
-    const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
+    const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', bank:'bankPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
@@ -169,6 +170,12 @@
     const rec = e.recommendedPower(id, opts), ratio = pow / rec;
     const ctx = e.ctx(), weak = z.weakTo || [];
     const teamWeak = e.heroes.filter(r => weak.includes(e.template(r.id).el)).length;
+    // Nível dos inimigos e faixa de EXP plena (travas contra power-leveling e farm de mapa fácil).
+    if (['hunt', 'dungeon', 'boss', 'rift'].includes(z.kind)) {
+      const lv = S().enemyLevel(S().zonePower(z, opts)), R = S().XP_RULES, cap = Math.min(100, lv), team = e.heroes, avg = team.length ? Math.round(team.reduce((a, r) => a + r.level, 0) / team.length) : 0;
+      const f = team.length ? Math.round(team.reduce((a, r) => a + S().xpFactor(r.level, lv), 0) / team.length * 100) : 100;
+      recNote += `<p class="note ${f < 100 ? 'warn-note' : ''}">Inimigos nível <b>${lv}</b> · EXP plena para heróis do nível <b>${Math.max(1, cap - R.under)}</b> ao <b>${Math.min(100, cap + R.over)}</b>. Sua equipe (nível médio ${avg}) recebe <b>${f}%</b> da EXP aqui.</p>`;
+    }
     if (z.kind === 'boss' && p.kills) { const left = e.bossLootLeft(id, opts.tier ?? p.tier ?? 0); recNote += `<p class="note ${left ? '' : 'warn-note'}">Espólio de hoje nesta dificuldade: <b>${left}/${S().BOSS_LOOT_PER_DAY}</b> vitórias com itens, materiais, chaves e carta MVP.${left ? '' : ' Até a meia-noite (Brasília) a vitória rende só ouro e EXP.'}</p>`; }
     const foes = z.kind === 'boss' ? [z.enemy] : [...(z.pool || []), ...(z.elites || []), ...(z.floorBoss ? [z.floorBoss] : [])];
     const bossE = z.kind === 'boss' && D.enemies[z.enemy];
@@ -352,13 +359,29 @@
     }
     if (tab === 'catalog') {
       const ids = new Set(owned.map(r => r.id));
-      return `<p class="note">${ids.size}/60 heróis descobertos. Heróis não descobertos aparecem em silhueta, veja todos os kits na Wiki.</p><div class="roster-grid">${D.roster.map(t => `<div class="roster-card ${ids.has(t.id) ? 'owned' : 'locked'}" data-tip="<b>${esc(t.name)}</b><br>${t.cls} · ${t.el}<br><small>${esc(t.world)}</small>"><img src="${portrait(t.id)}" alt="" loading="lazy"><b>${ids.has(t.id) ? esc(t.name) : '???'}</b></div>`).join('')}</div>`;
+      return `<p class="note">${ids.size}/${D.roster.length} heróis descobertos. Heróis não descobertos aparecem em silhueta, veja todos os kits na Wiki.</p><div class="roster-grid">${D.roster.map(t => `<div class="roster-card ${ids.has(t.id) ? 'owned' : 'locked'}" data-tip="<b>${esc(t.name)}</b><br>${t.cls} · ${t.el}<br><small>${esc(t.world)}</small>"><img src="${portrait(t.id)}" alt="" loading="lazy"><b>${ids.has(t.id) ? esc(t.name) : '???'}</b></div>`).join('')}</div>`;
     }
-    return `<section class="summon-banner"><div class="summon-copy"><span class="eyebrow">CAIXA DOS MUNDOS</span><h3>${free ? 'Seu começo. Suas escolhas.' : 'Abra a Fenda'}</h3>
-      <p>${free ? `Você tem <b>${free} convocações gratuitas</b> iniciais. Descubra seus heróis e escolha quatro para a equipe.` : 'Chaves vêm de estágios (a cada 4), dungeons, chefes, conquistas e da Loja (60 cristais). Heróis repetidos viram fragmentos para elevar qualidade.'}</p>
-      <div class="summon-counts"><span class="pill"><b>${free}</b> grátis</span><span class="pill"><b>${keys}</b> chaves</span><span class="pill"><b>${30 - this.state.pity}</b> até lendário garantido</span></div>
-      <div class="box-actions">${free > 1 ? `<button class="action pink big" data-open-box-all type="button">✦ Convocar ${free}× grátis</button>` : ''}${!free && keys >= 10 ? `<button class="action pink big" data-open-box-10 type="button">✦ Convocar 10×</button>` : ''}<button class="action ${free > 1 || keys >= 10 ? '' : 'pink big'}" data-open-box type="button" ${avail < 1 ? 'disabled' : ''}>Convocar 1 ${free ? '· grátis' : '· 1 chave'}</button>${!free ? `<button class="action" data-go="shop:crystal" type="button">Comprar chaves</button>` : ''}</div>
-      <small>Chances: Comum 55% · Raro 30% · Épico 12% · Lendário 3% (garantido a cada 30). Repetidos: +5/10/20/40 fragmentos conforme a raridade e podem melhorar a raridade do herói.</small></div></section>
+    const R = D.heroRarities, rateTxt = b => ['legendary', 'epic', 'rare', 'common'].filter(k => b.rates[k]).map(k => `${R.find(x => x.id === k).label} ${(b.rates[k] * 100).toFixed(0)}%`).join(' · ');
+    const seasonOpen = e.seasonOpen(), endsIn = Math.max(0, Date.parse(D.SEASON.ends) - e.now()), days = Math.ceil(endsIn / 86400000);
+    const cls = this.summonClass || 'Executor';
+    const boxCard = b => {
+      if (b.pool === 'season' && !seasonOpen) return '';
+      const pity = e.boxPity(b), can1 = !e.canOpenBox(b.id, 1, cls), can10 = !e.canOpenBox(b.id, 10, cls);
+      const pick = b.pool === 'class' ? `<select id="summon-class" class="box-class">${Object.keys(D.classes).map(c => `<option value="${c}" ${c === cls ? 'selected' : ''}>${D.classes[c].icon} ${c}</option>`).join('')}</select>` : '';
+      return `<article class="box-card box-${b.id}" style="--bc:${b.color}"><header><span class="box-ico">${b.icon}</span><div><b>${esc(b.name)}</b><small>${b.cost} chave${b.cost > 1 ? 's' : ''} por convocação</small></div></header>
+        <p>${esc(b.text)}</p>${pick}<small class="box-rates">${rateTxt(b)}</small>
+        <div class="meter"><span style="width:${Math.min(100, pity / b.pity * 100)}%"></span></div><small class="dim">Lendário garantido em ${b.pity - pity} · 10× garante um Épico</small>
+        <div class="box-actions"><button class="action ${can1 ? 'pink' : ''}" data-open-box="${b.id}" data-n="1" type="button" ${can1 ? '' : 'disabled'}>1× · ${b.cost}🔑</button><button class="action ${can10 ? 'pink' : ''}" data-open-box="${b.id}" data-n="10" type="button" ${can10 ? '' : 'disabled'}>10× · ${b.cost * 10}🔑</button></div></article>`;
+    };
+    const featured = D.roster.filter(h => D.SEASON.heroes.includes(h.id));
+    const intro = free ? `<section class="summon-banner"><div class="summon-copy"><span class="eyebrow">CAIXA DOS MUNDOS</span><h3>Seu começo. Suas escolhas.</h3>
+      <p>Você tem <b>${free} convocações gratuitas</b> iniciais. Descubra seus heróis e escolha quatro para a equipe.</p>
+      <div class="box-actions"><button class="action pink big" data-open-box="worlds" data-n="${Math.min(10, free)}" type="button">✦ Convocar ${Math.min(10, free)}× grátis</button></div></div></section>` : '';
+    return `${intro}<section class="season-banner"><div><span class="eyebrow">${esc(D.SEASON.name.toUpperCase())}</span><h3>${seasonOpen ? `${featured.length} heróis novos · termina em ${days} dia${days === 1 ? '' : 's'}` : 'Temporada encerrada: os heróis dela agora saem na Caixa dos Mundos'}</h3>
+        <div class="season-faces">${featured.map(h => `<span data-tip="<b>${esc(h.name)}</b><br>${h.cls} · ${h.el}"><img src="${portrait(h.id)}" alt=""><small>${esc(h.name.split(' ')[0])}</small></span>`).join('')}</div></div>
+        <div class="summon-counts"><span class="pill"><b>${keys}</b> chaves</span><button class="action small" data-go="shop:crystal" type="button">Comprar chaves</button></div></section>
+      <div class="box-grid">${D.BOXES.map(boxCard).join('')}</div>
+      <small class="dim">Chaves: a cada 4 estágios novos, fim de caçadas, dungeons, chefes, Fenda (a cada 5 andares), diárias completas, login (dias 4 e 7), a cada 5 níveis de conta, conquistas e Loja. Repetidos viram fragmentos (+2/4/8/16) e podem melhorar a raridade do herói.</small>
       <div class="section-title"><h3>Seus heróis <span>${owned.length}</span></h3><button class="action small" data-tab-go="owned" type="button">Ver todos →</button></div>
       <div class="mini-roster">${owned.slice(-12).reverse().map(r => { const t = e.template(r.id); return `<button class="mini-hero rarity-${r.rarity}" data-hero="${r.uid}" type="button"><img src="${portrait(t.id)}" alt=""><small>${esc(t.name)}</small></button>`; }).join('') || '<p class="dim">Nenhum herói ainda.</p>'}</div>`;
   };
@@ -634,7 +657,7 @@
   // ---------------------------------------------------------------------------
   P.shopPanel = function(_, tab) {
     const e = this.engine, s = this.state;
-    if (tab === 'econ') return this.econPanel();
+    if (tab === 'econ' || tab === 'gems') return this.bankPanel(null, tab === 'gems' ? 'wallet' : 'overview');
     if (tab === 'market') {
       const offers = e.refreshMarket(); const next = (Math.floor(Date.now() / 7200000) + 1) * 7200000;
       return `<p class="note">Mercado do Porto: ofertas renovam em <b>${fmtTime((next - Date.now()) / 1000)}</b>. Nível do Mercado ${s.buildings.market}: ${2 + s.buildings.market} equipamentos por rodada.</p><div class="inventory-grid">${offers.map((o, i) => o.type === 'item' ? this.itemCard(o.item, { flavor:true, actions:`<button class="action small ${s.player.gold >= o.price && !o.sold ? 'primary' : ''}" data-market="${i}" type="button" ${o.sold || s.player.gold < o.price ? 'disabled' : ''}>${o.sold ? 'Vendido' : `Comprar · ${compact(o.price)} ouro`}</button>` }) : `<article class="item"><div class="item-head"><img class="item-art round" src="${portrait(o.heroId)}" alt=""><div><b>${o.n} fragmentos</b><small>${esc(e.template(o.heroId).name)}</small></div></div><p class="dim">Use para elevar a qualidade deste herói.</p><footer><button class="action small ${s.player.gold >= o.price && !o.sold ? 'primary' : ''}" data-market="${i}" type="button" ${o.sold || s.player.gold < o.price ? 'disabled' : ''}>${o.sold ? 'Vendido' : `Comprar · ${compact(o.price)} ouro`}</button></footer></article>`).join('')}</div>`;
@@ -660,7 +683,7 @@
     Promise.all([MKT(this).wallet(), MKT(this).market(this.mktFilter || {}), MKT(this).myMarket()]).then(([w, m, mine]) => {
       this.wallet = w.ok ? w : { error:w.error }; this.marketCfg = w.config || m.config || this.marketCfg;
       this.mktList = m.ok ? m.listings : []; this.mktErr = m.ok ? null : m.error; this.myMkt = mine.ok ? mine : null;
-      this.renderResources(); if (this.view.panel === 'shop' && ['p2p','gems'].includes(this.view.tab)) this.refreshPanel();
+      this.renderResources(); if ((this.view.panel === 'shop' && this.view.tab === 'p2p') || (this.view.panel === 'bank' && this.view.tab === 'wallet')) this.refreshPanel();
     });
   };
   // Preço na moeda do anúncio: ouro (economia do jogo) ou Gemas (dinheiro real).
@@ -1016,6 +1039,7 @@
   // ---------------------------------------------------------------------------
   P.handleInput = function(e) {
     const t = e.target;
+    if (t.id === 'summon-class' && e.type === 'change') { this.summonClass = t.value; this.refreshPanel(); return; }
     if (t.id === 'hf-q') { this.heroFilterState().q = t.value; clearTimeout(this.hfTimer); this.hfTimer = setTimeout(() => { const pos = t.selectionStart; this.refreshPanel(); const n = this.el.modalBody.querySelector('#hf-q'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } }, 180); return; }
     if (['hf-cls', 'hf-el', 'hf-sort', 'hf-free'].includes(t.id) && e.type === 'change') { const f = this.heroFilterState(); f[t.id.slice(3)] = t.type === 'checkbox' ? t.checked : t.value; this.refreshPanel(); return; }
     if (t.id === 'wiki-search') { this.wikiQuery = t.value; const q = t.value.trim().toLocaleLowerCase('pt-BR'); this.el.modalBody.querySelectorAll('[data-wiki-entry]').forEach(n => { n.hidden = !!q && !n.textContent.toLocaleLowerCase('pt-BR').includes(q); }); }
@@ -1060,9 +1084,9 @@
     if (d.claimAch) { run('claimAchievement', [d.claimAch], r => { if (r) this.callbacks.reward?.(); }); return; }
     if (d.result) { this.el.result.hidden = true; e.autoAfterResult = null; if (d.result === 'retry') e.repeatRun(); else if (d.result === 'hunt') e.fallbackToHunt(); else if (d.result === 'city') { e.enterZone('village'); if (KT.Server?.enabled) c('goVillage'); } else if (d.result === 'map') { e.fallbackToHunt(); this.openPanel('journey'); } return; }
     if (d.choice) { this.el.choice.hidden = true; e.input('choice', d.choice); return; }
-    if (b.hasAttribute('data-open-box') || b.hasAttribute('data-open-box-all') || b.hasAttribute('data-open-box-10')) {
-      const n = b.hasAttribute('data-open-box-all') ? s.starterRolls : b.hasAttribute('data-open-box-10') ? 10 : 1;
-      run('openBoxes', [Math.min(10, Math.max(1, n))], got => { if (got && got.length) { this.closeModal(); this.showReveal(got); if (!s.story.seen.intro2) c('markSeen', 'intro2'); } });
+    if (b.hasAttribute('data-open-box')) {
+      const box = d.openBox || 'worlds', n = Math.min(10, Math.max(1, Number(d.n) || 1)), cls = box === 'class' ? (this.el.modalBody.querySelector('#summon-class')?.value || 'Executor') : null;
+      run('openBoxes', [n, box, cls], got => { if (got && got.length) { this.closeModal(); this.showReveal(got); if (!s.story.seen.intro2) c('markSeen', 'intro2'); } else this.toast(esc(e.lastError || 'Chaves insuficientes.')); });
       return;
     }
     if (d.slot !== undefined) { this.selectedSlot = Number(d.slot); refresh(); return; }
