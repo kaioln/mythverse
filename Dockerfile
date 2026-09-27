@@ -17,6 +17,7 @@ COPY assets/icons ./assets/icons
 COPY assets/scenes ./assets/scenes
 COPY assets/brand ./assets/brand
 COPY assets/ui ./assets/ui
+COPY assets/anim ./assets/anim
 COPY legal ./legal
 COPY admin ./admin
 COPY index.html styles.css ./

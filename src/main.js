@@ -125,9 +125,10 @@
       };
       if (session.mode === 'neon') {
         const save0 = engine.save.bind(engine);
-        engine.save = () => { const r = save0(); KT.Neon.queue(state); return r; };
-        KT.Neon.onConflict = () => ui.toast('Seu progresso foi salvo em <b>outro aparelho</b>. Recarregue a página para continuar de lá.', 'red');
+        engine.save = () => { const local = save0(), queued = KT.Neon.queue(state); return local && queued; };
+        KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo da nuvem foi mantido e esta cópia local foi preservada.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
+        if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });
       }

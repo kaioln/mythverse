@@ -29,6 +29,20 @@
       }))).then(() => this);
     }
     image(path) { return this.images.get(path) || null; }
+    // Folhas de animação 3D (assets/anim/<id>.webp + .json), carregadas sob demanda só para quem está em campo.
+    animIndex() {
+      if (!this._animIdx) { this._animIdx = new Set(); fetch('assets/anim/index.json').then(r => r.ok ? r.json() : []).then(ids => ids.forEach(i => this._animIdx.add(i))).catch(() => {}); }
+      return this._animIdx;
+    }
+    anim(id) {
+      this.anims = this.anims || new Map();
+      const hit = this.anims.get(id); if (hit) return hit.ready ? hit : null;
+      if (!this.animIndex().has(id)) return null;
+      const entry = { ready:false }; this.anims.set(id, entry);
+      Promise.all([fetch(`assets/anim/${id}.json`).then(r => r.json()), new Promise((res, rej) => { const img = new Image(); img.decoding = 'async'; img.onload = () => res(img); img.onerror = rej; img.src = `assets/anim/${id}.webp`; })])
+        .then(([meta, img]) => Object.assign(entry, { meta, img, ready:true })).catch(() => this.anims.set(id, { ready:false, failed:true }));
+      return null;
+    }
     sprite(id) { const img = this.image(spritePath(id)); return img ? [spritePath(id), 0, 0, img.width, img.height] : null; }
     spriteImage(id) { return this.image(spritePath(id)); }
     item(name, hue = 0) { return this.image(iconPath(name, hue)); }

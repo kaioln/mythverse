@@ -64,16 +64,16 @@
     },
     finished(fin) { this.pendingFinish = fin; },
     request(start) { return this.enqueue({ start }); },
-    flush() { return this.enqueue({}); },
+    flush() { return this.enqueue({}, false, true); },
     act(op, args = []) { return this.enqueue({ act:{ op, args } }, true); },
-    enqueue(body, isAct = false) {
+    enqueue(body, isAct = false, force = false) {
       const task = async () => {
         const eng = this.engine;
         let restart = false;
         if (isAct && eng.seg) { eng.abortSegment(); restart = true; }
         const payload = { ...body }; if (this.pendingFinish) payload.finish = this.pendingFinish;
         this.pendingFinish = null;
-        if (!payload.finish && !payload.act && !payload.start) return { ok:true };
+        if (!force && !payload.finish && !payload.act && !payload.start) return { ok:true };
         this.status = 'saving';
         let r = await Net.api('POST', '/api/sync', payload);
         for (let i = 0; !r.ok && r.status !== 400 && r.status !== 401 && r.status !== 403 && i < 4; i++) { await new Promise(res => setTimeout(res, 1500 * (i + 1))); r = await Net.api('POST', '/api/sync', payload); }

@@ -3,6 +3,7 @@
   const D = KT.Data, U = KT.Utils, I = KT.Items, PR = KT.Progression;
   const SAVE_KEY = 'mythverse-save-v1';
   let saveKey = SAVE_KEY;
+  let saveGeneration = 0;
   const setSaveKey = k => { saveKey = k || SAVE_KEY; };
   const ULT_COST = 100;
   const OFFENSIVE = new Set(['dmg','st','dispel','delay','execute','chain']);
@@ -66,8 +67,25 @@
     s.collection.forEach(h => Object.entries(h.equipped).forEach(([k, uid]) => { const it = uid && s.inventory.find(x => x.uid === uid); if (uid && (!it || !I.equipCheck(it, h.id).ok)) h.equipped[k] = null; }));
     return s;
   }
-  function loadState(raw) { try { if (raw === undefined) raw = U.safeStorage.get(saveKey); return mergeState(raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : null); } catch (_) { return createState(); } }
-  function saveState(state) { state.lastSeen = Date.now(); const json = JSON.stringify(state); const ok = U.safeStorage.set(saveKey, json); try { KT.Cloud?.onLocalSave?.(state, json); } catch (_) {} return ok; }
+  function parseSave(raw) { try { const v = typeof raw === 'string' ? JSON.parse(raw) : raw; return v && v.version === 3 ? v : null; } catch (_) { return null; } }
+  function loadState(raw) {
+    if (raw !== undefined) { const parsed = parseSave(raw); saveGeneration = Math.max(saveGeneration, Number(parsed?.saveGeneration) || 0); return mergeState(parsed); }
+    const candidates = [saveKey, `${saveKey}:a`, `${saveKey}:b`].map(k => parseSave(U.safeStorage.get(k))).filter(Boolean);
+    candidates.sort((a, b) => (Number(b.saveGeneration) || 0) - (Number(a.saveGeneration) || 0) || (Number(b.totalPlaySeconds) || 0) - (Number(a.totalPlaySeconds) || 0) || (Number(b.lastSeen) || 0) - (Number(a.lastSeen) || 0));
+    const best = candidates[0] || null;
+    saveGeneration = Math.max(saveGeneration, Number(best?.saveGeneration) || 0);
+    return mergeState(best);
+  }
+  function saveState(state) {
+    state.lastSeen = Date.now();
+    state.saveGeneration = saveGeneration = Math.max(saveGeneration, Number(state.saveGeneration) || 0) + 1;
+    const json = JSON.stringify(state), pointerKey = `${saveKey}:active`, active = U.safeStorage.get(pointerKey);
+    const target = active === 'a' ? 'b' : 'a', targetKey = `${saveKey}:${target}`;
+    const ok = U.safeStorage.set(targetKey, json);
+    if (ok) { U.safeStorage.set(pointerKey, target); U.safeStorage.remove(saveKey); }
+    try { KT.Cloud?.onLocalSave?.(state, json); } catch (_) {}
+    return ok;
+  }
 
   // ===========================================================================
   // CURVAS
@@ -1775,7 +1793,7 @@
     }
 
     save() { return saveState(this.state); }
-    resetSave() { U.safeStorage.remove(SAVE_KEY); }
+    resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
   KT.State = { buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };

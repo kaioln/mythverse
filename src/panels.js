@@ -948,7 +948,7 @@
     const run = (op, args, then) => { if (busy) busy.disabled = true; return c(op, ...args).then(r => { then?.(r); refresh(); }).finally(() => { if (busy) busy.disabled = false; }); };
     if (d.remove) { ev.stopPropagation(); run('removeFromParty', [d.remove], () => { this.selectedSlot = s.formation.indexOf(null) >= 0 ? s.formation.indexOf(null) : this.selectedSlot; this.dockKey = ''; }); return; }
     if (d.go) { const [p, param] = d.go.split(':'); this.openPanel(p, param); return; }
-    if (b.hasAttribute('data-neon-save')) { this.engine.save(); KT.Neon.flush().then(ok => this.toast(ok ? 'Progresso salvo na sua conta.' : 'Não foi possível salvar agora.', ok ? 'gold' : '')); return; }
+    if (b.hasAttribute('data-neon-save')) { const local = this.engine.save(); KT.Neon.flush().then(ok => this.toast(ok && local ? 'Progresso salvo na sua conta.' : 'Não foi possível confirmar o save agora.', ok && local ? 'gold' : 'red')); return; }
     if (b.hasAttribute('data-neon-logout')) { this.engine.save(); KT.Neon.queue(this.state); KT.Neon.signOut().then(() => location.reload()); return; }
     if (d.tabGo) { this.view.tab = d.tabGo; this.refreshPanel(true); return; }
     if (d.previewZone) { this.view.stage = null; this.view.floor = null; this.view.tier = null; this.openPanel('destination', d.previewZone); return; }
@@ -1050,7 +1050,7 @@
     if (d.job) { run('jobChange', [d.job], r => { if (r) { this.callbacks.summon?.('legendary'); this.renderer.showBanner('MUDANÇA DE CLASSE!', PR.jobs[e.template(e.record(d.job).id).cls].name, '#ffcf6b'); } else this.toast('Requisitos não atendidos.'); }); return; }
     if (d.socket) { const it = s.inventory.find(x => x.uid === d.socket); if (!it) return; run('socketCard', [d.socket, it.cards.indexOf(null), d.card], r => { if (r) { this.toast('Carta encaixada!', 'gold'); this.callbacks.reward?.(); } }); return; }
     if (d.unsocket) { run('unsocketCard', [d.unsocket, Number(d.idx)], r => { if (!r) this.toast('Cristais insuficientes.'); }); return; }
-    if (b.hasAttribute('data-sync-now')) { if (KT.Server?.enabled) KT.Server.flush().then(() => { this.toast('Progresso salvo no servidor.', 'gold'); refresh(); }); else { e.save(); this.toast('Progresso salvo.', 'gold'); } return; }
+    if (b.hasAttribute('data-sync-now')) { if (KT.Server?.enabled) KT.Server.flush().then(r => { this.toast(r.ok ? 'Progresso salvo no servidor.' : 'Não foi possível confirmar o save agora.', r.ok ? 'gold' : 'red'); refresh(); }); else { const ok = e.save(); this.toast(ok ? 'Progresso salvo.' : 'Não foi possível salvar neste navegador.', ok ? 'gold' : 'red'); } return; }
     if (b.hasAttribute('data-logout')) { (KT.Server?.enabled ? KT.Server.flush() : Promise.resolve()).finally(() => KT.Net.logout().then(() => location.reload())); return; }
     if (b.hasAttribute('data-logout-all')) { KT.Net.logoutAll().then(r => this.toast(r.ok ? 'Outras sessões encerradas.' : esc(r.error))); return; }
     if (b.hasAttribute('data-change-pw')) { const cur = this.el.modalBody.querySelector('#pw-current').value, nx = this.el.modalBody.querySelector('#pw-next').value; KT.Net.changePassword({ current:cur, next:nx }).then(r => this.toast(r.ok ? 'Senha alterada. Outras sessões foram encerradas.' : esc(r.error))); return; }
@@ -1080,7 +1080,7 @@
     if (b.hasAttribute('data-bounty-refresh')) { run('ensureBounties', []); return; }
     if (d.bountyBuy) { run('buyBountyItem', [d.bountyBuy], r => this.toast(r ? 'Trocado!' : 'Marcas insuficientes.', r ? 'gold' : '')); return; }
     if (b.hasAttribute('data-save-name')) { const name = this.el.modalBody.querySelector('#player-name-entry')?.value || ''; run('setName', [name.slice(0, 40)], r => this.toast(r ? 'Nome salvo.' : 'Nome inválido.')); return; }
-    if (b.hasAttribute('data-save')) { if (KT.Server?.enabled) KT.Server.flush().then(() => this.toast('Progresso salvo no servidor.', 'gold')); else { e.save(); this.toast('Progresso salvo.', 'gold'); } return; }
+    if (b.hasAttribute('data-save')) { if (KT.Server?.enabled) KT.Server.flush().then(r => this.toast(r.ok ? 'Progresso salvo no servidor.' : 'Não foi possível confirmar o save agora.', r.ok ? 'gold' : 'red')); else { const ok = e.save(); this.toast(ok ? 'Progresso salvo.' : 'Não foi possível salvar neste navegador.', ok ? 'gold' : 'red'); } return; }
     if (b.hasAttribute('data-reset-save')) {
       if (this.session?.mode === 'cloud') { this.toast('Para recomeçar uma conta online, fale com o suporte (o progresso fica protegido no servidor).'); return; }
       this.ask('Recomeçar do zero', 'Apagar TODO o progresso deste navegador?', [{ id:'yes', label:'Apagar e recomeçar', danger:true }, { id:'no', label:'Cancelar', primary:true }]).then(x => { if (x !== 'yes') return; e.resetSave(); e.save = () => {}; location.reload(); });

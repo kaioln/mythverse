@@ -14,6 +14,21 @@
   const VILLAGE_POS = [{x:596,y:404},{x:676,y:404},{x:552,y:370},{x:720,y:370}], VILLAGE_H = 66;
   const HERO_H = 176, ENEMY_H = 158, ELITE_H = 205;
   const RANGED = new Set(['Arcanista','Suporte','Atirador']);
+  // Projéteis: forma por classe/elemento; duração, arco e rastro dão o peso (pedra pesada e lenta, raio quase instantâneo).
+  const ELEM_PROJ = { Fogo:'fire', Gelo:'shard', Raio:'bolt', Vento:'wind', Água:'water', Natureza:'thorn', Terra:'rock', Luz:'light', Sombra:'void' };
+  const PROJ = {
+    arrow:{ dur:.18, arc:18, delay:.03, trail:3, scale:1.2, trailFx:null, additive:false },
+    fire:{ dur:.30, arc:40, delay:.06, trail:10, scale:1.0, trailFx:'ember', additive:true },
+    shard:{ dur:.20, arc:14, delay:.04, trail:4, scale:1.05, trailFx:'frost', additive:false },
+    bolt:{ dur:.10, arc:6, delay:.05, trail:0, scale:1, trailFx:null, additive:true },
+    wind:{ dur:.26, arc:10, delay:.04, trail:6, scale:1.1, trailFx:null, additive:true, spin:22 },
+    water:{ dur:.28, arc:36, delay:.05, trail:9, scale:1.0, trailFx:'drop', additive:false },
+    thorn:{ dur:.22, arc:20, delay:.04, trail:4, scale:1.0, trailFx:null, additive:false },
+    rock:{ dur:.34, arc:74, delay:.08, trail:5, scale:1.15, trailFx:'dust', additive:false, spin:14 },
+    light:{ dur:.15, arc:4, delay:.05, trail:6, scale:1.1, trailFx:null, additive:true },
+    void:{ dur:.30, arc:26, delay:.07, trail:8, scale:1.0, trailFx:'wisp', additive:false },
+    orb:{ dur:.24, arc:30, delay:.04, trail:8, scale:1.0, trailFx:null, additive:true }
+  };
 
   const THEMES = {
     village:{ grade:'rgba(255,170,120,.08)', ambient:'petal' }, forest:{ grade:'rgba(255,120,160,.10)', ambient:'petal' },
@@ -47,7 +62,7 @@
     toLogical(cx, cy) { const r = this.canvas.getBoundingClientRect(); return { x:(cx - r.left) / r.width * W, y:(cy - r.top) / r.height * H }; }
 
     // ---------- atores ----------
-    v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0 }; this.vis.set(uid, s); } return s; }
+    v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0, clip:null, clipAt:0, combo:0 }; this.vis.set(uid, s); } return s; }
     unit(uid) { return this.engine.party.find(u => u.uid === uid) || this.engine.enemies.find(u => u.uid === uid); }
     heroPos(u) { return HERO_POS[u.slot] || HERO_POS[0]; }
     enemyPos(u) {
@@ -72,8 +87,9 @@
       if (t === 'attack') {
         const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
         const ranged = RANGED.has(fx.role);
+        if (a.u.side === 'hero') this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][this.v(fx.source).combo++ % 3]);
         this.v(fx.source).lunge = { t:0, dur:ranged ? .34 : .3, dx:ranged ? 16 : (b.x - a.x) * .42, dy:ranged ? -6 : (b.y - a.y) * .42, hop:ranged };
-        if (ranged) this.projectiles.push({ x:a.x + 30, y:a.y - a.h * .55, tx:b.x, ty:b.y - b.h * .45, t:0, dur:.22, color:fx.color });
+        if (ranged) this.launch(a, b, a.u);
         else this.later(.12, () => { this.particles.push({ kind:'slash', x:b.x, y:b.y - b.h * .5, color:fx.color || '#fff', life:.26, max:.26, rot:U.rand(-.6, .6), size:1 }); });
         return;
       }
@@ -84,6 +100,7 @@
         const delay = fx.kind === 'basic' ? .12 : 0;
         this.later(delay, () => {
           if (!dot) this.hitActor(fx.uid, hero ? -1 : 1, fx.crit ? .9 : .55);
+          if (!dot && hero) { const cs = this.v(fx.uid).clip; if (!cs || cs === 'idle' || cs === 'run' || cs === 'hit') this.playClip(fx.uid, 'hit'); }
           const color = fx.color || (hero ? '#ff6b6b' : fx.crit ? '#ffd76a' : '#ffffff');
           this.number(p.x + U.rand(-26, 26), p.y - p.h - 8, fx.value, color, fx.crit, hero, dot);
           if (fx.weak && !dot) this.text(p.x + 40, p.y - p.h + 14, 'FRACO!', '#ffe28a', 15, .8);
@@ -108,6 +125,7 @@
       if (t === 'cast') {
         const p = this.posOf(fx.source); if (!p) return;
         const s = this.v(fx.source); s.cast = fx.ult ? 1 : .6; s.castColor = fx.color; this.lastCaster = fx.source;
+        this.playClip(fx.source, fx.ult ? 'ult' : 'cast');
         this.ring(p.x, p.y, fx.color, fx.ult ? 150 : 90);
         this.text(p.x, p.y - p.h - 34, fx.name, fx.enemy ? '#ffb0b8' : fx.color, fx.ult ? 22 : 18, 1.1);
         if (fx.ult) { const u = this.unit(fx.source); this.cutin = { t:0, dur:fx.manual ? 1.1 : .8, unit:u, color:fx.color, name:fx.name, manual:fx.manual }; this.screenFlash = { color:fx.color, t:.2, max:.2 }; }
@@ -177,6 +195,103 @@
       }
       this.fxCache.set(key, t); return t;
     }
+    // ---------- projéteis texturizados (por classe e elemento) ----------
+    launch(a, b, u) {
+      const kind = u.cls === 'Atirador' ? 'arrow' : (ELEM_PROJ[u.el] || 'orb'), P = PROJ[kind], color = D.elements[u.el]?.color || '#ffd76a';
+      const dir = u.side === 'hero' ? 1 : -1, x = a.x + 30 * dir, y = a.y - a.h * .55;
+      this.particles.push({ kind:'impact', x, y, color, life:.14, max:.14, size:.45, rot:0 });          // antecipação: brilho de carga
+      this.projectiles.push({ kind, x, y, tx:b.x, ty:b.y - b.h * .45, t:-P.delay, dur:P.dur, arc:P.arc, color, spin:U.rand(-1, 1), trail:[], seed:Math.random() * 100 });
+    }
+    projPos(p, k) {
+      const x = p.x + (p.tx - p.x) * k, y = p.y + (p.ty - p.y) * k - Math.sin(k * Math.PI) * p.arc;
+      const dx = (p.tx - p.x), dy = (p.ty - p.y) - Math.cos(k * Math.PI) * Math.PI * p.arc;
+      return { x, y, a:Math.atan2(dy, dx) };
+    }
+    projTex(kind, color) {
+      this.projCache = this.projCache || new Map();
+      const key = `${kind}|${color}`; let t = this.projCache.get(key); if (t) return t;
+      t = document.createElement('canvas'); const g = t.getContext('2d'); const W2 = 128, H2 = 64; t.width = W2; t.height = H2; g.translate(W2 / 2, H2 / 2);
+      const glow = (r, a) => { const rg = g.createRadialGradient(0, 0, 0, 0, 0, r); rg.addColorStop(0, `rgba(255,255,255,${a})`); rg.addColorStop(.35, color); rg.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = rg; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill(); };
+      if (kind === 'arrow') {
+        g.strokeStyle = '#e9d9b8'; g.lineWidth = 3; g.beginPath(); g.moveTo(-44, 0); g.lineTo(26, 0); g.stroke();
+        g.fillStyle = color; for (const s2 of [-1, 1]) { g.beginPath(); g.moveTo(-44, 0); g.lineTo(-54, 9 * s2); g.lineTo(-34, 0); g.fill(); }
+        g.shadowColor = color; g.shadowBlur = 12; g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(40, 0); g.lineTo(22, -8); g.lineTo(26, 0); g.lineTo(22, 8); g.closePath(); g.fill();
+      } else if (kind === 'fire') {
+        const lg = g.createLinearGradient(-56, 0, 18, 0); lg.addColorStop(0, 'rgba(255,60,20,0)'); lg.addColorStop(.6, color); lg.addColorStop(1, '#ffe7a0');
+        g.fillStyle = lg; g.beginPath(); g.moveTo(-56, 0); g.quadraticCurveTo(-10, -20, 16, -12); g.arc(10, 0, 13, -Math.PI / 2, Math.PI / 2); g.quadraticCurveTo(-10, 20, -56, 0); g.fill();
+        glow(20, 1);
+      } else if (kind === 'shard') {
+        g.shadowColor = color; g.shadowBlur = 10;
+        g.fillStyle = '#dff8ff'; g.beginPath(); g.moveTo(38, 0); g.lineTo(-6, -9); g.lineTo(-30, 0); g.closePath(); g.fill();
+        g.fillStyle = color; g.beginPath(); g.moveTo(38, 0); g.lineTo(-6, 9); g.lineTo(-30, 0); g.closePath(); g.fill();
+        g.strokeStyle = '#ffffff'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(38, 0); g.lineTo(-30, 0); g.stroke();
+      } else if (kind === 'wind') {
+        g.shadowColor = color; g.shadowBlur = 10; g.fillStyle = color; g.globalAlpha = .9;
+        g.beginPath(); g.arc(0, 0, 26, -1.2, 1.2); g.arc(-10, 0, 24, 1.05, -1.05, true); g.closePath(); g.fill();
+        g.globalAlpha = 1; g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 26, -1, 1); g.stroke();
+      } else if (kind === 'water') {
+        glow(26, .9); const rg = g.createRadialGradient(-5, -6, 1, 0, 0, 14); rg.addColorStop(0, '#ffffff'); rg.addColorStop(.4, '#bfe8ff'); rg.addColorStop(1, color);
+        g.fillStyle = rg; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.fill(); g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 18, -2.2, -1); g.stroke();
+      } else if (kind === 'thorn') {
+        g.shadowColor = color; g.shadowBlur = 8; g.fillStyle = color; g.beginPath(); g.moveTo(36, 0); g.quadraticCurveTo(0, -14, -30, 0); g.quadraticCurveTo(0, 14, 36, 0); g.fill();
+        g.strokeStyle = '#eaffd6'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(34, 0); g.lineTo(-28, 0); g.stroke();
+        for (let i = -2; i <= 2; i++) { g.beginPath(); g.moveTo(i * 10, 0); g.lineTo(i * 10 - 6, -6); g.moveTo(i * 10, 0); g.lineTo(i * 10 - 6, 6); g.stroke(); }
+      } else if (kind === 'rock') {
+        g.shadowColor = '#ffe2b0'; g.shadowBlur = 10; g.fillStyle = '#a88a60';
+        const pts = [[16, -4], [10, -14], [-4, -16], [-16, -8], [-17, 6], [-6, 16], [10, 13], [18, 4]];
+        g.beginPath(); pts.forEach(([x2, y2], i) => i ? g.lineTo(x2, y2) : g.moveTo(x2, y2)); g.closePath(); g.fill();
+        g.shadowBlur = 0; g.fillStyle = '#e0c393'; g.beginPath(); g.moveTo(10, -14); g.lineTo(-4, -16); g.lineTo(-10, -4); g.lineTo(4, -2); g.closePath(); g.fill();
+        g.strokeStyle = '#4d3a26'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-6, 2); g.lineTo(4, 6); g.lineTo(8, 12); g.stroke();
+      } else if (kind === 'light') {
+        const lg = g.createLinearGradient(-60, 0, 44, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(.7, color); lg.addColorStop(1, '#ffffff');
+        g.shadowColor = color; g.shadowBlur = 14; g.fillStyle = lg; g.beginPath(); g.moveTo(44, 0); g.lineTo(-60, -4); g.lineTo(-60, 4); g.closePath(); g.fill();
+        glow(12, 1);
+      } else if (kind === 'void') {
+        glow(28, .5); g.fillStyle = '#12061f'; g.beginPath(); g.arc(0, 0, 11, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = color; g.lineWidth = 3; g.shadowColor = color; g.shadowBlur = 12; g.beginPath(); g.arc(0, 0, 12, 0, Math.PI * 2); g.stroke();
+      } else { glow(22, 1); }
+      this.projCache.set(key, t); return t;
+    }
+    drawProj(c, p) {
+      if (p.t < 0 || p.t >= p.dur) return;
+      const k = p.t / p.dur, q = this.projPos(p, k), P = PROJ[p.kind];
+      c.save(); c.globalCompositeOperation = 'lighter';
+      // rastro afunilado
+      if (p.trail.length > 1 && p.kind !== 'bolt') {
+        c.lineCap = 'round'; c.strokeStyle = p.color;
+        for (let i = 1; i < p.trail.length; i++) { const a0 = p.trail[i - 1], a1 = p.trail[i], f = 1 - i / p.trail.length; c.globalAlpha = f * .55; c.lineWidth = P.trail * f; c.beginPath(); c.moveTo(a0.x, a0.y); c.lineTo(a1.x, a1.y); c.stroke(); }
+      }
+      if (p.kind === 'bolt') {   // raio: zigue-zague que se refaz a cada quadro, da origem até a ponta
+        c.globalAlpha = 1; c.strokeStyle = p.color; c.lineWidth = 6; c.shadowColor = p.color; c.shadowBlur = 22;
+        const pts = [[p.x, p.y]], n = 7;
+        for (let i = 1; i <= n; i++) { const kk = k * i / n, pp = this.projPos(p, kk); pts.push([pp.x + (i < n ? U.rand(-18, 18) : 0), pp.y + (i < n ? U.rand(-18, 18) : 0)]); }
+        c.beginPath(); pts.forEach(([x2, y2], i) => i ? c.lineTo(x2, y2) : c.moveTo(x2, y2)); c.stroke();
+        c.strokeStyle = '#ffffff'; c.lineWidth = 1.8; c.shadowBlur = 0; c.stroke();
+        c.globalAlpha = .9; const gl = this.fxTex('glow', p.color); c.drawImage(gl, q.x - 22, q.y - 22, 44, 44);
+      } else {
+        const tex = this.projTex(p.kind, p.color), rot = P.spin ? p.t * P.spin * (p.spin < 0 ? -1 : 1) : q.a;
+        const sc = P.scale * (1 + .08 * Math.sin(p.t * 40 + p.seed));
+        const gl = this.fxTex('glow', p.color); c.globalAlpha = .55; c.drawImage(gl, q.x - 26 * sc, q.y - 26 * sc, 52 * sc, 52 * sc);
+        c.globalAlpha = 1; c.globalCompositeOperation = P.additive ? 'lighter' : 'source-over';
+        c.translate(q.x, q.y); c.rotate(rot); c.scale(sc, sc); c.drawImage(tex, -64, -32);
+      }
+      c.restore();
+    }
+    projImpact(p) {
+      const x = p.tx, y = p.ty;
+      switch (p.kind) {
+        case 'fire': this.sparks(x, y, 14, '#ffb06b', 300); this.ring(x, y + 30, p.color, 70, true); this.impact(x, y, p.color, .9); break;
+        case 'shard': this.sparks(x, y, 12, '#e8fbff', 340); this.impact(x, y, '#bff3ff', .8); break;
+        case 'bolt': this.impact(x, y, p.color, 1.1); this.sparks(x, y, 10, '#ffffff', 420); this.shake = Math.max(this.shake, 3); break;
+        case 'wind': this.particles.push({ kind:'slash', x, y, color:p.color, life:.24, max:.24, rot:U.rand(-.5, .5), size:.75 }); this.sparks(x, y, 6, p.color, 220); break;
+        case 'water': for (let i = 0; i < 12; i++) { const a = U.rand(-Math.PI, 0); this.particles.push({ kind:'spark', x, y, vx:Math.cos(a) * U.rand(80, 220), vy:Math.sin(a) * U.rand(80, 220), color:'#cdeeff', life:U.rand(.3, .5), max:.5, size:U.rand(2, 3.5) }); } this.ring(x, y + 30, p.color, 60); break;
+        case 'rock': for (let i = 0; i < 10; i++) { const a = U.rand(-Math.PI, 0); this.particles.push({ kind:'spark', x, y, vx:Math.cos(a) * U.rand(60, 200), vy:Math.sin(a) * U.rand(60, 200) + 40, color:'#c9a57a', life:U.rand(.35, .6), max:.6, size:U.rand(2.5, 4.5) }); } this.impact(x, y, '#ffd9a0', .8); this.shake = Math.max(this.shake, 5); this.hitstop = Math.max(this.hitstop, .03); break;
+        case 'light': this.impact(x, y, '#fff6d6', 1.2); this.sparks(x, y, 8, p.color, 260); break;
+        case 'void': this.ring(x, y, p.color, 60); this.impact(x, y, p.color, .7); this.sparks(x, y, 8, '#d9b8ff', 180); break;
+        case 'arrow': this.sparks(x, y, 6, '#fff3d9', 200); this.impact(x, y, p.color, .55); break;
+        default: this.sparks(x, y, 8, p.color, 240); this.ring(x, y + 30, p.color, 50);
+      }
+    }
     impact(x, y, color, size = 1) { this.particles.push({ kind:'impact', x, y, color, life:.28, max:.28, size, rot:U.rand(0, Math.PI) }); }
     ring(x, y, color, radius = 80, filled = false) { this.particles.push({ kind:'ring', x, y, color, radius, life:.5, max:.5, filled }); }
     sparks(x, y, n, color, speed = 260) { for (let i = 0; i < n; i++) { const a = U.rand(0, Math.PI * 2), sp = U.rand(.35, 1) * speed; this.particles.push({ kind:'spark', x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 60, color, life:U.rand(.25, .55), max:.55, size:U.rand(2, 4.5) }); } }
@@ -207,8 +322,16 @@
       }
       this.particles = this.particles.filter(p => p.life > 0);
       if (this.particles.length > 700) this.particles.splice(0, this.particles.length - 700);
-      for (const pr of this.projectiles) { pr.t += dt; if (pr.t >= pr.dur && !pr.done) { pr.done = true; this.sparks(pr.tx, pr.ty, 7, pr.color, 240); this.ring(pr.tx, pr.ty + 30, pr.color, 50); } }
-      this.projectiles = this.projectiles.filter(p => p.t < p.dur + .05);
+      for (const pr of this.projectiles) {
+        pr.t += dt;
+        if (pr.t >= 0 && pr.t < pr.dur) {
+          const q = this.projPos(pr, pr.t / pr.dur); pr.trail.unshift(q); if (pr.trail.length > 10) pr.trail.pop();
+          const sp = PROJ[pr.kind].trailFx;
+          if (sp && Math.random() < dt * 60) this.particles.push({ kind:'spark', x:q.x + U.rand(-4, 4), y:q.y + U.rand(-4, 4), vx:-Math.cos(q.a) * U.rand(20, 80) + U.rand(-30, 30), vy:-Math.sin(q.a) * U.rand(20, 80) + (sp === 'ember' ? -40 : sp === 'dust' ? 60 : 0), color:sp === 'frost' ? '#e8fbff' : sp === 'dust' ? '#c9a57a' : pr.color, life:U.rand(.15, .35), max:.35, size:U.rand(1.5, 3) });
+        }
+        if (pr.t >= pr.dur && !pr.done) { pr.done = true; this.projImpact(pr); }
+      }
+      this.projectiles = this.projectiles.filter(p => p.t < p.dur + .08);
       for (const l of this.loot) {
         l.t += dt;
         if (l.t < 1.3) { l.x += l.vx * dt; l.vy += 900 * dt; l.y += l.vy * dt; if (l.y > l.gy) { l.y = l.gy; l.vy *= -.35; l.vx *= .6; } }
@@ -323,7 +446,9 @@
       if (s.level > 0) this.aura(u.sprite, x, y, HERO_H, '#ffd76a', s.level / 1.4);
       if (s.revive > 0) this.aura(u.sprite, x, y, HERO_H, '#ffe19a', s.revive);
       const stealth = u.effects.some(e => e.s === 'stealth');
-      this.drawSprite(u.sprite, x, y, HERO_H, { sy:alive ? 1 + Math.sin(t * 2.6) * .018 : 1, flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .35, gray:!alive, tilt:alive ? 0 : -.25 });
+      const an = this.assets.anim?.(u.sprite);
+      if (an) this.drawAnim(an, s, u, x, y, HERO_H, { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .6, gray:!alive });
+      else this.drawSprite(u.sprite, x, y, HERO_H, { sy:alive ? 1 + Math.sin(t * 2.6) * .018 : 1, flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .35, gray:!alive, tilt:alive ? 0 : -.25 });
       if (u.shield > 0 && alive) { const sh = s.shieldHit > 0 ? .9 : .35 + .1 * Math.sin(t * 4); c.save(); c.globalAlpha = sh; c.strokeStyle = '#8fe9ff'; c.lineWidth = 3; c.fillStyle = 'rgba(120,220,255,.12)'; c.beginPath(); c.ellipse(x, y - HERO_H * .48, 62, HERO_H * .6, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore(); }
       if (!alive) return;
       this.statusIcons(u, pos.x - 44, y - HERO_H - 28);
@@ -366,6 +491,42 @@
     statusIcons(u, x, y) {
       const c = this.ctx, seen = new Set(); let ix = x;
       u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 120) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return; c.save(); c.font = `12px ${UI_FONT}`; c.textAlign = 'left'; c.fillStyle = 'rgba(12,10,30,.75)'; this.roundRect(ix - 1, y - 12, 18, 16, 4); c.fill(); c.fillStyle = info.color; c.fillText(info.icon, ix + 1, y); c.restore(); ix += 19; });
+    }
+    // ---------- animação por folha de sprites (heróis 3D) ----------
+    playClip(uid, clip) { const s = this.v(uid); s.clip = clip; s.clipAt = this.worldTime; }
+    baseClip(u) {
+      const ph = this.engine.phase;
+      if (!u.alive) return 'death';
+      if (ph === 'between' || this.engine.zone.kind === 'village' && false) return 'run';
+      if (ph === 'stageClear' || ph === 'victory') return 'victory';
+      return 'idle';
+    }
+    animFrame(an, s, u) {
+      const C = an.meta.clips; let clip = s.clip, t = this.worldTime - s.clipAt;
+      if (!u.alive) { if (clip !== 'death') { clip = 'death'; s.clip = 'death'; s.clipAt = this.worldTime; t = 0; } }
+      else if (clip === 'death') { s.clip = null; clip = null; }
+      if (clip && C[clip]) {
+        const m = C[clip], i = Math.floor(t * m.fps);
+        if (m.loop) return [m.row, i % m.frames];
+        if (i < m.frames) return [m.row, i];
+        if (clip === 'death') return [m.row, m.frames - 1];
+        s.clip = null;
+      }
+      const b = C[this.baseClip(u)] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
+      return [b.row, Math.floor(it * b.fps) % b.frames];
+    }
+    drawAnim(an, s, u, x, y, height, o = {}) {
+      const c = this.ctx, M = an.meta, [row, col] = this.animFrame(an, s, u);
+      const k = height / M.bodyH, fw = M.frameW * k, fh = M.frameH * k;
+      const dx = -M.cx * k, dy = -M.footY * k;
+      c.save(); c.translate(x, y); c.globalAlpha *= (o.alpha ?? 1);
+      if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
+      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); c.filter = 'none';
+      if (o.flash > 0) {
+        if (!an.flash) { const f = document.createElement('canvas'); f.width = an.img.width; f.height = an.img.height; const g = f.getContext('2d'); g.drawImage(an.img, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd9b8'; g.fillRect(0, 0, f.width, f.height); an.flash = f; }
+        c.globalAlpha *= U.clamp(o.flash, 0, 1) * .42; c.drawImage(an.flash, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
+      }
+      c.restore();
     }
     drawSprite(id, x, y, height, o = {}) {
       const img = this.assets.spriteImage(id), c = this.ctx;
@@ -431,7 +592,7 @@
     }
     drawProjectiles() {
       const c = this.ctx; c.save(); c.globalCompositeOperation = 'lighter';
-      for (const p of this.projectiles) {
+      for (const p of this.projectiles) { if (p.kind) { this.drawProj(c, p); continue; }
         const k = U.clamp(p.t / p.dur, 0, 1); if (k >= 1) continue;
         const gl = this.fxTex('glow', p.color || '#ffd76a');
         for (let j = 0; j < 8; j++) { const kk = Math.max(0, k - j * .03), tx = p.x + (p.tx - p.x) * kk, ty = p.y + (p.ty - p.y) * kk - Math.sin(kk * Math.PI) * 40, r = 16 - j * 1.6; c.globalAlpha = .55 - j * .06; c.drawImage(gl, tx - r, ty - r, r * 2, r * 2); }

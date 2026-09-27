@@ -134,7 +134,7 @@ class SqliteDriver {
     this.kind = 'sqlite'; this.prefix = ''; this.forUpdate = ''; this.file = file;
     if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive:true });
     this.db = new DatabaseSync(file);
-    this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
+    this.db.exec('PRAGMA journal_mode = WAL; PRAGMA synchronous = FULL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
     this.cache = new Map();
     this.inTx = false;
   }

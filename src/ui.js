@@ -185,7 +185,7 @@
           const idx = village ? i : e.party.indexOf(u);
           return `<article class="hero-slot rarity-${rec.rarity}" data-uid="${rec.uid}" style="--hc:${t.color};--rc:var(--${rec.rarity})">
             <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${D.classes[t.cls].icon}</span></button>
-            <div class="hero-info"><header><b>${esc(t.name)}</b><small>${D.elements[t.el].icon} ${i < 2 ? 'Frente' : 'Trás'}</small></header>
+            <div class="hero-info"><header><b>${esc(t.name)}</b><small>${D.elements[t.el].icon} <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
               <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div>
               <div class="skill-line"><span class="skill-cd" data-tip="<b>${esc(t.skill.name)}</b> (automática)<br>${esc(t.skillText)}"><i></i>${esc(t.skill.name)}</span></div></div>
             <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>

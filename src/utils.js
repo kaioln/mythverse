@@ -39,7 +39,7 @@
     },
     safeStorage: {
       get(key) { try { return globalThis.localStorage ? localStorage.getItem(key) : null; } catch (_) { return null; } },
-      set(key, value) { try { if (globalThis.localStorage) localStorage.setItem(key, value); return true; } catch (_) { return false; } },
+      set(key, value) { try { if (!globalThis.localStorage) return false; localStorage.setItem(key, value); return localStorage.getItem(key) === value; } catch (_) { return false; } },
       remove(key) { try { if (globalThis.localStorage) localStorage.removeItem(key); } catch (_) {} }
     }
   };
