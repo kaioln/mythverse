@@ -36,7 +36,11 @@
     hiro:'Ichigo Kurosaki', yuki:'Rukia Kuchiki', akira:'Tanjiro Kamado', hana:'Nezuko Kamado', sora:'Satoru Gojo', daichi:'Yuji Itadori',
     lucan:'Levi Ackerman', mira:'Mikasa Ackerman', erik:'Eren Yeager', alden:'Edward Elric', ignis:'Roy Mustang', toma:'Izuku Midoriya',
     ryo:'Katsuki Bakugo', grant:'All Might', kenta:'Saitama', volt:'Genos', kai:'Gon Freecss', riku:'Killua Zoldyck', elian:'Kurapika',
-    aiko:'Sailor Moon', kiba:'Inuyasha', jin:'Kenshin Himura', drake:'Natsu Dragneel', sienna:'Erza Scarlet'
+    aiko:'Sailor Moon', kiba:'Inuyasha', jin:'Kenshin Himura', drake:'Natsu Dragneel', sienna:'Erza Scarlet',
+    daigo:'Ryu', mei:'Chun-Li', kael:'Cloud Strife', sael:'Sephiroth', rina:'Tifa Lockhart', nadia:'Lara Croft', thorn:'Kratos', bjorn:'Atreus',
+    rook:'Master Chief', warden:'Doom Slayer', zara:'Jinx', kira:'Ahri', haru:'Yasuo', ivy:'Tracer', nari:'D.Va', aurelia:'Mercy',
+    dario:'Ezio Auditore', cole:'Leon S. Kennedy', dana:'Jill Valentine', wade:'Arthur Morgan', garrick:'Geralt de Rívia', zira:'Ciri',
+    n9:'2B', unit7:'A2', rex:'Dante', virel:'Vergil', selene:'Bayonetta', tessa:'Aloy', kaji:'Scorpion', kori:'Sub-Zero'
   };
   // Os ids permanecem estáveis para preservar todos os saves existentes; só o nome exibido volta ao original.
   const H = (id, name, world, origin, cls, el, prof, passive, skill, ult, color) => ({ id, name:ORIGINAL_NAMES[id] || name, world, origin, cls, el, prof, passive, skill, ult, color });

@@ -350,10 +350,10 @@
   // Cartas são raríssimas de propósito (dias para uma carta comum, meses para uma MVP) e fortes o
   // bastante para mudar uma build. Raridade da carta = tipo de criatura que a deixa cair.
   const cardTiers = {
-    common:{ id:'common', label:'Comum', color:'#b9c2d6', mult:2.0, chance:1 / 25000 },
-    rare:{ id:'rare', label:'Rara', color:'#4fb3ff', mult:2.4, chance:1 / 9000 },
-    epic:{ id:'epic', label:'Épica', color:'#c07dff', mult:2.8, chance:1 / 2500 },
-    mvp:{ id:'mvp', label:'MVP', color:'#ffb938', mult:3.0, chance:1 / 900 }
+    common:{ id:'common', label:'Comum', color:'#b9c2d6', mult:2.0, chance:1 / 60000 },
+    rare:{ id:'rare', label:'Rara', color:'#4fb3ff', mult:2.4, chance:1 / 22000 },
+    epic:{ id:'epic', label:'Épica', color:'#c07dff', mult:2.8, chance:1 / 6000 },
+    mvp:{ id:'mvp', label:'MVP', color:'#ffb938', mult:3.0, chance:1 / 1500 }
   };
   // Efeitos especiais das cartas de chefe e chefes de andar.
   const cardHooks = {
@@ -462,8 +462,8 @@
     return 'legendary';
   }
   // Tabela de drops, POR ITEM que cai (a chance de cair algum item fica no motor).
-  // Resultado por abate de monstro comum (3% de item): raro ~0,5%, épico ~0,03%, lendário ~0,003% (só capítulo II+).
-  const DROP_TABLES = { normal:[84, 15.8, .19, .01], elite:[70, 29, .95, .05], guardian:[70, 29.1, .85, .05], floorBoss:[0, 91.5, 8, .5], boss:[0, 62, 34, 4], chest:[45, 51.3, 3.5, .2] };
+  // Resultado por abate de monstro comum (3% de item): raro ~0,42%, épico ~0,003%, lendário ~0,0001% (só capítulo II+).
+  const DROP_TABLES = { normal:[86, 13.9, .1, .004], elite:[74, 25.5, .5, .02], guardian:[72, 27.5, .5, .02], floorBoss:[0, 94.7, 5, .3], boss:[0, 70.5, 27, 2.5], chest:[50, 47.9, 2, .1] };
   function rollDrop(source, zone, ilvl, luck = 0, prefer = null) {
     const w = (DROP_TABLES[source] || DROP_TABLES.normal).slice();
     luck = Math.min(luck, 3);
@@ -472,7 +472,7 @@
     for (let i = cap + 1; i < w.length; i++) w[i] = 0;
     const rarity = rollRarity(w);
     // Míticos e peças de conjunto: troféus. Valem muito no Mercado de Jogadores.
-    const uniqueChance = { normal:.00001, elite:.00008, guardian:.0002, floorBoss:.0015, boss:.01, chest:.0006 }[source] || 0;
+    const uniqueChance = { normal:.000005, elite:.00004, guardian:.0001, floorBoss:.0008, boss:.006, chest:.0003 }[source] || 0;
     // Míticos só onde a fonte já permite Lendário: nada de troféus nos mapas iniciais (só no chefe do Capítulo I).
     if (cap >= 3 && U.random() < uniqueChance * (1 + luck * .3)) {
       const pool = uniques.filter(q => q.minIlvl <= ilvl + 4 && (sourceMatches(q, zone, source)));

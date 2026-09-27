@@ -56,7 +56,20 @@ const byCls = cls => D.roster.find(h => h.cls === cls);
 ['Vanguarda','Executor','Suporte','Arcanista'].forEach((cls, i) => { let r = state.collection.find(x => engine.template(x.id).cls === cls && !state.formation.includes(x.uid)); if (!r) { r = State.newHeroRecord(byCls(cls), 'epic'); state.collection.push(r); } ok(engine.setParty(i, r.uid), 'escalar herói'); });
 ok(engine.heroes.length === 4 && engine.getPower() > 0, 'equipe formada com poder');
 ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 4, 'herói não duplica na formação');
-{ const reserve = State.newHeroRecord(D.roster.find(h => !state.collection.some(r => r.id === h.id)), 'rare'); state.collection.push(reserve); const xp0 = reserve.xp; engine.giveXp(1); ok(reserve.xp > xp0, 'herói fora da equipe sempre recebe EXP passiva'); }
+{ const reserve = State.newHeroRecord(D.roster.find(h => !state.collection.some(r => r.id === h.id)), 'rare'); state.collection.push(reserve); const xp0 = reserve.xp, lv0 = reserve.level; engine.giveXp(5000); ok(reserve.xp === xp0 && reserve.level === lv0, 'herói do banco não ganha EXP de combate (só em expedições)'); }
+// Casa do Time: Galeria (25% dos atributos da carta para a equipe), Álbum e Paragão.
+{ const p0 = engine.getPower(), cd = I.cards.find(c => c.stats.atk); state.cards[cd.id] = (state.cards[cd.id] || 0) + 1;
+  ok(!engine.displayCard(cd.id, 5), 'espaço bloqueado da Galeria recusa carta');
+  ok(engine.displayCard(cd.id, 0) && state.house.display[0] === cd.id, 'carta exposta na Galeria');
+  ok(engine.getPower() > p0, 'carta exposta fortalece a equipe');
+  ok(!engine.displayCard(cd.id, 0), 'mesma carta não é exposta duas vezes');
+  ok(engine.albumCount() >= 1 && State.albumIds(State.mergeState(JSON.parse(JSON.stringify(state)))).includes(cd.id), 'Álbum lembra a carta após salvar');
+  ok(engine.removeDisplay(0) && state.cards[cd.id] >= 1 && !state.house.display[0], 'carta volta da Galeria para a coleção');
+  const r = engine.heroes[0], lvl = r.level, pl = state.paragon.lv; r.level = State.heroMaxLevel(r.stars); engine.gainHeroXp(r, D.PARAGON.next(pl) + 1);
+  ok(state.paragon.lv === pl + 1, 'EXP além do nível máximo vira Paragão'); state.paragon.lv = pl; state.paragon.xp = 0; r.level = lvl;
+  const old = State.mergeState({ version:3, player:{}, collection:[], formation:[null,null,null,null], inventory:[], cards:{ card_fox:1 } });
+  ok(old.buildings.house === 1 && Array.isArray(old.house.display) && old.house.seen.card_fox, 'saves antigos ganham Casa do Time e Álbum');
+  ok(I.cards.every(c => c.chance <= 1 / 1500), 'cartas continuam raríssimas'); }
 
 // ---------- caçada ----------
 ok(engine.enterZone('hunt', { stage:1 }) && engine.active && engine.enemies.length >= 2, 'caçada inicia');

@@ -125,7 +125,9 @@
       };
       if (session.mode === 'neon') {
         const save0 = engine.save.bind(engine);
-        engine.save = () => { const local = save0(), queued = KT.Neon.queue(state); return local && queued; };
+        // Se outro aparelho assumiu o save, este para de gravar (nem local, nem nuvem) para não sobrescrever nada.
+        engine.save = () => { if (KT.Neon.conflict) return false; const local = save0(), queued = KT.Neon.queue(state); return local && queued; };
+        KT.Neon.onTakeover = () => { engine.paused = true; askBox('Jogo aberto em outro aparelho', 'Seu progresso continua no aparelho (ou aba) aberto por último. Este aqui parou de salvar para não apagar nada. Recarregue para continuar jogando aqui.', [{ id:'reload', label:'Continuar aqui', primary:true }]).then(() => location.reload()); };
         KT.Neon.onRemote = remote => {
           const fresh = KT.State.mergeState(remote);
           Object.keys(state).forEach(k => { delete state[k]; }); Object.assign(state, fresh);
@@ -133,9 +135,12 @@
         };
         KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo foi sincronizado; a cópia local anterior ficou preservada.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
+        KT.Neon.onStatus = () => ui.renderCloud();
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });
+        // Assume o save logo na abertura: outro aparelho aberto antes deixa de gravar.
+        setTimeout(() => { engine.save(); KT.Neon.flush(); }, 1500);
       }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 

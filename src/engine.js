@@ -33,7 +33,7 @@
       settings:{ auto:true, autoAdvance:true, autoRepeat:true, speed:1, sound:false, autoSalvage:'none' },
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
-      buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1 },
+      buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 },
       guide:{ claimed:{}, flags:{} }, contracts:[], achievements:{}, contractCounters:{},
       market:{ offers:[], refreshedAt:0 }, boostUntil:0, freeRespec:1,
       story:{ seen:{} }, codex:{ enemies:[] }, bestiary:{},
@@ -52,7 +52,7 @@
     const fresh = createState();
     if (!raw || raw.version !== 3) return fresh;
     const s = { ...fresh, ...raw };
-    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
     s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
@@ -62,10 +62,30 @@
     s.formation = [0, 1, 2, 3].map(i => (raw.formation || [])[i] && uids.has(raw.formation[i]) ? raw.formation[i] : null);
     s.inventory = (raw.inventory || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
     s.cards = { ...(raw.cards || {}) };
+    s.house.display = (Array.isArray(s.house.display) ? s.house.display : []).slice(0, 6).map(id => (id && I.cardById(id) ? id : null));
+    s.house.seen = { ...(s.house.seen || {}) }; albumIds(s).forEach(id => { s.house.seen[id] = 1; });
     s.collection.forEach(h => { h.talents = h.talents || {}; h.job = h.job || 0; });
     // Regras de tipo por classe: itens que a classe não usa (saves antigos) voltam para a bolsa.
     s.collection.forEach(h => Object.entries(h.equipped).forEach(([k, uid]) => { const it = uid && s.inventory.find(x => x.uid === uid); if (uid && (!it || !I.equipCheck(it, h.id).ok)) h.equipped[k] = null; }));
     return s;
+  }
+  // Cartas que a conta já teve (Álbum): registradas, na bolsa, encaixadas ou expostas na Casa do Time.
+  function albumIds(state) {
+    const ids = new Set(Object.keys(state.house?.seen || {}));
+    Object.entries(state.cards || {}).forEach(([id, n]) => { if (n > 0) ids.add(id); });
+    (state.inventory || []).forEach(it => (it.cards || []).forEach(id => { if (id) ids.add(id); }));
+    (state.house?.display || []).forEach(id => { if (id) ids.add(id); });
+    return [...ids].filter(id => I.cardById(id));
+  }
+  // Bônus da Casa do Time (Galeria + Álbum) e do Paragão: valem para toda a equipe.
+  function houseStats(state) {
+    const out = {};
+    (state.house?.display || []).forEach(id => { const cd = id && I.cardById(id); if (cd) mergeStats(out, cd.stats, D.HOUSE.displayShare); });
+    const n = albumIds(state).length;
+    D.HOUSE.album.forEach(m => { if (n >= m.n) mergeStats(out, m.stats); });
+    const pl = Math.min(D.PARAGON.cap, Number(state.paragon?.lv) || 0);
+    if (pl) mergeStats(out, { atk:pl * D.PARAGON.per, hp:pl * D.PARAGON.per, def:pl * D.PARAGON.per });
+    return out;
   }
   function parseSave(raw) { try { const v = typeof raw === 'string' ? JSON.parse(raw) : raw; return v && v.version === 3 ? v : null; } catch (_) { return null; } }
   function loadState(raw) {
@@ -159,6 +179,7 @@
       Object.values(r.equipped || {}).forEach(uid => { const it = state.inventory.find(x => x.uid === uid); if (it?.kind === 'unique') { const q = I.uniques.find(u => u.id === it.uniqueId); if (q?.hook?.aura) mergeStats(teamStats, q.hook.aura); } });
     });
     mergeStats(teamStats, buffStats(state, now));
+    mergeStats(teamStats, houseStats(state));
     return { teamStats, clsSyn, elSyn, bonds, elCount, clsCount };
   }
 
@@ -1094,8 +1115,8 @@
         this.dropMats(src, e.alpha);
       }
       const card = I.cards.find(c => c.enemy === e.id);
-      const cardMult = (1 + this.mod('drop')) * (e.boss ? 1 + (this.opts.tier || 0) : 1) * (e.alpha ? 5 : 1) * (1 + this.research(e.id) * D.RESEARCH.card);
-      if (card && U.random() < card.chance * cardMult) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
+      const cardMult = (1 + this.mod('drop')) * (e.boss ? 1 + (this.opts.tier || 0) : 1) * (e.alpha ? 3 : 1) * (1 + this.research(e.id) * D.RESEARCH.card);
+      if (card && U.random() < card.chance * cardMult) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; if (s.house) s.house.seen[card.id] = 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
       if (e.boss) this.emit('onToast', `<b>MVP!</b> ${e.name.split(',')[0]} derrotado.`);
       if (e.treasure) { s.player.gold += gold * 4; this.emit('onToast', `Raposa Dourada derrotada: +${(gold * 5).toLocaleString('pt-BR')} ouro!`); }
     }
@@ -1225,17 +1246,21 @@
       const ups = [];
       party.forEach(r => { if (this.gainHeroXp(r, per)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
       if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')}, +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
-      // Treino passivo do Dojo para quem está fora da equipe.
-      const bench = this.state.collection.filter(h => !this.state.formation.includes(h.uid));
-      const rate = .05 + this.state.buildings.dojo * .05;
-      bench.forEach(r => this.gainHeroXp(r, Math.max(1, Math.round(per * rate))));
+      // Só quem está na equipe ganha EXP de combate; heróis do banco evoluem apenas em expedições.
       this.gainAccountXp(Math.round(xp * .35));
     }
     gainHeroXp(r, amount) {
-      const cap = heroMaxLevel(r.stars); if (r.level >= cap) { r.xp = Math.min(r.xp + amount, heroXpNext(r.level)); return false; }
+      const cap = heroMaxLevel(r.stars); if (r.level >= cap) { r.xp = Math.min(r.xp + amount, heroXpNext(r.level)); this.gainParagonXp(amount); return false; }
       r.xp += amount; let up = false;
       while (r.level < cap && r.xp >= heroXpNext(r.level)) { r.xp -= heroXpNext(r.level); r.level++; up = true; }
       return up;
+    }
+    // Paragão: EXP de heróis já no nível máximo alimenta um nível de conta que fortalece toda a equipe.
+    gainParagonXp(amount) {
+      const p = this.state.paragon || (this.state.paragon = { lv:0, xp:0 }); if (p.lv >= D.PARAGON.cap) return;
+      p.xp += amount; let up = 0;
+      while (p.lv < D.PARAGON.cap && p.xp >= D.PARAGON.next(p.lv)) { p.xp -= D.PARAGON.next(p.lv); p.lv++; up++; }
+      if (up) { this.emit('onToast', `<b>Paragão ${p.lv}!</b> +${(D.PARAGON.per * 100).toFixed(1).replace('.', ',')}% de ATK, HP e DEF para toda a equipe.`); this.refreshPartyUnits(); }
     }
     refreshUnit(u, r) {
       const st = heroStats(this.state, r, this.ctx()); const ratio = u.hp / u.maxHp;
@@ -1404,6 +1429,25 @@
       this.refreshPartyUnits(); this.emit('onState'); return true;
     }
     refreshPartyUnits() { if (!this.party.length) return; const ctx = this.ctx(); this.party.forEach(u => { const r = this.record(u.recUid); if (r) { const st = heroStats(this.state, r, ctx); const ratio = u.hp / u.maxHp; u.st = st; u.maxHp = st.maxHp; u.hp = Math.max(u.alive ? 1 : 0, Math.round(st.maxHp * ratio)); } }); }
+
+    // ---------- Casa do Time ----------
+    houseSlots() { return D.HOUSE.slots(this.state.buildings.house || 1); }
+    albumCount() { return albumIds(this.state).length; }
+    displayCard(cardId, slot) {
+      const h = this.state.house, n = this.houseSlots();
+      if (!Number.isInteger(slot) || slot < 0 || slot >= n) { this.lastError = 'Espaço da Galeria bloqueado (melhore a Casa do Time).'; return false; }
+      if (!I.cardById(cardId) || (this.state.cards[cardId] || 0) < 1) { this.lastError = 'Você não tem essa carta livre.'; return false; }
+      if (h.display.includes(cardId)) { this.lastError = 'Essa carta já está exposta.'; return false; }
+      while (h.display.length < n) h.display.push(null);
+      if (h.display[slot]) this.state.cards[h.display[slot]] = (this.state.cards[h.display[slot]] || 0) + 1;
+      this.state.cards[cardId]--; h.display[slot] = cardId; h.seen[cardId] = 1;
+      this.refreshPartyUnits(); this.emit('onState'); return true;
+    }
+    removeDisplay(slot) {
+      const h = this.state.house, id = h.display?.[slot]; if (!id) return false;
+      this.state.cards[id] = (this.state.cards[id] || 0) + 1; h.display[slot] = null;
+      this.refreshPartyUnits(); this.emit('onState'); return true;
+    }
 
     // ---------- cartas ----------
     socketCard(itemUid, idx, cardId) {
@@ -1778,14 +1822,14 @@
       const s = this.state, elapsed = Math.max(0, Math.floor((now - (s.lastSeen || now)) / 1000)), capped = Math.min(elapsed, 12 * 3600);
       if (capped < 120 || this.heroes.length < 4) return null;
       const zid = D.zones[s.lastHunt]?.kind === 'hunt' ? s.lastHunt : 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid]?.best || 1), P = zonePower(z, { stage });
-      const killsPerSec = .22;
+      const killsPerSec = .16; // AFK rende bem menos que jogar (ativo: ~0,5 a 1 abate/s)
       const kills = Math.floor(capped * killsPerSec);
-      const gold = Math.round(kills * 11 * Math.pow(P, .85) * .45 * (1 + this.mod('gold')));
-      const xp = Math.round(kills * 14 * Math.pow(P, .92) * .5 * (1 + this.mod('xp')));
+      const gold = Math.round(kills * 11 * Math.pow(P, .85) * .35 * (1 + this.mod('gold')));
+      const xp = Math.round(kills * 14 * Math.pow(P, .92) * .3 * (1 + this.mod('xp')));
       s.player.gold += gold; s.stats.goldEarned += gold;
       this.giveXp(xp);
       const items = [];
-      const nItems = Math.min(8, Math.floor(capped / 1800));
+      const nItems = Math.min(6, Math.floor(capped / 2400));
       for (let i = 0; i < nItems; i++) { const it = I.rollDrop(U.random() < .15 ? 'elite' : 'normal', z, itemLevelFor(z, { stage }), 0, this.preferWT()); this.addItem(it); items.push(it); }
       const ore = Math.floor(capped / 900), dust = Math.floor(capped / 800);
       s.player.ore += ore; s.player.dust += dust;
@@ -1796,6 +1840,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

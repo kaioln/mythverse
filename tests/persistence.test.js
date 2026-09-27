@@ -29,6 +29,9 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   assert.equal(requestOptions.keepalive, true, 'requisição pequena pode concluir durante troca de página');
   await Neon.api('GET', '/mv_ranking');
   assert.equal(requestOptions.cache, 'no-store', 'ranking sempre consulta dados atuais');
+  assert.ok(requestOptions.signal instanceof AbortSignal, 'requisições Neon têm timeout cancelável');
+  await Neon.auth('/get-session');
+  assert.ok(requestOptions.signal instanceof AbortSignal, 'autenticação Neon também tem timeout cancelável');
   global.fetch = nativeFetch; Neon.jwt = null; Neon.jwtExp = 0;
   State.setSaveKey('persistence-test');
   const state = State.createState();
@@ -72,20 +75,41 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   assert.equal(Neon.row.revision, 10);
   assert.equal(Neon.conflict, false, 'conflito recuperável não bloqueia autosaves futuros');
 
-  const staleLocal = State.createState(); staleLocal.totalPlaySeconds = 5; State.saveState(staleLocal); Neon.row = { revision:10 }; Neon.queue(staleLocal); clearTimeout(Neon.timer); Neon.timer = null;
-  const newerRemote = State.createState(); newerRemote.totalPlaySeconds = 50; newerRemote.player.gold = 777; newerRemote.saveGeneration = 50;
-  let adopted = null; Neon.onRemote = s => { adopted = s; };
-  Neon.api = async method => method === 'GET' ? ({ ok:true, data:[{ revision:11, data:newerRemote }] }) : ({ ok:true, data:[] });
-  assert.equal(await Neon.flush(), true, 'save remoto mais novo é adotado sem travar a fila');
-  assert.equal(adopted.player.gold, 777);
-  assert.equal(Neon.conflict, false);
+  // Um aparelho antigo que ficou aberto (mais tempo de jogo) não sobrescreve o aparelho aberto por último.
+  const olderDevice = State.createState(); olderDevice.totalPlaySeconds = 99999; olderDevice.activeSession = { id:'velho', at:Neon.sessionAt - 60_000 };
+  const mine = State.createState(); mine.player.gold = 555; State.saveState(mine); Neon.row = { revision:10 }; Neon.queue(mine); clearTimeout(Neon.timer); Neon.timer = null;
+  let sent = null; patches = 0;
+  Neon.api = async (method, _p, body) => method === 'GET' ? ({ ok:true, data:[{ revision:11, data:olderDevice }] }) : (++patches === 1 ? { ok:true, data:[] } : (sent = body, { ok:true, data:[{ revision:12 }] }));
+  assert.equal(await Neon.flush(), true);
+  assert.equal(sent.data.player.gold, 555, 'aparelho aberto por último vence mesmo com menos tempo de jogo');
+  assert.equal(sent.data.activeSession.id, Neon.sessionId, 'save carrega a sessão dona');
+
+  const takeover = State.createState(); takeover.player.gold = 777; takeover.activeSession = { id:'novo', at:Neon.sessionAt + 60_000 };
+  const stale = State.createState(); State.saveState(stale); Neon.row = { revision:12 }; Neon.queue(stale); clearTimeout(Neon.timer); Neon.timer = null;
+  let tookOver = false; Neon.onTakeover = () => { tookOver = true; };
+  Neon.api = async method => method === 'GET' ? ({ ok:true, data:[{ revision:13, data:takeover }] }) : ({ ok:true, data:[] });
+  assert.equal(await Neon.flush(), true, 'aparelho substituído encerra a fila sem erro');
+  assert.ok(tookOver && Neon.conflict, 'aparelho antigo para de salvar quando outro assume');
+  assert.equal(Neon.queue(stale), false, 'nenhum save novo depois de substituído');
+  Neon.conflict = false;
 
   const pending = State.createState(); pending.player.gold = 123;
   State.saveState(pending); Neon.queue(pending); clearTimeout(Neon.timer); Neon.timer = null; Neon.pending = null;
-  const remote = State.createState(); remote.player.gold = 1;
+  const remote = State.createState(); remote.player.gold = 1; remote.lastSeen = Date.now() - 60_000;
   Neon.api = async () => ({ ok:true, status:200, data:[{ revision:8, data:remote }] });
   const recovered = await Neon.loadSave(); clearTimeout(Neon.timer); Neon.timer = null;
   assert.equal(recovered.player.gold, 123, 'reinício recupera gravação local ainda não confirmada');
+
+  // Sem diário pendente: a cópia local mais recente (hora real) ainda vence a nuvem atrasada.
+  Neon.pending = null; Neon.clearJournal();
+  const recentLocal = State.createState(); recentLocal.player.gold = 200000; recentLocal.collection = [State.newHeroRecord(global.KT.Data.roster[0])];
+  State.saveState(recentLocal); Neon.clearJournal();
+  const lagging = State.createState(); lagging.player.gold = 100; lagging.lastSeen = Date.now() - 10 * 60_000;
+  Neon.api = async () => ({ ok:true, status:200, data:[{ revision:20, data:lagging }] });
+  const reloaded = await Neon.loadSave(); clearTimeout(Neon.timer); Neon.timer = null;
+  assert.equal(reloaded.player.gold, 200000, 'recarregar a página não volta ao save antigo da nuvem');
+  lagging.lastSeen = Date.now() + 60_000; Neon.pending = null; Neon.clearJournal();
+  assert.equal((await Neon.loadSave()).player.gold, 100, 'save da nuvem mais novo (outro aparelho) vence');
 
   Neon.pending = null; Neon.clearJournal(); Neon.conflict = false;
   let requests = 0;
@@ -95,5 +119,5 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   global.fetch = async (...args) => { requests++; return originalFetch(...args); };
   assert.ok((await Server.flush()).ok && requests === 1, 'salvar agora confirma a escrita com o servidor');
 
-  console.log(JSON.stringify({ ok:true, checks:12 }));
+  console.log(JSON.stringify({ ok:true, checks:21 }));
 })().catch(err => { console.error(err); process.exit(1); });

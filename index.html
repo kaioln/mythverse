@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;500;600;700;800&family=Shippori+Mincho:wght@700&display=swap">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260927">
 </head>
 <body>
   <div class="boot" id="boot">
@@ -50,6 +50,7 @@
       </div>
 
       <div class="top-actions">
+        <button class="save-status off" id="save-status" type="button" data-tip="Salvamento" aria-label="Salvar progresso agora"><i></i><b>Local</b></button>
         <button class="icon-btn" id="panel-toggle" type="button" data-tip="Mostrar/ocultar painel lateral" aria-label="Painel lateral"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM15 5v14"/></svg></button>
         <button class="icon-btn" id="sound-btn" type="button" data-tip="Som" aria-label="Som"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-wave" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/><path class="sound-off" d="M16 9l5 6M21 9l-5 6"/></svg></button>
         <button class="icon-btn" id="help-btn" type="button" data-tip="Como jogar" aria-label="Ajuda"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5V14M12 17.5v.01"/></svg></button>
@@ -95,17 +96,18 @@
 
         <div class="village-actions" id="village-actions" hidden>
           <button class="signpost" style="left:17%;top:31%" data-open="city:guild" type="button"><span class="sp-icon">🏯</span><span><b>Guilda</b><small>Contratos e recompensas</small></span></button>
-          <button class="signpost" style="left:10%;top:52%" data-open="city:dojo" type="button"><span class="sp-icon">🥋</span><span><b>Dojo</b><small>Treino e EXP passiva</small></span></button>
+          <button class="signpost" style="left:10%;top:52%" data-open="city:dojo" type="button"><span class="sp-icon">🥋</span><span><b>Dojo</b><small>Treino da equipe</small></span></button>
           <button class="signpost" style="left:49%;top:34%" data-open="collection" type="button"><span class="sp-icon">✦</span><span><b>Salão de Convocação</b><small>Descobrir heróis</small></span></button>
           <button class="signpost" style="left:88%;top:31%" data-open="city:shrine" type="button"><span class="sp-icon">⛩</span><span><b>Santuário</b><small>Despertar heróis</small></span></button>
           <button class="signpost hot" style="left:67%;top:57%" data-open="city:forge" type="button"><span class="sp-icon">⚒</span><span><b>Forja</b><small>Aprimorar equipamentos</small></span></button>
           <button class="signpost" style="left:13%;top:73%" data-open="shop:market" type="button"><span class="sp-icon">🏮</span><span><b>Mercado</b><small>Ofertas e recursos</small></span></button>
+          <button class="signpost house" style="left:31%;top:62%" data-open="city:house" type="button"><span class="sp-icon">🏡</span><span><b>Casa do Time</b><small>Galeria e Álbum de cartas</small></span></button>
           <button class="signpost" style="left:48%;top:80%" data-open="city:workshop" type="button"><span class="sp-icon">⚗</span><span><b>Oficina</b><small>Criar e encantar</small></span></button>
           <button class="signpost featured" style="left:86%;top:70%" data-open="adventure:expeditions" type="button"><span class="sp-icon">🧭</span><span><b>Casa de Expedições</b><small>Enviar equipes agora</small></span></button>
         </div>
         <button class="journey-cta" id="journey-cta" data-open="journey" type="button" hidden>
           <span class="cta-emblem"><img src="assets/brand/emblem.png?v=2" alt=""></span>
-          <span class="cta-text"><b>PARTIR</b><small>Escolher destino no mapa</small></span>
+          <span class="cta-text"><b>MAPA</b><small>Escolher o próximo destino</small></span>
           <span class="cta-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </button>
 
@@ -142,7 +144,7 @@
   <div class="modal" id="modal" hidden>
     <div class="modal-backdrop" data-close-modal></div>
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <header><div><span class="eyebrow" id="modal-kicker">MYTHVERSE</span><h2 id="modal-title">Painel</h2></div><div class="modal-tabs" id="modal-tabs"></div><button class="icon-btn close" data-close-modal type="button" aria-label="Fechar">✕</button></header>
+      <header><button class="modal-back-nav" id="modal-back-nav" type="button" hidden>← Mapa</button><div><span class="eyebrow" id="modal-kicker">MYTHVERSE</span><h2 id="modal-title">Painel</h2></div><div class="modal-tabs" id="modal-tabs"></div><button class="icon-btn close" data-close-modal type="button" aria-label="Fechar painel e voltar ao jogo">✕</button></header>
       <div class="modal-body" id="modal-body"></div>
     </section>
   </div>
@@ -151,21 +153,21 @@
   <div class="tooltip" id="tooltip" hidden></div>
   <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
-  <script src="src/config.js"></script>
-  <script src="src/data.js"></script>
-  <script src="src/utils.js"></script>
-  <script src="src/items.js"></script>
-  <script src="src/progression.js"></script>
-  <script src="src/roster.js"></script>
-  <script src="src/builds.js"></script>
-  <script src="src/engine.js"></script>
-  <script src="src/net.js"></script>
-  <script src="src/neon.js"></script>
-  <script src="src/auth.js"></script>
-  <script src="src/assets.js"></script>
-  <script src="src/renderer.js"></script>
-  <script src="src/ui.js"></script>
-  <script src="src/panels.js"></script>
-  <script src="src/main.js"></script>
+  <script src="src/config.js?v=20260927"></script>
+  <script src="src/data.js?v=20260927"></script>
+  <script src="src/utils.js?v=20260927"></script>
+  <script src="src/items.js?v=20260927"></script>
+  <script src="src/progression.js?v=20260927"></script>
+  <script src="src/roster.js?v=20260927"></script>
+  <script src="src/builds.js?v=20260927"></script>
+  <script src="src/engine.js?v=20260927"></script>
+  <script src="src/net.js?v=20260927"></script>
+  <script src="src/neon.js?v=20260927"></script>
+  <script src="src/auth.js?v=20260927"></script>
+  <script src="src/assets.js?v=20260927"></script>
+  <script src="src/renderer.js?v=20260927"></script>
+  <script src="src/ui.js?v=20260927"></script>
+  <script src="src/panels.js?v=20260927"></script>
+  <script src="src/main.js?v=20260927"></script>
 </body>
 </html>

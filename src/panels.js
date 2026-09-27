@@ -66,12 +66,12 @@
   // Abertura de painéis
   // ---------------------------------------------------------------------------
   const PANELS = {
-    journey:{ k:'JORNADA', t:'Mapa da Fenda' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje'], ['worldboss','Invasão Mundial'], ['expeditions','Expedições'], ['bounty','Recompensas']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
+    journey:{ k:'JORNADA', t:'Mapa da Fenda' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
     hero:{ k:'HERÓI', t:'Ficha do herói', tabs:[['stats','Atributos'], ['build','Build recomendada'], ['talents','Talentos'], ['kit','Habilidades'], ['gear','Equipamento']] },
     collection:{ k:'HERÓIS', t:'Convocação e Coleção', tabs:[['summon','Convocar'], ['owned','Meus heróis'], ['catalog','Catálogo']] },
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
     ranking:{ k:'RANKING', t:'Ranking da Fenda', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
-    city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['cards','Cartas'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
+    city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['house','Casa do Time'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
     shop:{ k:'LOJA', t:'Loja da Fenda', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['gems','Carteira 💠']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
     wiki:{ k:'WIKI', t:'Enciclopédia da Fenda', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado'], ['security','Segurança']] },
@@ -79,6 +79,7 @@
   };
   P.openPanel = function(name, param = null) {
     if (name === 'destination' && typeof param === 'string' && param.includes(':')) param = param.split(':')[1];
+    if (name === 'ranking') this.rankCache = null;
     const def = PANELS[name] || PANELS.help;
     let tab = null;
     if (def.tabs) tab = def.tabs.some(t => t[0] === param) ? param : (this.view.panel === name && this.view.tab ? this.view.tab : def.tabs[0][0]);
@@ -102,7 +103,8 @@
     if (v.panel === 'profile') title = this.profiles?.[v.param]?.data?.profile?.name || title;
     if (v.panel === 'hero' || v.panel === 'talents') { const r = this.engine.record(v.param); title = r ? `${v.panel === 'talents' ? 'Talentos · ' : ''}${this.engine.template(r.id).name}` : title; }
     this.el.modalTitle.textContent = title;
-    this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n]) => `<button class="${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${n}</button>`).join('') : '';
+    this.el.modalBackNav.hidden = v.panel !== 'destination';
+    this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
     const top = this.el.modalBody.scrollTop;
     const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel' }[v.panel] || 'helpPanel';
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
@@ -139,7 +141,7 @@
 
   P.destinationPanel = function(id) {
     const z = D.zones[id]; if (!z) return this.journeyPanel();
-    if (z.kind === 'village') return `<button class="map-back" data-go="journey" type="button">← Mapa</button><div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('assets/scenes/village-expanded.png')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Entrar na capital</button></div>`;
+    if (z.kind === 'village') return `<div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('assets/scenes/village-expanded.png')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Entrar na capital</button></div>`;
     const e = this.engine, p = this.state.progress[id], lock = e.zoneLock(id), pow = e.getPower();
     let selector = '', opts = {}, recNote = '';
     if (z.kind === 'hunt') {
@@ -170,8 +172,7 @@
     const zoneSets = I.sets.filter(st => (I.setSources?.[st.id] || []).some(([zid]) => zid === id));
     const drops = { hunt:'Itens comuns a épicos (lendários são raros); guardiões garantem um item; variantes Alfa garantem loot melhor', dungeon:'Baú no fim de cada andar e itens do chefe do andar', boss:'2 a 3 itens épicos/lendários, conjunto e únicos exclusivos', rift:'Tamahagane e ouro em todo andar, baú com chance crescente; conjunto Herança do Abismo a partir do andar 15' }[z.kind];
     const firstClear = z.kind === 'hunt' ? `Primeira vitória em cada estágio: poucos cristais${z.side ? '' : '; estágio final: 1 chave'}.` : z.kind === 'dungeon' ? 'Primeira conquista de cada andar: cristais; andar final: 1 chave.' : z.kind === 'rift' ? 'Primeira vez em cada andar: cristais; a cada 10 andares: 1 chave.' : 'Primeira vitória: 80 cristais + 1 chave.';
-    return `<button class="map-back" data-go="journey" type="button">← Mapa</button>
-      <div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('${sceneUrl(id)}')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${esc(z.lore)}</p></div></div>
+    return `<div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('${sceneUrl(id)}')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${esc(z.lore)}</p></div></div>
       ${lock.reasons.length ? `<div class="zone-requirements">${lock.reasons.map(r => `<span class="${r.met ? 'met' : 'missing'}">${r.met ? '✓' : '✕'} ${esc(r.text)}</span>`).join('')}</div>` : ''}
       <div class="dest-grid"><div>
         <h4 class="sub-title">${z.kind === 'hunt' ? 'Escolha o estágio' : z.kind === 'dungeon' || z.kind === 'rift' ? 'Escolha o andar' : 'Escolha a dificuldade'}</h4>${selector}
@@ -356,12 +357,14 @@
         <div class="doll-slots">${slotsHtml}</div><div class="doll-stats">${kv.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
         <button class="action small" data-hero="${tr.uid}" type="button">Ficha completa</button></aside>`;
     }
-    const tabs = [['items', `Itens (${inv.length}/${s.invCap})`], ['overflow', `Excedentes (${s.overflow?.length || 0})`], ['cards', `Cartas (${Object.values(s.cards).reduce((a, b) => a + b, 0)})`], ['mats', 'Materiais'], ['cons', 'Consumíveis']];
+    const cardTotal = Object.values(s.cards).reduce((a, b) => a + b, 0);
+    const tabs = [['items', `Itens (${inv.length}/${s.invCap})`], ['cards', `🃏 Cartas${cardTotal ? ` · ${cardTotal}` : ''}`, 'cards-tab'], ['overflow', `Excedentes (${s.overflow?.length || 0})`], ['mats', 'Materiais'], ['cons', 'Consumíveis']];
     let body = '';
     if (tab === 'items' || tab === 'overflow') {
       const src = tab === 'items' ? inv : (s.overflow || []);
       const scoreCache = new Map(), scoreFor = it => { if (!scoreCache.has(it.uid)) scoreCache.set(it.uid, tr ? (e.itemGain(tr, it) ?? -9) : I.itemScore(it)); return scoreCache.get(it.uid); };
-      let list = src.filter(it => f.slot === 'all' || it.slot === f.slot);
+      // Itens equipados em outros heróis não aparecem aqui (ficam na ficha de quem os usa).
+      let list = src.filter(it => (f.slot === 'all' || it.slot === f.slot) && (tab !== 'items' || !e.ownerOf(it.uid) || e.ownerOf(it.uid).uid === target));
       if (f.usable && tr) list = list.filter(it => I.canEquip(it, tr));
       list = list.slice().sort((a, b) => f.sort === 'score' ? scoreFor(b) - scoreFor(a) : f.sort === 'level' ? b.ilvl - a.ilvl : (RORDER[a.rarity] - RORDER[b.rarity]) || b.ilvl - a.ilvl);
       src.forEach(it => { it.isNew = false; });
@@ -381,10 +384,7 @@
           return this.itemCard(it, { flavor:false, compare, actions, reqFor:tr });
         }).join('') || `<p class="collection-empty">${tab === 'items' ? 'Nenhum item aqui. Derrote inimigos para encontrar equipamentos.' : 'O Baú de Excedentes está vazio.'}</p>`}</div>`;
     } else if (tab === 'cards') {
-      const owned = I.cards.filter(c => (s.cards[c.id] || 0) > 0);
-      body = `<p class="note">Cartas caem raramente (uma carta comum leva dias; cartas MVP, meses) e são muito fortes. Encaixe-as nos espaços dos equipamentos em <b>Cidade → Cartas</b>. Também valem Gemas no Mercado de Jogadores.</p>
-        <div class="card-grid">${owned.map(cd => `<div class="card-tile tier-${cd.tier}" style="--tc:${cd.color}"><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt=""></span><b>${esc(cd.name)}</b><small class="tier">${cd.tierLabel}</small><small>${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}</small>${cd.effect ? `<small class="fx">✦ ${esc(cd.effect)}</small>` : ''}<em>×${s.cards[cd.id]}</em></div>`).join('') || '<p class="collection-empty">Você ainda não tem cartas. Todo monstro pode deixar a sua, mas é raríssimo.</p>'}</div>
-        <div class="box-actions"><button class="action" data-go="city:cards" type="button">Encaixar cartas</button><button class="action" data-go="wiki:cards" type="button">Ver todas as cartas</button></div>`;
+      body = this.cardsHtml();
     } else if (tab === 'mats') {
       const mats = [{ key:'ore', name:'Tamahagane', have:s.player.ore, text:I.materials.common.text, color:I.materials.common.color }, ...['rare', 'epic', 'legendary'].map(id => { const m = I.materials[id]; return { key:m.key, id, name:m.name, have:s.mats[m.key] || 0, text:m.text, color:m.color, trade:true }; }), { key:'dust', name:'Pó de Éter', have:s.player.dust, text:'Usado para encantar afixos e na culinária da Oficina.', color:'#9fb3ff' }];
       body = `<div class="mat-grid">${mats.map(m => `<article class="mat-card" style="--mc:${m.color}"><b>${esc(m.name)}</b><em>${U.fmt(m.have)}</em><small>${esc(m.text)}</small>${m.trade && this.session?.mode === 'cloud' ? `<button class="action small" data-go="shop:p2p" type="button">Negociar</button>` : ''}</article>`).join('')}</div>
@@ -393,7 +393,7 @@
       const cons = [['potion', 'Poção de Cura', 'Usada em combate (tecla 1).'], ['elixir', 'Elixir de Energia', 'Usado em combate (tecla 2).'], ['scroll', 'Pergaminho de EXP', 'Use na ficha do herói.'], ...Object.entries(PR.buffs).map(([id, b]) => [id, b.name, b.text, true])];
       body = `<div class="mat-grid">${cons.map(([id, n, t, usable]) => { const until = s.buffs?.[id] || 0, left = until - this.engine.now(); return `<article class="mat-card"><b>${esc(n)}</b><em>${U.fmt(s.consumables[id] || 0)}</em><small>${esc(t)}${left > 0 ? ` <b class="txt-green">Ativo: ${fmtTime(left / 1000)}</b>` : ''}</small>${usable ? `<button class="action small ${(s.consumables[id] || 0) > 0 ? 'primary' : ''}" data-use-item="${id}" type="button" ${(s.consumables[id] || 0) > 0 ? '' : 'disabled'}>Usar</button>` : ''}</article>`; }).join('')}</div>`;
     }
-    return `${picker}<div class="inv-layout">${doll}<section class="inv-main"><div class="inv-tabs">${tabs.map(([id, n]) => `<button class="${tab === id ? 'active' : ''}" data-inv-tab="${id}" type="button">${n}</button>`).join('')}</div>${body}</section></div>`;
+    return `${picker}<div class="inv-layout">${doll}<section class="inv-main"><div class="inv-tabs">${tabs.map(([id, n, cls = '']) => `<button class="${cls} ${tab === id ? 'active' : ''}" data-inv-tab="${id}" type="button">${n}</button>`).join('')}</div>${body}</section></div>`;
   };
 
   // ---------------------------------------------------------------------------
@@ -426,12 +426,12 @@
     const nodes = tree.map(n => {
       const rank = r.talents[n.id] || 0, st = e.talentState(r, n.id), P2 = pos(n);
       const state = rank >= n.max ? 'max' : rank ? 'some' : st.ok ? 'avail' : 'locked';
-      const rad = n.keystone ? 38 : n.notable ? 34 : 28;
+      const rad = n.keystone ? 42 : n.notable ? 38 : 32;
       const color = n.keystone ? '#ff7eb6' : n.notable ? '#ffcf6b' : n.sig ? t.color : c.color;
       return `<g class="tnode ${state} ${n.keystone ? 'keystone' : n.notable ? 'notable' : n.sig ? 'sig' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})" style="--nc:${color}">
         <circle class="halo" r="${rad + 8}"/><circle class="ring" r="${rad}"/>
         ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" opacity=".55"/>` : ''}
-        <g transform="translate(-14,-14) scale(1.17)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>
+        <g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>
         <g transform="translate(0,${rad + 6})"><rect x="-20" y="-8" width="40" height="17" rx="8.5" class="rank-bg"/><text y="4.5" class="rank">${rank}/${n.max}</text></g>
         <text y="${rad + 30}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
     }).join('');
@@ -456,12 +456,58 @@
       ${jobBox}
       <button class="action small primary" data-auto="talents" data-uid="${uid}" type="button" ${pts > 0 ? '' : 'disabled'} data-tip="Aprende os talentos na ordem da build recomendada deste herói.">⚡ Build recomendada</button>
       <button class="action small" data-hero-talent-reset="${uid}" type="button" ${spent ? '' : 'disabled'}>${this.state.freeRespec ? `Redefinir (grátis ×${this.state.freeRespec})` : `Redefinir (${compact(e.talentResetCost(r))} ouro)`}</button></div>
+      <div class="talent-legend"><span><i class="lg-available"></i>Disponível</span><span><i class="lg-learned"></i>Aprendido</span><span><i class="lg-locked"></i>Bloqueado</span><small>Toque em um talento para ver efeitos e requisitos.</small></div>
       <div class="tree-layout"><div class="talent-tree"><svg viewBox="0 0 960 666" preserveAspectRatio="xMidYMid meet">${bands}${links.join('')}${nodes}</svg></div>${detail}</div>`;
   };
 
   // ---------------------------------------------------------------------------
   // CIDADE
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // CARTAS (Bolsa) e CASA DO TIME (Cidade)
+  // ---------------------------------------------------------------------------
+  const cardStatsTxt = cd => Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ');
+  const cardTile = (cd, { n = 0, tag = 'div', attrs = '', missing = false, note = '' } = {}) => `<${tag} class="card-tile tier-${cd.tier} ${cd.mvp ? 'mvp' : ''} ${missing ? 'missing' : ''}" style="--tc:${cd.color}" ${attrs} ${tag === 'button' ? 'type="button"' : ''}>
+    <span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt="" loading="lazy"></span><b>${missing ? '???' : esc(cd.name)}</b><small class="tier">${cd.tierLabel}</small>
+    <small>${missing ? `Drop de ${esc(D.enemies[cd.enemy].name.split(',')[0])}` : cardStatsTxt(cd)}</small>${!missing && cd.effect ? `<small class="fx">✦ ${esc(cd.effect)}</small>` : ''}${note ? `<small class="card-note">${note}</small>` : ''}${n ? `<em>×${n}</em>` : ''}</${tag}>`;
+  P.cardsHtml = function() {
+    const e = this.engine, s = this.state;
+    const owned = I.cards.filter(cd => (s.cards[cd.id] || 0) > 0), album = e.albumCount();
+    const sel = s.inventory.find(x => x.uid === this.cardSel && (x.cards || []).length) || null;
+    const socketable = s.inventory.filter(x => (x.cards || []).length).sort((a, b) => (!!e.ownerOf(b.uid) - !!e.ownerOf(a.uid)) || I.itemScore(b) - I.itemScore(a));
+    let right = '<p class="empty-note">Escolha um equipamento com slots para encaixar cartas.</p>';
+    if (sel) right = `${this.itemCard(sel)}<div class="forge-box"><h4>Slots</h4>${sel.cards.map((cid, i) => { const cd = cid && I.cardById(cid); return `<div class="ench-row"><span>Slot ${i + 1}: ${cd ? `<b>${esc(cd.name)}</b>: ${cardStatsTxt(cd)}` : '<i class="dim">vazio</i>'}</span>${cd ? `<button class="action small" data-unsocket="${sel.uid}" data-idx="${i}" type="button" ${s.player.crystal >= 30 ? '' : 'disabled'}>Remover (30 cristais)</button>` : ''}</div>`; }).join('')}
+      ${sel.cards.some(x => !x) ? `<h4 class="sub-title">Encaixar carta</h4><div class="card-grid">${owned.map(cd => cardTile(cd, { n:s.cards[cd.id], tag:'button', attrs:`data-socket="${sel.uid}" data-card="${cd.id}"` })).join('') || '<p class="dim">Nenhuma carta livre.</p>'}</div>` : '<p class="note">Todos os slots estão ocupados.</p>'}</div>`;
+    const next = D.HOUSE.album.find(m => album < m.n);
+    return `<section class="cards-hero"><div><span class="eyebrow">COLEÇÃO DE CARTAS</span><h3>${owned.reduce((a, cd) => a + s.cards[cd.id], 0)} carta(s) livre(s) · Álbum ${album}/${I.cards.length}</h3>
+        <p>Cartas <b>não ocupam espaço</b> na bolsa. Encaixe nos slots dos equipamentos ou exponha na <b>Casa do Time</b> para fortalecer a equipe inteira.${next ? ` Próximo marco do Álbum: <b>${next.n}</b> cartas diferentes (${esc(next.name)}).` : ' Álbum completo!'}</p></div>
+        <div class="box-actions"><button class="action pink" data-go="city:house" type="button">🏡 Casa do Time</button><button class="action" data-go="wiki:cards" type="button">Todas as cartas</button></div></section>
+      <h4 class="sub-title">Suas cartas</h4><div class="card-grid">${owned.map(cd => cardTile(cd, { n:s.cards[cd.id] })).join('') || '<p class="collection-empty">Você ainda não tem cartas. Todo monstro pode deixar a sua, mas é raríssimo: cartas valem muito no Mercado.</p>'}</div>
+      <h4 class="sub-title">Encaixar em equipamentos</h4><p class="note">Itens raros ou melhores podem ter 1 ou 2 slots. Encaixar é permanente; remover custa 30 cristais e devolve a carta.</p>
+      <div class="split"><div class="pick-list">${socketable.map(it => `<button class="pick-item rarity-${it.rarity} ${it.uid === this.cardSel ? 'selected' : ''}" data-card-item="${it.uid}" type="button">${KT.itemIcon(it)}<span><b class="rtext">${esc(it.name)}</b><small>${it.cards.filter(Boolean).length}/${it.cards.length} slots${e.ownerOf(it.uid) ? ` · ⚔ ${esc(e.template(e.ownerOf(it.uid).id).name)}` : ''}</small></span></button>`).join('') || '<p class="dim">Nenhum item com slots ainda.</p>'}</div><div>${right}</div></div>`;
+  };
+  P.houseHtml = function(bHead) {
+    const e = this.engine, s = this.state, h = s.house || { display:[] }, slots = e.houseSlots(), album = e.albumCount();
+    const free = I.cards.filter(cd => (s.cards[cd.id] || 0) > 0 && !h.display.includes(cd.id));
+    const pick = Number.isInteger(this.houseSlot) && this.houseSlot < slots ? this.houseSlot : null;
+    const bonus = S().houseStats(s), bonusTxt = Object.entries(bonus).filter(([, v]) => v).map(([k, v]) => statValue(k, v)).join(' · ');
+    const frames = Array.from({ length:6 }, (_, i) => {
+      const id = h.display[i], cd = id && I.cardById(id), locked = i >= slots;
+      if (locked) return `<div class="gallery-frame locked"><span>🔒</span><small>Casa nível ${i * 2}</small></div>`;
+      return `<div class="gallery-frame ${cd ? 'filled' : ''} ${pick === i ? 'picking' : ''}">${cd ? `${cardTile(cd, { note:`Equipe: ${Object.entries(cd.stats).map(([k, v]) => statValue(k, v * D.HOUSE.displayShare)).join(', ')}` })}<div class="frame-actions"><button class="action small" data-house-slot="${i}" type="button">Trocar</button><button class="action small" data-remove-display="${i}" type="button">Guardar</button></div>` : `<button class="frame-empty" data-house-slot="${i}" type="button"><b>＋</b><small>Expor carta</small></button>`}</div>`;
+    }).join('');
+    const milestones = D.HOUSE.album.map(m => `<li class="${album >= m.n ? 'done' : ''}"><b>${m.n}</b><span>${esc(m.name)}</span><small>${Object.entries(m.stats).map(([k, v]) => statValue(k, v)).join(' · ')}</small></li>`).join('');
+    const par = s.paragon || { lv:0, xp:0 }, parNext = D.PARAGON.next(par.lv);
+    return `${bHead('house')}
+      <section class="house-hero"><div><span class="eyebrow">LAR DA EQUIPE</span><h3>Casa do Time</h3><p>Onde os heróis descansam entre as caçadas. Cartas expostas na <b>Galeria</b> emprestam ${Math.round(D.HOUSE.displayShare * 100)}% dos seus atributos a toda a equipe; o <b>Álbum</b> guarda cada carta que você já teve e dá bônus permanentes.</p>
+        <div class="house-kpis"><span><b>${slots}</b>espaços na Galeria</span><span><b>${album}/${I.cards.length}</b>cartas no Álbum</span><span><b>${par.lv}</b>Paragão</span></div>
+        ${bonusTxt ? `<p class="house-bonus">Bônus da casa para a equipe: <b>${bonusTxt}</b></p>` : ''}</div></section>
+      <h4 class="sub-title">Galeria</h4><div class="gallery">${frames}</div>
+      ${pick !== null ? `<div class="gallery-pick"><h4 class="sub-title">Escolha a carta para o espaço ${pick + 1}</h4><div class="card-grid">${free.map(cd => cardTile(cd, { n:s.cards[cd.id], tag:'button', attrs:`data-display-card="${cd.id}" data-gallery-slot="${pick}"` })).join('') || '<p class="dim">Nenhuma carta livre. Cartas encaixadas em itens ou já expostas não aparecem aqui.</p>'}</div></div>` : ''}
+      <h4 class="sub-title">Álbum de cartas</h4><ol class="album-track">${milestones}</ol>
+      <h4 class="sub-title">Paragão</h4><div class="panel paragon-box"><p>Quando um herói da equipe chega ao nível máximo, a EXP que sobra vai para o <b>Paragão</b> da conta: cada nível dá <b>+${(D.PARAGON.per * 100).toFixed(1).replace('.', ',')}%</b> de ATK, HP e DEF a toda a equipe (até ${D.PARAGON.cap}).</p><div class="meter"><span style="width:${Math.min(100, par.xp / parNext * 100)}%"></span></div><small>Nível ${par.lv} · ${compact(par.xp)} / ${compact(parNext)} EXP</small></div>`;
+  };
+
   P.cityPanel = function(_, tab) {
     const e = this.engine, s = this.state, b = s.buildings;
     const bHead = id => { const bd = D.buildings[id], lv = b[id], cost = e.buildingCost(id), cap = e.buildingCap(); return `<div class="building-head"><span class="b-icon">${bd.icon}</span><div><b>${bd.name} · Nível ${lv}</b><small>${bd.desc}</small></div><button class="action ${s.player.gold >= cost && lv < cap ? 'primary' : ''}" data-build="${id}" type="button" ${lv >= cap ? 'disabled' : ''}>${lv >= cap ? `Máx. (conta nv ${(lv - 1) * 3 + 3} libera)` : `Melhorar · ${compact(cost)} ouro`}</button></div>`; };
@@ -484,20 +530,10 @@
       return `${bHead('workshop')}<h4 class="sub-title">Culinária, poções e transmutação</h4><div class="recipe-grid">${recipes.map(r => `<div class="craft-row"><div><b>${esc(r.name)}</b><small>${Object.entries(r.cost).map(([k, v]) => `${U.fmt(v)} ${matName(k)}`).join(' · ')}${r.limit ? ` · hoje ${e.craftedToday(r.id)}/${r.limit}` : ''}</small></div><button class="action ${r.can ? 'primary' : ''}" data-craft="${r.id}" type="button" ${r.can ? '' : 'disabled'}>Criar</button></div>`).join('')}</div>
         <h4 class="sub-title">Encantamento</h4><div class="split"><div class="pick-list">${s.inventory.filter(x => x.affixes?.length).map(it => `<button class="pick-item rarity-${it.rarity} ${it.uid === this.forgeSel ? 'selected' : ''}" data-forge-item="${it.uid}" type="button">${KT.itemIcon(it)}<span><b class="rtext">${esc(it.name)}</b><small>${it.affixes.length} afixo(s)</small></span></button>`).join('') || '<p class="dim">Nenhum item com afixos.</p>'}</div><div>${enchant}</div></div>`;
     }
-    if (tab === 'cards') {
-      const owned = I.cards.filter(cd => (s.cards[cd.id] || 0) > 0);
-      const sel = s.inventory.find(x => x.uid === this.forgeSel && (x.cards || []).length) || null;
-      const socketable = s.inventory.filter(x => (x.cards || []).length).sort((a, b2) => (!!e.ownerOf(b2.uid) - !!e.ownerOf(a.uid)) || I.itemScore(b2) - I.itemScore(a));
-      let right = '<p class="empty-note">Escolha um equipamento com slots à esquerda.</p>';
-      if (sel) right = `${this.itemCard(sel)}<div class="forge-box"><h4>Slots</h4>${sel.cards.map((cid, i) => { const cd = cid && I.cardById(cid); return `<div class="ench-row"><span>Slot ${i + 1}: ${cd ? `<b>${esc(cd.name)}</b>: ${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}` : '<i class="dim">vazio</i>'}</span>${cd ? `<button class="action small" data-unsocket="${sel.uid}" data-idx="${i}" type="button" ${s.player.crystal >= 30 ? '' : 'disabled'}>Remover (30 cristais)</button>` : ''}</div>`; }).join('')}
-        ${sel.cards.some(x => !x) ? `<h4 class="sub-title">Encaixar carta</h4><div class="card-grid">${owned.map(cd => `<button class="card-tile ${cd.mvp ? 'mvp' : ''}" data-socket="${sel.uid}" data-card="${cd.id}" type="button"><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt=""></span><b>${esc(cd.name)}</b><small>${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}</small><em>×${s.cards[cd.id]}</em></button>`).join('') || '<p class="dim">Você ainda não tem cartas. Monstros deixam cartas raramente; chefes deixam cartas MVP.</p>'}</div>` : '<p class="note">Todos os slots estão ocupados.</p>'}</div>`;
-      return `<p class="note">Cartas são drops raros de monstros (cada monstro tem a sua) e encaixam nos <b>slots</b> dos equipamentos. Itens raros ou melhores podem ter 1 ou 2 slots. Cartas de chefe (<b>MVP</b>) são as mais poderosas. Encaixar é permanente; remover custa 30 cristais e devolve a carta.</p>
-        <div class="split"><div class="pick-list">${socketable.map(it => `<button class="pick-item rarity-${it.rarity} ${it.uid === this.forgeSel ? 'selected' : ''}" data-forge-item="${it.uid}" type="button">${KT.itemIcon(it)}<span><b class="rtext">${esc(it.name)}</b><small>${it.cards.filter(Boolean).length}/${it.cards.length} slots${e.ownerOf(it.uid) ? ` · ⚔ ${esc(e.template(e.ownerOf(it.uid).id).name)}` : ''}</small></span></button>`).join('') || '<p class="dim">Nenhum item com slots ainda.</p>'}</div><div>${right}</div></div>
-        <h4 class="sub-title">Sua coleção de cartas · ${owned.length}/${I.cards.length}</h4><div class="card-grid">${I.cards.map(cd => { const n = s.cards[cd.id] || 0; return `<div class="card-tile ${n ? '' : 'missing'} ${cd.mvp ? 'mvp' : ''}"><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt=""></span><b>${n ? esc(cd.name) : '???'}</b><small>${n ? Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ') : `Drop de ${esc(D.enemies[cd.enemy].name.split(',')[0])}`}</small>${n ? `<em>×${n}</em>` : ''}</div>`; }).join('')}</div>`;
-    }
+    if (tab === 'house') return this.houseHtml(bHead);
     if (tab === 'dojo') {
       const cap = PR.trainingCap(b.dojo);
-      return `${bHead('dojo')}<p class="note">Treino da equipe: melhorias permanentes para <b>todos</b> os heróis. Limite atual: nível ${cap} (melhore o Dojo para aumentar). Heróis fora da equipe recebem ${Math.round((.05 + b.dojo * .05) * 100)}% da EXP de combate como treino passivo.</p>
+      return `${bHead('dojo')}<p class="note">Treino da equipe: melhorias permanentes para <b>todos</b> os heróis. Limite atual: nível ${cap} (melhore o Dojo para aumentar). Só os heróis da equipe ganham EXP em combate; os do banco evoluem em <b>Expedições</b>.</p>
         <div class="train-grid">${Object.entries(PR.training).map(([k, tr]) => { const lv = s.training[k] || 0, cost = PR.trainingCost(lv); return `<div class="train-card"><b>${tr.name}</b><small>${tr.text}</small><div class="meter"><span style="width:${lv / cap * 100}%"></span></div><small>Nível ${lv}/${cap} · atual ${statValue(tr.stat, tr.per * lv)}</small><button class="action ${s.player.gold >= cost && lv < cap ? 'primary' : ''}" data-train="${k}" type="button" ${lv >= cap ? 'disabled' : ''}>${lv >= cap ? 'Limite' : `Treinar · ${compact(cost)} ouro`}</button></div>`; }).join('')}</div>`;
     }
     if (tab === 'shrine') {
@@ -686,19 +722,21 @@
     const exp = s.expeditions, expReady = exp.filter(x => e.now() >= x.start + x.hours * 3600000).length;
     const b = s.bounty, d = s.daily?.list || [], dDone = d.filter(x => x.progress >= x.n && !x.claimed).length;
     const riftBest = s.progress.rift?.best || 0, rl = e.zoneLock('rift');
-    const card = (icon, title, text, action, tone = '') => `<article class="adv-card ${tone}"><span class="adv-ico tone-${icon}">${ic(icon)}</span><div><b>${title}</b><small>${text}</small></div>${action}</article>`;
+    const ADV_ART = { skull:'boss_event', compass:'hunt_frost', target:'hunt_swamp', rift:'dungeon_forge', scroll:'village', anvil:'dungeon', scale:'hunt_tide', bulb:'summoning' };
+    const card = (icon, title, text, action, tone = '') => `<article class="adv-card tone-${icon} ${tone}" style="--art:url('assets/scenes/${ADV_ART[icon] || 'village'}.png')"><span class="adv-ico tone-${icon}">${ic(icon)}</span>${tone === 'hot' ? '<span class="adv-flag">AGORA</span>' : ''}<div class="adv-copy"><b>${title}</b><small>${text}</small></div><div class="adv-cta">${action}</div></article>`;
     const cards = [
       card('skull', 'Invasão Mundial', w.active ? (wbDone ? 'Você já investiu hoje. Resgate a recompensa quando a janela fechar.' : `Aberta agora (até ${fmtClock(w.end)}). Um chefe gigante contra todos os jogadores.`) : `Próxima janela: ${w.next ? fmtClock(w.next.start) : ', '} (${D.worldBoss.windows.map(x => x.label).join(' e ')}).`,
         `<button class="action small ${w.active && !wbDone ? 'primary' : ''}" data-tab-go="worldboss" type="button">${w.active && !wbDone ? 'Investir' : 'Ver'}</button>`, w.active && !wbDone ? 'hot' : ''),
       card('compass', 'Expedições', exp.length ? `${exp.length}/${e.expeditionSlots()} em andamento${expReady ? ` · <b>${expReady} de volta</b>` : ''}.` : `Mande heróis do banco explorar por até 12h (funciona com o jogo fechado).`, `<button class="action small ${expReady ? 'primary' : ''}" data-tab-go="expeditions" type="button">${expReady ? 'Resgatar' : 'Abrir'}</button>`, expReady ? 'hot' : ''),
       card('target', 'Quadro de Recompensas', b.active ? `${esc(D.enemies[b.active.enemy]?.name || '')}: ${U.fmt(b.active.progress)}/${U.fmt(b.active.n)} · ${U.fmt(b.points)} Marcas de Caçador.` : `Escolha um monstro para caçar e ganhe Marcas de Caçador (${U.fmt(b.points)}).`, `<button class="action small ${b.active && b.active.progress >= b.active.n ? 'primary' : ''}" data-tab-go="bounty" type="button">Abrir</button>`, b.active && b.active.progress >= b.active.n ? 'hot' : ''),
-      card('rift', 'Fenda Abissal', rl.locked ? 'Libera ao derrotar Shirogane.' : `Recorde: andar ${riftBest}. Andares infinitos com mutações.`, rl.locked ? '' : `<button class="action small" data-preview-zone="rift" type="button">Descer</button>`),
+      card('rift', 'Fenda Abissal', rl.locked ? 'Libera ao derrotar Shirogane.' : `Recorde: andar ${riftBest}. Andares infinitos com mutações.`, rl.locked ? '<button class="action small" type="button" disabled>🔒 Bloqueado</button>' : `<button class="action small" data-preview-zone="rift" type="button">Descer</button>`),
       card('scroll', 'Missões diárias', d.length ? `${d.filter(x => x.claimed).length}/${d.length} concluídas${dDone ? ` · <b>${dDone} para resgatar</b>` : ''}.` : 'Renovam à meia-noite.', `<button class="action small ${dDone ? 'primary' : ''}" data-go="quests:daily" type="button">Abrir</button>`, dDone ? 'hot' : ''),
       card('anvil', 'Forja e Oficina', `Refine (${Object.values(I.materials).map(m => `${m.short}: ${U.fmt(m.key === 'ore' ? s.player.ore : s.mats[m.key] || 0)}`).join(' · ')}), cozinhe e transmute materiais.`, `<button class="action small" data-go="city:forge" type="button">Forja</button>`),
       card('scale', 'Mercado de Jogadores', 'Compre e venda itens, cartas e materiais raros.', `<button class="action small" data-go="shop:p2p" type="button">Abrir</button>`),
       card('bulb', 'Conselheiro', 'Travado? Veja o que falta para ficar mais forte.', `<button class="action small" data-go="quests:advisor" type="button">Abrir</button>`)
     ];
-    return `<p class="note">Não existe um único caminho: escolha o que fazer agora. Tudo aqui rende progresso.</p><div class="adv-grid">${cards.join('')}</div>`;
+    const hot = cards.filter(c => c.includes('adv-flag')).length;
+    return `<section class="adv-hero"><div><span class="eyebrow">DIÁRIO DE BORDO</span><h3>${hot ? `${hot} coisa(s) esperando por você` : 'Tudo em dia, viajante'}</h3><p>Não existe um único caminho: escolha o que fazer agora. Tudo aqui rende progresso, até com o jogo fechado.</p></div></section><div class="adv-grid">${cards.join('')}</div>`;
   };
   const dayKeyNow = e => KT.State.dayKey(e.now());
   const fmtClock = ms => ms ? new Date(ms).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', weekday:'short', hour:'2-digit', minute:'2-digit' }) : ', ';
@@ -732,7 +770,7 @@
     sel.uids = sel.uids.filter(u => bench.some(h => h.uid === u));
     const running = s.expeditions.map(x => { const end = x.start + x.hours * 3600000, left = Math.max(0, end - now), done = left <= 0, pct = Math.min(100, (now - x.start) / (x.hours * 3600000) * 100);
       return `<article class="exp-card ${done ? 'done' : ''}"><div class="exp-faces">${x.uids.map(u => { const h = e.record(u); return h ? `<img src="${portrait(h.id)}" alt="">` : ''; }).join('')}</div><div><b>${esc(D.zones[x.zone].title)}</b><small>${x.hours}h · ${done ? 'de volta!' : `volta em ${fmtTime(left / 1000)}`}</small><div class="meter"><span style="width:${pct}%"></span></div></div><button class="action small ${done ? 'primary' : ''}" data-claim-exp="${x.id}" type="button" ${done ? '' : 'disabled'}>Resgatar</button></article>`; }).join('');
-    return `<p class="note">Heróis que estão <b>fora da equipe</b> podem sair em expedição. O tempo conta pelo relógio do servidor, então funciona mesmo com o computador desligado. Vagas: ${s.expeditions.length}/${slots} (a Guilda libera mais).</p>
+    return `<section class="adv-hero sub" style="--art:url('assets/scenes/hunt_frost.png')"><div><span class="eyebrow">CASA DE EXPEDIÇÕES</span><h3>Vagas: ${s.expeditions.length}/${slots}</h3><p>Heróis <b>fora da equipe</b> partem em expedição e voltam com ouro, materiais, itens e <b>EXP</b> (é o único jeito de o banco evoluir). O tempo corre pelo relógio do servidor, mesmo com o computador desligado. A Guilda libera mais vagas.</p></div></section>
       ${running ? `<div class="exp-list">${running}</div>` : ''}
       ${s.expeditions.length < slots ? `<section class="exp-new"><h4 class="sub-title">Nova expedição</h4>
         ${zones.length ? `<div class="filter-tabs">${zones.map(z => `<button class="${sel.zone === z.id ? 'active' : ''}" data-exp-zone="${z.id}" type="button">${esc(z.title)}</button>`).join('')}</div>
@@ -746,7 +784,7 @@
     const e = this.engine, s = this.state, b = s.bounty;
     const offers = b.active ? [] : (b.offers || []);
     const act = b.active ? `<article class="bounty-active"><canvas width="110" height="100" data-sprite-preview="${D.enemies[b.active.enemy].sprite}"></canvas><div><span class="eyebrow">CAÇADA ATIVA</span><h3>${esc(D.enemies[b.active.enemy].name)}</h3><div class="meter"><span style="width:${Math.min(100, b.active.progress / b.active.n * 100)}%"></span></div><small>${U.fmt(b.active.progress)} / ${U.fmt(b.active.n)} · recompensa: ${b.active.points} Marcas + ouro</small><div class="box-actions">${b.active.progress >= b.active.n ? '<button class="action primary" data-bounty-claim type="button">Resgatar</button>' : ''}<button class="action small" data-bounty-abandon type="button">Abandonar</button></div></div></article>` : '';
-    return `<div class="wallet-strip"><span>Marcas de Caçador: <b>${U.fmt(b.points)}</b> · caçadas concluídas: ${b.done}</span></div>${act}
+    return `<section class="adv-hero sub" style="--art:url('assets/scenes/hunt_swamp.png')"><div><span class="eyebrow">QUADRO DE RECOMPENSAS</span><h3>${U.fmt(b.points)} Marcas de Caçador</h3><p>Aceite uma caçada, derrote o alvo e troque as Marcas por materiais raros na Loja do Caçador. Caçadas concluídas: <b>${b.done}</b>.</p></div></section>${act}
       ${!b.active && !offers.length ? '<div class="box-actions"><button class="action primary" data-bounty-refresh type="button">Ver caçadas disponíveis</button></div>' : ''}
       ${offers.length ? `<h4 class="sub-title">Escolha uma caçada</h4><div class="grid3">${offers.map((o, i) => `<article class="panel bounty-offer"><canvas width="110" height="90" data-sprite-preview="${D.enemies[o.enemy].sprite}"></canvas><b>${esc(D.enemies[o.enemy].name)}</b><small>Derrote ${U.fmt(o.n)} · ${o.points} Marcas</small><button class="action small primary" data-bounty-accept="${i}" type="button">Aceitar</button></article>`).join('')}</div>` : ''}
       <h4 class="sub-title">Loja do Caçador</h4><div class="shop-grid">${D.bountyShop.map(o => `<article class="shop-card"><b>${esc(o.name)}</b><small>${esc(o.text)}</small><button class="action ${b.points >= o.cost ? 'primary' : ''}" data-bounty-buy="${o.id}" type="button" ${b.points >= o.cost ? '' : 'disabled'}>${o.cost} Marcas</button></article>`).join('')}</div>`;
@@ -793,7 +831,7 @@
   };
   P.accountHtml = function() {
     const ses = this.session || {}, c = KT.Server || {};
-    if (ses.mode === 'neon') return `<h4 class="sub-title">Conta</h4><div class="panel"><h3>${esc(ses.user?.username || '')}</h3><p>E-mail: ${esc(ses.user?.email || '')}</p><p class="dim">Conta no Neon. O progresso é salvo na sua conta automaticamente (a cada 20 s e ao fechar a aba).</p><div class="box-actions"><button class="action primary" data-neon-save type="button">☁ Salvar agora</button><button class="action" data-neon-logout type="button">Sair</button></div></div>`;
+    if (ses.mode === 'neon') return `<h4 class="sub-title">Conta</h4><div class="panel"><h3>${esc(ses.user?.username || '')}</h3><p>E-mail: ${esc(ses.user?.email || '')}</p><p class="dim">Conta no Neon. O progresso é protegido no navegador a cada 5 s e sincronizado automaticamente com a nuvem.</p><div class="box-actions"><button class="action primary" data-neon-save type="button">☁ Salvar agora</button><button class="action" data-neon-logout type="button">Sair</button></div></div>`;
     if (ses.mode !== 'cloud') return `<h4 class="sub-title">Conta</h4><div class="panel"><p><b>Modo offline.</b> O progresso fica salvo apenas neste navegador. Para ter conta, login e save na nuvem, rode o servidor (<code>npm start</code>) e acesse pelo endereço dele.</p></div>`;
     const u = ses.user || {};
     return `<h4 class="sub-title">Conta</h4><div class="account-grid">
@@ -848,7 +886,7 @@
       case 'heroes': html = `<div class="wiki-heroes">${D.roster.map(h => `<article class="wiki-hero" data-wiki-entry><img src="${portrait(h.id)}" alt="" loading="lazy"><div><h4>${esc(h.name)} <small>${esc(h.world)}</small></h4><div class="tags">${clsTag(h.cls)} ${elTag(h.el)}</div><p><b>Passiva: ${esc(h.passive.name)}:</b> ${esc(h.passiveText)}</p><p><b>Habilidade: ${esc(h.skill.name)}</b> (${String(h.skill.cd).replace('.', ',')}s): ${esc(h.skillText)}</p><p><b>Ultimate: ${esc(h.ult.name)}:</b> ${esc(h.ultText)}</p></div></article>`).join('')}</div>`; break;
       case 'trees': html = `<article class="wiki-art"><h3>Árvores de talento e classes avançadas</h3><p>Cada herói tem sua própria árvore, baseada na classe. Ganha <b>1 ponto por nível</b> (+5 ao mudar de classe). A árvore tem três círculos: o I é livre, o II exige ${PR.TIER_REQ[1]} pontos investidos e o III exige a <b>classe avançada</b> e ${PR.TIER_REQ[2]} pontos. Nós <b>Notáveis</b> dão bônus grandes; <b>Pedras-chave</b> mudam o estilo de jogo com uma desvantagem. Os nós <b>Maestria</b> e <b>Ápice</b> fortalecem a habilidade e a ultimate exclusivas do herói.</p><p><b>Mudança de Classe:</b> no nível ${PR.JOB_LEVEL}, por ${U.fmt(PR.jobCost.gold)} ouro e ${PR.jobCost.crystal} cristais: +10% HP/ATK/DEF, +5 pontos e acesso ao Círculo III.</p>
         ${Object.entries(PR.classTrees).map(([cls, tree]) => `<h4>${D.classes[cls].icon} ${cls} → ${PR.jobs[cls].name}</h4><div class="wiki-grid">${tree.filter(n => !n.sig).map(n => `<div data-wiki-entry class="uniq"><span class="wiki-ico" style="--nc:${n.keystone ? '#ff7eb6' : n.notable ? '#ffcf6b' : D.classes[cls].color}">${svgIcon(n.icon, 22)}</span><div><b>${esc(n.name)}</b><small>Círculo ${['I', 'II', 'III'][n.tier]} · até ${n.max} rank(s)</small><small>${esc(n.hookText ? n.hookText(n.max) : Object.entries(n.stats).map(([k, v]) => statValue(k, v * n.max)).join(', ') || n.desc)}${n.max > 1 ? ' (no rank máximo)' : ''}</small>${n.keystone ? `<small>${esc(n.desc)}</small>` : ''}</div></div>`).join('')}</div>`).join('')}</article>`; break;
-      case 'cards': html = `<article class="wiki-art"><h3>Cartas</h3><p>Cada monstro tem uma carta, e cartas são <b>raríssimas de propósito</b>: mesmo caçando o mesmo monstro o dia inteiro, conseguir uma leva dias. Cada carta tem uma raridade que define a chance por abate e a força dos atributos:</p><div class="wiki-grid">${Object.values(I.cardTiers).map(t => `<div data-wiki-entry><b style="color:${t.color}">${t.label}</b><small>1 em ${U.fmt(Math.round(1 / t.chance))} abates · atributos ×${String(t.mult).replace('.', ',')}</small></div>`).join('')}</div><p>Cartas de chefes são MVP; cartas épicas e MVP também trazem um <b>efeito especial</b>. Variantes Alfa e a pesquisa do Bestiário aumentam a chance. Cartas encaixam nos slots dos equipamentos: raros têm 0 a 1, épicos e conjuntos têm 1, lendários 1 ou 2 e míticos 2. Encaixar é permanente; remover custa 30 cristais e devolve a carta.</p><div class="card-grid">${I.cards.map(cd => `<div class="card-tile ${cd.mvp ? 'mvp' : ''}" data-wiki-entry><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt="" loading="lazy"></span><b>${esc(cd.name)}</b><small>${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}</small><small class="dim" style="color:${cd.color}">${esc(cd.tierLabel)} · 1 em ${U.fmt(Math.round(1 / cd.chance))}</small>${cd.effect ? `<small>✦ ${esc(cd.effect)}</small>` : ''}</div>`).join('')}</div></article>`; break;
+      case 'cards': html = `<article class="wiki-art"><h3>Cartas</h3><p>Cada monstro tem uma carta, e cartas são <b>raríssimas de propósito</b>: mesmo caçando o mesmo monstro o dia inteiro, conseguir uma leva dias. Cada carta tem uma raridade que define a chance por abate e a força dos atributos:</p><div class="wiki-grid">${Object.values(I.cardTiers).map(t => `<div data-wiki-entry><b style="color:${t.color}">${t.label}</b><small>1 em ${U.fmt(Math.round(1 / t.chance))} abates · atributos ×${String(t.mult).replace('.', ',')}</small></div>`).join('')}</div><p>Cartas de chefes são MVP; cartas épicas e MVP também trazem um <b>efeito especial</b>. Variantes Alfa e a pesquisa do Bestiário aumentam a chance. Cartas encaixam nos slots dos equipamentos: raros têm 0 a 1, épicos e conjuntos têm 1, lendários 1 ou 2 e míticos 2. Encaixar é permanente; remover custa 30 cristais e devolve a carta. Cartas ficam na <b>Bolsa → Cartas</b> e não ocupam espaço.</p><p><b>Casa do Time</b>: exponha cartas na Galeria (cada uma dá 25% dos seus atributos à equipe inteira; até 6 espaços) e complete o <b>Álbum</b>: ${D.HOUSE.album.map(m => `${m.n} cartas diferentes`).join(', ')} liberam bônus permanentes.</p><div class="card-grid">${I.cards.map(cd => `<div class="card-tile ${cd.mvp ? 'mvp' : ''}" data-wiki-entry><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt="" loading="lazy"></span><b>${esc(cd.name)}</b><small>${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}</small><small class="dim" style="color:${cd.color}">${esc(cd.tierLabel)} · 1 em ${U.fmt(Math.round(1 / cd.chance))}</small>${cd.effect ? `<small>✦ ${esc(cd.effect)}</small>` : ''}</div>`).join('')}</div></article>`; break;
       case 'items': html = `<article class="wiki-art"><h3>Equipamentos</h3><p>Cada herói tem 4 espaços: ${Object.values(I.slots).map(s2 => `<b>${s2.name}</b> (${s2.desc.replace('.', '')})`).join(', ')}. O nível do item (Nv.) depende da região e do estágio.</p>
         <h4>Raridades</h4><div class="wiki-grid">${D.rarities.map(r => `<div data-wiki-entry><b style="color:${r.color}">${r.label}</b><small>Atributo principal ×${String(r.mult).replace('.', ',')} · ${r.affixes} afixo(s)${r.id === 'mythic' ? ' + efeito único' : r.id === 'set' ? ' + bônus de conjunto' : ''}</small></div>`).join('')}</div>
         <h4>Afixos possíveis</h4><div class="wiki-grid">${I.affixes.map(a => `<div data-wiki-entry><b>${a.name}</b><small>${D.statNames[a.stat] || a.stat}: ${a.pct ? `${pct(a.min, 1)}–${pct(a.max, 1)}` : `${a.min}–${a.max}`} (escala com o nível)</small></div>`).join('')}</div>
@@ -1060,6 +1098,10 @@
     if (d.heroTalentReset) { this.ask('Redefinir talentos', 'Devolver todos os pontos de talento deste herói?', [{ id:'yes', label:'Redefinir', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') run('resetHeroTalents', [d.heroTalentReset], r => { if (!r) this.toast('Ouro insuficiente.'); }); }); return; }
     if (d.job) { run('jobChange', [d.job], r => { if (r) { this.callbacks.summon?.('legendary'); this.renderer.showBanner('MUDANÇA DE CLASSE!', PR.jobs[e.template(e.record(d.job).id).cls].name, '#ffcf6b'); } else this.toast('Requisitos não atendidos.'); }); return; }
     if (d.socket) { const it = s.inventory.find(x => x.uid === d.socket); if (!it) return; run('socketCard', [d.socket, it.cards.indexOf(null), d.card], r => { if (r) { this.toast('Carta encaixada!', 'gold'); this.callbacks.reward?.(); } }); return; }
+    if (d.cardItem) { this.cardSel = d.cardItem; this.refreshPanel(); return; }
+    if (d.houseSlot !== undefined) { this.houseSlot = Number(d.houseSlot); this.refreshPanel(); return; }
+    if (d.displayCard) { run('displayCard', [d.displayCard, Number(d.gallerySlot)], r => { if (r) { this.houseSlot = null; this.toast('Carta exposta na Galeria: a equipe inteira ficou mais forte.', 'gold'); this.callbacks.reward?.(); } }); return; }
+    if (d.removeDisplay !== undefined) { run('removeDisplay', [Number(d.removeDisplay)], () => {}); return; }
     if (d.unsocket) { run('unsocketCard', [d.unsocket, Number(d.idx)], r => { if (!r) this.toast('Cristais insuficientes.'); }); return; }
     if (b.hasAttribute('data-sync-now')) { if (KT.Server?.enabled) KT.Server.flush().then(r => { this.toast(r.ok ? 'Progresso salvo no servidor.' : 'Não foi possível confirmar o save agora.', r.ok ? 'gold' : 'red'); refresh(); }); else { const ok = e.save(); this.toast(ok ? 'Progresso salvo.' : 'Não foi possível salvar neste navegador.', ok ? 'gold' : 'red'); } return; }
     if (b.hasAttribute('data-logout')) { (KT.Server?.enabled ? KT.Server.flush() : Promise.resolve()).finally(() => KT.Net.logout().then(() => location.reload())); return; }

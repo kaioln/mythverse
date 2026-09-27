@@ -5,7 +5,7 @@
   const KT = globalThis.KT;
 
   const Neon = {
-    user:null, row:null, jwt:null, jwtExp:0, pending:null, timer:null, retryTimer:null, inflight:null, lastHide:0, conflict:false,
+    user:null, row:null, jwt:null, jwtExp:0, pending:null, timer:null, retryTimer:null, inflight:null, lastHide:0, conflict:false, status:'idle', error:null, lastSync:0,
     get enabled() { return !!this.base; },
     get base() { return String(KT.CONFIG?.neon || '').replace(/\/+$/, ''); },
     // https://ep-x.region.aws.neon.tech/neondb → .neonauth…/neondb/auth e .apirest…/neondb/rest/v1
@@ -13,9 +13,10 @@
 
     async auth(path, { method = 'GET', body } = {}) {
       // A sessão do Neon Auth é um cookie HttpOnly (SameSite=None; Partitioned) no domínio do Neon: vai com credentials.
-      let res;
-      try { res = await fetch(this.url('auth') + path, { method, credentials:'include', headers:{ 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined }); }
-      catch (_) { return { ok:false, status:0, error:'Sem conexão com o Neon.' }; }
+      let res; const ctl = new AbortController(), timeout = setTimeout(() => ctl.abort(), 12_000);
+      try { res = await fetch(this.url('auth') + path, { method, credentials:'include', signal:ctl.signal, headers:{ 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined }); }
+      catch (_) { return { ok:false, status:0, error:ctl.signal.aborted ? 'Tempo de conexão esgotado.' : 'Sem conexão com o Neon.' }; }
+      finally { clearTimeout(timeout); }
       let data = null; try { data = await res.json(); } catch (_) { data = null; }
       const jwt = res.headers.get('set-auth-jwt'); if (jwt) this.setJwt(jwt);
       return { ok:res.ok, status:res.status, data, error:res.ok ? null : this.message(data, res.status) };
@@ -55,11 +56,7 @@
     readJournal() { const raw = this.journalKey() && KT.Utils.safeStorage.get(this.journalKey()); try { return raw ? JSON.parse(raw) : null; } catch (_) { return null; } },
     writeJournal(entry) { return !!this.journalKey() && KT.Utils.safeStorage.set(this.journalKey(), JSON.stringify({ id:entry.id, baseRevision:entry.baseRevision, generation:entry.generation, queuedAt:entry.queuedAt })); },
     clearJournal(id) { const j = this.readJournal(); if (!id || !j || j.id === id) KT.Utils.safeStorage.remove(this.journalKey()); },
-    compareSaves(a, b) {
-      const keys = ['totalPlaySeconds', 'saveGeneration', 'lastSeen'];
-      for (const k of keys) { const d = (Number(a?.[k]) || 0) - (Number(b?.[k]) || 0); if (d) return Math.sign(d); }
-      return 0;
-    },
+    setStatus(status, error = null) { this.status = status; this.error = error; this.onStatus?.(); },
     async api(method, path, body, prefer) {
       const jwt = await this.token(); if (!jwt) return { ok:false, status:401, error:'Sessão expirada. Entre de novo.' };
       let res;
@@ -67,8 +64,10 @@
       // Navegadores rejeitam fetch keepalive com corpo acima de ~64 KiB. Saves grandes
       // pareciam perda de conexão e nunca chegavam ao Neon.
       const keepalive = method !== 'GET' && payload && new Blob([payload]).size <= 60 * 1024;
-      try { res = await fetch(this.url('api') + path, { method, cache:method === 'GET' ? 'no-store' : 'default', keepalive:!!keepalive, headers:{ Authorization:`Bearer ${jwt}`, 'Content-Type':'application/json', ...(prefer ? { Prefer:prefer } : {}) }, body:payload }); }
-      catch (_) { return { ok:false, status:0, error:'Sem conexão com o Neon.' }; }
+      const ctl = new AbortController(), timeout = setTimeout(() => ctl.abort(), 12_000);
+      try { res = await fetch(this.url('api') + path, { method, cache:method === 'GET' ? 'no-store' : 'default', keepalive:!!keepalive, signal:ctl.signal, headers:{ Authorization:`Bearer ${jwt}`, 'Content-Type':'application/json', ...(prefer ? { Prefer:prefer } : {}) }, body:payload }); }
+      catch (_) { return { ok:false, status:0, error:ctl.signal.aborted ? 'Tempo de conexão esgotado.' : 'Sem conexão com o Neon.' }; }
+      finally { clearTimeout(timeout); }
       let data = null; try { data = await res.json(); } catch (_) { data = null; }
       return { ok:res.ok, status:res.status, data, error:res.ok ? null : (data?.message || `Erro ${res.status}`) };
     },
@@ -77,17 +76,23 @@
       if (!r.ok) throw new Error(`Não foi possível carregar seu progresso do Neon: ${r.error}`);
       this.row = r.data?.[0] ? { revision:r.data[0].revision } : null;
       const remote = r.data?.[0]?.data || null, journal = this.readJournal(), remoteRevision = this.row?.revision || 0;
-      if (journal) {
-        const local = KT.State.loadState();
-        if (!remote || journal.baseRevision === remoteRevision || this.compareSaves(local, remote) > 0) {
-          this.pending = { ...journal, baseRevision:remoteRevision, generation:Number(local.saveGeneration) || 0, json:JSON.stringify(local) };
-          this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 0);
-          return local;
-        }
-        this.clearJournal(journal.id);
+      // A cópia local deste aparelho é salva a cada 5 s, mesmo quando a nuvem falha. Se ela for mais
+      // recente (hora real do último save) que a da nuvem, ela vence: recarregar a página nunca volta no tempo.
+      const local = KT.State.loadState(), hasLocal = !!journal || local.collection.length > 0;
+      const localNewer = hasLocal && (!remote || journal?.baseRevision === remoteRevision || (Number(local.lastSeen) || 0) > (Number(remote.lastSeen) || 0) + 1000);
+      if (localNewer) {
+        this.pending = { id:journal?.id || `boot-${Date.now().toString(36)}`, baseRevision:remoteRevision, generation:Number(local.saveGeneration) || 0, queuedAt:Date.now(), json:JSON.stringify(local) };
+        this.writeJournal(this.pending);
+        this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 0);
+        return local;
       }
+      if (journal) this.clearJournal(journal.id);
       return remote;
     },
+    // Sessão ativa: o aparelho/aba aberto por último é o dono do save. Um aparelho antigo que continue
+    // aberto em segundo plano para de salvar em vez de sobrescrever o progresso mais novo.
+    sessionId:`${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`, sessionAt:Date.now(),
+    supersededBy(remoteData) { const s = remoteData?.activeSession; return !!(s && s.id !== this.sessionId && Number(s.at) > this.sessionAt); },
     summary(state) {
       let power = 0;
       try { const recs = KT.State.formationRecords(state), ctx = KT.State.teamContext(state, recs); power = recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0); } catch (_) { power = 0; }
@@ -96,14 +101,15 @@
         best_stage:Object.values(KT.Data.zones).filter(z => z.kind === 'hunt' && !z.side).reduce((a, z) => a + (prog[z.id]?.best || 0), 0), rift_best:Number(prog.rift?.best) || 0,
         account_level:Number(state.player?.level) || 1, team:(state.formation || []).map(uid => uid && state.collection.find(h => h.uid === uid)).filter(Boolean).map(h => ({ id:h.id, stars:h.stars })) };
     },
-    // Salva no máximo a cada 20 s (e ao fechar a aba). A revisão evita que dois aparelhos se sobrescrevam sem aviso.
+    // Protege localmente a cada ciclo e envia à nuvem em até 5 s.
     queue(state) {
       if (this.conflict) return false;
       const entry = { id:`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, baseRevision:this.row?.revision || 0, generation:Number(state.saveGeneration) || 0, queuedAt:Date.now(), json:JSON.stringify(state) };
       const durable = this.writeJournal(entry);
       if (!durable) this.onError?.('O navegador bloqueou a cópia local de segurança.');
       this.pending = entry;
-      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 20_000);
+      this.setStatus('pending');
+      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 5_000);
       return durable;
     },
     // Um envio por vez: chamadas simultâneas (timer, trocar de aba, botão) esperam a anterior terminar.
@@ -114,7 +120,9 @@
     },
     async flushNow(entry, reconciled = false) {
       if (!entry || !this.user || this.conflict) return !this.conflict;
+      this.setStatus('saving');
       const state = JSON.parse(entry.json);
+      state.activeSession = { id:this.sessionId, at:this.sessionAt };
       const body = { data:state, updated_at:new Date().toISOString(), ...this.summary(state) };
       let r;
       if (!this.row) { r = await this.api('POST', '/mv_saves', { ...body, revision:1 }, 'return=representation'); if (r.ok) this.row = { revision:Number(r.data?.[0]?.revision) || 1 }; }
@@ -127,21 +135,27 @@
           else {
             this.row = { revision:Number(current.revision) || 0 };
             if (this.pending?.id !== entry.id) return true;
-            if (!reconciled && this.compareSaves(state, current.data) > 0) {
+            if (this.supersededBy(current.data)) {
+              // Outro aparelho abriu o jogo depois deste: guarda esta cópia e para de salvar.
+              KT.Utils.safeStorage.set(`${this.journalKey()}:conflict`, entry.json);
+              this.pending = null; this.clearJournal(entry.id); this.conflict = true;
+              this.setStatus('error', 'Jogo aberto em outro aparelho.');
+              this.onTakeover?.(current.data);
+              return true;
+            }
+            if (!reconciled) {
+              // Mesma sessão ou sessão mais antiga no servidor: este aparelho é o dono, regrava por cima.
               entry.baseRevision = this.row.revision;
               this.writeJournal(entry);
               return this.flushNow(entry, true);
             }
-            KT.Utils.safeStorage.set(`${this.journalKey()}:conflict`, entry.json);
-            this.pending = null; this.clearJournal(entry.id); this.conflict = false;
-            this.onRemote?.(current.data); this.onConflict?.('remote');
-            return true;
+            r = { ok:false, error:'Conflito de revisão.' };
           }
         }
         if (r.ok) this.row.revision = Number(r.data?.[0]?.revision) || this.row.revision + 1;
       }
-      if (r.ok) { if (this.pending?.id === entry.id) this.pending = null; this.clearJournal(entry.id); }
-      else { this.onError?.(r.error); if (!this.retryTimer) this.retryTimer = setTimeout(() => { this.retryTimer = null; this.flush(); }, 15_000); }
+      if (r.ok) { if (this.pending?.id === entry.id) this.pending = null; this.clearJournal(entry.id); this.lastSync = Date.now(); this.setStatus('ok'); }
+      else { this.setStatus('error', r.error); this.onError?.(r.error); if (!this.retryTimer) this.retryTimer = setTimeout(() => { this.retryTimer = null; this.flush(); }, 10_000); }
       return r.ok;
     },
     async leaderboard(type) {

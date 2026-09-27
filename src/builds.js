@@ -111,7 +111,7 @@
     ivy:{ attr:{ agi:4, dex:2 }, note:'Esquiva gera energia: AGI máxima.' },
     riku:{ attr:{ agi:3, dex:2, luk:1 }, note:'Passo Relâmpago: velocidade e contra-ataques.' },
     lucan:{ attr:{ agi:3, str:2, dex:2 }, note:'Ataques rápidos que fazem sangrar.' },
-    dario:{ attr:{ dex:3, luk:3 }, note:'Críticos enormes contra alvos marcados, combine com Bjorn ou Sael.' },
+    dario:{ attr:{ dex:3, luk:3 }, note:'Críticos enormes contra alvos marcados, combine com Atreus ou Sephiroth.' },
     rina:{ attr:{ int:2, str:2, vit:2 }, note:'Suporte lutadora: cura atacando e dá energia à equipe.' },
     aurelia:{ attr:{ int:4, vit:2 }, note:'Guarde a Ressurreição para quando alguém cair.' },
     elian:{ attr:{ int:3, vit:2, luk:1 }, note:'Correntes: fortalece o aliado mais forte.' },

@@ -572,12 +572,29 @@
   // ---------------------------------------------------------------------------
   const buildings = {
     forge:    { id:'forge', name:'Forja de Ren', icon:'⚒', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.8 },
-    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina heróis fora da equipe (EXP passiva) e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.8 },
+    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.8 },
     shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e Despertar de heróis. Cada nível reduz em 5% o custo de Despertar.', baseCost:1200, growth:1.9 },
     workshop: { id:'workshop', name:'Oficina de Aoi', icon:'⚗', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.75 },
     guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'🏯', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.8 },
-    market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.9 }
+    market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.9 },
+    house:    { id:'house', name:'Casa do Time', icon:'🏡', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.95 }
   };
+  // Casa do Time: Galeria de cartas expostas e Álbum (coleção, como o livro de cartas do Ragnarok).
+  const HOUSE = {
+    displayShare:.25,
+    slots:lv => Math.min(6, 1 + Math.floor(lv / 2)),
+    album:[
+      { n:3, name:'Primeiras páginas', stats:{ atk:.02 } },
+      { n:8, name:'Caderno de campo', stats:{ hp:.03 } },
+      { n:15, name:'Estudioso de criaturas', stats:{ def:.04 } },
+      { n:25, name:'Colecionador', stats:{ crit:.015, critDmg:.06 } },
+      { n:40, name:'Curador da Fenda', stats:{ atk:.04, hp:.04 } },
+      { n:60, name:'Arquivista lendário', stats:{ skill:.08, dr:.03 } },
+      { n:94, name:'Álbum completo', stats:{ atk:.08, hp:.08, def:.08 } }
+    ]
+  };
+  // Paragão (estilo Diablo): EXP de heróis no nível máximo vira nível de conta sem limite prático.
+  const PARAGON = { cap:300, per:.004, next:lv => Math.round(180000 * Math.pow(1.11, lv)) };
 
   const rarities = [
     { id:'common', label:'Comum', color:'#b9c2d6', affixes:0, mult:1.0 },
@@ -621,5 +638,5 @@
 
   const statNames = { atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

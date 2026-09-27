@@ -19,7 +19,7 @@
     cache() {
       const $ = s => document.querySelector(s);
       this.el = {
-        app:$('#app'), gold:$('#gold-value'), crystal:$('#crystal-value'), dust:$('#dust-value'), ore:$('#ore-value'), keys:$('#key-value'), keyCaption:$('#key-caption'), gems:$('#gem-value'),
+        app:$('#app'), gold:$('#gold-value'), crystal:$('#crystal-value'), dust:$('#dust-value'), ore:$('#ore-value'), keys:$('#key-value'), keyCaption:$('#key-caption'), gems:$('#gem-value'), saveStatus:$('#save-status'),
         playerName:$('#player-name'), power:$('#power-label'), level:$('#player-level'), xpFill:$('#player-xp-fill'), avatar:$('#player-avatar-img'),
         zoneTitle:$('#zone-title'), zoneKick:$('#zone-kicker'), difficulty:$('#zone-difficulty'), wave:$('#wave-label'), powerCheck:$('#power-check'),
         locations:$('#village-actions'), viewport:$('#viewport'), canvas:$('#game-canvas'), hint:$('#stage-hint'), warn:$('#warn-banner'), result:$('#result-overlay'), dialog:$('#dialog-box'), choice:$('#choice-modal'),
@@ -28,7 +28,7 @@
         guide:$('#guide-card'), event:$('#event-card'), rightObjectives:$('#right-objectives'), rightLoot:$('#right-loot'), rightCombat:$('#right-combat'), lootToast:$('#loot-toast-area'),
         inventoryBadge:$('#inventory-badge'), adventureBadge:$('#adventure-badge'), questBadge:$('#quest-badge'), summonBadge:$('#summon-badge'), talentBadge:$('#talent-badge'), partyBadge:$('#party-badge'),
         auto:$('#auto-btn'), advance:$('#advance-btn'), speed:$('#speed-btn'), retreat:$('#retreat-btn'),
-        modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'),
+        modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'), modalBackNav:$('#modal-back-nav'),
         toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
       };
     }
@@ -52,7 +52,14 @@
       on('#sound-btn', 'click', async () => { const onState = !this.state.settings.sound; this.state.settings.sound = onState; await this.callbacks.sound?.(onState); document.querySelector('#sound-btn').classList.toggle('on', onState); });
       on('#help-btn', 'click', () => this.openPanel('help'));
       on('#panel-toggle', 'click', () => { const narrow = matchMedia('(max-width:1100px)').matches; this.el.app.classList.toggle(narrow ? 'panel-open' : 'panel-hidden'); setTimeout(() => this.renderer.resize(), 320); });
+      on('#save-status', 'click', () => {
+        const local = this.engine.save(), mode = this.session?.mode;
+        if (mode === 'neon') KT.Neon.flush().then(ok => this.toast(ok && local ? 'Progresso confirmado na nuvem.' : 'Save protegido localmente; tentando sincronizar.', ok && local ? 'gold' : 'red'));
+        else if (mode === 'cloud') KT.Server.flush().then(r => this.toast(r.ok ? 'Progresso confirmado no servidor.' : 'Sincronização pendente.', r.ok ? 'gold' : 'red'));
+        else this.toast(local ? 'Progresso salvo neste navegador.' : 'O navegador bloqueou o save.', local ? 'gold' : 'red');
+      });
       document.querySelectorAll('[data-close-modal]').forEach(x => x.addEventListener('click', () => this.closeModal()));
+      this.el.modalBackNav.addEventListener('click', () => this.openPanel('journey'));
       document.querySelectorAll('.right-tab').forEach(b => b.addEventListener('click', () => this.switchRight(b.dataset.right)));
       document.addEventListener('keydown', e => {
         if (e.target.matches('input,textarea,select')) return;
@@ -332,15 +339,21 @@
       this.toast(`${c.mvp ? '🌟 <b>CARTA MVP!</b>' : '🃏 Nova carta:'} <b>${esc(card.name)}</b>, encaixe na Oficina → Cartas.`, 'gold');
     }
     renderCloud() {
-      const dot = document.querySelector('#cloud-dot'); if (!dot) return;
+      const dot = document.querySelector('#cloud-dot'), badge = this.el.saveStatus; if (!dot) return;
       const mode = this.session?.mode || 'offline', c = KT.Server || {};
-      let cls = 'off', tip = 'Modo offline: salvo só neste navegador.';
+      let cls = 'off', label = 'Local', tip = 'Modo offline: salvo só neste navegador.';
       if (mode === 'cloud') {
-        if (c.status === 'error') { cls = 'err'; tip = `Sem conexão com o servidor: ${c.error || ''}`; }
-        else if (c.status === 'saving') { cls = 'sync'; tip = 'Sincronizando com o servidor…'; }
-        else { cls = 'ok'; tip = c.lastSync ? `Progresso conferido pelo servidor às ${new Date(c.lastSync).toLocaleTimeString('pt-BR')}` : 'Conectado ao servidor.'; }
+        if (c.status === 'error') { cls = 'err'; label = 'Erro'; tip = `Sem conexão com o servidor: ${c.error || ''}`; }
+        else if (c.status === 'saving') { cls = 'sync'; label = 'Salvando'; tip = 'Sincronizando com o servidor…'; }
+        else { cls = 'ok'; label = 'Salvo'; tip = c.lastSync ? `Progresso conferido pelo servidor às ${new Date(c.lastSync).toLocaleTimeString('pt-BR')}` : 'Conectado ao servidor.'; }
+      } else if (mode === 'neon') {
+        const n = KT.Neon || {};
+        if (n.status === 'error') { cls = 'err'; label = 'Erro'; tip = `Save local protegido. Nuvem indisponível: ${n.error || ''}`; }
+        else if (n.status === 'saving' || n.status === 'pending') { cls = 'sync'; label = 'Salvando'; tip = 'Salvando progresso no Neon…'; }
+        else { cls = 'ok'; label = 'Salvo'; tip = n.lastSync ? `Salvo na nuvem às ${new Date(n.lastSync).toLocaleTimeString('pt-BR')}` : 'Conectado ao Neon.'; }
       }
       dot.className = `cloud-dot ${cls}`; dot.dataset.tip = tip;
+      if (badge) { badge.className = `save-status ${cls}`; badge.dataset.tip = tip; badge.querySelector('b').textContent = label; }
     }
     onChoice(c) {
       this.el.choice.innerHTML = `<section><span class="eyebrow">${c.kind === 'route' ? 'DECISÃO DE ROTA' : 'ENCONTRO ESPECIAL'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text || 'Escolha como a equipe continuará. A decisão altera risco e recompensa desta expedição.')}</p><div class="choice-options ${c.options.length > 2 ? 'many' : ''}">${c.options.map(o => `<button class="choice-option ${o.item ? `rarity-${o.item.rarity}` : ''} ${o.id === c.recommended ? 'recommended' : ''}" data-choice="${o.id}" data-kind="${c.kind}" type="button" ${o.price && this.state.player.gold < o.price ? 'disabled' : ''}>${o.id === c.recommended ? '<span class="rec-badge">★ RECOMENDADO</span>' : ''}${o.item ? KT.itemIcon(o.item) : ''}<b>${o.id === 'risk' ? '🔥 ' : o.id === 'safe' ? '🌙 ' : ''}${esc(o.label)}</b><small>${esc(o.desc)}</small>${o.item ? `<small class="aff">${this.itemLines(o.item).join(' · ')}</small>` : ''}</button>`).join('')}</div><p class="choice-timer" id="choice-timer"></p></section>`;
