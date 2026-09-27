@@ -36,7 +36,7 @@ function validateSave(raw) {
     num(data.totalPlaySeconds || 0, 0, 1e9)
   ];
   if (checks.some(c => !c)) return { ok:false, reason:'Save com valores fora dos limites.' };
-  if (data.collection.some(h => !h || typeof h.id !== 'string' || !num(h.level, 1, 60) || !num(h.stars, 1, 6))) return { ok:false, reason:'Herói inválido no save.' };
+  if (data.collection.some(h => !h || typeof h.id !== 'string' || !Number.isSafeInteger(h.level) || h.level < 1 || h.level > 100 || !Number.isInteger(h.stars) || !num(h.stars, 1, 6) || !num(Number(h.xp) || 0, 0, Number.MAX_SAFE_INTEGER) || (h.classLevel !== undefined && (!Number.isSafeInteger(h.classLevel) || h.classLevel < 1 || h.classLevel > 50)) || (h.classXp !== undefined && !num(h.classXp, 0, Number.MAX_SAFE_INTEGER)))) return { ok:false, reason:'Herói inválido no save.' };
   let state;
   try { state = KT.State.mergeState(data); } catch (_) { return { ok:false, reason:'Save não pôde ser interpretado.' }; }
   if (!state.collection.length && data.collection.length) return { ok:false, reason:'Heróis desconhecidos no save.' };

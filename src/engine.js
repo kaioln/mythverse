@@ -11,6 +11,7 @@
   const DEBUFFS = new Set(['burn','poison','bleed','stun','freeze','slow','armorBreak','mark','weaken','silence']);
   const DOTS = new Set(['burn','poison','bleed']);
   const HERO_MAX_STARS = 6;
+  const HERO_LEVEL_CAP = 100;
   const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const CHOICE_WAIT = 120; // segundos até a escolha recomendada ser feita sozinha (AUTO desligado)
   const DT = .05;           // passo fixo da simulação (20 passos por segundo de jogo)
@@ -54,7 +55,7 @@
 
   function newHeroRecord(template, rarity = 'rare') {
     const stars = { common:1, rare:2, epic:3, legendary:4 }[rarity] || 1;
-    return { uid:U.uid('hero'), id:template.id, rarity, stars, level:1, xp:0, job:0, talents:{}, attr:{ str:0, agi:0, vit:0, int:0, dex:0, luk:0 }, equipped:{ weapon:null, focus:null, seal:null, charm:null } };
+    return { uid:U.uid('hero'), id:template.id, rarity, stars, level:1, xp:0, classLevel:1, classXp:0, job:0, talents:{}, attr:{ str:0, agi:0, vit:0, int:0, dex:0, luk:0 }, equipped:{ weapon:null, focus:null, seal:null, charm:null } };
   }
 
   function mergeState(raw) {
@@ -74,7 +75,13 @@
     s.prof.lv = { ...fresh.prof.lv, ...(raw.prof?.lv || {}) }; s.prof.xp = { ...fresh.prof.xp, ...(raw.prof?.xp || {}) }; s.prof.mats = { ...(raw.prof?.mats || {}) };
     s.house.display = (Array.isArray(s.house.display) ? s.house.display : []).slice(0, 6).map(id => (id && I.cardById(id) ? id : null));
     s.house.seen = { ...(s.house.seen || {}) }; albumIds(s).forEach(id => { s.house.seen[id] = 1; });
-    s.collection.forEach(h => { h.talents = h.talents || {}; h.job = h.job || 0; });
+    s.collection.forEach(h => {
+      h.talents = h.talents || {}; h.job = h.job || 0; h.level = U.clamp(Math.floor(Number(h.level) || 1), 1, HERO_LEVEL_CAP); h.classLevel = U.clamp(Math.floor(Number(h.classLevel) || 1), 1, PR.CLASS_LEVEL_CAP);
+      const next = heroXpNext(h.level), oldNext = Math.round(60 * h.level * Math.pow(1.14, h.level - 1));
+      if (h.level >= HERO_LEVEL_CAP || !Number.isFinite(h.xp) || h.xp < 0) h.xp = 0;
+      else if (h.xp >= next) h.xp = Math.min(next - 1, Math.round(next * U.clamp(h.xp / Math.max(1, oldNext), 0, .999)));
+      h.classXp = h.classLevel >= PR.CLASS_LEVEL_CAP ? 0 : U.clamp(Number(h.classXp) || 0, 0, classXpNext(h.classLevel) - 1);
+    });
     // Regras de tipo por classe: itens que a classe não usa (saves antigos) voltam para a bolsa.
     s.collection.forEach(h => Object.entries(h.equipped).forEach(([k, uid]) => { const it = uid && s.inventory.find(x => x.uid === uid); if (uid && (!it || !I.equipCheck(it, h.id).ok)) h.equipped[k] = null; }));
     return s;
@@ -120,9 +127,10 @@
   // ===========================================================================
   // CURVAS
   // ===========================================================================
-  const heroXpNext = lvl => Math.round(60 * lvl * Math.pow(1.14, lvl - 1));
+  const heroXpNext = lvl => Math.round(60 * Math.pow(Math.max(1, lvl), 1.9));
+  const classXpNext = lvl => Math.round(100 * Math.pow(Math.max(1, lvl), 1.65));
   const accountXpNext = lvl => Math.round(250 * Math.pow(1.2, lvl - 1));
-  const heroMaxLevel = stars => 12 + stars * 8;
+  const heroMaxLevel = () => HERO_LEVEL_CAP;
   const awakenCost = (stars, shrineLv) => ({ shards:[0, 15, 30, 60, 100, 160][stars] || 999, gold:Math.round(2500 * Math.pow(2.3, stars - 1) * (1 - Math.min(.4, (shrineLv - 1) * .05))) });
   const zonePower = (zone, opts = {}) => {
     if (zone.kind === 'hunt') return zone.basePower * Math.pow(D.STAGE_GROWTH, (opts.stage || 1) - 1);
@@ -196,7 +204,8 @@
   function heroStats(state, rec, ctx) {
     const t = D.roster.find(x => x.id === rec.id), c = D.classes[t.cls];
     ctx = ctx || teamContext(state, formationRecords(state));
-    const growth = Math.pow(1.065, rec.level - 1);
+    const levels = Math.max(0, rec.level - 1);
+    const growth = 1 + levels * .05 + levels * levels * .0007;
     const rar = D.heroRarities.find(r => r.id === rec.rarity)?.mult || 1;
     const star = 1 + (rec.stars - 1) * .12;
     const base = { hp:c.base.hp * (t.prof.hp || 1), atk:c.base.atk * (t.prof.atk || 1), def:c.base.def * (t.prof.def || 1) };
@@ -270,7 +279,7 @@
     heroPower(rec, ctx) { return statPower(this.heroStats(rec, ctx)); }
     getPower() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
     event() { return activeEvent(this.now()); }
-    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .5 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return v; }
+    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .20 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return key === 'xp' || key === 'gold' ? Math.min(.50, v) : v; }
 
     recommendedPower(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z || z.kind === 'village') return 0;
@@ -763,7 +772,7 @@
       if (manual) { this.state.stats.manualUlts++; }
       this.emit('onFx', { type:'cast', source:u.uid, heroIndex:i, manual, ult:true, name:u.template.ult.name, color:u.color, kind:'ult' });
       // Elo Kizuna: ultimates de heróis diferentes em sequência rápida se fortalecem.
-      this.ultChain = this.zoneElapsed - this.lastUltAt <= CHAIN.window && this.lastUltHero !== i ? this.ultChain + 1 : 1;
+      this.ultChain = this.zoneElapsed - this.lastUltAt <= CHAIN.window + 1e-6 && this.lastUltHero !== i ? this.ultChain + 1 : 1;
       this.lastUltAt = this.zoneElapsed; this.lastUltHero = i; this.chainBonus = (this.ultChain - 1) * (CHAIN.per + (u.st.chainPow || 0));
       if (this.ultChain > 1) { this.emit('onFx', { type:'chain', n:this.ultChain, uid:u.uid, color:u.color }); this.state.stats.chains = Math.max(this.state.stats.chains || 0, this.ultChain); }
       this.execute(u, u.template.ult.eff, { isUlt:true, manual });
@@ -1343,18 +1352,26 @@
       const party = this.heroes; if (!party.length) return;
       const per = Math.max(1, Math.round(xp / party.length));
       const ups = [];
-      party.forEach(r => { if (this.gainHeroXp(r, per)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
+      party.forEach(r => { this.gainClassXp(r, Math.max(1, Math.round(per * .20))); if (this.gainHeroXp(r, per)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
       if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')}, +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
       // Só quem está na equipe ganha EXP de combate; heróis do banco evoluem apenas em expedições.
       this.gainAccountXp(Math.round(xp * .35));
     }
     gainHeroXp(r, amount) {
-      const cap = heroMaxLevel(r.stars); if (r.level >= cap) { r.xp = Math.min(r.xp + amount, heroXpNext(r.level)); this.gainParagonXp(amount); return false; }
+      if (r.level >= HERO_LEVEL_CAP) { r.level = HERO_LEVEL_CAP; r.xp = 0; this.gainParagonXp(amount); return false; }
       r.xp += amount; let up = false;
-      while (r.level < cap && r.xp >= heroXpNext(r.level)) { r.xp -= heroXpNext(r.level); r.level++; up = true; }
+      while (r.level < HERO_LEVEL_CAP && r.xp >= heroXpNext(r.level)) { r.xp -= heroXpNext(r.level); r.level++; up = true; }
+      if (r.level >= HERO_LEVEL_CAP && r.xp > 0) { this.gainParagonXp(r.xp); r.xp = 0; }
       return up;
     }
-    // Paragão: EXP de heróis já no nível máximo alimenta um nível de conta que fortalece toda a equipe.
+    gainClassXp(r, amount) {
+      r.classLevel = U.clamp(r.classLevel || 1, 1, PR.CLASS_LEVEL_CAP); if (r.classLevel >= PR.CLASS_LEVEL_CAP) { r.classXp = 0; return false; }
+      r.classXp = (r.classXp || 0) + amount; let up = false;
+      while (r.classLevel < PR.CLASS_LEVEL_CAP && r.classXp >= classXpNext(r.classLevel)) { r.classXp -= classXpNext(r.classLevel); r.classLevel++; up = true; }
+      if (r.classLevel >= PR.CLASS_LEVEL_CAP) r.classXp = 0;
+      return up;
+    }
+    // Paragão: a EXP recebida no nível 100 alimenta uma progressão longa da conta.
     gainParagonXp(amount) {
       const p = this.state.paragon || (this.state.paragon = { lv:0, xp:0 }); if (p.lv >= D.PARAGON.cap) return;
       p.xp += amount; let up = 0;
@@ -1485,7 +1502,7 @@
       const c = awakenCost(r.stars, this.state.buildings.shrine), have = this.state.shards[r.id] || 0;
       if (have < c.shards || this.state.player.gold < c.gold) return false;
       this.state.shards[r.id] = have - c.shards; this.state.player.gold -= c.gold; r.stars++;
-      this.emit('onToast', `${this.template(r.id).name} despertou para ${r.stars}★! Nível máximo agora é ${heroMaxLevel(r.stars)}.`);
+      this.emit('onToast', `${this.template(r.id).name} elevou a qualidade para ${r.stars}★! +12% em HP, ATK e DEF.`);
       this.rebuildIfVillage(); this.emit('onState'); return true;
     }
     canEditParty() { return !this.active || this.zone.kind === 'village'; }
@@ -1510,7 +1527,7 @@
     freeAttr(r) { return (r.level - 1) * PR.ATTR_PER_LEVEL + 5 - Object.values(r.attr || {}).reduce((a, b) => a + b, 0); }
     attrResetCost(r) { return Math.round(200 * r.level * r.level); }
     resetAttr(uid) { const r = this.record(uid); if (!r) return false; const c = this.attrResetCost(r); if (this.state.player.gold < c) return false; this.state.player.gold -= c; Object.keys(r.attr).forEach(k => r.attr[k] = 0); this.emit('onState'); return true; }
-    useScroll(uid) { const r = this.record(uid); if (!r || this.state.consumables.scroll < 1) return false; this.state.consumables.scroll--; const amt = Math.round(heroXpNext(r.level) * .6); if (this.gainHeroXp(r, amt)) this.emit('onToast', `${this.template(r.id).name} alcançou o nível ${r.level}!`); this.emit('onState'); return true; }
+    useScroll(uid) { const r = this.record(uid); if (!r || r.level >= HERO_LEVEL_CAP || this.state.consumables.scroll < 1 || this.shopBoughtToday('scroll_use') >= 3) return false; this.state.consumables.scroll--; this.state.shopDaily.bought.scroll_use = this.shopBoughtToday('scroll_use') + 1; const amt = Math.max(10, Math.round(heroXpNext(r.level) * .08)); if (this.gainHeroXp(r, amt)) this.emit('onToast', `${this.template(r.id).name} alcançou o nível ${r.level}!`); this.emit('onState'); return true; }
 
     // ---------- talentos por herói e classe avançada ----------
     heroTalentPoints(r) { const spent = Object.values(r.talents || {}).reduce((a, b) => a + b, 0); return (r.level - 1) + (r.job ? 5 : 0) - spent; }
@@ -1533,7 +1550,7 @@
       if (this.state.freeRespec > 0) this.state.freeRespec--; else { const c = this.talentResetCost(r); if (this.state.player.gold < c) return false; this.state.player.gold -= c; }
       r.talents = {}; this.refreshPartyUnits(); this.emit('onState'); return true;
     }
-    canJobChange(r) { return !r.job && r.level >= PR.JOB_LEVEL && this.state.player.gold >= PR.jobCost.gold && this.state.player.crystal >= PR.jobCost.crystal; }
+    canJobChange(r) { return !r.job && r.level >= PR.JOB_LEVEL && (r.classLevel || 1) >= PR.JOB_CLASS_LEVEL && this.state.player.gold >= PR.jobCost.gold && this.state.player.crystal >= PR.jobCost.crystal; }
     jobChange(uid) {
       const r = this.record(uid); if (!r || !this.canJobChange(r)) return false;
       this.state.player.gold -= PR.jobCost.gold; this.state.player.crystal -= PR.jobCost.crystal; r.job = 1;
@@ -1970,7 +1987,7 @@
         if (tp > 0) add(9, `<b>${name}</b> tem ${tp} ponto(s) de talento livres.`, 'autoTalents', { uid:r.uid, label:'Aprender (build recomendada)' });
         if (this.canJobChange(r)) add(8, `<b>${name}</b> pode mudar de classe (+10% atributos e Círculo III).`, 'open', { go:'hero', uid:r.uid, label:'Ver ficha' });
         const aw = awakenCost(r.stars, s.buildings.shrine);
-        if (r.stars < HERO_MAX_STARS && (s.shards[r.id] || 0) >= aw.shards && s.player.gold >= aw.gold) add(8, `<b>${name}</b> pode Despertar para ${r.stars + 1}★.`, 'awaken', { uid:r.uid, label:'Despertar' });
+        if (r.stars < HERO_MAX_STARS && (s.shards[r.id] || 0) >= aw.shards && s.player.gold >= aw.gold) add(8, `<b>${name}</b> pode elevar a qualidade para ${r.stars + 1}★.`, 'awaken', { uid:r.uid, label:'Elevar qualidade' });
       });
       if (!ctx.clsCount.Suporte) add(7, 'A equipe não tem <b>Suporte</b>: sem cura, lutas longas e chefes ficam muito difíceis.', 'open', { go:'party', label:'Mudar formação' });
       if (!ctx.clsCount.Vanguarda) add(7, 'A equipe não tem <b>Vanguarda</b>: o dano cai direto nos heróis frágeis.', 'open', { go:'party', label:'Mudar formação' });
@@ -2038,6 +2055,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, classXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

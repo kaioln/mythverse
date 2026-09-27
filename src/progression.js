@@ -58,13 +58,15 @@
   // CLASSES AVANÇADAS (Mudança de Classe no nível 30)
   // ---------------------------------------------------------------------------
   const jobs = {
-    Vanguarda:{ name:'Paladino', text:'Guardião sagrado: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Executor:{ name:'Mestre das Lâminas', text:'Assassino supremo: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Arcanista:{ name:'Sábio Arcano', text:'Senhor da magia: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Atirador:{ name:'Franco-Atirador', text:'Olho infalível: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Suporte:{ name:'Sumo Sacerdote', text:'Voz dos deuses: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' }
+    Vanguarda:{ name:'Bastião Celeste', text:'Guardião inabalável: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
+    Executor:{ name:'Lâmina do Eclipse', text:'Duelista implacável: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
+    Arcanista:{ name:'Oráculo Astral', text:'Condutor dos astros: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
+    Atirador:{ name:'Olho do Vendaval', text:'Caçador de precisão absoluta: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
+    Suporte:{ name:'Tecelão de Almas', text:'Protetor dos laços: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' }
   };
   const JOB_LEVEL = 30;
+  const JOB_CLASS_LEVEL = 10;
+  const CLASS_LEVEL_CAP = 50;
   const jobCost = { gold:60000, crystal:150 };
   const TIER_REQ = [0, 8, 20];   // pontos gastos na árvore para liberar cada círculo
 
@@ -92,7 +94,7 @@
       T('vN', 1, 470, 'Bastião', 'crown', 1, { def:.10, hp:.10 }, 'NOTÁVEL: fortaleza viva.', { req:['v6|v7'], notable:true, y:1.5 }),
       T('v9', 2, 110, 'Escudo Sagrado', 'cross', 5, { healPow:.06 }, 'Escudos e curas mais fortes.', { req:['v5'] }),
       T('v10', 2, 290, 'Fortaleza', 'wall', 5, { dr:.02 }, 'Reduz ainda mais o dano.', { req:['vN'] }),
-      T('v11', 2, 650, 'Juízo', 'sword', 5, { atk:.04 }, 'O paladino também pune.', { req:['v8'] }),
+      T('v11', 2, 650, 'Juízo', 'sword', 5, { atk:.04 }, 'O Bastião Celeste também pune.', { req:['v8'] }),
       T('vK', 2, 470, 'Égide Imortal', 'wings', 1, { dr:.10, atk:-.15 }, 'PEDRA-CHAVE: renasce uma vez por batalha com 30% do HP. −15% ATK.', { req:['vN'], keystone:true, hook:() => ({ phoenix:.30 }) })
     ],
     Executor: [
@@ -187,11 +189,11 @@
   const buffs = {
     onigiri:{ name:'Onigiri do Viajante', text:'+10% HP por 30 min.', stats:{ hp:.10 }, dur:1800, icon:'magic_dust_01', hue:130 },
     ramen:{ name:'Ramen Picante', text:'+10% ATK por 30 min.', stats:{ atk:.10 }, dur:1800, icon:'potion_red_01', hue:20 },
-    tea:{ name:'Chá de Jasmim', text:'+15% EXP por 30 min.', mods:{ xp:.15 }, dur:1800, icon:'potion_blue_01', hue:130 },
+    tea:{ name:'Chá de Jasmim', text:'+10% EXP por 30 min.', mods:{ xp:.10 }, dur:1800, icon:'potion_blue_01', hue:130 },
     luck:{ name:'Pergaminho da Sorte', text:'+20% chance de itens por 30 min.', mods:{ drop:.20 }, dur:1800, icon:'tome_01', hue:45 },
     flask_fury:{ name:'Frasco de Fúria', text:'+12% ATK e +6% crítico por 30 min.', stats:{ atk:.12, crit:.06 }, dur:1800, icon:'potion_red_01', hue:330 },
     flask_stone:{ name:'Frasco de Pedra', text:'+12% HP e +12% DEF por 30 min.', stats:{ hp:.12, def:.12 }, dur:1800, icon:'potion_blue_01', hue:45 },
-    flask_sage:{ name:'Frasco do Sábio', text:'+25% EXP por 30 min.', mods:{ xp:.25 }, dur:1800, icon:'potion_blue_01', hue:250 },
+    flask_sage:{ name:'Frasco do Sábio', text:'+15% EXP por 30 min.', mods:{ xp:.15 }, dur:1800, icon:'potion_blue_01', hue:250 },
     flask_fortune:{ name:'Frasco da Fortuna', text:'+30% chance de itens e +10% de ouro por 30 min.', mods:{ drop:.30, gold:.10 }, dur:1800, icon:'potion_red_01', hue:45 }
   };
   const shop = {
@@ -199,10 +201,10 @@
       { id:'potion', name:'Poção de Cura', icon:'potion_red_01', hue:0, give:{ potion:1 }, price:{ gold:250 }, scale:true, text:'Cura 35% do HP de toda a equipe durante o combate (recarga 20s).' },
       { id:'potion5', name:'Poções de Cura ×5', icon:'potion_red_01', hue:0, give:{ potion:5 }, price:{ gold:1100 }, scale:true, text:'Pacote econômico de 5 poções.' },
       { id:'elixir', name:'Elixir de Energia', icon:'potion_blue_01', hue:0, give:{ elixir:1 }, price:{ gold:400 }, scale:true, text:'+50 de energia para toda a equipe (recarga 30s). Ultimates na hora certa!' },
-      { id:'scroll', name:'Pergaminho de EXP', icon:'tome_01', hue:45, give:{ scroll:1 }, price:{ gold:600 }, scale:true, text:'Concede EXP a um herói (equivalente a vários minutos de caça).' },
+      { id:'scroll', name:'Pergaminho de Estudo', icon:'tome_01', hue:45, give:{ scroll:1 }, price:{ gold:2400 }, scale:true, limit:3, text:'Concede 8% da EXP do próximo nível. Compra e uso limitados a 3 por dia.' },
       { id:'onigiri', name:'Onigiri do Viajante', icon:'magic_dust_01', hue:130, give:{ onigiri:1 }, price:{ gold:900 }, scale:true, text:'Comida: +10% HP para a equipe por 30 minutos.' },
       { id:'ramen', name:'Ramen Picante', icon:'potion_red_01', hue:20, give:{ ramen:1 }, price:{ gold:1100 }, scale:true, text:'Comida: +10% ATK para a equipe por 30 minutos.' },
-      { id:'tea', name:'Chá de Jasmim', icon:'potion_blue_01', hue:130, give:{ tea:1 }, price:{ gold:1400 }, scale:true, text:'Bebida: +15% de EXP por 30 minutos.' },
+      { id:'tea', name:'Chá de Jasmim', icon:'potion_blue_01', hue:130, give:{ tea:1 }, price:{ gold:1400 }, scale:true, text:'Bebida: +10% de EXP por 30 minutos.' },
       { id:'ore10', name:'Tamahagane ×10', icon:'crystal_01', hue:290, give:{ ore:10 }, price:{ gold:1500 }, scale:true, text:'Material comum de refino (até +10).' },
       { id:'dust10', name:'Pó de Éter ×15', icon:'magic_dust_01', hue:220, give:{ dust:15 }, price:{ gold:1200 }, scale:true, text:'Usado para encantar (re-sortear afixos) na Oficina.' }
     ],
@@ -211,7 +213,7 @@
       { id:'key10', name:'10 Chaves de Convocação', icon:'lantern_seal', hue:290, give:{ keys:10 }, price:{ crystal:1350 }, text:'10 convocações com 10% de desconto.' },
       { id:'bag', name:'Expansão da Bolsa (+25)', icon:'backpack_LVL_01', hue:0, give:{ invCap:25 }, price:{ crystal:100 }, text:'Mais espaço para itens. O preço sobe a cada expansão. Máximo de 400 espaços.' },
       { id:'luck', name:'Pergaminho da Sorte', icon:'tome_01', hue:45, give:{ luck:1 }, price:{ crystal:40 }, text:'+20% chance de itens por 30 minutos.' },
-      { id:'boost', name:'Incenso do Viajante (1h)', icon:'magic_dust_01', hue:45, give:{ boost:3600 }, price:{ crystal:80 }, text:'+50% de EXP e ouro por 1 hora de jogo.' },
+      { id:'boost', name:'Incenso do Viajante (1h)', icon:'magic_dust_01', hue:45, give:{ boost:3600 }, price:{ crystal:80 }, limit:1, text:'+20% de EXP e ouro por 1 hora. Limite de 1 por dia.' },
       { id:'respec', name:'Pergaminho do Esquecimento', icon:'tome_01', hue:290, give:{ respec:1 }, price:{ crystal:50 }, text:'Redefine gratuitamente os talentos de um herói.' },
       { id:'ore50', name:'Tamahagane ×50', icon:'crystal_01', hue:290, give:{ ore:50 }, price:{ crystal:160 }, text:'Estoque de material comum de refino.' },
       { id:'star1', name:'Aço Estelar', icon:'crystal_01', hue:190, give:{ star:1 }, price:{ crystal:180 }, limit:2, text:'Material raro de refino: até +8 sem perder nível. Limite de 2 por dia.' },
@@ -219,5 +221,5 @@
     ]
   };
 
-  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, jobCost, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
+  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
 })();

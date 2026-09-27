@@ -558,7 +558,7 @@
     { id:'g_s5', title:'Vença o Estágio 1-5', desc:'O Guardião do 5º estágio é forte. Confira as sinergias da equipe!', go:'journey', cond:{ stage:['hunt', 5] }, reward:{ key:1, gold:1000 } },
     { id:'g_swamp', title:'Explore o Pântano, 3º estágio', desc:'Uma rota secundária ao sul do Bosque. Monstros novos, itens novos.', go:'journey', cond:{ stage:['hunt_swamp', 3] }, reward:{ gold:1200, ore:10 } },
     { id:'g_dungeon', title:'Conquiste o Templo: Andar I', desc:'Entre no Templo do Véu e derrote o Guardião Ígneo.', go:'journey', cond:{ floor:['dungeon', 1] }, reward:{ crystal:30, item:'epic' } },
-    { id:'g_s8', title:'Vença o Estágio 1-8', desc:'Aprimore itens, desperte heróis e treine no Dojo.', go:'journey', cond:{ stage:['hunt', 8] }, reward:{ ore:20, gold:2000 } },
+    { id:'g_s8', title:'Vença o Estágio 1-8', desc:'Aprimore itens, eleve a qualidade dos heróis e treine no Dojo.', go:'journey', cond:{ stage:['hunt', 8] }, reward:{ ore:20, gold:2000 } },
     { id:'g_crypt', title:'Profane a Cripta de Jade: Andar I', desc:'Foque os Sacerdotes de Jade antes que ressuscitem os mortos.', go:'journey', cond:{ floor:['dungeon_crypt', 1] }, reward:{ crystal:25, item:'epic' } },
     { id:'g_s12', title:'Vença o Estágio 1-12', desc:'O último estágio do Bosque abre caminho ao Altar do Eclipse.', go:'journey', cond:{ stage:['hunt', 12] }, reward:{ key:1, gold:4000 } },
     { id:'g_d3', title:'Conquiste o Templo: Andar III', desc:'O andar mais profundo do Templo.', go:'journey', cond:{ floor:['dungeon', 3] }, reward:{ crystal:60, item:'legendary' } },
@@ -630,7 +630,7 @@
     ...[10, 40, 120].map((n, i) => ({ id:`a_res_${n}`, title:`Pesquisador ${['I','II','III'][i]}`, text:`Alcance ${n} níveis de pesquisa no Bestiário.`, stat:'research', n, reward:{ dust:40 * (i + 1) } })),
     ...[1, 10, 30].map((n, i) => ({ id:`a_card_${n}`, title:`Colecionador de Cartas ${['I','II','III'][i]}`, text:`Obtenha ${n} carta(s) de monstros.`, stat:'cards', n, reward:{ crystal:15 * (i + 1) } })),
     ...[1, 10, 50].map((n, i) => ({ id:`a_alpha_${n}`, title:`Caçador de Alfas ${['I','II','III'][i]}`, text:`Derrote ${n} monstro(s) Alfa.`, stat:'alphas', n, reward:{ ore:25 * (i + 1) } })),
-    { id:'a_star5', title:'Despertar Máximo', text:'Desperte um herói até 6★.', stat:'maxStars', n:6, reward:{ key:3 } },
+    { id:'a_star5', title:'Qualidade Máxima', text:'Eleve um herói até 6★.', stat:'maxStars', n:6, reward:{ key:3 } },
     { id:'a_bonds', title:'Laços Verdadeiros', text:'Ative 2 laços na mesma equipe.', stat:'bondsActive', n:2, reward:{ key:1 } }
   ];
 
@@ -640,7 +640,7 @@
   const buildings = {
     forge:    { id:'forge', name:'Forja de Ren', icon:'⚒', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.8 },
     dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.8 },
-    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e Despertar de heróis. Cada nível reduz em 5% o custo de Despertar.', baseCost:1200, growth:1.9 },
+    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e qualidade dos heróis. Cada nível reduz em 5% o custo da evolução.', baseCost:1200, growth:1.9 },
     workshop: { id:'workshop', name:'Oficina de Aoi', icon:'⚗', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.75 },
     guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'🏯', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.8 },
     market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.9 },
@@ -712,7 +712,7 @@
   ];
   // Economia: fator base de todas as fontes de ouro e limites do ajuste dinâmico (Tesouro Imperial).
   const ECON = { faucet:.5, faucetMin:.6, faucetMax:1.15, priceMin:1, priceMax:1.6 };
-  // Paragão (estilo Diablo): EXP de heróis no nível máximo vira nível de conta sem limite prático.
+  // Paragão: níveis veteranos alimentam uma progressão longa da conta.
   const PARAGON = { cap:300, per:.004, next:lv => Math.round(180000 * Math.pow(1.11, lv)) };
 
   const rarities = [

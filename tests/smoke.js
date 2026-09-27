@@ -19,11 +19,14 @@ const zonePools = Object.values(D.zones).filter(z => z.pool).map(z => new Set([.
 ok(zonePools.length >= 11, 'regiões com monstros próprios');
 ok(zonePools.every((a, i) => zonePools.every((b, j) => i === j || [...a].every(x => !b.has(x)))), 'monstros não se repetem entre regiões');
 [...I.bases.map(b => [b.icon, b.hue]), ...I.uniques.map(q => [q.icon, q.hue]), ...I.sets.flatMap(s => Object.values(s.pieces).map(p => [p[1], p[2]]))].forEach(([icon, hue]) => ok(fs.existsSync(path.join(root, 'assets/icons', `${icon}${hue ? `_h${hue}` : ''}.png`)), `ícone ${icon} ${hue}`));
+[...PR.shop.gold, ...PR.shop.crystal].forEach(o => ok(fs.existsSync(path.join(root, 'assets/icons', `${o.icon}${o.hue ? `_h${o.hue}` : ''}.png`)), `ícone da loja ${o.id}`));
+JSON.parse(fs.readFileSync(path.join(root, 'assets/anim/index.json'), 'utf8')).forEach(id => { ok(fs.existsSync(path.join(root, 'assets/anim', `${id}.json`)), `metadados de animação ${id}`); ok(fs.existsSync(path.join(root, 'assets/anim', `${id}.webp`)), `folha de animação ${id}`); });
 ok(I.bases.length >= 30 && I.uniques.length >= 15 && I.sets.length >= 7 && I.affixes.length >= 18, 'variedade de itens');
 for (const z of Object.values(D.zones)) ok(fs.existsSync(path.join(root, 'assets/scenes', `${z.scene || z.id}.png`)), `cenário ${z.id}`);
 Object.values(D.zones).filter(z => z.pool).forEach(z => [...z.pool, ...z.elites, ...(z.floorBoss ? [z.floorBoss] : [])].forEach(id => ok(D.enemies[id], `monstro ${id} de ${z.id}`)));
 Object.values(D.enemies).forEach(e => ok(!e.skill || new Set(Object.values(D.enemies).filter(o => o.skill).map(o => o.skill.name)).size > 70, 'habilidades de monstros variadas'));
 ok(I.cards.length === Object.keys(D.enemies).length, 'toda criatura tem carta');
+{ const renderer = fs.readFileSync(path.join(root, 'src/renderer.js'), 'utf8'); ok(renderer.includes('U.clamp(1 - e.windup') && renderer.includes('Math.max(0, zn.rx * p)'), 'área de perigo nunca envia raio negativo ao Canvas'); }
 // Armas por classe
 ok(Object.keys(I.itemTypes).length >= 12 && Object.keys(I.itemTypes).filter(k => k !== 'relic').every(w => [1, 12, 24, 36, 46].every(l => I.bases.some(b => b.wt === w && b.minIlvl <= l))), 'todo tipo de item tem bases em todos os níveis');
 D.roster.forEach(h => ['weapon','focus','seal'].forEach(sl => ok(I.allowedTypes(h.id).some(t => I.itemTypes[t].slot === sl), `${h.id} tem ${sl} próprio`)));
@@ -56,7 +59,8 @@ const byCls = cls => D.roster.find(h => h.cls === cls);
 ['Vanguarda','Executor','Suporte','Arcanista'].forEach((cls, i) => { let r = state.collection.find(x => engine.template(x.id).cls === cls && !state.formation.includes(x.uid)); if (!r) { r = State.newHeroRecord(byCls(cls), 'epic'); state.collection.push(r); } ok(engine.setParty(i, r.uid), 'escalar herói'); });
 ok(engine.heroes.length === 4 && engine.getPower() > 0, 'equipe formada com poder');
 ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 4, 'herói não duplica na formação');
-{ const reserve = State.newHeroRecord(D.roster.find(h => !state.collection.some(r => r.id === h.id)), 'rare'); state.collection.push(reserve); const xp0 = reserve.xp, lv0 = reserve.level; engine.giveXp(5000); ok(reserve.xp === xp0 && reserve.level === lv0, 'herói do banco não ganha EXP de combate (só em expedições)'); }
+{ const reserve = State.newHeroRecord(D.roster.find(h => !state.collection.some(r => r.id === h.id)), 'rare'); state.collection.push(reserve); const xp0 = reserve.xp, lv0 = reserve.level, cl0 = reserve.classXp; engine.giveXp(5000); ok(reserve.xp === xp0 && reserve.level === lv0 && reserve.classXp === cl0, 'herói do banco não ganha EXP de nível nem de classe em combate'); }
+ok(engine.heroes.every(r => r.classLevel > 1 || r.classXp > 0), 'equipe ganha EXP de classe em combate');
 // Casa do Time: Galeria (25% dos atributos da carta para a equipe), Álbum e Paragão.
 { const p0 = engine.getPower(), cd = I.cards.find(c => c.stats.atk); state.cards[cd.id] = (state.cards[cd.id] || 0) + 1;
   ok(!engine.displayCard(cd.id, 5), 'espaço bloqueado da Galeria recusa carta');
@@ -65,8 +69,9 @@ ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 
   ok(!engine.displayCard(cd.id, 0), 'mesma carta não é exposta duas vezes');
   ok(engine.albumCount() >= 1 && State.albumIds(State.mergeState(JSON.parse(JSON.stringify(state)))).includes(cd.id), 'Álbum lembra a carta após salvar');
   ok(engine.removeDisplay(0) && state.cards[cd.id] >= 1 && !state.house.display[0], 'carta volta da Galeria para a coleção');
-  const r = engine.heroes[0], lvl = r.level, pl = state.paragon.lv; r.level = State.heroMaxLevel(r.stars); engine.gainHeroXp(r, D.PARAGON.next(pl) + 1);
-  ok(state.paragon.lv === pl + 1, 'EXP além do nível máximo vira Paragão'); state.paragon.lv = pl; state.paragon.xp = 0; r.level = lvl;
+  const r = engine.heroes[0], lvl = r.level, xp0 = r.xp, pl = state.paragon.lv, px = state.paragon.xp; r.level = 99; r.xp = 0; engine.gainHeroXp(r, State.heroXpNext(99) + D.PARAGON.next(pl) + 1);
+  ok(r.level === 100 && state.paragon.lv === pl + 1, 'nível trava em 100 e EXP excedente vira Paragão'); state.paragon.lv = pl; state.paragon.xp = px; r.level = lvl; r.xp = xp0;
+  const capped = State.newHeroRecord(D.roster[0], 'rare'); capped.level = 100; capped.xp = 0; const sv = State.createState(); sv.collection = [capped]; const validateSave = require('../server/game').validateSave; ok(validateSave(sv).ok, 'servidor aceita nível 100'); capped.level = 101; ok(!validateSave(sv).ok, 'servidor rejeita nível acima de 100');
   const old = State.mergeState({ version:3, player:{}, collection:[], formation:[null,null,null,null], inventory:[], cards:{ card_fox:1 } });
   ok(old.buildings.house === 1 && Array.isArray(old.house.display) && old.house.seen.card_fox, 'saves antigos ganham Casa do Time e Álbum');
   ok(I.cards.every(c => c.chance <= 1 / 1500), 'cartas continuam raríssimas'); }
@@ -219,8 +224,8 @@ for (let i = 0; i < t1.max; i++) ok(engine.addHeroTalent(r0.uid, t1.id), 'aprend
 ok(!engine.addHeroTalent(r0.uid, t1.id), 'rank máximo');
 ok(JSON.stringify(State.heroStats(state, r0)) !== JSON.stringify(hpBeforeT), 'talento altera atributos');
 ok(!engine.addHeroTalent(r0.uid, t3.id), 'círculo III exige classe avançada');
-ok(!engine.canJobChange(r0), 'mudança de classe exige nível 30');
-r0.level = 30; state.player.gold = 1e8; state.player.crystal = 1e4;
+ok(!engine.canJobChange(r0), 'mudança de classe exige nível e classe');
+r0.level = 30; r0.classLevel = PR.JOB_CLASS_LEVEL; state.player.gold = 1e8; state.player.crystal = 1e4;
 const atkJob = State.heroStats(state, r0).atk;
 ok(engine.jobChange(r0.uid) && r0.job === 1 && State.heroStats(state, r0).atk > atkJob, 'mudança de classe');
 ok(engine.heroTalentPoints(r0) === 29 + 5 - t1.max, 'classe avançada dá +5 pontos');
@@ -237,6 +242,10 @@ ok(engine.unsocketCard(sock.uid, 0) && state.cards.card_boss === 1, 'remover car
 ok(engine.train('atk') && state.training.atk === 1, 'treino da equipe');
 ok(engine.upgradeBuilding('forge'), 'construção');
 state.shards[r0.id] = 999; const st0 = r0.stars; ok(engine.awaken(r0.uid) && r0.stars === st0 + 1, 'despertar');
+{ const scroll = PR.shop.gold.find(o => o.id === 'scroll'); ok(scroll.limit === 3 && scroll.give.scroll === 1, 'Pergaminho de Estudo tem limite diário'); state.consumables.scroll = 5; state.shopDaily = { date:'', bought:{} }; const before = r0.xp, gain = Math.round(State.heroXpNext(r0.level) * .08); ok(engine.useScroll(r0.uid) && r0.xp === before + gain, 'pergaminho concede somente 8% do nível'); ok(engine.useScroll(r0.uid) && engine.useScroll(r0.uid) && !engine.useScroll(r0.uid), 'uso do pergaminho limitado a 3 por dia'); }
+ok(Object.values(PR.buffs).every(b => !b.mods?.xp || b.mods.xp <= .15), 'nenhum consumível dá bônus excessivo de EXP');
+{ state.boostUntil = engine.now() + 60000; Object.keys(PR.buffs).forEach(id => { if (PR.buffs[id].mods?.xp) state.buffs[id] = engine.now() + 60000; }); ok(engine.mod('xp') <= .50, 'bônus acumulado de EXP tem teto'); state.boostUntil = 0; state.buffs = {}; }
+{ const rr = State.newHeroRecord(D.roster[0], 'rare'); rr.level = 50; const p50 = State.statPower(State.heroStats(state, rr)); rr.level = 100; const p100 = State.statPower(State.heroStats(state, rr)); ok(p100 < p50 * 4, 'Poder desacelera em níveis altos'); }
 ok(engine.buy('potion') && state.consumables.potion === 1, 'loja em ouro');
 state.player.crystal = 200; ok(engine.buy('key1') && state.player.keys >= 1, 'loja em cristais');
 ok(engine.refreshMarket(true).length >= 3 && engine.buyMarket(0), 'mercado');
@@ -334,7 +343,8 @@ ok(ui.shopPanel(null, 'gems').includes('servidor oficial') && ui.shopPanel(null,
 ['builds','weapons','events','market'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
 ok(ui.heroPanel(r0.uid, 'build').includes('Aplicar build completa'), 'aba de build recomendada');
 ok(ui.destinationPanel('rift').includes('Recorde'), 'tela da Fenda');
-['refine','systems','security','cards','items','start','combat'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
+['refine','systems','cards','items','start','combat'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
+ok(!fs.readFileSync(path.join(root, 'src/panels.js'), 'utf8').includes("['security','Segurança']"), 'aba Segurança removida da wiki');
 ok(ui.wikiPanel(null, 'refine').includes('quebra') && ui.wikiPanel(null, 'refine').includes('−1 nível'), 'wiki de refino mostra regressão e quebra');
 ['today','expeditions','bounty'].forEach(t => ok(ui.adventurePanel(null, t).length > 150, `aventuras: ${t}`));
 ok(ui.inventoryPanel().length > 300, 'tela da bolsa');

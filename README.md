@@ -119,13 +119,13 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Árvore de talentos própria de cada herói**, baseada na classe: 3 círculos, nós com ícones e ranks, Notáveis, Pedras-chave e três nós exclusivos, a **Essência** (um traço único por herói, nenhum se repete) e os nós que fortalecem a habilidade e a ultimate daquele herói. Rende 1 ponto por nível.
 - **Build recomendada** para cada um dos 60 heróis: proporção de atributos, ordem de talentos, tipo de arma, conjuntos e afixos, com botão para aplicar.
 - **As 10 convocações iniciais** nunca repetem herói e garantem pelo menos 1 de cada classe.
-- **Mudança de Classe** no nível 30, como os jobs do Ragnarok: Paladino, Mestre das Lâminas, Sábio Arcano, Franco-Atirador e Sumo Sacerdote (+10% nos atributos, +5 pontos e acesso ao Círculo III).
-- **Raridade, estrelas e Despertar**: heróis repetidos viram fragmentos, e cada ★ dá +12% nos atributos e +8 níveis máximos.
+- **Experiência de Classe** separada do nível: no nível 30 e classe 10, evolua para Bastião Celeste, Lâmina do Eclipse, Oráculo Astral, Olho do Vendaval ou Tecelão de Almas (+10% nos atributos, +5 pontos e acesso ao Círculo III).
+- **Raridade e qualidade**: heróis repetidos viram fragmentos, e cada ★ dá +12% nos atributos sem alterar o limite de nível 100.
 
 ### Progressão da conta
 - **Treino da equipe** no Dojo: ATK, HP, DEF e Crítico para todos os heróis. Só os heróis da equipe ganham EXP em combate; os do banco evoluem em Expedições.
 - **Casa do Time**: Galeria com até 6 cartas expostas (25% dos atributos de cada carta para a equipe inteira) e **Álbum de cartas** com 7 marcos de bônus permanentes, no estilo do livro de cartas do Ragnarok.
-- **Paragão** (estilo Diablo): EXP de heróis no nível máximo vira níveis de conta, +0,4% de ATK/HP/DEF para a equipe por nível (até 300).
+- **Paragão**: no nível 100, a EXP excedente vira níveis de conta, +0,4% de ATK/HP/DEF para a equipe por nível (até 300).
 - **Construções**: Forja, Dojo, Santuário, Oficina, Guilda, Mercado e Casa do Time. O nível máximo acompanha o nível da conta.
 
 ### Itens e builds

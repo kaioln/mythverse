@@ -51,7 +51,7 @@ function scenario(zone, opts, segments, manual) {
   done.forEach(({ seg, fin }) => {
     const se = new server.CombatEngine(sState, {});
     const out = se.replaySegment(seg, JSON.parse(JSON.stringify(fin.inputs)), fin.endTick);
-    ok(out.ok && out.ended === (fin.outcome !== 'abort'), `${zone}: segmento ${seg.id} reproduzido (${fin.outcome})`);
+    ok(out.ok && out.ended === (fin.outcome !== 'abort'), `${zone}: segmento ${seg.id} reproduzido (${fin.outcome}); replay=${JSON.stringify(out)}, endTick=${fin.endTick}`);
   });
   // Compara estados só até o último segmento concluído: o navegador pode estar no meio do próximo.
   const cmp = client.State.mergeState(JSON.parse(base));

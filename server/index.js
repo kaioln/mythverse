@@ -263,6 +263,7 @@ async function createServer(options = {}) {
     let urlPath;
     try { urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (_) { return fail(res, 400, 'URL inválida.'); }
     if (urlPath === '/') urlPath = '/index.html';
+    if (urlPath === '/favicon.ico') urlPath = '/assets/brand/favicon-64.png';
     if (urlPath === '/admin' || urlPath === '/admin/') urlPath = '/admin/index.html';
     if (!PUBLIC.some(p => urlPath === p || (p.endsWith('/') && urlPath.startsWith(p)))) return fail(res, 404, 'Não encontrado.');
     const file = path.normalize(path.join(ROOT, urlPath));

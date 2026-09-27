@@ -49,6 +49,7 @@ async function suite(name, opts) {
 
   // Estáticos e cabeçalhos
   let r = await fetch(base + '/'); ok(r.status === 200 && r.headers.get('content-security-policy'), 'index com CSP');
+  r = await fetch(base + '/favicon.ico'); ok(r.status === 200 && r.headers.get('content-type') === 'image/png', 'favicon sem 404');
   r = await fetch(base + '/server/db.js'); ok(r.status === 404, 'código do servidor não é público');
   r = await fetch(base + '/../package.json'); ok(r.status === 404 || r.status === 400, 'path traversal bloqueado');
   r = await fetch(base + '/data/mythverse.db'); ok(r.status === 404, 'banco não é público');

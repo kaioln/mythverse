@@ -38,7 +38,7 @@
       <div class="panel arena-rules"><b>Como a economia se regula</b><ul>
         <li>A cada 20 minutos o Tesouro mede o ouro em circulação (bolsos, cofres de guilda, correio e ordens) por jogador ativo e compara com a meta para o nível médio da comunidade.</li>
         <li>Acima da meta (inflação): a torneira de ouro fecha aos poucos (até 60%), preços de NPC e obras sobem (até ×1,6) e o imposto do mercado sobe (até 12%). Abaixo: tudo afrouxa. O ajuste é gradual, no máximo 3% por medição.</li>
-        <li>Sumidouros permanentes: impostos e taxas de anúncio, refino (que pode quebrar itens), construções, treino, culinária e Despertar.</li>
+        <li>Sumidouros permanentes: impostos e taxas de anúncio, refino (que pode quebrar itens), construções, treino, culinária e evolução de qualidade.</li>
         <li>Mercado protegido: um anúncio só é vendido uma vez; preço acima de 15× a mediana é recusado; no máximo 5 compras por dia do mesmo vendedor; anúncios expiram em 7 dias.</li></ul></div>`;
   };
 

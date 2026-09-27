@@ -440,14 +440,14 @@
     }
     drawDanger() {
       const e = this.engine.enemies.find(x => x.alive && x.windup > 0); if (!e) return;
-      const sp = e.windupSpecial, c = this.ctx, p = 1 - e.windup / (e.windupMax || 1.5), pulse = .5 + .5 * Math.sin(this.worldTime * 18);
+      const sp = e.windupSpecial, c = this.ctx, p = U.clamp(1 - e.windup / Math.max(.001, e.windupMax || 1.5), 0, 1), pulse = .5 + .5 * Math.sin(this.worldTime * 18);
       const effs = sp?.eff || [];
       const zones = effs.some(x => x.to === 'all') ? [{ x:340, y:612, rx:310, ry:110 }] : effs.some(x => x.to === 'back') ? [{ x:265, y:628, rx:150, ry:70 }] : effs.some(x => x.to === 'front') ? [{ x:485, y:610, rx:120, ry:95 }] : [{ x:340, y:612, rx:310, ry:110 }];
       zones.forEach(zn => {
         c.save(); c.translate(zn.x, zn.y);
         c.fillStyle = `rgba(255,40,70,${.1 + .12 * p})`; c.strokeStyle = `rgba(255,90,110,${.55 + .4 * pulse})`; c.lineWidth = 4; c.setLineDash([16, 10]); c.lineDashOffset = -this.worldTime * 60;
         c.beginPath(); c.ellipse(0, 0, zn.rx, zn.ry, 0, 0, Math.PI * 2); c.fill(); c.stroke();
-        c.setLineDash([]); c.fillStyle = `rgba(255,60,80,${.25 + .2 * pulse})`; c.beginPath(); c.ellipse(0, 0, zn.rx * p, zn.ry * p, 0, 0, Math.PI * 2); c.fill();
+        c.setLineDash([]); c.fillStyle = `rgba(255,60,80,${.25 + .2 * pulse})`; c.beginPath(); c.ellipse(0, 0, Math.max(0, zn.rx * p), Math.max(0, zn.ry * p), 0, 0, Math.PI * 2); c.fill();
         c.restore();
       });
     }
