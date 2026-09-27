@@ -1,5 +1,5 @@
 -- ===========================================================================
--- Economia viva do modo Neon: Banco Central da Fenda, ordens de compra e histórico de preços.
+-- Economia viva do modo Neon: Tesouro Imperial, ordens de compra e histórico de preços.
 -- Roda depois de neon_setup.sql (usa mv_saves, mv_listings, mv_mail e mv_econ).
 -- ===========================================================================
 

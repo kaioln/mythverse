@@ -1,4 +1,4 @@
-// Economia viva: painel do Banco Central da Fenda e ordens de compra do Mercado de Jogadores.
+// Economia viva: painel do Tesouro Imperial e ordens de compra do Mercado de Jogadores.
 (() => {
   const KT = globalThis.KT;
   const U = KT.Utils, I = KT.Items, P = KT.UIController.prototype;
@@ -13,17 +13,17 @@
     const path = pts.map((p, i) => `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(Number(p[key])).toFixed(1)}`).join(' ');
     return `<path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>`;
   };
-  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Banco Central está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'Ajustes leves em andamento para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'Ouro em circulação perto da meta para o nível médio dos jogadores.'];
+  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Tesouro está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'Ajustes leves em andamento para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'Ouro em circulação perto da meta para o nível médio dos jogadores.'];
 
   P.econPanel = function() {
-    if (this.session?.mode !== 'neon') return this.cloudOnly('Economia da Fenda');
+    if (this.session?.mode !== 'neon') return this.cloudOnly('Economia');
     const eco = M().econ;
     if (!eco && !this.econLoading) { this.econLoading = true; M().economy(this.engine).then(() => { this.econLoading = false; if (this.view.tab === 'econ') this.refreshPanel(); }); }
-    if (!eco) return '<div class="empty-state"><p>Consultando o Banco Central da Fenda…</p></div>';
+    if (!eco) return '<div class="empty-state"><p>Consultando o Tesouro Imperial…</p></div>';
     const v = verdict(Number(eco.index)), hist = eco.history || [];
     const mats = Object.values(I.materials).filter(m => m.tradeable).map(m => { const p = eco.prices?.[`m:${m.id}`]; return `<div class="eco-price"><b>${esc(m.name)}</b><em>${p ? `${U.fmt(p.median)}` : '–'}</em><small>${p ? `${p.n} venda(s) na semana` : 'sem vendas recentes'}</small></div>`; }).join('');
     const rar = ['rare', 'epic', 'legendary', 'mythic', 'set'].map(r => `<div class="eco-price"><b class="rtext rarity-${r}">${esc(KT.Data.rarities.find(x => x.id === r)?.label || r)}</b><em>${eco.rarity?.[r] ? U.fmt(eco.rarity[r]) : '–'}</em><small>mediana de itens</small></div>`).join('');
-    return `<section class="eco-hero ${v[1]}"><div><span class="eyebrow">BANCO CENTRAL DA FENDA</span><h3>${v[0]}</h3><p>${v[2]}</p></div>
+    return `<section class="eco-hero ${v[1]}"><div><span class="eyebrow">TESOURO IMPERIAL</span><h3>${v[0]}</h3><p>${v[2]}</p></div>
         <div class="eco-gauge"><b>${Number(eco.index).toFixed(2)}</b><small>índice (1,00 = meta)</small></div></section>
       <div class="eco-kpis">
         <span><b>${pct(eco.faucet)}</b>Torneira de ouro<small>quanto as caçadas e recompensas pagam</small></span>
@@ -36,7 +36,7 @@
       <h4 class="sub-title">Histórico</h4><div class="eco-chart"><svg viewBox="0 0 560 120" preserveAspectRatio="none"><line x1="0" x2="560" y1="60" y2="60" class="eco-mid"/>${spark(hist, 'index', '#ff7eb6', 0, 2)}${spark(hist, 'faucet', '#6fd8b8', 0, 2)}</svg><div class="eco-legend"><span class="l-index">Índice de inflação</span><span class="l-faucet">Torneira de ouro</span><small>linha do meio = 1,00</small></div></div>
       <div class="guild-grid"><div><h4 class="sub-title">Preço de referência (unidade)</h4><div class="eco-prices">${mats}</div></div><div><h4 class="sub-title">Itens por raridade</h4><div class="eco-prices">${rar}</div></div></div>
       <div class="panel arena-rules"><b>Como a economia se regula</b><ul>
-        <li>A cada 20 minutos o Banco Central mede o ouro em circulação (bolsos, cofres de guilda, correio e ordens) por jogador ativo e compara com a meta para o nível médio da comunidade.</li>
+        <li>A cada 20 minutos o Tesouro mede o ouro em circulação (bolsos, cofres de guilda, correio e ordens) por jogador ativo e compara com a meta para o nível médio da comunidade.</li>
         <li>Acima da meta (inflação): a torneira de ouro fecha aos poucos (até 60%), preços de NPC e obras sobem (até ×1,6) e o imposto do mercado sobe (até 12%). Abaixo: tudo afrouxa. O ajuste é gradual, no máximo 3% por medição.</li>
         <li>Sumidouros permanentes: impostos e taxas de anúncio, refino (que pode quebrar itens), construções, treino, culinária e Despertar.</li>
         <li>Mercado protegido: um anúncio só é vendido uma vez; preço acima de 15× a mediana é recusado; no máximo 5 compras por dia do mesmo vendedor; anúncios expiram em 7 dias.</li></ul></div>`;

@@ -1,5 +1,5 @@
 'use strict';
-// Banco Central da Fenda, ordens de compra e travas contra manipulação do mercado (PGlite).
+// Tesouro Imperial, ordens de compra e travas contra manipulação do mercado (PGlite).
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');

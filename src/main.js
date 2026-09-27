@@ -137,7 +137,7 @@
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
         KT.Neon.onStatus = () => ui.renderCloud();
         KT.Social?.attach(engine, ui);
-        // Banco Central da Fenda: ajustes de ouro, preços e impostos (a cada 30 min).
+        // Tesouro Imperial: ajustes de ouro, preços e impostos (a cada 30 min).
         const econ = () => KT.NeonMarket?.economy(engine).catch(() => {}); econ(); setInterval(econ, 30 * 60_000);
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
@@ -147,7 +147,7 @@
       }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 
-      assets.onProgress = (done, total) => { fill.style.width = `${Math.round(done / total * 100)}%`; label.textContent = `Abrindo a Fenda… ${done}/${total}`; };
+      assets.onProgress = (done, total) => { fill.style.width = `${Math.round(done / total * 100)}%`; label.textContent = `Preparando a jornada… ${done}/${total}`; };
       let booted = false;
       const ready = () => {
         if (booted) return; booted = true;

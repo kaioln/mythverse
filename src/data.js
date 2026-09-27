@@ -396,7 +396,7 @@
       weakTo:['Terra'], lore:'No topo das nuvens, Raijin toca o tambor do trovão sem parar. Cada batida abre mais a Fenda.',
       unlock:{ stage:{ hunt_sky:12 }, floor:{ dungeon_sky:3 } } },
     // --- PvP: a equipe rival é a defesa salva de outro jogador ---
-    arena: { id:'arena', kind:'arena', chapter:9, title:'Arena da Fenda', subtitle:'Heróis contra heróis, sob o olhar da cidade.', kicker:'PvP · ARENA', difficulty:'PvP', theme:'boss', scene:'boss_event',
+    arena: { id:'arena', kind:'arena', chapter:9, title:'Coliseu Carmesim', subtitle:'Heróis contra heróis, sob o olhar da cidade.', kicker:'PvP · ARENA', difficulty:'PvP', theme:'boss', scene:'boss_event',
       weakTo:[], lore:'O antigo coliseu de Tsukimori reabriu. Equipes de outros viajantes defendem sua honra aqui, e cada vitória vale Honra e MMR.', unlock:{} },
     // --- Conteúdo infinito ---
     rift: { id:'rift', kind:'rift', chapter:8, title:'Fenda Abissal', subtitle:'Andares infinitos. Até onde sua equipe chega?', kicker:'SEM FIM · FENDA', difficulty:'Andar ∞', theme:'rift', scene:'summoning',
@@ -655,7 +655,7 @@
       { n:8, name:'Caderno de campo', stats:{ hp:.03 } },
       { n:15, name:'Estudioso de criaturas', stats:{ def:.04 } },
       { n:25, name:'Colecionador', stats:{ crit:.015, critDmg:.06 } },
-      { n:40, name:'Curador da Fenda', stats:{ atk:.04, hp:.04 } },
+      { n:40, name:'Curador de Relíquias', stats:{ atk:.04, hp:.04 } },
       { n:60, name:'Arquivista lendário', stats:{ skill:.08, dr:.03 } },
       { n:94, name:'Álbum completo', stats:{ atk:.08, hp:.08, def:.08 } }
     ]
@@ -669,10 +669,10 @@
     { id:'glad_box', name:'Baú do Gladiador', price:300, limit:2, text:'Um item épico do nível da sua melhor caçada. Negociável.' },
     { id:'elixir', name:'Elixires de Batalha ×3', price:40, limit:5, text:'Três Elixires de Energia.' },
     { id:'key', name:'Chave de Convocação', price:180, limit:2, text:'Uma convocação.' },
-    { id:'glad_weapon', name:'Arma do Gladiador', price:700, limit:1, text:'Peça do conjunto Gladiador da Fenda (arma). Negociável.' },
-    { id:'glad_focus', name:'Foco do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (foco). Negociável.' },
-    { id:'glad_seal', name:'Selo do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (selo). Negociável.' },
-    { id:'glad_charm', name:'Omamori do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (omamori). Negociável.' }
+    { id:'glad_weapon', name:'Arma do Gladiador', price:700, limit:1, text:'Peça do conjunto Gladiador Carmesim (arma). Negociável.' },
+    { id:'glad_focus', name:'Foco do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador Carmesim (foco). Negociável.' },
+    { id:'glad_seal', name:'Selo do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador Carmesim (selo). Negociável.' },
+    { id:'glad_charm', name:'Omamori do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador Carmesim (omamori). Negociável.' }
   ];
   // Guildas: bônus por nível (valem para quem está na guilda) e janelas da guerra.
   const GUILD = { createCost:1500000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
@@ -710,7 +710,7 @@
     ...[1, 2, 3, 4].map(t => ({ id:'forge_t' + t, prof:'smithing', lv:[1, 10, 20, 32][t - 1], name:'Equipamento de ' + ['Ferro', 'Prata', 'Âmbar', 'Mithril'][t - 1], cost:{ ['ore' + t]:4, ['ess' + t]:2, gold:[800, 6000, 30000, 120000][t - 1] }, gear:t, xp:[40, 90, 160, 260][t - 1] })),
     { id:'forge_lunar', prof:'smithing', lv:40, name:'Obra-prima Lunar', cost:{ ore4:6, ess4:3, ore_rare:2, ess_rare:1, gold:400000 }, gear:4, masterwork:true, xp:600 }
   ];
-  // Economia: fator base de todas as fontes de ouro e limites do ajuste dinâmico (Banco Central da Fenda).
+  // Economia: fator base de todas as fontes de ouro e limites do ajuste dinâmico (Tesouro Imperial).
   const ECON = { faucet:.5, faucetMin:.6, faucetMax:1.15, priceMin:1, priceMax:1.6 };
   // Paragão (estilo Diablo): EXP de heróis no nível máximo vira nível de conta sem limite prático.
   const PARAGON = { cap:300, per:.004, next:lv => Math.round(180000 * Math.pow(1.11, lv)) };

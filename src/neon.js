@@ -232,7 +232,7 @@
       if (op === 'marketClaim') return this.claim(engine, Number(args[0]));
       return { ok:false, error:'Ação indisponível no modo Neon.' };
     },
-    // ---------- Banco Central da Fenda ----------
+    // ---------- Tesouro Imperial ----------
     async economy(engine) {
       const r = await rpc('mv_economy', {}); if (!r.ok) return r;
       this.econ = r.data; CFG.goldTaxBps = r.data.taxBps || 500;

@@ -20,7 +20,7 @@
     if (!so.status && !so.loadingArena) { so.loadingArena = true; so.refreshArena().finally(() => { so.loadingArena = false; }); return '<div class="empty-state"><p>Abrindo os portões da Arena…</p></div>'; }
     const st = so.status || {}, t = tierOf(st.tier);
     const head = `<section class="arena-hero" style="--tc:${t[2]}"><div class="arena-crest"><b>${t[1]}</b><small>${U.fmt(st.mmr || 1000)} MMR</small></div>
-      <div class="arena-copy"><span class="eyebrow">ARENA DA FENDA · #${st.rank || '–'}</span><h3>${U.fmt(st.honor || 0)} de Honra</h3>
+      <div class="arena-copy"><span class="eyebrow">COLISEU CARMESIM · #${st.rank || '–'}</span><h3>${U.fmt(st.honor || 0)} de Honra</h3>
       <p>${st.wins || 0} vitórias · ${st.losses || 0} derrotas${st.streak > 1 ? ` · <b>${st.streak} seguidas</b>` : ''}. Ingressos hoje: <b>${(st.attacksMax || 10) - (st.attacks || 0)}/${st.attacksMax || 10}</b>. Você luta no <b>manual</b> contra a defesa salva de outro jogador.</p></div>
       <div class="arena-cta"><button class="action primary" data-pvp-save-def type="button">🛡 Salvar minha defesa</button><button class="action small" data-pvp-refresh type="button">↻ Atualizar</button></div></section>`;
     if (tab === 'shop') return head + this.honorShopHtml(st);
@@ -97,7 +97,7 @@
   P.guildWarHtml = function() {
     const so = S(), b = so.board;
     if (!b) return '<p class="empty-note">Consultando o campo de batalha…</p>';
-    const rules = `<div class="panel arena-rules"><b>Como funciona</b><ul><li>Janela: <b>${warWindowText()}</b>. Inscreva a guilda e ela é pareada com a guilda inscrita de rating mais próximo; sem par, enfrenta a <b>Legião da Fenda</b> (meta: 12 pontos).</li><li>Cada membro tem <b>${D.GUILD.war.attacks} investidas</b> manuais contra as defesas da guilda inimiga. Primeira vitória sobre cada defensor: <b>3 pontos</b>; repetir: 1.</li><li>Depois da janela, quem lutou resgata Honra (vencedora 120 + 10 por investida; perdedora 40 + 10). A guilda ganha EXP e rating.</li></ul></div>`;
+    const rules = `<div class="panel arena-rules"><b>Como funciona</b><ul><li>Janela: <b>${warWindowText()}</b>. Inscreva a guilda e ela é pareada com a guilda inscrita de rating mais próximo; sem par, enfrenta a <b>Legião Sem Bandeira</b> (meta: 12 pontos).</li><li>Cada membro tem <b>${D.GUILD.war.attacks} investidas</b> manuais contra as defesas da guilda inimiga. Primeira vitória sobre cada defensor: <b>3 pontos</b>; repetir: 1.</li><li>Depois da janela, quem lutou resgata Honra (vencedora 120 + 10 por investida; perdedora 40 + 10). A guilda ganha EXP e rating.</li></ul></div>`;
     if (!b.active) {
       const done = b.us && !b.claimed ? `<div class="box-actions"><button class="action pink big" data-gvg-claim type="button">Resgatar recompensa da última guerra</button></div>` : '';
       return `<section class="war-hero"><span class="eyebrow">GUERRA DE GUILDAS</span><h3>Fora da janela</h3><p>Próximas batalhas: ${warWindowText()}.</p>${b.us ? `<p>Última guerra: <b>${esc(b.us.name)}</b> ${b.us.points} × ${b.them?.points ?? 0} <b>${esc(b.them?.name || '')}</b>.</p>` : ''}</section>${done}${rules}`;

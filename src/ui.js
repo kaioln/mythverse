@@ -417,7 +417,7 @@
         this.el.result.hidden = false; this.callbacks.victory?.(); return;
       }
       if (r.kind === 'arena') {
-        this.el.result.innerHTML = `<div class="result-card ${r.won ? 'win' : 'lose'}"><span class="eyebrow">ARENA DA FENDA · ${esc(r.foe || '')}</span><h2>${r.won ? 'VITÓRIA!' : 'DERROTA'}</h2><p>${esc(r.reason || (r.won ? 'A equipe rival caiu diante de você.' : 'Sua equipe foi derrotada.'))}</p><p class="arena-result-line">Registrando o resultado…</p><div class="result-actions"><button class="action primary" data-go="arena" type="button">Voltar à Arena</button></div></div>`;
+        this.el.result.innerHTML = `<div class="result-card ${r.won ? 'win' : 'lose'}"><span class="eyebrow">COLISEU CARMESIM · ${esc(r.foe || '')}</span><h2>${r.won ? 'VITÓRIA!' : 'DERROTA'}</h2><p>${esc(r.reason || (r.won ? 'A equipe rival caiu diante de você.' : 'Sua equipe foi derrotada.'))}</p><p class="arena-result-line">Registrando o resultado…</p><div class="result-actions"><button class="action primary" data-go="arena" type="button">Voltar à Arena</button></div></div>`;
         this.el.result.hidden = false; if (r.won) this.callbacks.victory?.(); return;
       }
       if (r.kind === 'defeat') {

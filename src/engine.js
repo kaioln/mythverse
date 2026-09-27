@@ -1369,7 +1369,7 @@
       const p = this.state.player; p.xp += xp;
       while (p.xp >= accountXpNext(p.level)) { p.xp -= accountXpNext(p.level); p.level++; p.crystal += 3; this.emit('onToast', `Conta nível ${p.level}! +3 cristais.`); this.emit('onAccountLevel', p.level); }
     }
-    // Torneira única de ouro: toda recompensa passa por aqui (base do jogo × ajuste do Banco Central da Fenda).
+    // Torneira única de ouro: toda recompensa passa por aqui (base do jogo × ajuste do Tesouro Imperial).
     goldIn(n) { return Math.max(0, Math.round(n * D.ECON.faucet * U.clamp(Number(this.state.econ?.faucet) || 1, D.ECON.faucetMin, D.ECON.faucetMax))); }
     grant(r) {
       const p = this.state.player, s = this.state;
@@ -1722,7 +1722,7 @@
     toggleLock(itemUid) { const it = this.state.inventory.find(x => x.uid === itemUid); if (it) { it.locked = !it.locked; this.emit('onState'); } }
 
     // ---------- cidade ----------
-    // Multiplicador de preços de NPC e obras definido pelo Banco Central da Fenda (inflação alta = mais caro).
+    // Multiplicador de preços de NPC e obras definido pelo Tesouro Imperial (inflação alta = mais caro).
     priceMult() { return U.clamp(Number(this.state.econ?.price) || 1, D.ECON.priceMin, D.ECON.priceMax); }
     buildingCost(id) { const b = D.buildings[id], lv = this.state.buildings[id] || 1; return Math.round(b.baseCost * Math.pow(b.growth, lv - 1) * this.priceMult()); }
     buildingCap() { return 2 + Math.floor(this.state.player.level / 3); }

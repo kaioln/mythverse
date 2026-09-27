@@ -103,7 +103,7 @@ CREATE OR REPLACE VIEW public.mv_sales AS
 REVOKE ALL ON public.mv_sales FROM anonymous, authenticated;
 GRANT SELECT ON public.mv_sales TO authenticated;
 
--- Banco Central da Fenda: cada fotografia da economia guarda os ajustes vigentes (ver tools/neon_economy.sql).
+-- Tesouro Imperial: cada fotografia da economia guarda os ajustes vigentes (ver tools/neon_economy.sql).
 CREATE TABLE IF NOT EXISTS public.mv_econ (
   id         bigserial PRIMARY KEY,
   taken_at   timestamptz NOT NULL DEFAULT now(),

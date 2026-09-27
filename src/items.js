@@ -98,7 +98,7 @@
     W('sword','eclipse_blade','Lâmina do Eclipse','tide_blade',45,28,'Corta a própria luz.'),
     W('sword','dune_scimitar','Cimitarra das Dunas','tide_blade',20,33,'A areia nunca gruda na lâmina.'),
     W('sword','ghost_katana','Katana Espectral','katana_01',190,40,'Atravessa armaduras como névoa.'),
-    W('sword','rift_edge','Gume da Fenda','tide_blade',330,46,'Forjada do outro lado do Véu.'),
+    W('sword','rift_edge','Gume Abissal','tide_blade',330,46,'Forjada do outro lado do Véu.'),
     // Armas pesadas e manoplas: Vanguardas (e lutadores de punho).
     W('heavy','oak_club','Clava de Carvalho','tide_blade',160,1,'Pesada, honesta e sem firula.'),
     W('heavy','bog_spear','Lança do Brejo','tide_blade',100,4,'Ainda pinga lodo.'),
@@ -128,7 +128,7 @@
     W('arcane','magma_orb','Orbe de Magma','sea_heart',20,23,'Quente demais para segurar sem luvas.'),
     W('arcane','sun_staff','Cajado Solar','crystal_01',45,32,'Guarda o calor de mil dias no deserto.'),
     W('arcane','specter_orb','Orbe Espectral','sea_heart',250,40,'Almas giram lá dentro.'),
-    W('arcane','rift_scepter','Cetro da Fenda','crystal_01',330,46,'A ponta encosta em outro mundo.'),
+    W('arcane','rift_scepter','Cetro do Vazio','crystal_01',330,46,'A ponta encosta em outro mundo.'),
     // Relíquias sagradas: Suportes.
     W('holy','prayer_bell','Sino de Oração','tome_01',20,1,'Cada badalada, uma bênção.'),
     W('holy','shrine_rosary','Rosário do Santuário','magic_dust_01',70,6,'Contas polidas por mãos devotas.'),
@@ -137,7 +137,7 @@
     W('holy','censer','Incensário da Forja','sea_heart',100,24,'A fumaça cura queimaduras.'),
     W('holy','golden_ankh','Ankh Dourado','lantern_seal',70,33,'Símbolo da vida eterna.'),
     W('holy','spectral_harp','Harpa Espectral','tome_01',250,40,'Toca a canção que liberta almas.'),
-    W('holy','rift_reliquary','Relicário da Fenda','sea_heart',330,47,'Guarda luz de um mundo que acabou.'),
+    W('holy','rift_reliquary','Relicário Entre-Mundos','sea_heart',330,47,'Guarda luz de um mundo que acabou.'),
 
     B('novice_tome','focus','Tomo do Aprendiz','tome_01',100,1,'Anotações de um estudante do Véu.','tome'),
     B('dull_crystal','focus','Cristal Opaco','crystal_01',45,1,'Ainda guarda um pouco de energia.','crystal'),
@@ -154,7 +154,7 @@
     B('star_prism','focus','Prisma Estelar','crystal_01',160,30,'Refrata a luz de estrelas mortas.','crystal'),
     B('sand_hourglass','focus','Ampulheta Rachada','sea_heart',20,33,'Cada grão é um segundo roubado.','crystal'),
     B('specter_lantern','focus','Lanterna Espectral','crystal_01',190,39,'Ilumina o que já morreu.','crystal'),
-    B('rift_codex','focus','Códice da Fenda','tome_01',330,45,'Escrito em línguas de mundos que não existem.','tome'),
+    B('rift_codex','focus','Códice Proibido','tome_01',330,45,'Escrito em línguas de mundos que não existem.','tome'),
 
     B('wood_seal','seal','Selo de Madeira','eclipse_seal',100,1,'Um amuleto simples de proteção.','ward'),
     B('fox_seal','seal','Selo da Raposa','lantern_seal',45,3,'Presente dos santuários de raposa.','ward'),
@@ -168,7 +168,7 @@
     B('star_seal','seal','Selo Estelar','eclipse_seal',160,29,'Gravado com constelações perdidas.','ward'),
     B('pharaoh_seal','seal','Selo do Faraó','lantern_seal',45,34,'Traz o nome de um rei esquecido.','plate'),
     B('gear_seal','seal','Selo de Engrenagem','eclipse_seal',250,40,'Gira sozinho quando o perigo se aproxima.','plate'),
-    B('rift_seal','seal','Selo da Fenda','lantern_seal',330,47,'Sela ferimentos entre mundos.','ward'),
+    B('rift_seal','seal','Selo do Abismo','lantern_seal',330,47,'Sela ferimentos entre mundos.','ward'),
 
     // Novos focos e selos por classe.
     B('tide_tome','focus','Tomo das Marés','tome_01',220,17,'As páginas cheiram a sal.','tome'),
@@ -180,7 +180,7 @@
     B('forge_emblem','focus','Insígnia da Forja','lantern_seal',20,24,'Martelada à mão por Ren.','emblem'),
     B('pharaoh_banner','focus','Estandarte do Faraó','lantern_seal',45,33,'Um exército inteiro já o seguiu.','emblem'),
     B('clock_crest','focus','Brasão do Relógio','lantern_seal',250,40,'O ponteiro aponta para a vitória.','emblem'),
-    B('rift_banner','focus','Estandarte da Fenda','lantern_seal',330,46,'Tecido com fios de outro mundo.','emblem'),
+    B('rift_banner','focus','Estandarte Rasgado','lantern_seal',330,46,'Tecido com fios de outro mundo.','emblem'),
     B('bamboo_quiver','focus','Aljava de Bambu','backpack_LVL_01',100,1,'Leve e resistente.','quiver'),
     B('hunter_quiver','focus','Aljava do Caçador','backpack_LVL_01',70,6,'Couro curtido no pântano.','quiver'),
     B('dusk_quiver','focus','Aljava do Crepúsculo','backpack_LVL_01',290,12,'As flechas saem em silêncio.','quiver'),
@@ -191,7 +191,7 @@
     B('rift_quiver','focus','Aljava da Fenda','backpack_LVL_01',330,46,'Busca flechas de outros mundos.','quiver'),
     B('iron_plate','seal','Placa de Ferro','eclipse_seal',190,1,'Pesada, mas confiável.','plate'),
     B('guard_plate','seal','Placa da Guarda','eclipse_seal',130,6,'Usada pela guarda de Tsukimori.','plate'),
-    B('rift_plate','seal','Placa da Fenda','eclipse_seal',330,46,'Não amassa. Nunca.','plate'),
+    B('rift_plate','seal','Placa Estilhaçada','eclipse_seal',330,46,'Não amassa. Nunca.','plate'),
     B('shrine_ward','seal','Selo do Santuário','lantern_seal',160,14,'Abençoado por Sayo.','ward'),
     B('cloth_omamori','charm','Omamori de Pano','magic_dust_01',45,1,'Costurado pela avó de alguém.'),
     B('pilgrim_bag','charm','Bolsa do Peregrino','backpack_LVL_01',0,2,'Tem tudo que um viajante precisa.'),
@@ -205,7 +205,7 @@
     B('celestial_omamori','charm','Omamori Celestial','magic_dust_01',160,29,'Tecido com fios de nuvem.'),
     B('scarab_charm','charm','Escaravelho de Âmbar','magic_dust_01',45,35,'Dizem que ainda está vivo.'),
     B('ghost_veil','charm','Véu da Noiva','backpack_LVL_01',190,41,'Leve como um suspiro.'),
-    B('rift_heart','charm','Coração da Fenda','magic_dust_01',330,48,'Pulsa no ritmo de dois mundos.'),
+    B('rift_heart','charm','Coração Pulsante','magic_dust_01',330,48,'Pulsa no ritmo de dois mundos.'),
     // Capítulo IV: O Céu Partido.
     W('sword','thunder_tachi','Tachi do Trovão','katana_01',190,50,'A lâmina zumbe antes de cada tempestade.'),
     W('heavy','bell_maul','Malho do Sino Colossal','tide_blade',20,52,'Cada golpe badala no peito do inimigo.'),
@@ -277,7 +277,7 @@
     { id:'sands', classes:['Vanguarda','Executor'], name:'Tesouro do Faraó', source:'Guardiões das Areias do Tempo e Apep', ilvl:31, color:'#ffcf6b',
       pieces:{ weapon:['Khopesh Dourado','tide_blade',45], focus:['Olho de Hórus','sea_heart',45], seal:['Selo Real','lantern_seal',45], charm:['Escaravelho Sagrado','magic_dust_01',45] },
       bonus2:{ text:'+12% HP e 0,4% HP/s', stats:{ hp:.12, regen:.004 } }, bonus4:{ text:'Abaixo de 35% de HP (1× por onda): escudo de 30% do HP e purifica efeitos negativos.', stats:{}, hook:{ low:{ th:.35, eff:[{ k:'shield', p:.30, to:'self', d:6 }, { k:'cleanse', to:'self' }] } } } },
-    { id:'gladiator', classes:null, name:'Gladiador da Fenda', source:'Loja de Honra (Arena PvP)', ilvl:30, color:'#ff9a6b',
+    { id:'gladiator', classes:null, name:'Gladiador Carmesim', source:'Loja de Honra (Arena PvP)', ilvl:30, color:'#ff9a6b',
       pieces:{ weapon:['Gládio da Honra','katana_01',20], focus:['Estandarte do Coliseu','tome_01',20], seal:['Escudo da Arena','eclipse_seal',20], charm:['Laurel do Campeão','magic_dust_01',20] },
       bonus2:{ text:'+8% ATK e +8% HP', stats:{ atk:.08, hp:.08 } }, bonus4:{ text:'Início de cada onda: +25 de energia e escudo de 10% do HP.', stats:{}, hook:{ start:{ eff:[{ k:'nrg', v:25, to:'self' }, { k:'shield', p:.10, to:'self', d:6 }] } } } },
     { id:'storm', classes:['Arcanista','Atirador'], name:'Tambores da Tempestade', source:'Guardiões das Ilhas Flutuantes, Santuário das Nuvens e Raijin', ilvl:48, color:'#8fd3ff',
@@ -338,7 +338,7 @@
     Q('apep_fang','weapon','Presa de Apep','tide_blade',45,43,'Apep',{ atk:.18 },'35% de chance de envenenar; +20% de dano contra envenenados.',{ onAtk:{ ch:.35, eff:[{ k:'st', s:'poison', d:5, v:.3, ch:1, to:'tgt' }] }, vs:{ s:'poison', v:.2 } }),
     Q('bride_ring','charm','Anel da Noiva Espectral','magic_dust_01',250,36,'Cidade Fantasma',{ dodge:.08, hp:.08 },'Ao esquivar: cura 5% do HP máximo.',{ onDodge:{ eff:[{ k:'heal', p:.05, to:'self' }] } }),
     Q('midnight_bell','seal','Sino da Meia-Noite','eclipse_seal',290,40,'Torre do Relógio',{ def:.12 },'No início de cada onda, atordoa todos os inimigos por 1s.',{ start:{ eff:[{ k:'st', s:'stun', d:1, ch:1, to:'all' }] } }),
-    Q('rift_shard','focus','Estilhaço da Fenda','crystal_01',330,25,'Fenda Abissal',{ ultDmg:.30, nrg:.10 },'Ultimates também causam 80% do ATK em todos os inimigos.',{ onUlt:{ eff:[{ k:'dmg', m:.8, to:'all' }] } }),
+    Q('rift_shard','focus','Estilhaço Primordial','crystal_01',330,25,'Fenda Abissal',{ ultDmg:.30, nrg:.10 },'Ultimates também causam 80% do ATK em todos os inimigos.',{ onUlt:{ eff:[{ k:'dmg', m:.8, to:'all' }] } }),
     Q('void_omamori','charm','Omamori do Vazio','magic_dust_01',330,30,'Fenda Abissal',{ hp:.12, dr:.06 },'Aura: toda a equipe recebe +5% ATK.',{ aura:{ atk:.05 } })
   ];
 

@@ -66,16 +66,16 @@
   // Abertura de painéis
   // ---------------------------------------------------------------------------
   const PANELS = {
-    journey:{ k:'JORNADA', t:'Mapa da Fenda' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
+    journey:{ k:'JORNADA', t:'Mapa do Mundo' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
     hero:{ k:'HERÓI', t:'Ficha do herói', tabs:[['stats','Atributos'], ['build','Build recomendada'], ['talents','Talentos'], ['kit','Habilidades'], ['gear','Equipamento']] },
     collection:{ k:'HERÓIS', t:'Convocação e Coleção', tabs:[['summon','Convocar'], ['owned','Meus heróis'], ['catalog','Catálogo']] },
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
-    ranking:{ k:'RANKING', t:'Ranking da Fenda', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
+    ranking:{ k:'RANKING', t:'Ranking', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
     city:{ k:'CIDADE', t:'Tsukimori', tabs:[['forge','Forja'], ['workshop','Oficina'], ['house','Casa do Time'], ['prof','Profissões'], ['dojo','Dojo'], ['shrine','Santuário'], ['guild','Guilda'], ['buildings','Construções']] },
-    shop:{ k:'LOJA', t:'Loja da Fenda', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['econ','Economia'], ['gems','Carteira 💠']] },
+    shop:{ k:'LOJA', t:'Empório Sakura', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['econ','Economia'], ['gems','Carteira 💠']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
-    wiki:{ k:'WIKI', t:'Enciclopédia da Fenda', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado'], ['security','Segurança']] },
-    arena:{ k:'PvP', t:'Arena da Fenda', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
+    wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado'], ['security','Segurança']] },
+    arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
     guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
     record:{ k:'PERFIL', t:'Conta e Configurações' }, profile:{ k:'JOGADOR', t:'Perfil do jogador' }, help:{ k:'AJUDA', t:'Como jogar' }
   };

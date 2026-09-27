@@ -443,13 +443,13 @@ BEGIN
   IF mine.guild_id IS NOT NULL AND mine.opponent IS NOT NULL THEN SELECT * INTO foe FROM public.mv_gvg WHERE war_id = mine.war_id AND guild_id = mine.opponent; END IF;
   RETURN jsonb_build_object('active', w IS NOT NULL, 'guild', true, 'war', mine.war_id, 'current', w, 'entered', mine.guild_id IS NOT NULL AND mine.war_id = w,
     'us', CASE WHEN mine.guild_id IS NULL THEN NULL ELSE jsonb_build_object('name', (SELECT name FROM public.mv_guilds WHERE id = mine.guild_id), 'points', mine.points, 'wins', mine.wins, 'attacks', mine.attacks) END,
-    'them', CASE WHEN mine.guild_id IS NULL THEN NULL WHEN foe.guild_id IS NULL THEN jsonb_build_object('name', 'Legião da Fenda', 'npc', true, 'points', 12) ELSE jsonb_build_object('name', (SELECT name FROM public.mv_guilds WHERE id = foe.guild_id), 'points', foe.points, 'wins', foe.wins, 'attacks', foe.attacks) END,
+    'them', CASE WHEN mine.guild_id IS NULL THEN NULL WHEN foe.guild_id IS NULL THEN jsonb_build_object('name', 'Legião Sem Bandeira', 'npc', true, 'points', 12) ELSE jsonb_build_object('name', (SELECT name FROM public.mv_guilds WHERE id = foe.guild_id), 'points', foe.points, 'wins', foe.wins, 'attacks', foe.attacks) END,
     'myAttacks', (SELECT count(*) FROM public.mv_pvp_matches WHERE kind = 'gvg' AND war_id = mine.war_id AND attacker = m.user_id),
     'claimed', EXISTS (SELECT 1 FROM public.mv_gvg_claims c WHERE c.war_id = mine.war_id AND c.user_id = m.user_id),
     'feed', (SELECT coalesce(jsonb_agg(jsonb_build_object('text', f.text, 'at', f.created_at) ORDER BY f.id DESC), '[]'::jsonb) FROM (SELECT * FROM public.mv_guild_feed WHERE guild_id = m.guild_id AND kind = 'event' AND text LIKE '⚔%' ORDER BY id DESC LIMIT 12) f));
 END $$;
 
--- Inscreve a guilda e pareia com a inscrita de rating mais próximo. Sem par: Legião da Fenda (meta de 12 pontos).
+-- Inscreve a guilda e pareia com a inscrita de rating mais próximo. Sem par: Legião Sem Bandeira (meta de 12 pontos).
 CREATE OR REPLACE FUNCTION public.mv_gvg_enter() RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE m public.mv_guild_members; w text := public.mv_gvg_current(); mine public.mv_gvg; foe bigint;
 BEGIN
