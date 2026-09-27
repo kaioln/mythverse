@@ -5,7 +5,7 @@
   const KT = globalThis.KT;
 
   const Neon = {
-    user:null, row:null, jwt:null, jwtExp:0, pending:null, timer:null,
+    user:null, row:null, jwt:null, jwtExp:0, pending:null, timer:null, inflight:null, lastHide:0,
     get enabled() { return !!this.base; },
     get base() { return String(KT.CONFIG?.neon || '').replace(/\/+$/, ''); },
     // https://ep-x.region.aws.neon.tech/neondb → .neonauth…/neondb/auth e .apirest…/neondb/rest/v1
@@ -75,7 +75,13 @@
     },
     // Salva no máximo a cada 20 s (e ao fechar a aba). A revisão evita que dois aparelhos se sobrescrevam sem aviso.
     queue(state) { this.pending = state; if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 20_000); },
+    // Um envio por vez: chamadas simultâneas (timer, trocar de aba, botão) esperam a anterior terminar.
     async flush() {
+      while (this.inflight) await this.inflight;
+      this.inflight = this.flushNow();
+      try { return await this.inflight; } finally { this.inflight = null; }
+    },
+    async flushNow() {
       const state = this.pending; if (!state || !this.user) return true; this.pending = null;
       const body = { data:state, updated_at:new Date().toISOString(), ...this.summary(state) };
       let r;

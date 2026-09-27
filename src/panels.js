@@ -543,7 +543,7 @@
     const list = rows.slice(3).map((row, k) => { const i = k + 3, pctW = Math.max(3, Math.round(100 * (Number(row[col[0]]) || 0) / top)); return `<div class="rk-row ${(row.me || String(row.id) === meId) ? 'me' : ''}"><span class="rk-pos">${i + 1}</span>${minis(teamOf(row))}<span class="rk-who">${name(row)}<small>Nv. ${row.account_level}</small></span><span class="rk-bar"><i style="width:${pctW}%"></i><b>${col[2](row[col[0]])}</b></span></div>`; }).join('');
     return `${meBox}
       ${rows.length ? `<div class="rk-podium">${podium}</div>${list ? `<div class="rk-list">${list}</div>` : ''}` : '<div class="empty-state"><p>Ninguém no ranking ainda. Seja o primeiro!</p></div>'}
-      <p class="note">Toque no nome para ver o perfil e a equipe. O poder é recalculado pelo servidor a partir do save; contas com atividade suspeita não aparecem.</p>`;
+      <p class="note">${this.session.mode === 'neon' ? 'Ranking de teste: os números vêm do save de cada jogador.' : 'Toque no nome para ver o perfil e a equipe. O poder é recalculado pelo servidor a partir do save; contas com atividade suspeita não aparecem.'}</p>`;
   };
 
   // ---------------------------------------------------------------------------

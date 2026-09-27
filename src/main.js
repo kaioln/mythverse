@@ -128,7 +128,7 @@
         engine.save = () => { const r = save0(); KT.Neon.queue(state); return r; };
         KT.Neon.onConflict = () => ui.toast('Seu progresso foi salvo em <b>outro aparelho</b>. Recarregue a página para continuar de lá.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
-        addEventListener('visibilitychange', () => { if (document.hidden) { engine.save(); KT.Neon.flush(); } });
+        addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });
       }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
