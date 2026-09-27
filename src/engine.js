@@ -67,6 +67,11 @@
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
     s.progress = { ...fresh.progress }; Object.keys(raw.progress || {}).forEach(k => { s.progress[k] = { ...(fresh.progress[k] || {}), ...raw.progress[k] }; });
+    // Heróis da primeira versão da temporada viram as formas despertadas correspondentes.
+    const ren = D.SEASON?.renamed || {};
+    (raw.collection || []).forEach(h => { if (h && ren[h.id]) h.id = ren[h.id]; });
+    Object.keys(raw.shards || {}).forEach(k => { if (ren[k]) { raw.shards[ren[k]] = (raw.shards[ren[k]] || 0) + raw.shards[k]; delete raw.shards[k]; } });
+    s.shards = { ...(raw.shards || {}) };
     s.collection = (raw.collection || []).filter(h => D.roster.some(t => t.id === h.id)).map(h => ({ ...newHeroRecord(D.roster.find(t => t.id === h.id), h.rarity), ...h, attr:{ ...fresh.collection[0]?.attr, str:0, agi:0, vit:0, int:0, dex:0, luk:0, ...(h.attr || {}) }, equipped:{ weapon:null, focus:null, seal:null, charm:null, ...(h.equipped || {}) } }));
     const uids = new Set(s.collection.map(h => h.uid));
     s.formation = [0, 1, 2, 3].map(i => (raw.formation || [])[i] && uids.has(raw.formation[i]) ? raw.formation[i] : null);
@@ -169,7 +174,7 @@
   const heroMaxLevel = () => HERO_LEVEL_CAP;
   const awakenCost = (stars, shrineLv) => ({ shards:[0, 15, 30, 60, 100, 160][stars] || 999, gold:Math.round(2500 * Math.pow(2.3, stars - 1) * (1 - Math.min(.4, (shrineLv - 1) * .05))) });
   const zonePower = (zone, opts = {}) => {
-    if (zone.kind === 'hunt') return zone.basePower * Math.pow(D.STAGE_GROWTH, (opts.stage || 1) - 1);
+    if (zone.kind === 'hunt') return zone.basePower * Math.pow(zone.growth || D.STAGE_GROWTH, (opts.stage || 1) - 1);
     if (zone.kind === 'dungeon') return zone.floorPower[(opts.floor || 1) - 1] || zone.floorPower[0];
     if (zone.kind === 'boss') return zone.power * (D.bossTiers[opts.tier || 0]?.mult || 1);
     if (zone.kind === 'rift') return D.RIFT.base * Math.pow(D.RIFT.growth, (opts.floor || 1) - 1);
@@ -274,6 +279,9 @@
     });
     const sets = [];
     Object.entries(setCount).forEach(([id, n]) => { const set = I.sets.find(x => x.id === id); if (!set) return; const active = []; if (n >= 2) { add(set.bonus2.stats); active.push(2); } if (n >= 4) { add(set.bonus4.stats); if (set.bonus4.hook) hooks.push(set.bonus4.hook); active.push(4); } sets.push({ set, n, active }); });
+    // Retorno decrescente: bônus percentuais somados acima de +200% valem metade (atributos, treino, Paragão,
+    // cartas, conjuntos e comidas empilhados não multiplicam o poder sem limite).
+    ['hp', 'atk', 'def'].forEach(k => { if (pctAdd[k] > 2) pctAdd[k] = 2 + (pctAdd[k] - 2) * .5; });
     const maxHp = Math.round((base.hp * growth * rar * star + flat.hp) * (1 + pctAdd.hp));
     const atk = Math.round((base.atk * growth * rar * star + flat.atk) * (1 + pctAdd.atk));
     const def = Math.round((base.def * growth * rar * star + flat.def) * (1 + pctAdd.def));
@@ -1598,7 +1606,8 @@
       if (!this.canEditParty() || slot < 0 || slot > 3) return false;
       const r = this.record(uid); if (!r) return false;
       const f = this.state.formation;
-      if (f.some((u, i) => u && i !== slot && this.record(u)?.id === r.id && u !== uid)) { this.emit('onToast', 'Esse herói já está na equipe.'); return false; }
+      const baseOf = id => this.template(id)?.base || id;
+      if (f.some((u, i) => u && i !== slot && u !== uid && baseOf(this.record(u)?.id) === baseOf(r.id))) { this.emit('onToast', 'Esse personagem (ou outra forma dele) já está na equipe.'); return false; }
       const prev = f.indexOf(uid);
       if (prev >= 0) { f[prev] = f[slot]; }
       f[slot] = uid;

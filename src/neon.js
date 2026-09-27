@@ -95,7 +95,7 @@
     supersededBy(remoteData) { const s = remoteData?.activeSession; return !!(s && s.id !== this.sessionId && Number(s.at) > this.sessionAt); },
     summary(state) {
       let power = 0;
-      try { const recs = KT.State.formationRecords(state), ctx = KT.State.teamContext(state, recs); power = recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0); } catch (_) { power = 0; }
+      try { const recs = KT.State.formationRecords(state), ctx = KT.State.teamContext(state, recs, 0); /* ranking sem comidas e buffs temporários */ power = recs.reduce((s, r) => s + KT.State.statPower(KT.State.heroStats(state, r, ctx)), 0); } catch (_) { power = 0; }
       const prog = state.progress || {};
       return { display_name:String(state.player?.name || this.user?.username || 'Viajante').slice(0, 24), power:Math.round(power), boss_kills:Number(state.stats?.bossKills) || 0,
         best_stage:Object.values(KT.Data.zones).filter(z => z.kind === 'hunt' && !z.side).reduce((a, z) => a + (prog[z.id]?.best || 0), 0), rift_best:Number(prog.rift?.best) || 0,

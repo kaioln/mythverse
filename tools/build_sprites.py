@@ -348,31 +348,45 @@ def build_chapter4():
 
 
 # ---------------------------------------------------------------------------
-# Temporada I: heróis da Caixa da Temporada, derivados de bases existentes com matiz, espelho e aura próprios.
+# Temporada I · Despertares: formas despertadas de heróis que já existem. A arte é a do próprio
+# personagem; a forma muda só a cor das roupas/cabelo (a pele e o contorno ficam intactos) e ganha aura.
 # Uso: python -c "import sys; sys.path.insert(0, 'tools'); import build_sprites as b; b.build_season()"
-# Silhuetas realmente novas exigem arte nova (ver docs/ARTE_ORIGINAL.md).
 # ---------------------------------------------------------------------------
 SEASON_HEROES = [
-    # (id, base, matiz, saturação, brilho, espelhar, aura)
-    ('itachi', 'ren', -30, 1.15, .8, True, (220, 40, 60)), ('kakashi', 'hayato', 175, .25, 1.15, True, (160, 170, 255)),
-    ('yor', 'mira', -40, 1.2, .8, True, (200, 40, 80)), ('denji', 'tobias', 20, 1.1, 1.0, True, (255, 140, 60)),
-    ('frieren', 'yuki', 0, .2, 1.3, True, (230, 240, 255)), ('makima', 'sienna', -15, 1.1, .95, True, (255, 180, 120)),
-    ('asta', 'kai', 180, .35, .8, True, (120, 255, 140)), ('rem', 'rina', 200, 1.1, 1.1, True, (120, 170, 255)),
-    ('lux', 'aiko', 20, 1.2, 1.15, True, (255, 240, 170)), ('sage', 'aurelia', 140, .8, 1.05, True, (140, 255, 230)),
-    ('link', 'tessa', 60, 1.1, 1.05, True, (140, 255, 140)), ('jett', 'ivy', 160, .6, 1.2, True, (180, 240, 255)),
+    # (id, base, matiz, saturação, brilho, aura)
+    ('goku_ui', 'solen', 0, .85, 1.05, (200, 225, 255)), ('sasuke_susanoo', 'ren', 0, 1.0, 1.0, (160, 80, 255)),
+    ('gojo_void', 'sora', 0, 1.0, 1.05, (140, 110, 255)), ('tanjiro_hinokami', 'akira', 0, 1.1, 1.0, (255, 130, 40)),
+    ('ichigo_bankai', 'hiro', 0, 1.0, .85, (220, 30, 45)), ('vegeta_ego', 'varyon', 45, 1.1, 1.0, (190, 90, 255)),
+    ('luffy_gear5', 'tobias', 0, .08, 1.45, (255, 255, 255)), ('naruto_kurama', 'hayato', 12, 1.15, 1.15, (255, 205, 70)),
+    ('mercy_valkyrie', 'aurelia', 0, 1.1, 1.05, (255, 215, 110)), ('sailor_eternal', 'aiko', 0, 1.05, 1.08, (255, 185, 230)),
+    ('dante_dt', 'rex', 0, 1.2, .8, (230, 30, 40)), ('jinx_arcane', 'zara', 0, 1.15, 1.0, (255, 80, 200)),
 ]
+
+
+def shift_keep_skin(img, hue_deg=0, sat=1.0, val=1.0):
+    """Como shift(), mas preserva tons de pele, pretos/brancos neutros e o contorno."""
+    alpha = img.getchannel('A')
+    hsv = np.array(img.convert('RGB').convert('HSV')).astype(np.float32)
+    h, s, v = hsv[:, :, 0] * 360 / 255, hsv[:, :, 1] / 255, hsv[:, :, 2] / 255
+    skin = (h >= 5) & (h <= 45) & (s >= .12) & (s <= .62) & (v >= .45)
+    keep = skin | (v < .18)
+    out = hsv.copy()
+    out[:, :, 0] = (hsv[:, :, 0] + hue_deg / 360 * 255) % 255
+    out[:, :, 1] = np.clip(hsv[:, :, 1] * sat, 0, 255)
+    out[:, :, 2] = np.clip(hsv[:, :, 2] * val, 0, 255)
+    out[keep] = hsv[keep]
+    res = Image.fromarray(out.astype(np.uint8), 'HSV').convert('RGB').convert('RGBA')
+    res.putalpha(alpha)
+    return res
 
 
 def build_season():
     sp = os.path.join(ROOT, 'assets', 'sprites')
-    for vid, base, h, s, v, flip, col in SEASON_HEROES:
+    for vid, base, h, s, v, col in SEASON_HEROES:
         img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
         pad = 16
         canvas = Image.new('RGBA', (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
         canvas.paste(img, (pad, pad))
-        img = shift(canvas, h, s, v)
-        if flip:
-            img = img.transpose(Image.FLIP_LEFT_RIGHT)
-        img = aura(img, col)
+        img = aura(shift_keep_skin(canvas, h, s, v), col, 10)
         img.save(os.path.join(sp, f'{vid}.png'), optimize=True)
         portrait(img).save(os.path.join(OUT_PORTRAITS, f'{vid}.png'), optimize=True)

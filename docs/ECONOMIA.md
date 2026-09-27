@@ -116,3 +116,20 @@ Cada caixa tem garantia própria e 10× garante ao menos um Épico. Heróis da t
 ## Banco Kogane
 
 Saiu da Loja e virou um distrito próprio da cidade (Tesoureira Oharu). Cálculo novo do índice (`tools/neon_economy.sql`): para cada jogador ativo, reserva saudável = 6 h da **própria** renda (ouro ganho ÷ horas jogadas); o índice é a **mediana** das razões ouro/reserva (um jogador rico não distorce), suavizado 70/30. Cotações nunca ficam vazias: vendas → menor anúncio → maior ordem → estimativa pelo custo de produção.
+
+## Poder e mapas (2026-09-29, revisão 2)
+
+Os mapas agora acompanham o nível dos heróis (nível do inimigo = 1 + ln(poder)/ln 1,065):
+
+| Capítulo | Níveis dos inimigos | Poder recomendado | Antes |
+|---|---|---|---|
+| I | 1 a 36 | até 181 mil (chefe) | igual |
+| II | 36 a 62 | 59 mil a 939 mil | 84 mil a 2 milhões (nível 42 a 74) |
+| III | 64 a 82 | 343 mil a 3,3 milhões | 780 mil a 24 milhões (nível 77 a 114) |
+| IV | 84 a 100 | 1,2 a 10,3 milhões | 12 a 262 milhões (nível 112 a 151) |
+
+Antes o fim do jogo exigia inimigos acima do nível 100, e o único jeito de acompanhar era multiplicar o poder por fora do nível (refino, qualidade, Paragão). Pesadelo e Inferno continuam acima do 100, como conteúdo de fim de jogo.
+
+Do lado do jogador: refino acima de +10 rende +14% por nível (o +15 multiplica o atributo principal por ~3, antes 4,25); bônus percentuais de HP/ATK/DEF somados acima de +200% valem metade; o poder do ranking ignora comidas e buffs temporários. Diagnóstico por conta: `node --env-file=.env tools/neon_power_report.js [conta]`.
+
+**Temporada I · Despertares:** as 12 figuras da temporada são formas despertadas de heróis do elenco (Goku Instinto Superior, Luffy Gear 5, Naruto Modo Kurama…), com a arte do próprio personagem recolorida (pele e contorno preservados). Forma e original não entram juntos na equipe. Os ids da primeira versão (itachi, kakashi…) migram sozinhos nos saves.

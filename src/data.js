@@ -52,9 +52,9 @@
     { id:'aurum', name:'Rivais de Aurum', ids:['solen','varyon'], text:'+15% ATK e +20 de energia inicial', stats:{ atk:.15, startNrg:20 } },
     { id:'oath', name:'Irmãos de Juramento', ids:['hayato','ren'], text:'+12% ATK e +12% HP', stats:{ atk:.12, hp:.12 } },
     { id:'sails', name:'Tripulação das Velas', ids:['tobias','kenji'], text:'+10% ATK, +10% HP e +5% roubo de vida', stats:{ atk:.10, hp:.10, lifesteal:.05 } },
-    { id:'konoha', name:'Shinobis da Folha', ids:['itachi','kakashi'], text:'+12% ATK e +15% dano de habilidade', stats:{ atk:.12, skill:.15 } },
-    { id:'publicsafety', name:'Segurança Pública', ids:['denji','makima'], text:'+12% ATK e +8% roubo de vida', stats:{ atk:.12, lifesteal:.08 } },
-    { id:'protocol', name:'Protocolo Valorant', ids:['jett','sage'], text:'+10% velocidade e +12% cura e escudos', stats:{ spd:.10, healPow:.12 } },
+    { id:'saiyan_awake', name:'Saiyajins Despertos', ids:['goku_ui','vegeta_ego'], text:'+14% ATK e +15 de energia inicial', stats:{ atk:.14, startNrg:15 } },
+    { id:'shinobi_awake', name:'Destino Shinobi', ids:['naruto_kurama','sasuke_susanoo'], text:'+12% ATK e +12% HP', stats:{ atk:.12, hp:.12 } },
+    { id:'guardians_light', name:'Guardiãs da Luz', ids:['mercy_valkyrie','sailor_eternal'], text:'+12% cura e escudos e +8% velocidade', stats:{ healPow:.12, spd:.08 } },
     { id:'souls', name:'Guardiões das Almas', ids:['hiro','yuki'], text:'+15% dano de habilidade e +10% DEF', stats:{ skill:.15, def:.10 } },
     { id:'minase', name:'Irmãos Minase', ids:['akira','hana'], text:'+1% HP/s de regeneração e +10% ATK', stats:{ regen:.01, atk:.10 } },
     { id:'veil', name:'Academia do Véu', ids:['sora','daichi'], text:'+10% crítico e +15% dano crítico', stats:{ crit:.10, critDmg:.15 } },
@@ -320,7 +320,10 @@
 
   // ---------------------------------------------------------------------------
   // REGIÕES, caçadas têm estágios; dungeons têm andares; chefes têm dificuldade.
-  // power(estágio) define o multiplicador de atributos dos inimigos.
+  // power(estágio) define o multiplicador de atributos dos inimigos. Nível do inimigo = 1 + ln(power)/ln(1,065):
+  // Cap. I níveis 1–36 · Cap. II 36–62 · Cap. III 64–82 · Cap. IV 84–100 (o teto dos heróis). Antes os Capítulos III e IV
+  // iam até o nível 151 e exigiam 260 milhões de poder: só dava para acompanhar com saltos enormes de poder.
+  // growth: crescimento por estágio da caçada (padrão STAGE_GROWTH).
   // ---------------------------------------------------------------------------
   const STAGE_GROWTH = 1.2;
   const zones = {
@@ -338,14 +341,14 @@
       weakTo:['Luz'], lore:'No topo da montanha, o Rei do Eclipse devora a luz da lua. Só uma equipe preparada sobrevive ao Eclipse Total.',
       unlock:{ stage:{ hunt:12 }, floor:{ dungeon:3 } } },
     hunt_tide: { id:'hunt_tide', kind:'hunt', chapter:2, title:'Costa das Marés', subtitle:'Ruínas afogadas, espectros e colossos de coral.', kicker:'CAPÍTULO II · CAÇADA', difficulty:'Estágios 1 a 12', theme:'coast',
-      pool:['wisp','revenant','fox_foam','spider_coral','oni_tide'], elites:['revenant_captain','golem_coral'], stages:12, basePower:13, ilvl:14,
+      pool:['wisp','revenant','fox_foam','spider_coral','oni_tide'], elites:['revenant_captain','golem_coral'], stages:12, basePower:9.06, growth:1.15, ilvl:14,
       weakTo:['Raio','Natureza'], lore:'Com o eclipse, a maré trouxe de volta os afogados. Um capitão fantasma recruta novos marinheiros.',
       unlock:{ kills:{ boss:1 } } },
     dungeon_tide: { id:'dungeon_tide', kind:'dungeon', chapter:2, title:'Arquivo Submerso', subtitle:'Conhecimento proibido sob a maré.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'archive',
-      pool:['revenant_scribe','wisp_arc','spider_ink','golem_crystal','fox_storm'], elites:['revenant_crimson','archive_sentinel'], floorBoss:'oni_storm', floors:3, floorPower:[33, 57, 98], ilvl:18,
+      pool:['revenant_scribe','wisp_arc','spider_ink','golem_crystal','fox_storm'], elites:['revenant_crimson','archive_sentinel'], floorBoss:'oni_storm', floors:3, floorPower:[19.3, 24.8, 31.9], ilvl:18,
       weakTo:['Luz','Terra','Vento'], lore:'A biblioteca que registrava a história do Véu. Seus escribas continuam escrevendo, com tinta venenosa.',
       unlock:{ stage:{ hunt_tide:5 } } },
-    boss_tide: { id:'boss_tide', kind:'boss', chapter:2, title:'Abismo de Mizuchi', subtitle:'O dragão das marés aguarda no fundo do mar.', kicker:'CAPÍTULO II · CHEFE', difficulty:'Chefe', theme:'abyss', enemy:'boss_tide', power:100, ilvl:27,
+    boss_tide: { id:'boss_tide', kind:'boss', chapter:2, title:'Abismo de Mizuchi', subtitle:'O dragão das marés aguarda no fundo do mar.', kicker:'CAPÍTULO II · CHEFE', difficulty:'Chefe', theme:'abyss', enemy:'boss_tide', power:46.6, ilvl:27,
       weakTo:['Raio','Natureza'], lore:'Mizuchi foi o guardião do mar até o eclipse corromper seu coração. Seu Tsunami pode varrer uma equipe despreparada.',
       unlock:{ stage:{ hunt_tide:12 }, floor:{ dungeon_tide:3 } } },
     // --- Capítulo I: rotas secundárias ---
@@ -359,43 +362,43 @@
       unlock:{ stage:{ hunt_swamp:5 } } },
     // --- Capítulo II: rotas secundárias ---
     hunt_frost: { id:'hunt_frost', kind:'hunt', chapter:2, side:true, title:'Planalto Congelado', subtitle:'Nevasca eterna e a Rainha do Inverno.', kicker:'CAPÍTULO II · CAÇADA', difficulty:'Estágios 1 a 8', theme:'frost',
-      pool:['fox_snow','spider_ice','wisp_ice','golem_ice'], elites:['oni_frost','revenant_frost'], stages:8, basePower:20, ilvl:16,
+      pool:['fox_snow','spider_ice','wisp_ice','golem_ice'], elites:['oni_frost','revenant_frost'], stages:8, basePower:11.7, growth:1.11, ilvl:16,
       weakTo:['Fogo','Terra'], lore:'Acima da costa, o eclipse congelou o céu. A Rainha do Inverno guarda o caminho para a forja esquecida.',
       unlock:{ stage:{ hunt_tide:4 } } },
     dungeon_forge: { id:'dungeon_forge', kind:'dungeon', chapter:2, side:true, title:'Forja Abissal', subtitle:'Metal vivo e o coração em chamas.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'forge',
-      pool:['spider_lava','wisp_lava','fox_fire','revenant_ash'], elites:['oni_lava','golem_iron'], floorBoss:'golem_forge', floors:3, floorPower:[45, 75, 125], ilvl:22,
+      pool:['spider_lava','wisp_lava','fox_fire','revenant_ash'], elites:['oni_lava','golem_iron'], floorBoss:'golem_forge', floors:3, floorPower:[24.8, 31.9, 41.1], ilvl:22,
       weakTo:['Água','Natureza'], lore:'A forja onde Ren aprendeu o ofício. Hoje os autômatos trabalham sozinhos, forjando armas para o eclipse.',
       unlock:{ stage:{ hunt_frost:5 } } },
     // --- Capítulo III ---
     hunt_desert: { id:'hunt_desert', kind:'hunt', chapter:3, title:'Areias do Tempo', subtitle:'Chacais, esfinges e múmias reais.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 12', theme:'desert',
-      pool:['fox_sand','spider_sand','wisp_sand','oni_sand'], elites:['golem_sand','revenant_mummy'], stages:12, basePower:120, ilvl:30,
+      pool:['fox_sand','spider_sand','wisp_sand','oni_sand'], elites:['golem_sand','revenant_mummy'], stages:12, basePower:52.8, growth:1.10, ilvl:30,
       weakTo:['Água','Natureza','Vento'], lore:'Além do mar, um deserto onde as horas escorrem como areia. Algo enorme se move sob as dunas.',
       unlock:{ kills:{ boss_tide:1 } } },
     hunt_ghost: { id:'hunt_ghost', kind:'hunt', chapter:3, side:true, title:'Cidade Fantasma', subtitle:'Uma cidade inteira presa em um único segundo.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 8', theme:'ghost',
-      pool:['fox_ghost','wisp_ghost','spider_ghost','oni_ghost'], elites:['golem_ghost','revenant_ghost'], stages:8, basePower:260, ilvl:34,
+      pool:['fox_ghost','wisp_ghost','spider_ghost','oni_ghost'], elites:['golem_ghost','revenant_ghost'], stages:8, basePower:68, growth:1.11, ilvl:34,
       weakTo:['Luz'], lore:'Quando Apep engoliu o tempo desta cidade, seus moradores ficaram presos para sempre no último baile.',
       unlock:{ stage:{ hunt_desert:5 } } },
     dungeon_clock: { id:'dungeon_clock', kind:'dungeon', chapter:3, title:'Torre do Relógio', subtitle:'Engrenagens, paradoxos e a Meia-Noite.', kicker:'CAPÍTULO III · DUNGEON', difficulty:'Andares I a III', theme:'clock',
-      pool:['fox_time','wisp_time','spider_clock','oni_time'], elites:['revenant_time','revenant_chrono'], floorBoss:'golem_clock', floors:3, floorPower:[380, 650, 1100], ilvl:38,
+      pool:['fox_time','wisp_time','spider_clock','oni_time'], elites:['revenant_time','revenant_chrono'], floorBoss:'golem_clock', floors:3, floorPower:[87.5, 106, 128], ilvl:38,
       weakTo:['Terra','Gelo'], lore:'A torre que marcava as horas do mundo. Quem a controla decide quando o eclipse termina.',
       unlock:{ stage:{ hunt_desert:8 } } },
-    boss_sand: { id:'boss_sand', kind:'boss', chapter:3, title:'Ninho de Apep', subtitle:'A serpente que devora as horas.', kicker:'CAPÍTULO III · CHEFE', difficulty:'Chefe', theme:'desertBoss', enemy:'boss_sand', power:1200, ilvl:44,
+    boss_sand: { id:'boss_sand', kind:'boss', chapter:3, title:'Ninho de Apep', subtitle:'A serpente que devora as horas.', kicker:'CAPÍTULO III · CHEFE', difficulty:'Chefe', theme:'desertBoss', enemy:'boss_sand', power:164, ilvl:44,
       weakTo:['Água','Natureza','Vento'], lore:'No coração do deserto, Apep dorme enrolada na última ampulheta. Se ela acordar por completo, o tempo deixa de existir.',
       unlock:{ stage:{ hunt_desert:12 }, floor:{ dungeon_clock:3 } } },
     // --- Capítulo IV: O Céu Partido ---
     hunt_sky: { id:'hunt_sky', kind:'hunt', chapter:4, title:'Ilhas Flutuantes', subtitle:'Ilhas de pedra presas por correntes de nuvem.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 12', theme:'sky',
-      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, basePower:1100, ilvl:47,
+      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, basePower:186, growth:1.08, ilvl:47,
       weakTo:['Terra','Gelo'], lore:'Quando Apep caiu, o céu rachou. Ilhas inteiras subiram com templos, pontes e criaturas, e lá no alto um tambor não para de tocar.',
       unlock:{ kills:{ boss_sand:1 } } },
     hunt_sakura: { id:'hunt_sakura', kind:'hunt', chapter:4, side:true, title:'Vale das Cerejeiras Eternas', subtitle:'Onde as flores nunca caem de verdade.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 8', theme:'sakura',
-      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, basePower:2100, ilvl:51,
+      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, basePower:240, growth:1.09, ilvl:51,
       weakTo:['Fogo','Sombra'], lore:'Um vale suspenso onde é sempre primavera. Lindo, e perigoso: as flores têm dentes.',
       unlock:{ stage:{ hunt_sky:5 } } },
     dungeon_sky: { id:'dungeon_sky', kind:'dungeon', chapter:4, title:'Santuário das Nuvens', subtitle:'Sinos, monges e o Senhor dos Ventos.', kicker:'CAPÍTULO IV · DUNGEON', difficulty:'Andares I a III', theme:'skyShrine',
-      pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, floorPower:[3400, 5900, 10000], ilvl:55,
+      pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, floorPower:[308, 372, 450], ilvl:55,
       weakTo:['Terra','Sombra'], lore:'O templo onde Fujin guardava os ventos. Agora os sinos tocam sozinhos e cada badalada derruba um herói.',
       unlock:{ stage:{ hunt_sky:8 } } },
-    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', power:13000, ilvl:61,
+    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', power:510, ilvl:61,
       weakTo:['Terra'], lore:'No topo das nuvens, Raijin toca o tambor do trovão sem parar. Cada batida abre mais a Fenda.',
       unlock:{ stage:{ hunt_sky:12 }, floor:{ dungeon_sky:3 } } },
     // --- PvP: a equipe rival é a defesa salva de outro jogador ---
@@ -738,15 +741,18 @@
   // Heróis de temporada só saem da Caixa da Temporada (e da Astral) enquanto a temporada estiver aberta;
   // depois dela entram na Caixa dos Mundos.
   // ---------------------------------------------------------------------------
-  const SEASON = { id:'s1', name:'Temporada I · Ecos do Eclipse', ends:'2027-01-31T03:00:00Z',
-    heroes:['itachi', 'kakashi', 'yor', 'denji', 'frieren', 'makima', 'asta', 'rem', 'lux', 'sage', 'link', 'jett'] };
+  const SEASON = { id:'s1', name:'Temporada I · Despertares', ends:'2027-01-31T03:00:00Z',
+    heroes:['goku_ui', 'sasuke_susanoo', 'gojo_void', 'tanjiro_hinokami', 'ichigo_bankai', 'vegeta_ego', 'luffy_gear5', 'naruto_kurama', 'mercy_valkyrie', 'sailor_eternal', 'dante_dt', 'jinx_arcane'],
+    // Ids da primeira versão da temporada (arte que não combinava com os nomes) → formas despertadas.
+    renamed:{ itachi:'sasuke_susanoo', kakashi:'vegeta_ego', yor:'ichigo_bankai', denji:'tanjiro_hinokami', frieren:'gojo_void', makima:'goku_ui',
+      asta:'luffy_gear5', rem:'naruto_kurama', lux:'sailor_eternal', sage:'mercy_valkyrie', link:'dante_dt', jett:'jinx_arcane' } };
   const BOXES = [
     { id:'worlds', name:'Caixa dos Mundos', icon:'✦', cost:1, color:'#c07dff', pity:30, pool:'base',
       rates:{ legendary:.03, epic:.12, rare:.30, common:.55 }, text:'A convocação clássica: todos os heróis fora da temporada.' },
     { id:'class', name:'Caixa de Classe', icon:'⚔', cost:2, color:'#4fb3ff', pity:25, pool:'class',
       rates:{ legendary:.05, epic:.17, rare:.33, common:.45 }, text:'Você escolhe a classe. Só saem heróis dela (fora da temporada).' },
     { id:'season', name:'Caixa da Temporada', icon:'🌒', cost:3, color:'#ff7eb6', pity:20, pool:'season', featured:.6,
-      rates:{ legendary:.08, epic:.22, rare:.35, common:.35 }, text:'60% de chance de um herói novo da temporada. A garantia de lendário é sempre um herói da temporada.' },
+      rates:{ legendary:.08, epic:.22, rare:.35, common:.35 }, text:'60% de chance de uma forma despertada da temporada. A garantia de lendário é sempre uma forma despertada.' },
     { id:'astral', name:'Caixa Astral', icon:'🌟', cost:10, color:'#ffb938', pity:8, pool:'all',
       rates:{ legendary:.20, epic:.45, rare:.35, common:0 }, text:'Sem comuns. Qualquer herói, inclusive os da temporada.' }
   ];

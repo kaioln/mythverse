@@ -31,6 +31,9 @@
   const execute = (th, to = 'tgt') => ({ k:'execute', th, to });
   const chain = (m, n = 3, fall = .7) => ({ k:'chain', m, n, fall });
 
+  // Formas despertadas (Temporada I) → herói original.
+  const AWAKEN_BASE = { goku_ui:'solen', sasuke_susanoo:'ren', gojo_void:'sora', tanjiro_hinokami:'akira', ichigo_bankai:'hiro', vegeta_ego:'varyon',
+    luffy_gear5:'tobias', naruto_kurama:'hayato', mercy_valkyrie:'aurelia', sailor_eternal:'aiko', dante_dt:'rex', jinx_arcane:'zara' };
   const ORIGINAL_NAMES = {
     solen:'Goku', varyon:'Vegeta', hayato:'Naruto Uzumaki', ren:'Sasuke Uchiha', tobias:'Monkey D. Luffy', kenji:'Roronoa Zoro',
     hiro:'Ichigo Kurosaki', yuki:'Rukia Kuchiki', akira:'Tanjiro Kamado', hana:'Nezuko Kamado', sora:'Satoru Gojo', daichi:'Yuji Itadori',
@@ -43,7 +46,7 @@
     n9:'2B', unit7:'A2', rex:'Dante', virel:'Vergil', selene:'Bayonetta', tessa:'Aloy', kaji:'Scorpion', kori:'Sub-Zero'
   };
   // Os ids permanecem estáveis para preservar todos os saves existentes; só o nome exibido volta ao original.
-  const H = (id, name, world, origin, cls, el, prof, passive, skill, ult, color) => ({ id, name:ORIGINAL_NAMES[id] || name, world, origin, cls, el, prof, passive, skill, ult, color });
+  const H = (id, name, world, origin, cls, el, prof, passive, skill, ult, color) => ({ id, name:ORIGINAL_NAMES[id] || name, world, origin, cls, el, prof, passive, skill, ult, color, base:AWAKEN_BASE[id] || id });
   const P = (name, hooks) => ({ name, hooks });
   const S = (name, cd, eff, fx = 'burst') => ({ name, cd, eff, fx });
   const Ult = (name, eff, fx = 'ult') => ({ name, eff, fx });
@@ -290,55 +293,56 @@
       S('Esfera de Gelo', 8, [dmg(1.8), st('freeze', 2)], 'beam'),
       Ult('Congelamento Profundo', [dmg(1.6, 'all'), st('freeze', 2.5, 0, 1, 'all')])),
 
-    // --- Temporada I · Ecos do Eclipse (Caixa da Temporada; ver D.SEASON) ---
-    H('itachi','Itachi Uchiha','Vila da Folha Oculta','temporada','Arcanista','Sombra',{ atk:1.05, hp:.97 },
-      P('Tsukuyomi', { stats:{ dodge:.08 }, onDodge:{ eff:[st('stun', 1, 0, .35, 'attacker')] } }),
-      S('Amaterasu', 9, [dmg(1.8), st('burn', 8, .6)], 'beam'),
-      Ult('Susanoo: Espada Totsuka', [dmg(3.4, 'high', { pierce:.4 }), st('silence', 3, 0, 1, 'high'), shield({ p:.2 }, 'self', 8)])),
-    H('kakashi','Kakashi Hatake','Vila da Folha Oculta','temporada','Executor','Raio',{ atk:1.05 },
-      P('Sharingan Copiador', { stats:{ crit:.05 }, onCrit:{ ch:.3, eff:[nrg(8)] } }),
-      S('Chidori', 8, [dmg(2.6, 'tgt', { pierce:.3 }), st('stun', .8, 0, .5)], 'beam'),
-      Ult('Raikiri', [dmg(4.2, 'low', { exec:1.5, crit:.3 })])),
-    H('yor','Yor Forger','Berlint','temporada','Executor','Sombra',{ atk:1.06, hp:.96 },
-      P('Espinheira', { stats:{ critDmg:.2 }, onKill:{ eff:[buff('spd', .15, 5)] } }),
-      S('Estilete Dançante', 7, [dmg(.7, 'tgt', { hits:4 }), st('bleed', 5, .3)], 'slash'),
-      Ult('Rosa Sangrenta', [dmg(1.4, 'randEach', { hits:5, crit:.25 }), st('bleed', 6, .4, 1, 'all')])),
-    H('denji','Denji','Segurança Pública','temporada','Executor','Fogo',{ atk:1.04, hp:1.06 },
-      P('Coração de Motosserra', { stats:{ lifesteal:.08 }, low:{ th:.3, once:true, eff:[heal({ p:.35 }, 'self'), buff('atk', .3, 8)] } }),
-      S('Serra Rasgante', 8, [dmg(.5, 'tgt', { hits:6 }), st('bleed', 4, .3)], 'slash'),
-      Ult('Homem-Motosserra', [dmg(2.2, 'all'), buff('lifesteal', .3, 8), st('bleed', 6, .35, 1, 'all')])),
-    H('frieren','Frieren','Terras do Norte','temporada','Arcanista','Luz',{ atk:1.04 },
-      P('Mil Anos de Magia', { stats:{ skill:.12, nrg:.08 } }),
-      S('Zoltraak', 7, [dmg(2.4, 'tgt', { pierce:.5 })], 'beam'),
-      Ult('Chuva de Zoltraak', [dmg(1.0, 'randEach', { hits:6, pierce:.3 }), dispel('all')])),
-    H('makima','Makima','Segurança Pública','temporada','Arcanista','Sombra',{ atk:1.03, hp:1.02 },
-      P('Domínio', { stats:{ atk:.06 }, onHurt:{ ch:.15, eff:[dmg(1.0, 'attacker')] } }),
-      S('Pistola Invisível', 9, [dmg(1.4, 'randEach', { hits:3 }), st('mark', 5, .2, 1, 'all')], 'burst'),
-      Ult('Controle', [dmg(2.6, 'all'), st('weaken', 6, .3, 1, 'all'), st('stun', 1.2, 0, .5, 'all')])),
-    H('asta','Asta','Reino do Trevo','temporada','Vanguarda','Terra',{ hp:1.08, atk:1.02 },
-      P('Antimagia', { stats:{ dr:.08 }, onHurt:{ ch:.2, eff:[cleanse('self'), nrg(8)] } }),
-      S('Matadora de Demônios', 9, [taunt(3), dmg(1.8), dispel('tgt')], 'slash'),
-      Ult('Forma Demoníaca Negra', [buff('atk', .45, 8), buff('dr', .25, 8), dmg(2.0, 'all'), taunt(4)])),
-    H('rem','Rem','Mansão Roswaal','temporada','Vanguarda','Água',{ hp:1.06, def:1.04 },
-      P('Devoção', { stats:{ hp:.08 }, allyLow:{ th:.35, eff:[taunt(3), shield({ p:.12 }, 'self', 6)] } }),
-      S('Estrela da Manhã', 9, [dmg(1.6, 'front'), st('slow', 4, .3, 1, 'front'), shield(1.5, 'self', 6)], 'slash'),
-      Ult('Modo Oni', [buff('atk', .4, 8), heal({ p:.25 }, 'self'), dmg(2.2, 'all')])),
-    H('lux','Lux','Demacia','temporada','Suporte','Luz',{ atk:1.04 },
-      P('Iluminação', { stats:{ healPow:.10 }, onAtk:{ ch:.2, eff:[st('mark', 4, .1)] } }),
-      S('Barreira Prismática', 9, [shield(1.6, 'allies', 6), dmg(1.2)], 'burst'),
-      Ult('Centelha Final', [dmg(2.8, 'all', { pierce:.3 }), shield({ p:.12 }, 'allies', 6)])),
-    H('sage','Sage','Protocolo Valorant','temporada','Suporte','Gelo',{ hp:1.05 },
-      P('Sentinela da Vida', { stats:{ regen:.002, healPow:.08 } }),
-      S('Orbe de Cura', 8, [heal(2.4, 'lowAlly'), cleanse('lowAlly')], 'burst'),
-      Ult('Renascer da Sentinela', [revive(.6), heal({ p:.25 }, 'allies')])),
-    H('link','Link','Reino de Hyrule','temporada','Atirador','Luz',{ atk:1.04 },
-      P('Coragem de Hyrule', { stats:{ boss:.10 }, every:{ n:4, eff:[dmg(1.0, 'tgt', { pierce:.3 })] } }),
-      S('Flecha Sagrada', 8, [dmg(2.2, 'tgt', { pierce:.4 }), st('armorBreak', 5, .25)], 'beam'),
-      Ult('Espada Mestra', [dmg(3.6, 'high', { crit:.3 }), st('stun', 1.2, 0, 1, 'high')])),
-    H('jett','Jett','Protocolo Valorant','temporada','Atirador','Vento',{ atk:1.05, hp:.95 },
-      P('Corrente Ascendente', { stats:{ dodge:.10, spd:.08 }, onDodge:{ eff:[nrg(6)] } }),
-      S('Lâminas Arremessadas', 7, [dmg(.8, 'randEach', { hits:3 })], 'slash'),
-      Ult('Tormenta de Lâminas', [dmg(1.2, 'low', { hits:5, crit:.5 })]))
+    // --- Temporada I · Despertares: formas despertadas de heróis do elenco (Caixa da Temporada; ver D.SEASON).
+    // base: o herói original. Forma e original não entram juntos na mesma equipe.
+    H('goku_ui','Goku Instinto Superior','Picos de Aurum','temporada','Arcanista','Vento',{ atk:1.05, hp:.98 },
+      P('Instinto Superior', { stats:{ dodge:.12 }, onDodge:{ eff:[dmg(1.0, 'attacker'), nrg(5)] } }),
+      S('Kamehameha Silencioso', 9, [dmg(2.6, 'tgt', { pierce:.35 })], 'beam'),
+      Ult('Kamehameha do Instinto', [dmg(3.1, 'all'), buff('dodge', .25, 6)])),
+    H('sasuke_susanoo','Sasuke Susanoo','Vila do Redemoinho','temporada','Arcanista','Sombra',{ atk:1.04, hp:1.0 },
+      P('Susanoo Perfeito', { stats:{ dr:.06 }, start:{ eff:[shield({ p:.10 }, 'self', 8)] } }),
+      S('Flecha de Indra', 9, [dmg(2.8, 'high', { pierce:.4 }), st('burn', 6, .4, 1, 'high')], 'beam'),
+      Ult('Amaterasu Negra', [dmg(2.0, 'all'), st('burn', 8, .45, 1, 'all')])),
+    H('gojo_void','Gojo Vazio Roxo','Colégio de Jujutsu','temporada','Arcanista','Luz',{ atk:1.05, hp:.97 },
+      P('Infinito', { stats:{ dr:.08, skill:.08 } }),
+      S('Vermelho Invertido', 8, [dmg(2.2, 'tgt'), { k:'delay', v:1.5, to:'tgt' }], 'beam'),
+      Ult('Roxo Imaginário', [dmg(3.8, 'all', { pierce:.5 })])),
+    H('tanjiro_hinokami','Tanjiro Dança do Deus do Fogo','Montanhas de Sagiri','temporada','Executor','Fogo',{ atk:1.06, hp:.97 },
+      P('Marca do Caçador', { stats:{ crit:.06 }, onCrit:{ ch:.3, eff:[st('burn', 4, .3)] } }),
+      S('Dança do Deus do Fogo', 8, [dmg(.8, 'tgt', { hits:4 }), st('burn', 5, .4)], 'slash'),
+      Ult('Sol Nascente Resplandecente', [dmg(3.0, 'all'), st('burn', 6, .5, 1, 'all')])),
+    H('ichigo_bankai','Ichigo Bankai Final','Sociedade das Almas','temporada','Executor','Sombra',{ atk:1.07, hp:.95 },
+      P('Máscara Hollow', { stats:{ critDmg:.25 }, low:{ th:.35, once:true, eff:[buff('atk', .35, 8), heal({ p:.2 }, 'self')] } }),
+      S('Getsuga Tenshou Negro', 8, [dmg(2.5, 'tgt', { pierce:.3 }), st('mark', 5, .2)], 'slash'),
+      Ult('Mugetsu', [dmg(4.6, 'high', { crit:.4 })])),
+    H('vegeta_ego','Vegeta Ultra Ego','Picos de Aurum','temporada','Executor','Raio',{ atk:1.06, hp:1.0 },
+      P('Ego Destrutivo', { stats:{ lifesteal:.06 }, onHurt:{ ch:.25, eff:[buff('atk', .06, 8, 'self', { stack:5 })] } }),
+      S('Big Bang Attack', 8, [dmg(2.4), st('armorBreak', 5, .3)], 'beam'),
+      Ult('Hakai', [dmg(3.6, 'low', { exec:1.6 }), st('stun', 1.2)])),
+    H('luffy_gear5','Luffy Gear 5','Arquipélago das Velas','temporada','Vanguarda','Luz',{ hp:1.08, atk:1.03 },
+      P('Tambores da Libertação', { stats:{ hp:.10 }, onHurt:{ ch:.2, eff:[nrg(8), buff('dr', .1, 3)] } }),
+      S('Bajrang Gun', 9, [taunt(3), dmg(2.0), st('stun', 1, 0, .5)], 'slash'),
+      Ult('Nika: Mundo de Borracha', [dmg(2.2, 'all'), st('stun', 1.5, 0, .6, 'all'), heal({ p:.3 }, 'self')])),
+    H('naruto_kurama','Naruto Modo Kurama','Vila do Redemoinho','temporada','Vanguarda','Fogo',{ hp:1.07, atk:1.02 },
+      P('Chakra da Kurama', { stats:{ regen:.003, hp:.06 }, start:{ eff:[shield({ p:.06 }, 'allies', 6)] } }),
+      S('Bijuudama', 9, [taunt(3), dmg(1.9, 'all')], 'burst'),
+      Ult('Rasen Shuriken da Raposa', [dmg(2.6, 'all'), buff('dr', .2, 6, 'allies')])),
+    H('mercy_valkyrie','Mercy Valquíria','Aliança Overwatch','temporada','Suporte','Luz',{ hp:1.03, atk:1.02 },
+      P('Asas da Valquíria', { stats:{ healPow:.15 }, onAtk:{ ch:.25, eff:[heal({ m:.4 }, 'lowAlly')] } }),
+      S('Raio Curativo Duplo', 8, [heal(1.8, 'allies'), buff('atk', .12, 6, 'atkAlly')], 'burst'),
+      Ult('Renascer Coletivo', [revive(.5), heal({ p:.3 }, 'allies'), cleanse('allies')])),
+    H('sailor_eternal','Eternal Sailor Moon','Reino da Lua','temporada','Suporte','Luz',{ hp:1.04 },
+      P('Cristal de Prata', { stats:{ healPow:.10, regen:.002 }, allyLow:{ th:.3, eff:[shield({ p:.1 }, 'lowAlly', 6)] } }),
+      S('Beijo Estelar', 9, [shield(1.5, 'allies', 6), dmg(1.3, 'all')], 'burst'),
+      Ult('Poder Eterno da Lua', [heal({ p:.35 }, 'allies'), st('weaken', 6, .25, 1, 'all')])),
+    H('dante_dt','Dante Devil Trigger','Cidade de Capulet','temporada','Atirador','Fogo',{ atk:1.05, hp:1.0 },
+      P('Gatilho do Demônio', { stats:{ lifesteal:.06, spd:.06 }, every:{ n:5, eff:[dmg(1.2, 'rand')] } }),
+      S('Ebony & Ivory', 7, [dmg(.5, 'randEach', { hits:6 })], 'slash'),
+      Ult('Sin Devil Trigger', [dmg(1.3, 'all', { hits:3 }), buff('atk', .3, 6)])),
+    H('jinx_arcane','Jinx Arcane','Zaun','temporada','Atirador','Raio',{ atk:1.06, hp:.95 },
+      P('Caos de Zaun', { stats:{ spd:.10 }, onKill:{ eff:[buff('spd', .2, 6)] } }),
+      S('Fishbones Supercarregado', 8, [dmg(1.6, 'all'), st('burn', 4, .3, 1, 'all')], 'burst'),
+      Ult('Super Mega Foguete da Morte', [dmg(3.4, 'high'), dmg(1.4, 'all')]))
   ];
 
   // ---------------------------------------------------------------------------

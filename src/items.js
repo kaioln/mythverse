@@ -457,7 +457,8 @@
 
   // Atributos finais de um item (primário + afixos + fixos do único), com aprimoramento.
   // REFINO: o atributo principal cresce muito a cada nível (×2,18 no +10 e ×4,25 no +15).
-  const REFINE_BONUS = [0, .06, .12, .18, .24, .34, .46, .60, .76, .95, 1.18, 1.45, 1.78, 2.18, 2.66, 3.25];
+  // Acima de +10 o ganho por nível é constante (+14%): antes o +15 multiplicava o atributo principal por 4,25.
+  const REFINE_BONUS = [0, .06, .12, .18, .24, .34, .46, .60, .76, .95, 1.18, 1.32, 1.46, 1.60, 1.75, 1.90];
   const REFINE_AFFIX = [0, .03, .06, .09, .12, .16, .20, .24, .28, .33, .38, .46, .54, .63, .72, .82];
   // Bônus extra por marco de refino, no atributo principal do espaço.
   const refineMilestone = plus => plus >= 15 ? .15 : plus >= 10 ? .08 : plus >= 7 ? .04 : 0;

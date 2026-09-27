@@ -38,4 +38,4 @@ Sem servidor Node, o combate e as recompensas são calculados no navegador e o s
 - `mv_now()`: hora oficial. O jogo sincroniza o relógio por ela; sem ela, o AFK não é concedido.
 - Guarda do save: recusa relógio adiantado (mais de 15 min), herói acima do nível 100 ou 6★ e recursos negativos; saltos grandes (níveis, chaves, cristais) vão para `mv_audit` (só o dono do banco lê).
 - Tabelas do servidor Node no mesmo banco (`users`, `saves`, `save_history`…) ficam fechadas para a Data API (antes qualquer conta logada lia e apagava, inclusive hashes de senha).
-- Presentes: `node --env-file=.env tools/neon_gift.js <conta> keys 1000` ou `... hero kakashi legendary`. O presente vai para o correio e o jogo resgata sozinho ao abrir.
+- Presentes: `node --env-file=.env tools/neon_gift.js <conta> keys 1000` ou `... hero vegeta_ego legendary`. O presente vai para o correio e o jogo resgata sozinho ao abrir.

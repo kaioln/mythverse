@@ -39,10 +39,10 @@ const path = require('node:path');
   await fails(as('ana', 'SELECT * FROM public.mv_audit'), 'auditoria não é visível pela API');
 
   const [{ mv_gift:who }] = (await db.query(`SELECT public.mv_gift('mits', 'keys', '{"n":1000}'::jsonb, 'Presente')`)).rows;
-  await db.query(`SELECT public.mv_gift('Mits', 'hero', '{"id":"kakashi","rarity":"legendary"}'::jsonb, 'Presente')`);
+  await db.query(`SELECT public.mv_gift('Mits', 'hero', '{"id":"vegeta_ego","rarity":"legendary"}'::jsonb, 'Presente')`);
   ok(who === 'ana', 'presente encontra a conta pelo nome do ranking');
   const mail = await as('ana', `SELECT id, kind, payload FROM public.mv_mail ORDER BY id`);
-  ok(mail.length === 2 && mail[0].kind === 'keys' && mail[1].payload.id === 'kakashi', 'presentes chegam ao correio da conta');
+  ok(mail.length === 2 && mail[0].kind === 'keys' && mail[1].payload.id === 'vegeta_ego', 'presentes chegam ao correio da conta');
   const [{ mv_mail_claim:c }] = await as('ana', 'SELECT public.mv_mail_claim($1)', [mail[0].id]);
   ok(c.kind === 'keys' && c.payload.n === 1000, 'resgate do presente de chaves');
   await fails(as('bia', `SELECT public.mv_gift('bia', 'keys', '{"n":99}'::jsonb, 'x')`), 'jogador não consegue se dar presentes');

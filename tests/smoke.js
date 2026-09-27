@@ -307,7 +307,7 @@ ok(!refineUntil('rare', 6, (r, it) => r.failed && it.plus < 6), 'raro: até +8 n
 ok(refineUntil('rare', 9, r => r.broken), 'raro: +9 para +10 pode quebrar');
 ok(refineUntil('epic', 12, (r, it) => r.failed && it.plus === 11), 'épico: falha acima de +10 volta 1 nível');
 ok(!refineUntil('legendary', 13, (r, it) => r.failed && (it.plus < 13 || !state.inventory.includes(it))), 'lendário: nunca volta nem quebra');
-const r15 = I.makeItem({ ilvl:20, rarity:'legendary', slot:'weapon', wt:'sword' }), s0 = I.itemStats(r15).atkFlat; r15.plus = 15; ok(I.itemStats(r15).atkFlat > s0 * 4, 'refino +15 multiplica o ataque da arma por mais de 4');
+const r15 = I.makeItem({ ilvl:20, rarity:'legendary', slot:'weapon', wt:'sword' }), s0 = I.itemStats(r15).atkFlat; r15.plus = 15; { const k = I.itemStats(r15).atkFlat / s0; ok(k > 2.6 && k < 3.5, 'refino +15 multiplica o ataque da arma por ~3 (antes 4,25: poder exagerado)'); }
 // Bolsa cheia: nada se perde
 const bagState = State.createState(), be = new CombatEngine(bagState, {}); bagState.invCap = 150;
 for (let i = 0; i < 160; i++) be.addItem(I.makeItem({ ilvl:5, rarity:i % 2 ? 'rare' : 'common' }));
@@ -460,8 +460,8 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   // Presentes do correio.
   const st2 = X.createState(), e2 = new CombatEngine(st2, {});
   ok(e2.marketReceive('keys', { n:1000 }) && st2.player.keys === 1000, 'presente de 1000 chaves');
-  ok(e2.marketReceive('hero', { id:'kakashi', rarity:'legendary' }) && st2.collection.some(r => r.id === 'kakashi' && r.rarity === 'legendary'), 'presente de herói lendário');
-  ok(D.roster.find(t => t.id === 'kakashi').cls === 'Executor', 'Kakashi é Executor');
+  ok(e2.marketReceive('hero', { id:'vegeta_ego', rarity:'legendary' }) && st2.collection.some(r => r.id === 'vegeta_ego' && r.rarity === 'legendary'), 'presente de herói lendário');
+  ok(D.roster.find(t => t.id === 'vegeta_ego').cls === 'Executor', 'Vegeta Ultra Ego é Executor');
   ok(!e2.marketReceive('hero', { id:'nao_existe', rarity:'legendary' }), 'herói inexistente é recusado');
   // Save adulterado volta ao possível.
   const bad = JSON.parse(JSON.stringify(st2)); bad.collection[0].stars = 99; bad.collection[0].attr.str = 9999; bad.collection[0].talents = { v1:99 }; bad.training.atk = 9999; bad.paragon.lv = 9999; bad.player.keys = -5;
@@ -476,6 +476,14 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   ok((bank.match(/<svg viewBox/g) || []).length === 2 && !bank.includes('preserveAspectRatio="none"'), 'gráficos com escala e sem distorção');
   const q = ui.bankPanel(null, 'quotes'); ok(!/<em>–<\/em>/.test(q) && q.includes('estimativa do Banco'), 'cotações nunca ficam vazias (estimativa quando não há vendas)');
   ui.session = { mode:'offline' };
+}
+
+{
+  const X = KT.State, st = X.createState(); const e = new CombatEngine(st, {});
+  const old = JSON.parse(JSON.stringify(st)); old.collection = [X.newHeroRecord(D.roster.find(t => t.id === 'tobias'), 'rare'), { ...X.newHeroRecord(D.roster.find(t => t.id === 'tobias'), 'epic'), uid:'hero_old_asta', id:'asta' }]; old.shards = { asta:12 };
+  const m = X.mergeState(old); ok(m.collection.some(h => h.uid === 'hero_old_asta' && h.id === 'luffy_gear5') && m.shards.luffy_gear5 === 12 && !m.shards.asta, 'ids antigos da temporada migram para as formas despertadas');
+  const e2 = new CombatEngine(m, {}); ok(e2.setParty(0, m.collection[0].uid) && !e2.setParty(1, 'hero_old_asta'), 'forma despertada e original não entram juntos na equipe');
+  ok(D.SEASON.heroes.every(id => { const t = D.roster.find(h => h.id === id); return t.base !== id && D.roster.some(h => h.id === t.base); }), 'toda forma despertada aponta para o herói original');
 }
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));
