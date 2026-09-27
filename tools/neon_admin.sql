@@ -45,15 +45,4 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anonymous, a
 CREATE TABLE IF NOT EXISTS public.mv_migrations (id text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
 ALTER TABLE public.mv_migrations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.mv_migrations FROM anonymous, authenticated;
-DO $$ BEGIN
-  IF NOT EXISTS (SELECT 1 FROM public.mv_migrations WHERE id = 'power_scale_v2') THEN
-    -- Poder já gravado em força bruta → escala compacta (força^0,7), sem mexer na revisão dos saves.
-    ALTER TABLE public.mv_saves DISABLE TRIGGER mv_saves_guard;
-    UPDATE public.mv_saves SET power = round(power(greatest(0, power)::numeric, 0.7)) WHERE coalesce(data->>'powerScale', '1') <> '2';
-    ALTER TABLE public.mv_saves ENABLE TRIGGER mv_saves_guard;
-    UPDATE public.mv_pvp p SET power = s.power FROM public.mv_saves s WHERE s.user_id = p.user_id;
-    UPDATE public.mv_guild_members m SET power = s.power FROM public.mv_saves s WHERE s.user_id = m.user_id;
-    UPDATE public.mv_guild_requests r SET power = s.power FROM public.mv_saves s WHERE s.user_id = r.user_id;
-    INSERT INTO public.mv_migrations (id) VALUES ('power_scale_v2');
-  END IF;
-END $$;
+-- O poder já gravado é recalculado com o motor do jogo por tools/neon_setup.js (exato, não depende do aparelho).

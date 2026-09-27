@@ -305,7 +305,7 @@
         { at:.66, text:'Servos de âmbar despertam', summon:{ id:'sand_servant', n:2, every:26 }, specials:[{ name:'Tempestade do Deserto', cd:15, windup:2.6, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:13, windup:1.6, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.0, to:'high' }] }] },
         { at:.33, text:'A Ampulheta se quebra', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Ampulheta Quebrada', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.8, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:11, windup:1.4, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.2, to:'high' }] }] }
       ] }),
-    boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, hp:340000, atk:230, def:170, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
+    boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, hp:215000, atk:208, def:150, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
       desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
       skill:{ name:'Rufar dos Tambores', cd:6, eff:[{ k:'chain', m:1.6, n:4, fall:.8 }] },
       phases:[
@@ -326,6 +326,14 @@
   // growth: crescimento por estágio da caçada (padrão STAGE_GROWTH).
   // ---------------------------------------------------------------------------
   const STAGE_GROWTH = 1.2;
+  // Força dos inimigos por NÍVEL. Até o 33 é a curva original (1,065 por nível). Depois, +5,6% por nível: é a força
+  // em que uma equipe de referência no nível L (itens do mapa, refino, treino, qualidade) leva o mesmo tempo para
+  // matar (~6 s por inimigo) e para morrer (~22 s) que no fim do Capítulo I, com a mitigação real de DEF do motor.
+  // Validação por lutas: node tools/balance.js
+  const LP33 = Math.pow(1.065, 32), LP_B = .062, LP_D = 0, LP_TAIL = LP_B;
+  const levelPower = L => L <= 33 ? Math.pow(1.065, L - 1) : L <= 100 ? LP33 * Math.exp(LP_B * (L - 33) + LP_D * (L - 33) * (L - 33)) : levelPower(100) * Math.exp(LP_TAIL * (L - 100));
+  // Inverso contínuo (nível de um inimigo a partir da força).
+  const levelOfPower = P => { P = Math.max(1, P); if (P <= LP33) return 1 + Math.log(P) / Math.log(1.065); let lo = 33, hi = 400; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (levelPower(m) < P) lo = m; else hi = m; } return (lo + hi) / 2; };
   const zones = {
     village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'CAPITAL · TSUKIMORI', difficulty:'Capital', theme:'village', scene:'village-expanded',
       lore:'A capital sob a proteção do Véu cresceu em torno da Praça da Lua. Guilda, dojo, forja, mercado, santuário e oficinas recebem heróis antes de cada expedição.' },
@@ -341,14 +349,14 @@
       weakTo:['Luz'], lore:'No topo da montanha, o Rei do Eclipse devora a luz da lua. Só uma equipe preparada sobrevive ao Eclipse Total.',
       unlock:{ stage:{ hunt:12 }, floor:{ dungeon:3 } } },
     hunt_tide: { id:'hunt_tide', kind:'hunt', chapter:2, title:'Costa das Marés', subtitle:'Ruínas afogadas, espectros e colossos de coral.', kicker:'CAPÍTULO II · CAÇADA', difficulty:'Estágios 1 a 12', theme:'coast',
-      pool:['wisp','revenant','fox_foam','spider_coral','oni_tide'], elites:['revenant_captain','golem_coral'], stages:12, basePower:9.06, growth:1.15, ilvl:14,
+      pool:['wisp','revenant','fox_foam','spider_coral','oni_tide'], elites:['revenant_captain','golem_coral'], stages:12, lv:[36, 60], ilvl:14,
       weakTo:['Raio','Natureza'], lore:'Com o eclipse, a maré trouxe de volta os afogados. Um capitão fantasma recruta novos marinheiros.',
       unlock:{ kills:{ boss:1 } } },
     dungeon_tide: { id:'dungeon_tide', kind:'dungeon', chapter:2, title:'Arquivo Submerso', subtitle:'Conhecimento proibido sob a maré.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'archive',
-      pool:['revenant_scribe','wisp_arc','spider_ink','golem_crystal','fox_storm'], elites:['revenant_crimson','archive_sentinel'], floorBoss:'oni_storm', floors:3, floorPower:[19.3, 24.8, 31.9], ilvl:18,
+      pool:['revenant_scribe','wisp_arc','spider_ink','golem_crystal','fox_storm'], elites:['revenant_crimson','archive_sentinel'], floorBoss:'oni_storm', floors:3, lvs:[48, 52, 56], ilvl:18,
       weakTo:['Luz','Terra','Vento'], lore:'A biblioteca que registrava a história do Véu. Seus escribas continuam escrevendo, com tinta venenosa.',
       unlock:{ stage:{ hunt_tide:5 } } },
-    boss_tide: { id:'boss_tide', kind:'boss', chapter:2, title:'Abismo de Mizuchi', subtitle:'O dragão das marés aguarda no fundo do mar.', kicker:'CAPÍTULO II · CHEFE', difficulty:'Chefe', theme:'abyss', enemy:'boss_tide', power:46.6, ilvl:27,
+    boss_tide: { id:'boss_tide', kind:'boss', chapter:2, title:'Abismo de Mizuchi', subtitle:'O dragão das marés aguarda no fundo do mar.', kicker:'CAPÍTULO II · CHEFE', difficulty:'Chefe', theme:'abyss', enemy:'boss_tide', lv:62, ilvl:27,
       weakTo:['Raio','Natureza'], lore:'Mizuchi foi o guardião do mar até o eclipse corromper seu coração. Seu Tsunami pode varrer uma equipe despreparada.',
       unlock:{ stage:{ hunt_tide:12 }, floor:{ dungeon_tide:3 } } },
     // --- Capítulo I: rotas secundárias ---
@@ -362,43 +370,43 @@
       unlock:{ stage:{ hunt_swamp:5 } } },
     // --- Capítulo II: rotas secundárias ---
     hunt_frost: { id:'hunt_frost', kind:'hunt', chapter:2, side:true, title:'Planalto Congelado', subtitle:'Nevasca eterna e a Rainha do Inverno.', kicker:'CAPÍTULO II · CAÇADA', difficulty:'Estágios 1 a 8', theme:'frost',
-      pool:['fox_snow','spider_ice','wisp_ice','golem_ice'], elites:['oni_frost','revenant_frost'], stages:8, basePower:11.7, growth:1.11, ilvl:16,
+      pool:['fox_snow','spider_ice','wisp_ice','golem_ice'], elites:['oni_frost','revenant_frost'], stages:8, lv:[40, 52], ilvl:16,
       weakTo:['Fogo','Terra'], lore:'Acima da costa, o eclipse congelou o céu. A Rainha do Inverno guarda o caminho para a forja esquecida.',
       unlock:{ stage:{ hunt_tide:4 } } },
     dungeon_forge: { id:'dungeon_forge', kind:'dungeon', chapter:2, side:true, title:'Forja Abissal', subtitle:'Metal vivo e o coração em chamas.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'forge',
-      pool:['spider_lava','wisp_lava','fox_fire','revenant_ash'], elites:['oni_lava','golem_iron'], floorBoss:'golem_forge', floors:3, floorPower:[24.8, 31.9, 41.1], ilvl:22,
+      pool:['spider_lava','wisp_lava','fox_fire','revenant_ash'], elites:['oni_lava','golem_iron'], floorBoss:'golem_forge', floors:3, lvs:[52, 56, 60], ilvl:22,
       weakTo:['Água','Natureza'], lore:'A forja onde Ren aprendeu o ofício. Hoje os autômatos trabalham sozinhos, forjando armas para o eclipse.',
       unlock:{ stage:{ hunt_frost:5 } } },
     // --- Capítulo III ---
     hunt_desert: { id:'hunt_desert', kind:'hunt', chapter:3, title:'Areias do Tempo', subtitle:'Chacais, esfinges e múmias reais.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 12', theme:'desert',
-      pool:['fox_sand','spider_sand','wisp_sand','oni_sand'], elites:['golem_sand','revenant_mummy'], stages:12, basePower:52.8, growth:1.10, ilvl:30,
+      pool:['fox_sand','spider_sand','wisp_sand','oni_sand'], elites:['golem_sand','revenant_mummy'], stages:12, lv:[64, 80], ilvl:30,
       weakTo:['Água','Natureza','Vento'], lore:'Além do mar, um deserto onde as horas escorrem como areia. Algo enorme se move sob as dunas.',
       unlock:{ kills:{ boss_tide:1 } } },
     hunt_ghost: { id:'hunt_ghost', kind:'hunt', chapter:3, side:true, title:'Cidade Fantasma', subtitle:'Uma cidade inteira presa em um único segundo.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 8', theme:'ghost',
-      pool:['fox_ghost','wisp_ghost','spider_ghost','oni_ghost'], elites:['golem_ghost','revenant_ghost'], stages:8, basePower:68, growth:1.11, ilvl:34,
+      pool:['fox_ghost','wisp_ghost','spider_ghost','oni_ghost'], elites:['golem_ghost','revenant_ghost'], stages:8, lv:[68, 80], ilvl:34,
       weakTo:['Luz'], lore:'Quando Apep engoliu o tempo desta cidade, seus moradores ficaram presos para sempre no último baile.',
       unlock:{ stage:{ hunt_desert:5 } } },
     dungeon_clock: { id:'dungeon_clock', kind:'dungeon', chapter:3, title:'Torre do Relógio', subtitle:'Engrenagens, paradoxos e a Meia-Noite.', kicker:'CAPÍTULO III · DUNGEON', difficulty:'Andares I a III', theme:'clock',
-      pool:['fox_time','wisp_time','spider_clock','oni_time'], elites:['revenant_time','revenant_chrono'], floorBoss:'golem_clock', floors:3, floorPower:[87.5, 106, 128], ilvl:38,
+      pool:['fox_time','wisp_time','spider_clock','oni_time'], elites:['revenant_time','revenant_chrono'], floorBoss:'golem_clock', floors:3, lvs:[72, 75, 78], ilvl:38,
       weakTo:['Terra','Gelo'], lore:'A torre que marcava as horas do mundo. Quem a controla decide quando o eclipse termina.',
       unlock:{ stage:{ hunt_desert:8 } } },
-    boss_sand: { id:'boss_sand', kind:'boss', chapter:3, title:'Ninho de Apep', subtitle:'A serpente que devora as horas.', kicker:'CAPÍTULO III · CHEFE', difficulty:'Chefe', theme:'desertBoss', enemy:'boss_sand', power:164, ilvl:44,
+    boss_sand: { id:'boss_sand', kind:'boss', chapter:3, title:'Ninho de Apep', subtitle:'A serpente que devora as horas.', kicker:'CAPÍTULO III · CHEFE', difficulty:'Chefe', theme:'desertBoss', enemy:'boss_sand', lv:82, ilvl:44,
       weakTo:['Água','Natureza','Vento'], lore:'No coração do deserto, Apep dorme enrolada na última ampulheta. Se ela acordar por completo, o tempo deixa de existir.',
       unlock:{ stage:{ hunt_desert:12 }, floor:{ dungeon_clock:3 } } },
     // --- Capítulo IV: O Céu Partido ---
     hunt_sky: { id:'hunt_sky', kind:'hunt', chapter:4, title:'Ilhas Flutuantes', subtitle:'Ilhas de pedra presas por correntes de nuvem.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 12', theme:'sky',
-      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, basePower:186, growth:1.08, ilvl:47,
+      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, lv:[84, 98], ilvl:47,
       weakTo:['Terra','Gelo'], lore:'Quando Apep caiu, o céu rachou. Ilhas inteiras subiram com templos, pontes e criaturas, e lá no alto um tambor não para de tocar.',
       unlock:{ kills:{ boss_sand:1 } } },
     hunt_sakura: { id:'hunt_sakura', kind:'hunt', chapter:4, side:true, title:'Vale das Cerejeiras Eternas', subtitle:'Onde as flores nunca caem de verdade.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 8', theme:'sakura',
-      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, basePower:240, growth:1.09, ilvl:51,
+      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, lv:[88, 98], ilvl:51,
       weakTo:['Fogo','Sombra'], lore:'Um vale suspenso onde é sempre primavera. Lindo, e perigoso: as flores têm dentes.',
       unlock:{ stage:{ hunt_sky:5 } } },
     dungeon_sky: { id:'dungeon_sky', kind:'dungeon', chapter:4, title:'Santuário das Nuvens', subtitle:'Sinos, monges e o Senhor dos Ventos.', kicker:'CAPÍTULO IV · DUNGEON', difficulty:'Andares I a III', theme:'skyShrine',
-      pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, floorPower:[308, 372, 450], ilvl:55,
+      pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, lvs:[92, 95, 98], ilvl:55,
       weakTo:['Terra','Sombra'], lore:'O templo onde Fujin guardava os ventos. Agora os sinos tocam sozinhos e cada badalada derruba um herói.',
       unlock:{ stage:{ hunt_sky:8 } } },
-    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', power:510, ilvl:61,
+    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', lv:96, ilvl:61,
       weakTo:['Terra'], lore:'No topo das nuvens, Raijin toca o tambor do trovão sem parar. Cada batida abre mais a Fenda.',
       unlock:{ stage:{ hunt_sky:12 }, floor:{ dungeon_sky:3 } } },
     // --- PvP: a equipe rival é a defesa salva de outro jogador ---
@@ -433,8 +441,8 @@
     duration:90,
     tiers:[
       { id:0, name:'Normal', P:8, minPower:0, reward:1, pool:25 },
-      { id:1, name:'Heroico', P:80, minPower:4000, reward:2.2, pool:25, ally:true },
-      { id:2, name:'Mítico', P:700, minPower:20000, reward:4, pool:25, ally:true }
+      { id:1, name:'Heroico', lv:60, minPower:25000, reward:2.2, pool:25, ally:true },
+      { id:2, name:'Mítico', lv:90, minPower:180000, reward:4, pool:25, ally:true }
     ]
   };
   // Expedições: heróis fora da equipe saem em missão e voltam com recursos (funciona offline).
@@ -793,5 +801,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { levelPower, levelOfPower, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

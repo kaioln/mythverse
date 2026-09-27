@@ -78,6 +78,7 @@
     const uids = new Set(s.collection.map(h => h.uid));
     s.formation = [0, 1, 2, 3].map(i => (raw.formation || [])[i] && uids.has(raw.formation[i]) ? raw.formation[i] : null);
     s.inventory = (raw.inventory || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
+    [...s.inventory, ...s.overflow, ...s.storage].forEach(it => I.normalizeItemPrimary(it));
     s.cards = { ...(raw.cards || {}) };
     s.prof.lv = { ...fresh.prof.lv, ...(raw.prof?.lv || {}) }; s.prof.xp = { ...fresh.prof.xp, ...(raw.prof?.xp || {}) }; s.prof.mats = { ...(raw.prof?.mats || {}) };
     s.house.display = (Array.isArray(s.house.display) ? s.house.display : []).slice(0, 6).map(id => (id && I.cardById(id) ? id : null));
@@ -160,7 +161,9 @@
   const XP_SHARE = lvl => 3.5 * Math.pow(1.065, .92 * (lvl - 1));
   const heroXpNext = lvl => { lvl = Math.max(1, lvl); return lvl <= 32 ? Math.round(60 * Math.pow(lvl, 1.9)) : Math.round((2050 + 25 * (lvl - 32)) * XP_SHARE(lvl)); };
   // Nível de um inimigo a partir do poder da região (o mesmo número mostrado na luta).
-  const enemyLevel = P => Math.max(1, Math.round(1 + Math.log(Math.max(1, P)) / Math.log(1.065)));
+  const enemyLevel = P => Math.max(1, Math.round(D.levelOfPower(P)));
+  // Recompensas (ouro, EXP) seguem o NÍVEL do inimigo, não a força: a renda cresce como no Capítulo I (1,065 por nível).
+  const rewardPower = P => P <= Math.pow(1.065, 32) ? Math.max(1, P) : Math.pow(1.065, D.levelOfPower(P) - 1);
   // Travas de EXP: herói muito abaixo do inimigo (carregado por uma equipe forte) ou muito acima (farm de mapa fácil)
   // ganha menos, e um único abate nunca rende mais que 5% de um nível. O nível do inimigo conta até o teto dos heróis.
   const XP_RULES = { under:15, underSlope:.04, over:8, overSlope:.1, floor:.1, perKill:.05 };
@@ -175,7 +178,11 @@
   const accountXpNext = lvl => Math.round(250 * Math.pow(1.2, lvl - 1));
   const heroMaxLevel = () => HERO_LEVEL_CAP;
   const awakenCost = (stars, shrineLv) => ({ shards:[0, 15, 30, 60, 100, 160][stars] || 999, gold:Math.round(2500 * Math.pow(2.3, stars - 1) * (1 - Math.min(.4, (shrineLv - 1) * .05))) });
+  // Força da região: por nível (lv/lvs, calibrado) ou pelos valores originais do Capítulo I.
   const zonePower = (zone, opts = {}) => {
+    if (zone.lv && zone.kind === 'hunt') { const st = U.clamp(opts.stage || 1, 1, zone.stages); return D.levelPower(zone.lv[0] + (zone.lv[1] - zone.lv[0]) * (st - 1) / Math.max(1, zone.stages - 1)); }
+    if (zone.lvs && zone.kind === 'dungeon') return D.levelPower(zone.lvs[(opts.floor || 1) - 1] || zone.lvs[0]);
+    if (zone.lv && zone.kind === 'boss') return D.levelPower(zone.lv) * (D.bossTiers[opts.tier || 0]?.mult || 1);
     if (zone.kind === 'hunt') return zone.basePower * Math.pow(zone.growth || D.STAGE_GROWTH, (opts.stage || 1) - 1);
     if (zone.kind === 'dungeon') return zone.floorPower[(opts.floor || 1) - 1] || zone.floorPower[0];
     if (zone.kind === 'boss') return zone.power * (D.bossTiers[opts.tier || 0]?.mult || 1);
@@ -297,12 +304,14 @@
     return Math.round(offense * 3.2 + defense * .32);
   }
   // Poder exibido (compacto): a força bruta cresce multiplicando muitos fatores e chegava a dezenas de milhões.
-  // O Poder mostrado é força^0,7 (mesma ordem, escala humana: ~400 no começo, ~80 mil no chefe final).
+  // O Poder mostrado é força^0,77 (mesma ordem, escala humana: ~700 no começo, ~5 mil no fim do Cap. I, ~500 mil no nível 100).
   // A força bruta continua sendo a base de todas as comparações internas.
-  const POWER_EXP = .7;
+  const POWER_EXP = .77;
   const powerScore = raw => Math.round(Math.pow(Math.max(0, Number(raw) || 0), POWER_EXP));
   // Poder de um herói: a parte dele numa equipe de 4 iguais (4 heróis iguais somam o Poder da equipe).
   const heroScore = raw => Math.round(powerScore(4 * raw) / 4);
+  // Força bruta de uma equipe de referência no nível L (ajuste de lutas medidas; tools/balance.js).
+  const teamPowerAt = L => Math.exp(8.46126 + .0758646 * L + .000268059 * L * L - .00000180993 * L * L * L);
   function formationRecords(state) { return state.formation.map(uid => uid && state.collection.find(h => h.uid === uid)).filter(Boolean); }
 
   // ===========================================================================
@@ -338,9 +347,10 @@
     recommendedPower(zoneId, opts = {}) { const r = this.recommendedPowerRaw(zoneId, opts); return r ? Math.max(10, Math.round(powerScore(r) / 10) * 10) : 0; }
     recommendedPowerRaw(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z || z.kind === 'village') return 0;
-      const P = zonePower(z, opts);
-      const ref = z.kind === 'boss' ? 3.1 : z.kind === 'dungeon' || z.kind === 'rift' ? 1.35 : 1;
-      return Math.round(6500 * P * Math.min(1, .25 + .1 * P) * ref / 100) * 100;
+      // Poder de uma equipe bem montada no nível dos inimigos (curva medida por tools/balance.js), com 80% de folga
+      // em caçadas; masmorras pedem +1 nível e chefes +4 (como num RPG: chefe exige preparo).
+      const L = D.levelOfPower(zonePower(z, opts)), extra = z.kind === 'boss' ? 4 : z.kind === 'dungeon' || z.kind === 'rift' ? 1 : 0;
+      return Math.round(teamPowerAt(L + extra) * .8 / 100) * 100;
     }
 
     // ---------- desbloqueios ----------
@@ -563,7 +573,7 @@
         this.emit('onWave', { label:`Arena · ${this.arenaFoe.name}`, detail:`${this.enemies.length} heróis rivais · ${D.PVP.time}s`, boss:true });
       } else if (z.kind === 'worldboss') {
         this.wave = 1; const tier = D.worldBoss.tiers[this.opts.tier || 0], id = this.wbBossId();
-        this.enemies = [this.makeEnemyUnit(id, tier.P, { worldBoss:true })];
+        this.enemies = [this.makeEnemyUnit(id, tier.P || D.levelPower(tier.lv || 33), { worldBoss:true })];
         this.bossTimer = 0; this.enrageStacks = 0; this.wbDamage = 0;
         this.emit('onWave', { label:this.enemies[0].name, detail:`Invasão Mundial · ${tier.name} · ${D.worldBoss.duration}s`, boss:true });
       } else if (z.kind === 'boss') {
@@ -1100,7 +1110,7 @@
       const first = floor > (p.best || 0);
       const items = U.random() < .5 + Math.min(.4, floor * .01) ? [this.drop('chest', z, ilvl, this.mod('drop'))] : [];
       const mutGold = 1 + (this.riftMutation(floor).reward?.gold || 0);
-      const rewards = { gold:Math.round(260 * Math.pow(P, .85) * mutGold), ore:2 + Math.floor(floor / 4), crystal:first ? 1 + Math.floor(floor / 5) : 0, keys:first && floor % 5 === 0 ? (floor % 10 === 0 ? 2 : 1) : 0, items };
+      const rewards = { gold:Math.round(260 * Math.pow(rewardPower(P), .85) * mutGold), ore:2 + Math.floor(floor / 4), crystal:first ? 1 + Math.floor(floor / 5) : 0, keys:first && floor % 5 === 0 ? (floor % 10 === 0 ? 2 : 1) : 0, items };
       if (first) p.best = floor;
       this.grant(rewards); this.dropMats('rift');
       this.state.stats.floors++; this.count('floors');
@@ -1118,7 +1128,7 @@
       if (first) {
         p.best = stage;
         rewards.crystal = 2 + stage + (z.chapter - 1) * 6;
-        rewards.gold = Math.round(120 * zonePower(z, { stage }));
+        rewards.gold = Math.round(120 * rewardPower(zonePower(z, { stage })));
         if (stage === z.stages && !z.side) rewards.keys = 1;
         else if (stage % 4 === 0) rewards.keys = 1;
         if (stage === z.stages) rewards.items.push(this.drop('guardian', z, itemLevelFor(z, { stage }) + 1, .5));
@@ -1140,7 +1150,7 @@
       const items = [this.drop('chest', z, ilvl, this.mod('drop'))];
       if (this.state.routeChoice === 'risk') items.push(this.drop('chest', z, ilvl, this.mod('drop')));
       this.dropMats('chest');
-      const rewards = { gold:Math.round(320 * zonePower(z, { floor })), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .01 ? 1 : 0), items };
+      const rewards = { gold:Math.round(320 * rewardPower(zonePower(z, { floor }))), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .01 ? 1 : 0), items };
       if (first) p.best = floor;
       this.grant(rewards);
       this.state.stats.floors++; this.count('floors');
@@ -1165,7 +1175,7 @@
       if (loot && tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
       if (loot) this.dropMats('boss');
       else this.emit('onToast', `<b>Espólio de hoje esgotado</b> contra ${esc(D.enemies[z.enemy].name.split(',')[0])}: a vitória rende só ouro e EXP até a meia-noite (Brasília).`);
-      const rewards = { gold:Math.round(2000 * zonePower(z, this.opts) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
+      const rewards = { gold:Math.round(2000 * rewardPower(zonePower(z, this.opts)) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
       this.grant(rewards);
       if (firstKill && D.story.bossWin[z.id]) this.emit('onDialog', D.story.bossWin[z.id]);
       this.showResult({ kind:'boss', zone:z, tier, first:firstKill, lootLocked:!loot, lootLeft:this.bossLootLeft(z.id, tier), rewards, boss:D.enemies[z.enemy].name, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
@@ -1242,7 +1252,7 @@
       } else if (pe.enc.id === 'chest' && id === 'open') {
         if (U.random() < .3) { this.enemies = [this.makeEnemyUnit('mimic', zonePower(this.zone, this.opts))]; this.phase = 'fight'; this.emit('onWave', { label:'Era um Mímico!', detail:'O baú tinha dentes...', special:true }); this.emit('onWarn', 'Era um Mímico!'); return; }
         const it = this.drop('chest', this.zone, itemLevelFor(this.zone, this.opts) + 1, 1); this.addItem(it); this.emit('onLoot', it);
-        const g = this.goldIn(200 * zonePower(this.zone, this.opts)); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
+        const g = this.goldIn(200 * rewardPower(zonePower(this.zone, this.opts))); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
       }
       this.phase = 'between'; this.timer = .8;
     }
@@ -1259,8 +1269,8 @@
       if (s.bounty?.active && s.bounty.active.enemy === e.id) s.bounty.active.progress = Math.min(s.bounty.active.n, s.bounty.active.progress + 1);
       const research = this.research(e.id); s.bestiary[e.id] = (s.bestiary[e.id] || 0) + 1;
       if (this.research(e.id) > research) this.emit('onToast', `<b>Bestiário:</b> ${esc(t.name)}, pesquisa nível ${this.research(e.id)} (+${Math.round(this.research(e.id) * D.RESEARCH.dmg * 100)}% de dano contra ela).`);
-      const gold = this.goldIn(U.randInt(t.gold[0], t.gold[1]) * Math.pow(e.P, .85) * (1 + this.mod('gold')) * mult * .8);
-      const xp = Math.round(t.xp * Math.pow(e.P, .92) * (1 + this.mod('xp')) * mult * (lootOk ? 1 : .3));
+      const gold = this.goldIn(U.randInt(t.gold[0], t.gold[1]) * Math.pow(rewardPower(e.P), .85) * (1 + this.mod('gold')) * mult * .8);
+      const xp = Math.round(t.xp * Math.pow(rewardPower(e.P), .92) * (1 + this.mod('xp')) * mult * (lootOk ? 1 : .3));
       s.player.gold += gold; s.stats.goldEarned += gold; this.runGold += gold; this.runXp += xp;
       if (activeEvent(this.now()).mods?.dust) s.player.dust += U.random() < .3 ? 1 : 0;
       this.giveXp(xp, e.level);
@@ -1353,10 +1363,10 @@
       const s = this.state, i = s.expeditions.findIndex(x => x.id === id); if (i < 0) return false;
       const x = s.expeditions[i]; if (this.now() < x.start + x.hours * 3600000) { this.lastError = 'A expedição ainda não voltou.'; return false; }
       const z = D.zones[x.zone], P = zonePower(z, { stage:Math.max(1, s.progress[x.zone]?.best || 1) }), n = x.uids.length;
-      const r = { gold:Math.round(700 * x.hours * Math.pow(P, .8) * n / 3), ore:x.hours * 2 * n, dust:x.hours * 3 * n, items:[] };
+      const r = { gold:Math.round(700 * x.hours * Math.pow(rewardPower(P), .8) * n / 3), ore:x.hours * 2 * n, dust:x.hours * 3 * n, items:[] };
       // EXP de expedição: equivale a caçar a região em ritmo lento e nunca leva o herói além do nível dela.
       const zl = Math.min(HERO_LEVEL_CAP, enemyLevel(P));
-      x.uids.forEach(uid => { const h = this.record(uid); if (!h || h.level >= zl) return; const amt = Math.round(x.hours * 540 * 14 * Math.pow(P, .92) * .15 * xpFactor(h.level, zl));
+      x.uids.forEach(uid => { const h = this.record(uid); if (!h || h.level >= zl) return; const amt = Math.round(x.hours * 540 * 14 * Math.pow(rewardPower(P), .92) * .15 * xpFactor(h.level, zl));
         this.gainHeroXp(h, Math.min(amt, this.xpToLevel(h, zl))); });
       for (let k = 0; k < Math.floor(x.hours / 2) * n; k++) r.items.push(I.rollDrop('normal', z, itemLevelFor(z, { stage:Math.max(1, s.progress[x.zone]?.best || 1) }), 0, this.preferWT()));
       if (U.random() < 1 - Math.pow(.97, x.hours * n)) s.mats.star += 1;
@@ -2012,7 +2022,7 @@
       (this.state.contracts || []).forEach(c => { const def = D.contracts.find(d => d.id === c.id); if (def?.type === type) c.progress = Math.min(c.n, c.progress + 1); });
       (this.state.daily?.list || []).forEach(d => { const def = D.dailies.find(x => x.id === d.id); if (def?.type === type && !d.claimed) d.progress = Math.min(d.n, d.progress + 1); });
     }
-    farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) })); }
+    farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, rewardPower(zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) }))); }
     contractReward(c) {
       const def = D.contracts.find(d => d.id === c.id), rank = c.rank || this.state.guildRank?.lv || 1, m = (1 + c.tier * .8) * (1 + .12 * (rank - 1)), P = this.farmPower();
       const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 450 * P * m : k === 'crystal' ? v * .5 * m : v * m); }); return out;
@@ -2198,8 +2208,8 @@
       const zid = D.zones[s.lastHunt]?.kind === 'hunt' ? s.lastHunt : 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid]?.best || 1), P = zonePower(z, { stage });
       const killsPerSec = .16; // AFK rende bem menos que jogar (ativo: ~0,5 a 1 abate/s)
       const kills = Math.floor(capped * killsPerSec);
-      const gold = this.goldIn(kills * 11 * Math.pow(P, .85) * .35 * (1 + this.mod('gold')));
-      const xp = Math.round(kills * 14 * Math.pow(P, .92) * .3 * (1 + this.mod('xp')));
+      const gold = this.goldIn(kills * 11 * Math.pow(rewardPower(P), .85) * .35 * (1 + this.mod('gold')));
+      const xp = Math.round(kills * 14 * Math.pow(rewardPower(P), .92) * .3 * (1 + this.mod('xp')));
       s.player.gold += gold; s.stats.goldEarned += gold;
       this.giveXp(xp, enemyLevel(P), kills);
       const items = [];
@@ -2214,6 +2224,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

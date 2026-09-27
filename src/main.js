@@ -154,6 +154,21 @@
         // Assume o save logo na abertura: outro aparelho aberto antes deixa de gravar.
         setTimeout(() => { engine.save(); KT.Neon.flush(); }, 1500);
       }
+      // Versão nova publicada: salva e recarrega sozinho (fora de luta), para ninguém ficar preso na versão antiga.
+      if (location.protocol !== 'file:') {
+        let reloading = false;
+        const checkVersion = async () => {
+          if (reloading) return;
+          try {
+            const r = await fetch(`version.json?t=${Date.now()}`, { cache:'no-store' }); if (!r.ok) return;
+            const v = (await r.json()).v; if (!v || v === KT.VERSION) return;
+            reloading = true; ui.toast('<b>Nova versão do jogo!</b> Salvando e atualizando…', 'gold');
+            const go = async () => { if (engine.phase === 'fight' && engine.zone?.kind !== 'village') { setTimeout(go, 5000); return; } engine.save(); try { await KT.Neon?.flush?.(); await KT.Server?.flush?.(); } catch (_) {} location.reload(); };
+            setTimeout(go, 3000);
+          } catch (_) {}
+        };
+        setTimeout(checkVersion, 20_000); setInterval(checkVersion, 3 * 60_000);
+      }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 
       assets.onProgress = (done, total) => { fill.style.width = `${Math.round(done / total * 100)}%`; label.textContent = `Preparando a jornada… ${done}/${total}`; };

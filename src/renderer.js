@@ -12,7 +12,7 @@
   const BOSS_ADDS = [{x:790,y:560},{x:790,y:675},{x:1170,y:560},{x:1175,y:680}];
   // Na cidade os heróis ficam na escala das construções, em volta do medalhão da praça (linha de frente adiante).
   const VILLAGE_POS = [{x:596,y:404},{x:676,y:404},{x:552,y:370},{x:720,y:370}], VILLAGE_H = 66;
-  const HERO_H = 176, ENEMY_H = 158, ELITE_H = 205;
+  const HERO_H = 176, HERO_H0 = HERO_H, ENEMY_H = 158, ELITE_H = 205;
   const RANGED = new Set(['Arcanista','Suporte','Atirador']);
   // Projéteis: forma por classe/elemento; duração, arco e rastro dão o peso (pedra pesada e lenta, raio quase instantâneo).
   const ELEM_PROJ = { Fogo:'fire', Gelo:'shard', Raio:'bolt', Vento:'wind', Água:'water', Natureza:'thorn', Terra:'rock', Luz:'light', Sombra:'void' };
@@ -459,7 +459,8 @@
         list.sort((a, b) => a.pos.y - b.pos.y).forEach(o => {
           const c = this.ctx, bob = Math.sin(this.worldTime * 2 + o.pos.x) * 1;
           c.save(); c.fillStyle = 'rgba(20,10,4,.38)'; c.beginPath(); c.ellipse(o.pos.x, o.pos.y + 2, 17, 5, 0, 0, Math.PI * 2); c.fill(); c.restore();
-          this.drawSprite(o.t.sprite, o.pos.x, o.pos.y + bob, VILLAGE_H, { sy:1 + Math.sin(this.worldTime * 2.4 + o.pos.x) * .015 });
+          const vm = KT.SPRITE_META?.[o.t.sprite] || [1, 0];
+          this.drawSprite(o.t.sprite, o.pos.x, o.pos.y + bob + vm[1] * VILLAGE_H * vm[0], VILLAGE_H * vm[0], { sy:1 + Math.sin(this.worldTime * 2.4 + o.pos.x) * .015 });
           const short = o.t.name.replace(/^(Coronel|Mestre|Comandante|Unidade|O|A)\s+/, '').split(/[ ,]/)[0];
           c.save(); c.font = `700 10px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; const tw = c.measureText(short).width + 12;
           this.roundRect(o.pos.x - tw / 2, o.pos.y + 6, tw, 14, 7); c.fillStyle = 'rgba(12,10,30,.72)'; c.fill(); c.fillStyle = '#f3f1ff'; c.fillText(short, o.pos.x, o.pos.y + 13.5); c.restore();
@@ -490,7 +491,9 @@
       const c = this.ctx, s = this.v(u.uid), alive = u.alive, t = this.worldTime + u.slot * .7;
       const moving = this.engine.phase === 'between' && alive;
       const off = this.actorOffset(s, 1), run = moving ? Math.abs(Math.sin(t * 11)) * 8 : 0;
-      const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y - run;
+      // Escala por sprite (src/sprite-meta.js): todos os heróis com o mesmo tamanho aparente e o pé no chão.
+      const hm = KT.SPRITE_META?.[u.sprite] || [1, 0], HERO_H = HERO_H0 * hm[0];
+      const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y - run + hm[1] * HERO_H;
       c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(pos.x + off.x, pos.y + 4, 46, 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
       const ultReady = alive && u.energy >= 100;
       if (alive) this.runeCircle(pos.x + off.x, pos.y + 4, 54, u.color, ultReady ? .95 : .45, ultReady ? 1.8 : .5);

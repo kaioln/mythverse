@@ -390,3 +390,31 @@ def build_season():
         img = aura(shift_keep_skin(canvas, h, s, v), col, 10)
         img.save(os.path.join(sp, f'{vid}.png'), optimize=True)
         portrait(img).save(os.path.join(OUT_PORTRAITS, f'{vid}.png'), optimize=True)
+
+
+def build_sprite_meta():
+    """Escala por herói (src/sprite-meta.js): corrige margem de aura das formas despertadas e dá até +12% aos
+    personagens de arte estreita (ex.: Vegeta), que ao lado dos outros pareciam menores. Nunca encolhe ninguém."""
+    ids = ANIME + GAMES + [x[0] for x in SEASON_HEROES]
+    rows = {}
+    for i in ids:
+        im = Image.open(os.path.join(ROOT, 'assets', 'sprites', f'{i}.png'))
+        a = np.array(im.getchannel('A')) > 100
+        ys, xs = np.where(a.any(1))[0], np.where(a.any(0))[0]
+        h, w = ys[-1] - ys[0] + 1, xs[-1] - xs[0] + 1
+        rows[i] = (im.height, h, w, im.height - 1 - ys[-1])
+    base = {i: r for i, r in rows.items() if i in ANIME + GAMES}
+    ratio0 = float(np.median([r[1] / r[0] for r in base.values()]))
+    aspect0 = float(np.median([r[2] / r[1] for r in base.values()]))
+    pad0 = float(np.median([r[3] / r[0] for r in base.values()]))
+    meta = {}
+    for i, (H, h, w, pad) in rows.items():
+        boost = min(1.12, max(1.0, (aspect0 / (w / h)) ** .25))
+        scale = ratio0 / (h / H) * boost
+        drop = pad / H - pad0
+        if abs(scale - 1) >= .02 or abs(drop) >= .01:
+            meta[i] = [round(scale, 3), round(drop, 3)]
+    with open(os.path.join(ROOT, 'src', 'sprite-meta.js'), 'w', encoding='utf-8') as fh:
+        fh.write('// Gerado por tools/build_sprites.py (build_sprite_meta): [escala, deslocamento do pé] por sprite de herói.\n')
+        fh.write('(() => { const KT = globalThis.KT = globalThis.KT || {}; KT.SPRITE_META = ' + json.dumps(meta, separators=(',', ':')) + '; })();\n')
+    return meta

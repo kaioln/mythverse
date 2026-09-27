@@ -78,7 +78,19 @@
     return { ok:true };
   }
   const canEquip = (item, hero) => equipCheck(item, hero).ok;
-  const primaryValue = (stat, ilvl) => stat === 'atk' ? 14 * Math.pow(1.12, ilvl - 1) : stat === 'def' ? 9 * Math.pow(1.12, ilvl - 1) : stat === 'hp' ? 95 * Math.pow(1.12, ilvl - 1) : .05 + ilvl * .006;
+  // Crescimento do atributo principal por nível de item: +12% até o 30, +4,5% depois. Antes era +12% sempre, e no fim
+  // de jogo os itens multiplicavam o poder por centenas de vezes (a equipe crescia muito mais rápido que os inimigos).
+  const ILVL_KNEE = 30, ILVL_G1 = 1.12, ILVL_G2 = 1.045;
+  const ilvlGrowth = ilvl => Math.pow(ILVL_G1, Math.min(ilvl, ILVL_KNEE) - 1) * Math.pow(ILVL_G2, Math.max(0, ilvl - ILVL_KNEE));
+  const primaryValue = (stat, ilvl) => stat === 'atk' ? 14 * ilvlGrowth(ilvl) : stat === 'def' ? 9 * ilvlGrowth(ilvl) : stat === 'hp' ? 95 * ilvlGrowth(ilvl) : .05 + ilvl * .006;
+  // Itens criados com a curva antiga (nível acima de 30) são recalculados preservando a sorte e a raridade.
+  const legacyGrowth = ilvl => Math.pow(1.12, ilvl - 1);
+  function normalizeItemPrimary(it) {
+    if (!it || it.pv === 2) return it;
+    const p = slots[it.slot]?.primary;
+    if (p && p !== 'skill' && (it.ilvl || 1) > ILVL_KNEE && Number.isFinite(it.primary)) it.primary = it.primary / legacyGrowth(it.ilvl) * ilvlGrowth(it.ilvl);
+    it.pv = 2; return it;
+  }
 
   // ---------------------------------------------------------------------------
   // BASES, cada nível de item (ilvl) libera bases melhores.
@@ -424,7 +436,8 @@
     return { id:a.id, stat:a.stat, v, roll };
   }
 
-  function makeItem(opts) {
+  function makeItem(opts) { const it = makeItemRaw(opts); if (it) it.pv = 2; return it; }
+  function makeItemRaw(opts) {
     const ilvl = Math.max(1, Math.round(opts.ilvl || 1));
     let rarity = opts.rarity || 'common';
     if (opts.unique) {
@@ -583,6 +596,6 @@
     return Math.round(v);
   }
 
-  KT.Items = { matInfo, implicitValue, setSources, itemTypes, weaponTypes, heroWeaponExtra, typeOf, weaponTypeOf, allowedTypes, allowedWeaponTypes, canEquip, equipCheck, reqFor,
+  KT.Items = { normalizeItemPrimary, ilvlGrowth, matInfo, implicitValue, setSources, itemTypes, weaponTypes, heroWeaponExtra, typeOf, weaponTypeOf, allowedTypes, allowedWeaponTypes, canEquip, equipCheck, reqFor,
     REFINE_BONUS, REFINE_CHANCE, materials, refineRule, cardTiers, rarityCap, MAX_BAG, OVERFLOW_CAP, DROP_TABLES, slots, bases, affixes, sets, uniques, cards, cardById, makeItem, itemStats, rollDrop, rollAffix, salvageValue, upgradeCost, enchantCost, maxPlus, itemScore, primaryValue };
 })();

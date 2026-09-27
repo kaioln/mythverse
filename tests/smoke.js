@@ -500,8 +500,15 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   const cap0 = e.storageCap(); st.player.crystal = 5000; ok(e.buyDecor('lanterns') && e.storageCap() === cap0 + 50 && !e.buyDecor('lanterns'), 'enfeite do Armazém aumenta o espaço (compra única)');
   ok(X.mergeState(JSON.parse(JSON.stringify(st))).storage.length === st.storage.length && X.mergeState(JSON.parse(JSON.stringify(st))).decor.lanterns, 'Armazém e enfeites persistem no save');
   // Poder compacto.
-  ok(X.powerScore(10.3e6) < 100000 && X.powerScore(4800) < 500 && X.powerScore(2e6) > X.powerScore(1e6), 'Poder exibido em escala compacta e na mesma ordem');
-  ok(e.recommendedPower('boss_sky', { tier:0 }) < 100000 && e.recommendedPower('hunt', { stage:1 }) < 500, 'mapas: do começo ao chefe final abaixo de 100 mil de Poder');
+  ok(X.powerScore(5000) > 500 && X.powerScore(5000) < 1000 && X.powerScore(27e6) > 300000 && X.powerScore(27e6) < 800000 && X.powerScore(2e6) > X.powerScore(1e6), 'Poder exibido: ~700 no começo, centenas de milhares no nível 100, mesma ordem');
+  const recs = [['hunt', { stage:1 }], ['hunt', { stage:12 }], ['hunt_tide', { stage:12 }], ['hunt_desert', { stage:12 }], ['hunt_sky', { stage:12 }]].map(([z, o]) => e.recommendedPower(z, o));
+  ok(recs.every((v, i) => !i || v > recs[i - 1]) && recs[0] < 1000 && recs[4] < 500000, `mapas crescem sem saltos exagerados (${recs.join(' → ')})`);
+  ok(D.levelOfPower(D.levelPower(77)) > 76.9 && D.levelOfPower(D.levelPower(77)) < 77.1 && Math.abs(D.levelPower(33) - Math.pow(1.065, 32)) < 1e-9, 'curva de nível ↔ força é inversível e o Capítulo I não mudou');
+  ok(Math.abs(X.rewardPower(D.levelPower(80)) - Math.pow(1.065, 79)) < 1e-6 * Math.pow(1.065, 79), 'ouro e EXP seguem o nível do inimigo, não a força');
+  const oldIt = { slot:'weapon', ilvl:50, rarity:'epic', primary:14 * Math.pow(1.12, 49) * 1.55 }; I.normalizeItemPrimary(oldIt); ok(Math.abs(oldIt.primary - 14 * I.ilvlGrowth(50) * 1.55) < 1e-6 && oldIt.pv === 2 && I.makeItem({ ilvl:50, rarity:'epic', slot:'weapon' }).pv === 2, 'itens antigos acima do nível 30 são recalculados uma vez; itens novos já vêm na curva nova');
 }
+
+{ const v = JSON.parse(fs.readFileSync(path.join(root, 'version.json'), 'utf8')).v, cfg = fs.readFileSync(path.join(root, 'src/config.js'), 'utf8'), html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  ok(cfg.includes(`KT.VERSION = '${v}'`) && html.includes(`?v=${v}`), 'version.json, KT.VERSION e o cache do index.html na mesma versão (atualização automática)'); }
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

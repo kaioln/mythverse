@@ -139,3 +139,14 @@ Do lado do jogador: refino acima de +10 rende +14% por nível (o +15 multiplica 
 - **Poder exibido** = força bruta^0,7 (`KT.State.powerScore`). Mesma ordem, escala humana: equipe inicial ~400, chefe do Cap. I ~4,8 mil, chefe final (Cap. IV) ~80 mil. O combate não mudou; `getPowerRaw`/`recommendedPowerRaw` seguem para a lógica interna. Invasão Heroica/Mítica pede 4 mil/20 mil de Poder.
 - **Custos em ouro** acompanham a renda (~50 mil/h no fim do Cap. I, ~230 mil/h no II, ~675 mil/h no III, ~1,6 mi/h no IV): obras ×1,42–1,5 por nível (antes ×1,75–1,95: a nível 14 custava 1,9 milhão), treino 450·1,24^nível (antes 400·1,32^nível), loja com multiplicador de progresso até ×6.
 - **Armazém do Tanuki**: 300 espaços de base + enfeites cosméticos (Lanternas +50, Biombo +100, Baú Laqueado +150, Cofre do Dragão +200; cristais, compra única). Desequipar ou tirar um herói da equipe manda os itens para lá; nada no Armazém é desmontado nem ocupa a bolsa; "Equipar melhor" também procura no Armazém. Itens equipados deixaram de ocupar a bolsa.
+
+## Rebalanceamento por combate (2026-09-29, revisão 4)
+
+Medido com `node tools/balance.js [lutas] [níveis extras]`: uma equipe de referência no nível dos inimigos (itens do mapa, refino, treino, qualidade, atributos e talentos automáticos) luta cada região com o motor real.
+
+- **Itens**: o atributo principal cresce +12% por nível de item até o 30 e +4,5% depois (antes +12% sempre: no nível 100 os itens multiplicavam o poder por ~600×). Itens antigos acima do 30 são recalculados uma vez, preservando sorte e raridade.
+- **Inimigos por nível** (`D.levelPower`): Capítulo I igual; depois +6,2% por nível. Com a mitigação real (DEF ÷ (DEF + 2,2 × ATK base)), a equipe no nível leva ~6 s para matar e ~22 s para morrer em qualquer capítulo. Caçadas no nível: vitória com folga; masmorras pedem ~1 nível; chefes ~4 níveis. Raijin (chefe final, nível 96) exige equipe montada (tanque de Terra etc.) no nível 100.
+- **Ouro e EXP** seguem o nível do inimigo (`rewardPower`), não a força: a renda cresce como no Capítulo I.
+- **Poder exibido** = força^0,77: equipe inicial ~700, fim do Cap. I ~5–6 mil, Cap. II ~35–45 mil, Cap. III ~110–160 mil, Cap. IV ~340–380 mil. Recomendado calibrado pela curva medida da equipe.
+- **Ranking no banco**: `neon_setup.js` recalcula o poder de todas as contas com o motor (`tools/neon_recompute.js`); o guarda do save converte jogos antigos em cache; o jogo recarrega sozinho quando sai versão nova (`version.json`).
+- **Sprites**: `src/sprite-meta.js` (gerado) iguala o tamanho aparente dos heróis (Vegeta e outros de arte estreita) e põe as formas despertadas com o pé no chão.

@@ -122,7 +122,7 @@
       if (!entry || !this.user || this.conflict) return !this.conflict;
       this.setStatus('saving');
       const state = JSON.parse(entry.json);
-      state.activeSession = { id:this.sessionId, at:this.sessionAt }; state.powerScale = 2;
+      state.activeSession = { id:this.sessionId, at:this.sessionAt }; state.powerScale = 3;
       const body = { data:state, updated_at:new Date().toISOString(), ...this.summary(state) };
       let r;
       if (!this.row) { r = await this.api('POST', '/mv_saves', { ...body, revision:1 }, 'return=representation'); if (r.ok) this.row = { revision:Number(r.data?.[0]?.revision) || 1 }; }
