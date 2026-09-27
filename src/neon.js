@@ -165,4 +165,77 @@
     }
   };
   KT.Neon = Neon;
+
+  // ---------------------------------------------------------------------------
+  // Mercado de Jogadores (ouro) no modo Neon. Mesma interface de KT.Net usada pelas telas.
+  // O banco garante as regras críticas (tools/neon_setup.sql): um anúncio só é vendido uma vez,
+  // o correio só é resgatado uma vez e o imposto de 5% sai de circulação.
+  // ---------------------------------------------------------------------------
+  const CFG = { enabled:false, goldMarket:true, goldMinPrice:100, goldListFeeBps:100, goldListFeeMin:50, goldTaxBps:500 };
+  const itemKey = it => it.kind === 'unique' ? `u:${it.uniqueId}` : it.kind === 'set' ? `s:${it.setId}:${it.slot}` : `b:${it.baseId}:${it.rarity}`;
+  const rpc = async (fn, args) => { const r = await Neon.api('POST', `/rpc/${fn}`, args); return r.ok ? { ok:true, data:r.data } : { ok:false, error:r.error }; };
+  const toListing = r => ({ id:Number(r.id), sellerId:r.mine ? 'me' : r.seller_ref, seller:r.seller_name, kind:r.kind, payload:r.payload, price:Number(r.price), currency:'gold', name:r.name, mine:!!r.mine });
+  const NeonMarket = {
+    wallet() { return Promise.resolve({ ok:true, balance:0, config:CFG }); },
+    async market(f = {}) {
+      const q = ['select=*'];
+      if (f.type && f.type !== 'all') q.push(`kind=eq.${encodeURIComponent(f.type)}`);
+      if (f.slot && f.slot !== 'all') q.push(`slot=eq.${encodeURIComponent(f.slot)}`);
+      if (f.rarity && f.rarity !== 'all') q.push(`rarity=eq.${encodeURIComponent(f.rarity)}`);
+      if (f.seller) q.push(f.seller === 'me' ? 'mine=is.true' : `seller_ref=eq.${encodeURIComponent(f.seller)}`);
+      if (f.q) q.push(`name=ilike.*${encodeURIComponent(String(f.q).replace(/[*,()]/g, ''))}*`);
+      q.push(`order=${f.sort === 'price' ? 'price.asc' : f.sort === '-price' ? 'price.desc' : 'created_at.desc'}`, 'limit=120');
+      const r = await Neon.api('GET', `/mv_market?${q.join('&')}`);
+      return r.ok ? { ok:true, config:CFG, listings:(r.data || []).map(toListing) } : { ok:false, error:r.error, listings:[] };
+    },
+    async myMarket() {
+      const [l, m] = await Promise.all([Neon.api('GET', '/mv_market?select=*&mine=is.true&order=created_at.desc'), Neon.api('GET', '/mv_mail?select=*&order=created_at.asc')]);
+      if (!l.ok || !m.ok) return { ok:false, error:l.error || m.error };
+      return { ok:true, listings:(l.data || []).map(toListing), mailbox:(m.data || []).map(x => ({ id:Number(x.id), kind:x.kind, payload:x.payload, reason:x.reason })) };
+    },
+    async priceHistory(key) {
+      const r = await Neon.api('GET', `/mv_sales?select=price,closed_at&item_key=eq.${encodeURIComponent(key)}&order=closed_at.desc&limit=30`);
+      return r.ok ? { ok:true, sales:(r.data || []).map(x => ({ price:Number(x.price), at:x.closed_at })) } : { ok:false, sales:[] };
+    },
+    async cancelListing(id) { const r = await rpc('mv_market_cancel', { p_id:id }); return r.ok ? { ok:true } : r; },
+    // Ações que mexem no save: o motor tira/coloca no estado local e o banco faz a custódia.
+    async act(engine, op, args) {
+      const s = engine.state;
+      if (op === 'marketList') {
+        const a = args[0] || {}, price = Math.floor(Number(a.price));
+        if (!(price >= CFG.goldMinPrice)) return { ok:false, error:`Preço mínimo: ${CFG.goldMinPrice} de ouro.` };
+        const fee = Math.max(CFG.goldListFeeMin, Math.ceil(price * CFG.goldListFeeBps / 10000));
+        if (s.player.gold < fee) return { ok:false, error:`A taxa de anúncio é de ${fee} de ouro.` };
+        const payload = engine.marketTake(a.kind, a.kind === 'item' ? a.itemUid : a.kind === 'card' ? a.cardId : a.matId, a.qty);
+        if (!payload) return { ok:false, error:engine.lastError || 'Não foi possível anunciar.' };
+        const meta = a.kind === 'item' ? { key:itemKey(payload), name:payload.name, rarity:payload.rarity, slot:payload.slot }
+          : a.kind === 'card' ? { key:`c:${payload.id}`, name:KT.Items.cardById(payload.id).name, rarity:'', slot:'' }
+          : { key:`m:${payload.id}`, name:`${KT.Items.materials[payload.id].name} ×${payload.qty}`, rarity:'', slot:'' };
+        const r = await rpc('mv_market_list', { p_kind:a.kind, p_key:meta.key, p_name:meta.name, p_rarity:meta.rarity || '', p_slot:meta.slot || '', p_payload:payload, p_price:price, p_seller_name:String(s.player.name || 'Viajante').slice(0, 24) });
+        if (!r.ok) { engine.marketReceive(a.kind, payload); engine.save(); return { ok:false, error:r.error }; }
+        s.player.gold -= fee; engine.save(); Neon.flush();
+        return { ok:true, result:{ id:r.data } };
+      }
+      if (op === 'marketBuyGold') {
+        const id = Number(args[0]), l = await Neon.api('GET', `/mv_market?select=price,mine&id=eq.${id}`), row = l.ok && l.data?.[0];
+        if (!row) return { ok:false, error:'Anúncio indisponível.' };
+        if (s.player.gold < Number(row.price)) return { ok:false, error:'Ouro insuficiente.' };
+        const r = await rpc('mv_market_buy', { p_id:id }); if (!r.ok) return r;
+        s.player.gold -= Number(r.data.price); engine.save();
+        // A mercadoria foi para o correio do comprador: resgata na hora.
+        const mail = await this.myMarket(); let got = null;
+        for (const m of (mail.mailbox || []).filter(x => x.kind === r.data.kind)) { const c = await this.claim(engine, m.id); if (c.ok) { got = c.result; break; } }
+        Neon.flush();
+        return { ok:true, result:{ kind:r.data.kind, delivered:got ? 'bag' : 'mail' } };
+      }
+      if (op === 'marketClaim') return this.claim(engine, Number(args[0]));
+      return { ok:false, error:'Ação indisponível no modo Neon.' };
+    },
+    async claim(engine, id) {
+      const r = await rpc('mv_mail_claim', { p_id:id }); if (!r.ok) return r;
+      engine.marketReceive(r.data.kind, r.data.payload); engine.save(); Neon.flush();
+      return { ok:true, result:{ kind:r.data.kind } };
+    }
+  };
+  KT.NeonMarket = NeonMarket;
 })();

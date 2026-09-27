@@ -36,7 +36,8 @@
     archive:{ grade:'rgba(40,170,210,.16)', ambient:'bubble' }, boss:{ grade:'rgba(255,90,90,.12)', ambient:'ember' }, abyss:{ grade:'rgba(20,120,200,.18)', ambient:'bubble' },
     swamp:{ grade:'rgba(120,200,90,.12)', ambient:'mote' }, crypt:{ grade:'rgba(60,200,150,.14)', ambient:'mote' }, frost:{ grade:'rgba(170,220,255,.14)', ambient:'petal' },
     forge:{ grade:'rgba(255,120,40,.14)', ambient:'ember' }, desert:{ grade:'rgba(255,190,90,.12)', ambient:'mote' }, ghost:{ grade:'rgba(150,140,255,.16)', ambient:'mote' },
-    clock:{ grade:'rgba(200,160,255,.12)', ambient:'mote' }, desertBoss:{ grade:'rgba(255,150,60,.16)', ambient:'ember' }, rift:{ grade:'rgba(255,60,140,.16)', ambient:'mote' }
+    clock:{ grade:'rgba(200,160,255,.12)', ambient:'mote' }, desertBoss:{ grade:'rgba(255,150,60,.16)', ambient:'ember' }, rift:{ grade:'rgba(255,60,140,.16)', ambient:'mote' },
+    sky:{ grade:'rgba(170,210,255,.10)', ambient:'mote' }, sakura:{ grade:'rgba(255,150,200,.12)', ambient:'petal' }, skyShrine:{ grade:'rgba(160,150,255,.12)', ambient:'mote' }, skyBoss:{ grade:'rgba(90,200,255,.14)', ambient:'ember' }
   };
   const easeOut = t => 1 - Math.pow(1 - U.clamp(t, 0, 1), 3);
   const easeOutBack = t => { t = U.clamp(t, 0, 1); const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
@@ -153,6 +154,28 @@
         return;
       }
       if (t === 'bossWindup') { this.shake = Math.max(this.shake, 4); return; }
+      // Quebra de postura: estilhaços, anel duplo e aviso grande.
+      if (t === 'break') {
+        const p = this.posOf(fx.uid); if (!p) return;
+        this.v(fx.uid).broken = 1; this.hitstop = Math.max(this.hitstop, .16); this.shake = Math.max(this.shake, 12);
+        this.screenFlash = { color:'#fff1c9', t:.22, max:.22 };
+        this.ring(p.x, p.y - p.h * .45, '#ffe28a', 150, true); this.later(.08, () => this.ring(p.x, p.y - p.h * .45, '#ffffff', 220));
+        for (let i = 0; i < 26; i++) { const a = U.rand(0, Math.PI * 2), sp = U.rand(220, 520); this.particles.push({ kind:'shard', x:p.x, y:p.y - p.h * .5, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 120, rot:U.rand(0, 6), vr:U.rand(-12, 12), color:i % 3 ? '#ffe9b0' : fx.color || '#ffb35c', life:U.rand(.5, .9), max:.9, size:U.rand(5, 11) }); }
+        this.text(p.x, p.y - p.h - 40, fx.canceled ? 'QUEBRA! ATAQUE CANCELADO' : 'QUEBRA!', '#ffe28a', fx.canceled ? 26 : 34, 1.6);
+        return;
+      }
+      if (t === 'chain') {
+        const p = this.posOf(fx.uid);
+        this.chainFx = { n:fx.n, t:0, dur:1.6, color:fx.color || '#ff7eb6' };
+        if (p) this.ring(p.x, p.y, fx.color || '#ff7eb6', 120 + fx.n * 30);
+        return;
+      }
+      if (t === 'finale') {
+        this.showBanner('ELO KIZUNA', 'a equipe inteira ataca junta', '#ff7eb6');
+        this.screenFlash = { color:'#ffd1e8', t:.45, max:.45 }; this.shake = Math.max(this.shake, 20);
+        this.engine.enemies.forEach(u => { if (!u.alive) return; const q = this.posOf(u.uid); if (q) this.later(.15, () => { this.ring(q.x, q.y - q.h * .4, '#ff7eb6', 170, true); this.sparks(q.x, q.y - q.h * .5, 24, '#ffe1f0', 480); this.impact(q.x, q.y - q.h * .5, '#ff7eb6', 1.8); }); });
+        return;
+      }
       if (t === 'bossBurst') {
         const p = this.posOf(fx.uid);
         this.particles.push({ kind:'bosswave', x:p ? p.x - 200 : 700, y:620, color:fx.color || '#ff7a8a', life:.9, max:.9 });
@@ -318,6 +341,7 @@
         if (p.kind === 'num') { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 260 * dt; p.vx *= .96; }
         else if (p.kind === 'label') { if (!p.fixed) p.y -= dt * 26; }
         else if (p.kind === 'spark') { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 520 * dt; p.vx *= .97; }
+        else if (p.kind === 'shard') { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 900 * dt; p.vx *= .98; p.rot += p.vr * dt; }
         else if (p.kind === 'rise' || p.kind === 'wisp') { p.y += p.vy * dt; p.x += Math.sin(this.worldTime * 6 + p.y * .05) * .5; }
       }
       this.particles = this.particles.filter(p => p.life > 0);
@@ -341,6 +365,8 @@
       for (const a of this.ambient) { a.x += a.vx * dt; a.y += a.vy * dt; a.r += a.vr * dt; if (a.y > H + 20) a.y = -20; if (a.y < -30) a.y = H + 20; if (a.x > W + 20) a.x = -20; if (a.x < -20) a.x = W + 20; }
       if (this.screenFlash) { this.screenFlash.t -= dt; if (this.screenFlash.t <= 0) this.screenFlash = null; }
       if (this.banner) { this.banner.t += dt; if (this.banner.t > this.banner.dur) this.banner = null; }
+      if (this.chainFx) { this.chainFx.t += dt; if (this.chainFx.t > this.chainFx.dur) this.chainFx = null; }
+      for (const s of this.vis.values()) if (s.broken) s.broken = Math.max(0, s.broken - dt);
       if (this.cutin) { this.cutin.t += dt; if (this.cutin.t > this.cutin.dur) this.cutin = null; }
       const track = u => { const s = this.v(u.uid); const pct = U.clamp(u.hp / u.maxHp, 0, 1); if (s.dispHp === null) { s.dispHp = pct; s.chip = pct; } s.dispHp += (pct - s.dispHp) * Math.min(1, dt * 18); if (s.chip < s.dispHp) s.chip = s.dispHp; else s.chip = Math.max(s.dispHp, s.chip - dt * .45); };
       this.engine.party.forEach(track); this.engine.enemies.forEach(track);
@@ -361,7 +387,7 @@
       this.hotspots = [];
       this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawAmbient(false);
       c.restore();
-      this.drawOverlay(); this.drawCutin(); this.drawBanner();
+      this.drawOverlay(); this.drawCutin(); this.drawBanner(); this.drawChain();
     }
     drawScene() {
       const c = this.ctx, z = this.engine.zone, img = this.assets.scene(z.id);
@@ -372,7 +398,34 @@
       c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H);
       const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H);
       const vig = c.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, H * .95); vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(6,4,18,.62)'); c.fillStyle = vig; c.fillRect(0, 0, W, H);
+      if (z.kind === 'village') this.drawVillageLife();
       if (this.zoneFade < 1) { c.fillStyle = `rgba(8,6,20,${1 - easeOut(this.zoneFade)})`; c.fillRect(0, 0, W, H); }
+    }
+    // Cidade viva: luz pela hora de Brasília, lanternas subindo ao céu e vaga-lumes perto do chão.
+    drawVillageLife() {
+      const c = this.ctx, t = this.worldTime;
+      const hour = new Date(this.engine.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
+      const tint = hour >= 7 && hour < 17 ? 'rgba(255,226,180,.07)' : hour >= 17 && hour < 19 ? 'rgba(255,140,90,.13)' : hour >= 5 && hour < 7 ? 'rgba(255,170,200,.1)' : 'rgba(36,34,110,.2)';
+      c.fillStyle = tint; c.fillRect(0, 0, W, H);
+      if (!this.skyLanterns) {
+        this.skyLanterns = Array.from({ length:16 }, () => ({ x:U.rand(0, W), y:U.rand(H * .05, H * .95), vy:U.rand(7, 16), ph:U.rand(0, 6), s:U.rand(.55, 1.25) }));
+        this.fireflies = Array.from({ length:34 }, () => ({ x:U.rand(0, W), y:U.rand(H * .5, H * .98), ph:U.rand(0, 6), sp:U.rand(.4, 1.1) }));
+      }
+      const dt = Math.min(.05, t - (this.lifeT ?? t)); this.lifeT = t;
+      c.save(); c.globalCompositeOperation = 'lighter';
+      for (const l of this.skyLanterns) {
+        l.y -= l.vy * dt; if (l.y < -30) { l.y = H + 20; l.x = U.rand(0, W); }
+        const x = l.x + Math.sin(t * .6 + l.ph) * 14 * l.s, y = l.y, s = l.s, fl = .75 + .25 * Math.sin(t * 7 + l.ph * 3);
+        const g = c.createRadialGradient(x, y, 0, x, y, 26 * s); g.addColorStop(0, `rgba(255,190,110,${.42 * fl})`); g.addColorStop(1, 'rgba(255,150,80,0)');
+        c.fillStyle = g; c.beginPath(); c.arc(x, y, 26 * s, 0, Math.PI * 2); c.fill();
+        c.fillStyle = `rgba(255,214,150,${.85 * fl})`; this.roundRect(x - 5 * s, y - 7 * s, 10 * s, 13 * s, 3 * s); c.fill();
+      }
+      for (const f of this.fireflies) {
+        const x = f.x + Math.sin(t * f.sp + f.ph) * 22, y = f.y + Math.cos(t * f.sp * 1.3 + f.ph) * 10, a = Math.max(0, Math.sin(t * 2.2 * f.sp + f.ph));
+        c.fillStyle = `rgba(210,255,170,${.75 * a})`; c.beginPath(); c.arc(x, y, 2.2, 0, Math.PI * 2); c.fill();
+        c.fillStyle = `rgba(180,255,140,${.16 * a})`; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
+      }
+      c.restore();
     }
     drawAmbient(back) {
       const c = this.ctx; c.save();
@@ -468,7 +521,7 @@
       if ((e.elite || e.miniboss) && !dying) this.aura(e.sprite, x, y + floatY, height, e.miniboss ? '#ff9a3b' : '#c77dff', .5 + .15 * Math.sin(t * 3));
       if (e.treasure && !dying) this.aura(e.sprite, x, y, height, '#ffd76a', .8);
       if (e.windup > 0) this.aura(e.sprite, x, y, height, '#ff3a5a', .6 + .4 * Math.sin(this.worldTime * 20));
-      this.drawSprite(e.sprite, x, y + floatY + (dying ? s.death * 30 : 0), height, { sy:1 + Math.sin(t * 2.2) * .022, flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25 });
+      this.drawSprite(e.sprite, x, y + floatY + (dying ? s.death * 30 : 0), height, { sy:1 + Math.sin(t * 2.2) * .022, flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:!!e.rival });
       c.restore();
       if (dying) return;
       if (e.effects.some(x => x.s === 'burn')) this.flames(x, y, height);
@@ -479,7 +532,9 @@
         this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#ff9a3b' : e.elite ? '#c77dff' : '#ff5d6c', e.shield / e.maxHp);
         this.nameTag(`${e.guardian ? '👑 ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
         this.statusIcons(e, pos.x - bw / 2, top - 30);
+        if (e.elite || e.miniboss || e.guardian) this.thin(pos.x - bw / 2, top + (e.elite ? 13 : 11), bw, e.broken > 0 ? e.broken / 4 : U.clamp(e.breakG / e.breakMax, 0, 1), e.broken > 0 ? '#fff1c9' : '#ffb35c');
       }
+      if (e.broken > 0) { this.stunStars(x, y - height - 4); c.save(); c.globalAlpha = .18 + .1 * Math.sin(this.worldTime * 10); c.fillStyle = '#ffe9b0'; c.beginPath(); c.ellipse(x, y - height * .45, height * .36, height * .52, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
       if (e.windup > 0) {
         c.save(); c.font = `64px ${DISPLAY_FONT}`; c.textAlign = 'center'; c.fillStyle = '#ff4a6a'; c.strokeStyle = '#1a0610'; c.lineWidth = 8; const bob = Math.sin(this.worldTime * 14) * 6;
         c.strokeText('!', x, y - height - 30 + bob); c.fillText('!', x, y - height - 30 + bob);
@@ -532,7 +587,7 @@
       const img = this.assets.spriteImage(id), c = this.ctx;
       if (!img) { c.fillStyle = 'rgba(255,255,255,.2)'; c.fillRect(x - 30, y - height, 60, height); return; }
       const w = height * img.width / img.height, sy = o.sy || 1;
-      c.save(); c.translate(x, y); if (o.tilt) c.rotate(o.tilt); c.scale(2 - sy, sy); c.globalAlpha *= (o.alpha ?? 1);
+      c.save(); c.translate(x, y); if (o.tilt) c.rotate(o.tilt); c.scale((o.flip ? -1 : 1) * (2 - sy), sy); c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(1) brightness(.6)';
       c.drawImage(img, -w / 2, -height, w, height); c.filter = 'none';
       if (o.flash > 0) { c.globalAlpha *= U.clamp(o.flash, 0, 1) * .42; c.drawImage(this.flashSprite(id, img), -w / 2, -height, w, height); }
@@ -628,6 +683,9 @@
         } else if (p.kind === 'ring') {
           const t = 1 - a, r = p.radius * (.3 + easeOut(t) * .9); c.globalCompositeOperation = 'lighter'; c.strokeStyle = p.color; c.lineWidth = 4 * a + 1; c.globalAlpha = a * .8;
           c.beginPath(); c.ellipse(p.x, p.y, r, r * .36, 0, 0, Math.PI * 2); c.stroke(); c.lineWidth = 1.5; c.globalAlpha = a * .45; c.beginPath(); c.ellipse(p.x, p.y, r * .78, r * .28, 0, 0, Math.PI * 2); c.stroke(); if (p.filled) { c.globalAlpha = a * .14; c.fillStyle = p.color; c.beginPath(); c.ellipse(p.x, p.y, r, r * .36, 0, 0, Math.PI * 2); c.fill(); }
+        } else if (p.kind === 'shard') {
+          c.translate(p.x, p.y); c.rotate(p.rot); c.fillStyle = p.color; c.globalAlpha = a; c.beginPath(); c.moveTo(0, -p.size); c.lineTo(p.size * .45, 0); c.lineTo(0, p.size * .7); c.lineTo(-p.size * .4, 0); c.closePath(); c.fill();
+          c.globalAlpha = a * .7; c.strokeStyle = '#fff'; c.lineWidth = 1; c.stroke();
         } else if (p.kind === 'slash') {
           const t = 1 - a; c.globalCompositeOperation = 'lighter'; c.translate(p.x, p.y); c.rotate(p.rot - .5 + easeOut(t) * 1.1); c.scale(p.size * (.62 + t * .22), p.size * .62);
           c.globalAlpha = a * .95; c.drawImage(this.fxTex('slash', p.color), -150, -80);
@@ -682,6 +740,16 @@
       c.font = `600 17px ${UI_FONT}`; c.fillStyle = 'rgba(255,255,255,.8)'; c.fillText(`${ci.unit.name.toUpperCase()} · ULTIMATE`, tx, y + (ci.manual ? 60 : 44));
       c.font = `${ci.manual ? 58 : 40}px ${DISPLAY_FONT}`; c.lineJoin = 'round'; c.lineWidth = 8; c.strokeStyle = '#0c0820'; c.strokeText(ci.name, tx, y + (ci.manual ? 110 : 80));
       c.shadowColor = ci.color; c.shadowBlur = 20; c.fillStyle = '#fff'; c.fillText(ci.name, tx, y + (ci.manual ? 110 : 80));
+      c.restore();
+    }
+    // Contador do Elo Kizuna (canto superior direito do palco).
+    drawChain() {
+      const f = this.chainFx; if (!f) return;
+      const c = this.ctx, k = f.t / f.dur, pop = easeOutBack(Math.min(1, f.t / .25)), fade = k > .7 ? 1 - (k - .7) / .3 : 1;
+      c.save(); c.globalAlpha = fade; c.translate(W - 170, 150); c.scale(pop, pop); c.rotate(-.06); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+      c.font = `22px ${DISPLAY_FONT}`; c.lineWidth = 6; c.strokeStyle = '#1a0a1e'; c.strokeText('ELO KIZUNA', 0, -34); c.fillStyle = '#ffd1e8'; c.fillText('ELO KIZUNA', 0, -34);
+      c.font = `72px ${DISPLAY_FONT}`; c.lineWidth = 10; c.strokeText(`×${f.n}`, 0, 16); c.shadowColor = f.color; c.shadowBlur = 22; c.fillStyle = '#fff6df'; c.fillText(`×${f.n}`, 0, 16); c.shadowBlur = 0;
+      c.font = `600 15px ${UI_FONT}`; c.fillStyle = '#ffd1e8'; c.fillText(`+${f.n * 15 - 15}% nas ultimates`, 0, 60);
       c.restore();
     }
     drawBanner() {

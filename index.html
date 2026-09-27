@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;500;600;700;800&family=Shippori+Mincho:wght@700&display=swap">
-  <link rel="stylesheet" href="styles.css?v=20260927">
+  <link rel="stylesheet" href="styles.css?v=20260928a">
 </head>
 <body>
   <div class="boot" id="boot">
@@ -64,6 +64,8 @@
       <button class="nav" data-panel="collection" type="button"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg><b>Heróis</b><em id="summon-badge" hidden>!</em></button>
       <button class="nav" data-panel="inventory" type="button"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><b>Bolsa</b><em id="inventory-badge" hidden>0</em></button>
       <button class="nav" data-panel="ranking" type="button" id="nav-ranking"><svg viewBox="0 0 24 24"><path d="M8 21V11H3v10zM15 21V4h-5v17zM21 21v-7h-5v7z"/></svg><b>Ranking</b></button>
+      <button class="nav" data-panel="arena" type="button"><svg viewBox="0 0 24 24"><path d="M4 20 14 10M14 10l3-7 3 3-7 3M20 20 10 10M10 10 7 3 4 6l7 3"/></svg><b>Arena</b></button>
+      <button class="nav" data-panel="guild" type="button"><svg viewBox="0 0 24 24"><path d="M5 21V4l7 3 7-3v17"/><path d="M5 11l7 3 7-3"/></svg><b>Guilda</b></button>
       <button class="nav" data-panel="talents" type="button"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="12" cy="13" r="2"/><path d="M12 7v4M10.5 14.5 6.5 17M13.5 14.5l4 2.5"/></svg><b>Talentos</b><em id="talent-badge" hidden>0</em></button>
       <button class="nav" data-panel="city" type="button"><svg viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><b>Cidade</b></button>
       <button class="nav" data-panel="shop" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h16l-1.5 5h-13z"/><path d="M5.5 12 7 20h10l1.5-8M9 7V5h6v2"/></svg><b>Loja</b></button>
@@ -84,6 +86,7 @@
           <div class="boss-panel" id="boss-panel" hidden>
             <div class="boss-line"><span id="boss-kind">CHEFE</span><strong id="boss-name">, </strong><b id="boss-percent">100%</b></div>
             <div class="boss-track"><span class="boss-chip" id="boss-chip"></span><span class="boss-fill" id="boss-fill"></span><span class="boss-shield" id="boss-shield"></span><i id="boss-mark-1"></i><i id="boss-mark-2"></i></div>
+            <div class="boss-break" id="boss-break" data-tip="Postura: golpes, habilidades e ultimates enchem a barra. Cheia, o chefe fica atordoado 4s, perde o ataque preparado e recebe +35% de dano."><span id="boss-break-fill"></span><em id="boss-break-label">POSTURA</em></div>
             <div class="boss-sub"><small id="boss-phase">Fase 1</small><small id="boss-timer"></small></div>
           </div>
           <div class="stage-controls">
@@ -95,21 +98,23 @@
         </div>
 
         <div class="village-actions" id="village-actions" hidden>
-          <button class="signpost" style="left:17%;top:31%" data-open="city:guild" type="button"><span class="sp-icon">🏯</span><span><b>Guilda</b><small>Contratos e recompensas</small></span></button>
-          <button class="signpost" style="left:10%;top:52%" data-open="city:dojo" type="button"><span class="sp-icon">🥋</span><span><b>Dojo</b><small>Treino da equipe</small></span></button>
-          <button class="signpost" style="left:49%;top:34%" data-open="collection" type="button"><span class="sp-icon">✦</span><span><b>Salão de Convocação</b><small>Descobrir heróis</small></span></button>
-          <button class="signpost" style="left:88%;top:31%" data-open="city:shrine" type="button"><span class="sp-icon">⛩</span><span><b>Santuário</b><small>Despertar heróis</small></span></button>
-          <button class="signpost hot" style="left:67%;top:57%" data-open="city:forge" type="button"><span class="sp-icon">⚒</span><span><b>Forja</b><small>Aprimorar equipamentos</small></span></button>
-          <button class="signpost" style="left:13%;top:73%" data-open="shop:market" type="button"><span class="sp-icon">🏮</span><span><b>Mercado</b><small>Ofertas e recursos</small></span></button>
-          <button class="signpost house" style="left:31%;top:62%" data-open="city:house" type="button"><span class="sp-icon">🏡</span><span><b>Casa do Time</b><small>Galeria e Álbum de cartas</small></span></button>
-          <button class="signpost" style="left:48%;top:80%" data-open="city:workshop" type="button"><span class="sp-icon">⚗</span><span><b>Oficina</b><small>Criar e encantar</small></span></button>
-          <button class="signpost featured" style="left:86%;top:70%" data-open="adventure:expeditions" type="button"><span class="sp-icon">🧭</span><span><b>Casa de Expedições</b><small>Enviar equipes agora</small></span></button>
+          <button class="signpost" style="left:17%;top:31%" data-open="city:guild" type="button" data-badge="guild"><em class="sp-badge" hidden></em><span class="sp-icon">🏯</span><span><b>Guilda</b><small>Contratos e recompensas</small></span></button>
+          <button class="signpost" style="left:10%;top:52%" data-open="city:dojo" type="button" data-badge="dojo"><em class="sp-badge" hidden></em><span class="sp-icon">🥋</span><span><b>Dojo</b><small>Treino da equipe</small></span></button>
+          <button class="signpost" style="left:49%;top:34%" data-open="collection" type="button" data-badge="collection"><em class="sp-badge" hidden></em><span class="sp-icon">✦</span><span><b>Salão de Convocação</b><small>Descobrir heróis</small></span></button>
+          <button class="signpost" style="left:83%;top:47%" data-open="city:shrine" type="button" data-badge="shrine"><em class="sp-badge" hidden></em><span class="sp-icon">⛩</span><span><b>Santuário</b><small>Despertar heróis</small></span></button>
+          <button class="signpost hot" style="left:67%;top:57%" data-open="city:forge" type="button" data-badge="forge"><em class="sp-badge" hidden></em><span class="sp-icon">⚒</span><span><b>Forja</b><small>Aprimorar equipamentos</small></span></button>
+          <button class="signpost" style="left:13%;top:73%" data-open="shop:market" type="button" data-badge="market"><em class="sp-badge" hidden></em><span class="sp-icon">🏮</span><span><b>Mercado</b><small>Ofertas e recursos</small></span></button>
+          <button class="signpost house" style="left:31%;top:62%" data-open="city:house" type="button" data-badge="house"><em class="sp-badge" hidden></em><span class="sp-icon">🏡</span><span><b>Casa do Time</b><small>Galeria e Álbum de cartas</small></span></button>
+          <button class="signpost" style="left:48%;top:80%" data-open="city:workshop" type="button" data-badge="workshop"><em class="sp-badge" hidden></em><span class="sp-icon">⚗</span><span><b>Oficina</b><small>Criar e encantar</small></span></button>
+          <button class="signpost featured" style="left:86%;top:70%" data-open="adventure:expeditions" type="button" data-badge="expeditions"><em class="sp-badge" hidden></em><span class="sp-icon">🧭</span><span><b>Casa de Expedições</b><small>Enviar equipes agora</small></span></button>
         </div>
         <button class="journey-cta" id="journey-cta" data-open="journey" type="button" hidden>
           <span class="cta-emblem"><img src="assets/brand/emblem.png?v=2" alt=""></span>
           <span class="cta-text"><b>MAPA</b><small>Escolher o próximo destino</small></span>
           <span class="cta-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </button>
+
+        <aside class="village-hub" id="village-hub" hidden></aside>
 
         <div class="consumables" id="consumables" hidden>
           <button class="cons" id="potion-btn" type="button" data-tip="Poção de Cura: +35% HP na equipe (recarga 20s). Tecla 1."><img src="assets/icons/potion_red_01.png" alt=""><b id="potion-count">0</b><i class="cd"></i><kbd>1</kbd></button>
@@ -153,21 +158,23 @@
   <div class="tooltip" id="tooltip" hidden></div>
   <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
-  <script src="src/config.js?v=20260927"></script>
-  <script src="src/data.js?v=20260927"></script>
-  <script src="src/utils.js?v=20260927"></script>
-  <script src="src/items.js?v=20260927"></script>
-  <script src="src/progression.js?v=20260927"></script>
-  <script src="src/roster.js?v=20260927"></script>
-  <script src="src/builds.js?v=20260927"></script>
-  <script src="src/engine.js?v=20260927"></script>
-  <script src="src/net.js?v=20260927"></script>
-  <script src="src/neon.js?v=20260927"></script>
-  <script src="src/auth.js?v=20260927"></script>
-  <script src="src/assets.js?v=20260927"></script>
-  <script src="src/renderer.js?v=20260927"></script>
-  <script src="src/ui.js?v=20260927"></script>
-  <script src="src/panels.js?v=20260927"></script>
-  <script src="src/main.js?v=20260927"></script>
+  <script src="src/config.js?v=20260928a"></script>
+  <script src="src/data.js?v=20260928a"></script>
+  <script src="src/utils.js?v=20260928a"></script>
+  <script src="src/items.js?v=20260928a"></script>
+  <script src="src/progression.js?v=20260928a"></script>
+  <script src="src/roster.js?v=20260928a"></script>
+  <script src="src/builds.js?v=20260928a"></script>
+  <script src="src/engine.js?v=20260928a"></script>
+  <script src="src/net.js?v=20260928a"></script>
+  <script src="src/neon.js?v=20260928a"></script>
+  <script src="src/social.js?v=20260928a"></script>
+  <script src="src/auth.js?v=20260928a"></script>
+  <script src="src/assets.js?v=20260928a"></script>
+  <script src="src/renderer.js?v=20260928a"></script>
+  <script src="src/ui.js?v=20260928a"></script>
+  <script src="src/panels.js?v=20260928a"></script>
+  <script src="src/social-ui.js?v=20260928a"></script>
+  <script src="src/main.js?v=20260928a"></script>
 </body>
 </html>

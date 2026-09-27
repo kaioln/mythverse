@@ -136,6 +136,7 @@
         KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo foi sincronizado; a cópia local anterior ficou preservada.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
         KT.Neon.onStatus = () => ui.renderCloud();
+        KT.Social?.attach(engine, ui);
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });

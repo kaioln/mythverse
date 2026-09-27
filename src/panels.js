@@ -75,6 +75,8 @@
     shop:{ k:'LOJA', t:'Loja da Fenda', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores'], ['gems','Carteira 💠']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
     wiki:{ k:'WIKI', t:'Enciclopédia da Fenda', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado'], ['security','Segurança']] },
+    arena:{ k:'PvP', t:'Arena da Fenda', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
+    guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
     record:{ k:'PERFIL', t:'Conta e Configurações' }, profile:{ k:'JOGADOR', t:'Perfil do jogador' }, help:{ k:'AJUDA', t:'Como jogar' }
   };
   P.openPanel = function(name, param = null) {
@@ -106,7 +108,7 @@
     this.el.modalBackNav.hidden = v.panel !== 'destination';
     this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
     const top = this.el.modalBody.scrollTop;
-    const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel' }[v.panel] || 'helpPanel';
+    const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
@@ -117,9 +119,9 @@
   // ---------------------------------------------------------------------------
   // MAPA
   // ---------------------------------------------------------------------------
-  const MAP_PINS = { village:[46,43], hunt:[48,16], dungeon:[17,38], boss:[13,12], hunt_swamp:[27,60], dungeon_crypt:[10,70], hunt_tide:[66,40], dungeon_tide:[75,73], boss_tide:[87,14], hunt_frost:[9,26], dungeon_forge:[79,31], boss_event:[44,74], rift:[58,60], hunt_desert:[94,46], hunt_ghost:[94,58], dungeon_clock:[94,70], boss_sand:[86,86] };
-  const MAP_LABELS = { village:'Tsukimori', hunt:'Bosque', hunt_swamp:'Pântano', dungeon_crypt:'Cripta', hunt_tide:'Costa', hunt_frost:'Planalto', dungeon:'Templo', dungeon_tide:'Arquivo', dungeon_forge:'Forja', boss:'Eclipse', boss_tide:'Mizuchi', boss_event:'Festival', rift:'Fenda', hunt_desert:'Areias', hunt_ghost:'Fantasmas', dungeon_clock:'Relógio', boss_sand:'Apep' };
-  const CHAPTERS = [[1, 'Capítulo I · O Eclipse', ['hunt','dungeon','boss'], ['hunt_swamp','dungeon_crypt']], [2, 'Capítulo II · A Maré', ['hunt_tide','dungeon_tide','boss_tide'], ['hunt_frost','dungeon_forge']], [3, 'Capítulo III · As Areias do Tempo', ['hunt_desert','dungeon_clock','boss_sand'], ['hunt_ghost']], [8, 'Sem fim', ['rift'], []], [9, 'Evento por calendário', ['boss_event'], []]];
+  const MAP_PINS = { village:[46,43], hunt:[48,16], dungeon:[17,38], boss:[13,12], hunt_swamp:[27,60], dungeon_crypt:[10,70], hunt_tide:[66,40], dungeon_tide:[75,73], boss_tide:[87,14], hunt_frost:[9,26], dungeon_forge:[79,31], boss_event:[44,74], rift:[58,60], hunt_desert:[94,46], hunt_ghost:[94,58], dungeon_clock:[94,70], boss_sand:[86,86], hunt_sky:[66,8], hunt_sakura:[32,24], dungeon_sky:[57,28], boss_sky:[76,6] };
+  const MAP_LABELS = { village:'Tsukimori', hunt:'Bosque', hunt_swamp:'Pântano', dungeon_crypt:'Cripta', hunt_tide:'Costa', hunt_frost:'Planalto', dungeon:'Templo', dungeon_tide:'Arquivo', dungeon_forge:'Forja', boss:'Eclipse', boss_tide:'Mizuchi', boss_event:'Festival', rift:'Fenda', hunt_desert:'Areias', hunt_ghost:'Fantasmas', dungeon_clock:'Relógio', boss_sand:'Apep', hunt_sky:'Ilhas', hunt_sakura:'Cerejeiras', dungeon_sky:'Santuário', boss_sky:'Raijin' };
+  const CHAPTERS = [[1, 'Capítulo I · O Eclipse', ['hunt','dungeon','boss'], ['hunt_swamp','dungeon_crypt']], [2, 'Capítulo II · A Maré', ['hunt_tide','dungeon_tide','boss_tide'], ['hunt_frost','dungeon_forge']], [3, 'Capítulo III · As Areias do Tempo', ['hunt_desert','dungeon_clock','boss_sand'], ['hunt_ghost']], [4, 'Capítulo IV · O Céu Partido', ['hunt_sky','dungeon_sky','boss_sky'], ['hunt_sakura']], [8, 'Sem fim', ['rift'], []], [9, 'Evento por calendário', ['boss_event'], []]];
   P.zoneStatus = function(id) {
     const z = D.zones[id], p = this.state.progress[id] || {}, lock = this.engine.zoneLock(id);
     if (lock.locked) return { cls:'locked', txt:'🔒 Bloqueado' };
@@ -167,6 +169,7 @@
     const rec = e.recommendedPower(id, opts), ratio = pow / rec;
     const ctx = e.ctx(), weak = z.weakTo || [];
     const teamWeak = e.heroes.filter(r => weak.includes(e.template(r.id).el)).length;
+    if (z.kind === 'boss' && p.kills) { const left = e.bossLootLeft(id, opts.tier ?? p.tier ?? 0); recNote += `<p class="note ${left ? '' : 'warn-note'}">Espólio de hoje nesta dificuldade: <b>${left}/${S().BOSS_LOOT_PER_DAY}</b> vitórias com itens, materiais, chaves e carta MVP.${left ? '' : ' Até a meia-noite (Brasília) a vitória rende só ouro e EXP.'}</p>`; }
     const foes = z.kind === 'boss' ? [z.enemy] : [...(z.pool || []), ...(z.elites || []), ...(z.floorBoss ? [z.floorBoss] : [])];
     const bossE = z.kind === 'boss' && D.enemies[z.enemy];
     const zoneSets = I.sets.filter(st => (I.setSources?.[st.id] || []).some(([zid]) => zid === id));
@@ -379,7 +382,7 @@
           const d = tr && chk.ok && !isCur && tab === 'items' ? scoreFor(it) - (cur ? scoreFor(cur) : 0) : null;
           const compare = isCur ? `<span class="compare eq">✓ Equipado em ${esc(tt.name)}</span>` : !chk.ok && tr ? `<span class="compare no">✕ ${esc(chk.reason)}</span>` : d === null ? '' : `<span class="compare ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toLocaleString('pt-BR')} para ${esc(tt.name)}</span>`;
           const actions = tab === 'items'
-            ? `<button class="action small primary" data-equip-target="${it.uid}" type="button" ${chk.ok && !isCur ? '' : 'disabled'}>${isCur ? 'Equipado' : tt ? `Equipar em ${esc(tt.name.split(' ')[0])}` : 'Equipar'}</button><button class="action small" data-lock="${it.uid}" type="button" data-tip="${it.locked ? 'Destrancar' : 'Trancar (protege de desmontagem)'}">${it.locked ? '🔓' : '🔒'}</button><button class="action small" data-salvage="${it.uid}" type="button" ${it.locked || e.ownerOf(it.uid) ? 'disabled' : ''} data-tip="Desmontar: +${v.ore} Tamahagane, +${v.dust} Éter, +${v.gold} ouro">♻</button><button class="action small" data-forge-item="${it.uid}" type="button" data-tip="Refinar na Forja">⚒</button>${this.session?.mode === 'cloud' ? `<button class="action small" data-sell-item="${it.uid}" type="button" data-tip="${it.bound ? 'Item vinculado: não pode ser vendido' : 'Vender no Mercado de Jogadores'}" ${it.locked || it.bound || e.ownerOf(it.uid) ? 'disabled' : ''}>💠</button>` : ''}`
+            ? `<button class="action small primary" data-equip-target="${it.uid}" type="button" ${chk.ok && !isCur ? '' : 'disabled'}>${isCur ? 'Equipado' : tt ? `Equipar em ${esc(tt.name.split(' ')[0])}` : 'Equipar'}</button><button class="action small" data-lock="${it.uid}" type="button" data-tip="${it.locked ? 'Destrancar' : 'Trancar (protege de desmontagem)'}">${it.locked ? '🔓' : '🔒'}</button><button class="action small" data-salvage="${it.uid}" type="button" ${it.locked || e.ownerOf(it.uid) ? 'disabled' : ''} data-tip="Desmontar: +${v.ore} Tamahagane, +${v.dust} Éter, +${v.gold} ouro">♻</button><button class="action small" data-forge-item="${it.uid}" type="button" data-tip="Refinar na Forja">⚒</button>${tradeMode(this) ? `<button class="action small" data-sell-item="${it.uid}" type="button" data-tip="${it.bound ? 'Item vinculado: não pode ser vendido' : 'Vender no Mercado de Jogadores'}" ${it.locked || it.bound || e.ownerOf(it.uid) ? 'disabled' : ''}>💠</button>` : ''}`
             : `<button class="action small primary" data-take-overflow="${it.uid}" type="button" ${inv.length < s.invCap ? '' : 'disabled'}>Para a bolsa</button>`;
           return this.itemCard(it, { flavor:false, compare, actions, reqFor:tr });
         }).join('') || `<p class="collection-empty">${tab === 'items' ? 'Nenhum item aqui. Derrote inimigos para encontrar equipamentos.' : 'O Baú de Excedentes está vazio.'}</p>`}</div>`;
@@ -387,7 +390,7 @@
       body = this.cardsHtml();
     } else if (tab === 'mats') {
       const mats = [{ key:'ore', name:'Tamahagane', have:s.player.ore, text:I.materials.common.text, color:I.materials.common.color }, ...['rare', 'epic', 'legendary'].map(id => { const m = I.materials[id]; return { key:m.key, id, name:m.name, have:s.mats[m.key] || 0, text:m.text, color:m.color, trade:true }; }), { key:'dust', name:'Pó de Éter', have:s.player.dust, text:'Usado para encantar afixos e na culinária da Oficina.', color:'#9fb3ff' }];
-      body = `<div class="mat-grid">${mats.map(m => `<article class="mat-card" style="--mc:${m.color}"><b>${esc(m.name)}</b><em>${U.fmt(m.have)}</em><small>${esc(m.text)}</small>${m.trade && this.session?.mode === 'cloud' ? `<button class="action small" data-go="shop:p2p" type="button">Negociar</button>` : ''}</article>`).join('')}</div>
+      body = `<div class="mat-grid">${mats.map(m => `<article class="mat-card" style="--mc:${m.color}"><b>${esc(m.name)}</b><em>${U.fmt(m.have)}</em><small>${esc(m.text)}</small>${m.trade && tradeMode(this) ? `<button class="action small" data-go="shop:p2p" type="button">Negociar</button>` : ''}</article>`).join('')}</div>
         <p class="note">Aço Estelar cai de elites, guardiões e chefes; Oricalco de chefes de andar e chefes; Adamantina só de chefes em Pesadelo/Inferno, Invasões Mundiais e andares profundos da Fenda. A Oficina transmuta materiais com limite diário.</p>`;
     } else {
       const cons = [['potion', 'Poção de Cura', 'Usada em combate (tecla 1).'], ['elixir', 'Elixir de Energia', 'Usado em combate (tecla 2).'], ['scroll', 'Pergaminho de EXP', 'Use na ficha do herói.'], ...Object.entries(PR.buffs).map(([id, b]) => [id, b.name, b.text, true])];
@@ -613,12 +616,14 @@
   // ---------------------------------------------------------------------------
   const gemFmt = c => `R$ ${(Number(c || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 })}`;
   const gemTxt = c => `💠 ${U.fmt(c || 0)} <small class="dim">(${gemFmt(c)})</small>`;
+  const MKT = ui => ui.session?.mode === 'neon' ? KT.NeonMarket : KT.Net;
+  const tradeMode = ui => ui.session?.mode === 'cloud' || ui.session?.mode === 'neon';
   P.cloudOnly = function(what) { return `<div class="empty-state"><h3>${what}</h3><p>Disponível apenas no servidor oficial, com conta. No modo offline não há negociação entre jogadores.</p></div>`; };
   P.loadMarket = function(force = false) {
     const now = Date.now();
     if (!force && this.mktAt && now - this.mktAt < 15000) return;
     this.mktAt = now;
-    Promise.all([KT.Net.wallet(), KT.Net.market(this.mktFilter || {}), KT.Net.myMarket()]).then(([w, m, mine]) => {
+    Promise.all([MKT(this).wallet(), MKT(this).market(this.mktFilter || {}), MKT(this).myMarket()]).then(([w, m, mine]) => {
       this.wallet = w.ok ? w : { error:w.error }; this.marketCfg = w.config || m.config || this.marketCfg;
       this.mktList = m.ok ? m.listings : []; this.mktErr = m.ok ? null : m.error; this.myMkt = mine.ok ? mine : null;
       this.renderResources(); if (this.view.panel === 'shop' && ['p2p','gems'].includes(this.view.tab)) this.refreshPanel();
@@ -628,7 +633,7 @@
   const priceTxt = (v, cur) => cur === 'gold' ? `<span class="coin-ic" aria-hidden="true"></span> ${U.fmt(v || 0)} <small class="dim">ouro</small>` : gemTxt(v);
   P.mktCurrency = function() { const cfg = this.marketCfg || {}; const f = this.mktFilter || {}; if (f.currency === 'gems' && cfg.enabled !== false) return 'gems'; return cfg.goldMarket === false && cfg.enabled !== false ? 'gems' : 'gold'; };
   P.p2pPanel = function() {
-    if (this.session?.mode !== 'cloud') return this.cloudOnly('Mercado de Jogadores');
+    if (!tradeMode(this)) return this.cloudOnly('Mercado de Jogadores');
     this.loadMarket();
     const f = this.mktFilter || (this.mktFilter = { type:'all', sort:'recent', q:'', slot:'all', rarity:'all', currency:'gold' }), cfg = this.marketCfg || {};
     if (!this.mktList && !this.mktErr) return '<div class="empty-state"><p>Carregando o mercado…</p></div>';
@@ -663,6 +668,7 @@
   P.priceLabel = function(price) { return this.mktCurrency() === 'gold' ? `${U.fmt(price)} de ouro` : `💠 ${U.fmt(price)} (${gemFmt(price)})`; };
   P.listFeeNote = function(price) { const cfg = this.marketCfg || {}; if (this.mktCurrency() !== 'gold') return ''; const fee = Math.max(cfg.goldListFeeMin || 50, Math.ceil(price * (cfg.goldListFeeBps || 100) / 10000)); return ` Taxa de anúncio: <b>${U.fmt(fee)} de ouro</b> (não volta se cancelar).`; };
   P.profilePanel = function(id) {
+    if (this.session?.mode === 'neon') return this.neonSellerPanel(id);
     if (this.session?.mode !== 'cloud') return this.cloudOnly('Perfil de jogador');
     this.profiles = this.profiles || {};
     const c = this.profiles[id];
@@ -680,10 +686,17 @@
       <h4 class="sub-title">Equipe atual</h4><div class="pf-team">${team || '<p class="dim">Sem equipe formada.</p>'}</div>
       <h4 class="sub-title">Anúncios abertos (${p.open})</h4><div class="listing-grid">${(c.listings || []).map(listing).join('') || '<p class="empty-note">Nenhum anúncio aberto.</p>'}</div>`;
   };
+  // Modo Neon: o vendedor é anônimo (referência opaca); mostra o nome e os anúncios abertos.
+  P.neonSellerPanel = function(ref) {
+    const c = (this.profiles = this.profiles || {})[ref];
+    if (!c || Date.now() - c.at > 60_000) { if (!c?.loading) { this.profiles[ref] = { ...(c || {}), loading:true, at:c?.at || 0 }; KT.NeonMarket.market({ seller:ref }).then(m => { this.profiles[ref] = { at:Date.now(), listings:m.ok ? m.listings : [] }; if (this.view.panel === 'profile') this.refreshPanel(); }); } if (!c?.listings) return '<div class="empty-state"><p>Carregando anúncios…</p></div>'; }
+    const ls = c.listings || [], name = ls[0]?.seller || 'Vendedor';
+    return `<div class="profile-head"><div><h3>${esc(name)}</h3><small class="dim">${ls.length} anúncio(s) aberto(s)</small></div></div><div class="listing-grid">${ls.map(l => `<div class="listing">${l.kind === 'item' ? this.itemCard(l.payload) : `<article class="item"><b>${esc(l.name)}</b></article>`}<footer><b class="price">${priceTxt(l.price, 'gold')}</b>${l.mine ? '' : `<button class="action small primary" data-buy-gold="${l.id}" data-price="${l.price}" data-name="${esc(l.name)}" type="button" ${this.state.player.gold >= l.price ? '' : 'disabled'}>Comprar</button>`}</footer></div>`).join('') || '<p class="empty-note">Nenhum anúncio aberto.</p>'}</div>`;
+  };
   P.priceHint = function(item, cur = 'gems') {
     const key = item.kind === 'unique' ? `u:${item.uniqueId}` : item.kind === 'set' ? `s:${item.setId}:${item.slot}` : `b:${item.baseId}:${item.rarity}`, hk = `${cur}|${key}`;
     const h = this.priceHistory?.[hk];
-    if (!h) { this.priceHistory = this.priceHistory || {}; this.priceHistory[hk] = { loading:true }; KT.Net.priceHistory(key, cur).then(r => { this.priceHistory[hk] = r.ok ? r : { sales:[] }; if (this.view.tab === 'p2p') this.refreshPanel(); }); return ''; }
+    if (!h) { this.priceHistory = this.priceHistory || {}; this.priceHistory[hk] = { loading:true }; MKT(this).priceHistory(key, cur).then(r => { this.priceHistory[hk] = r.ok ? r : { sales:[] }; if (this.view.tab === 'p2p') this.refreshPanel(); }); return ''; }
     if (h.loading || !h.sales?.length) return '<p class="dim">Sem vendas recentes desta peça.</p>';
     const prices = h.sales.map(x => x.price).sort((a, b) => a - b), med = prices[Math.floor(prices.length / 2)];
     return `<p class="price-hint">Mediana das últimas ${prices.length} vendas: <b>${priceTxt(med, cur)}</b></p>`;
@@ -898,7 +911,7 @@
         <h4>Bolsa</h4><p>A bolsa começa com ${this.state.invCap || 150} espaços e pode crescer até ${I.MAX_BAG} (Loja). Se ela encher, <b>nada some</b>: os itens novos vão para o <b>Excedente</b> (até ${I.OVERFLOW_CAP}), de onde você pode puxar ou desmontar tudo de uma vez.</p></article>`; break;
       case 'monsters': html = `<article class="wiki-art"><h3>Bestiário</h3><p>Cada criatura derrotada conta para a <b>pesquisa</b>. Níveis em ${D.RESEARCH.levels.map(n => U.fmt(n)).join(' / ')} abates: cada nível dá <b>+${Math.round(D.RESEARCH.dmg * 100)}% de dano</b> contra ela e <b>+${Math.round(D.RESEARCH.card * 100)}% de chance da carta</b>. Variantes <b>Alfa</b> (${pct(D.ALPHA.chance, 1)} por onda nas caçadas) têm ${D.ALPHA.hp}× HP e ${D.ALPHA.atk}× ATK, garantem um item melhor e 5× chance de carta.</p></article>
         <div class="foe-grid">${Object.keys(D.enemies).filter(id => !D.enemies[id].boss).map(id => this.foeCard(id, true)).join('')}</div>`; break;
-      case 'world': html = `${Object.values(D.zones).filter(z => z.kind !== 'village').map(z => `<article class="wiki-zone" data-wiki-entry><img src="${sceneUrl(z.id)}" alt="" loading="lazy"><div><h4>${z.title} <small>${z.kicker}</small></h4><p>${esc(z.lore)}</p><p><b>Desbloqueio:</b> ${this.engine.zoneLock(z.id).reasons.map(r => r.text).join(' · ')}</p>${z.weakTo ? `<p><b>Fraquezas:</b> ${z.weakTo.map(elTag).join(' ')}</p>` : ''}<p><b>Monstros:</b> ${z.kind === 'rift' ? 'mistura de duas regiões por andar (sempre as mesmas para o mesmo andar), guardiões a cada sala 3 e chefes de andar a cada 5 andares.' : (z.kind === 'boss' ? [z.enemy] : z.kind === 'worldboss' ? [...new Set(D.worldBoss.byDay)] : [...z.pool, ...z.elites, ...(z.floorBoss ? [z.floorBoss] : [])]).map(id => D.enemies[id].name).join(', ')}</p></div></article>`).join('')}<h3>Chefes</h3>${Object.values(D.zones).filter(z => z.kind === 'boss').map(z => this.bossInfo(D.enemies[z.enemy])).join('')}<h3>Chefes mundiais</h3>${[...new Set(D.worldBoss.byDay)].map(id => this.bossInfo(D.enemies[id])).join('')}<h4>Dificuldades de chefe</h4><ul>${D.bossTiers.map(t => `<li><b>${t.name}</b>: poder ×${String(t.mult).replace('.', ',')} · recompensas ×${String(t.reward).replace('.', ',')}${t.needKills ? ` · libera após ${t.needKills} vitória(s)` : ''}</li>`).join('')}</ul>
+      case 'world': html = `${Object.values(D.zones).filter(z => z.kind !== 'village' && z.kind !== 'arena').map(z => `<article class="wiki-zone" data-wiki-entry><img src="${sceneUrl(z.id)}" alt="" loading="lazy"><div><h4>${z.title} <small>${z.kicker}</small></h4><p>${esc(z.lore)}</p><p><b>Desbloqueio:</b> ${this.engine.zoneLock(z.id).reasons.map(r => r.text).join(' · ')}</p>${z.weakTo ? `<p><b>Fraquezas:</b> ${z.weakTo.map(elTag).join(' ')}</p>` : ''}<p><b>Monstros:</b> ${z.kind === 'rift' ? 'mistura de duas regiões por andar (sempre as mesmas para o mesmo andar), guardiões a cada sala 3 e chefes de andar a cada 5 andares.' : (z.kind === 'boss' ? [z.enemy] : z.kind === 'worldboss' ? [...new Set(D.worldBoss.byDay)] : [...z.pool, ...z.elites, ...(z.floorBoss ? [z.floorBoss] : [])]).map(id => D.enemies[id].name).join(', ')}</p></div></article>`).join('')}<h3>Chefes</h3>${Object.values(D.zones).filter(z => z.kind === 'boss').map(z => this.bossInfo(D.enemies[z.enemy])).join('')}<h3>Chefes mundiais</h3>${[...new Set(D.worldBoss.byDay)].map(id => this.bossInfo(D.enemies[id])).join('')}<h4>Dificuldades de chefe</h4><ul>${D.bossTiers.map(t => `<li><b>${t.name}</b>: poder ×${String(t.mult).replace('.', ',')} · recompensas ×${String(t.reward).replace('.', ',')}${t.needKills ? ` · libera após ${t.needKills} vitória(s)` : ''}</li>`).join('')}</ul>
         <h4>Eventos mundiais</h4><p>Seguem um calendário fixo pelo horário de Brasília, veja a aba <b>Eventos</b>.</p>
         <h4>Encontros especiais (caçadas)</h4><div class="wiki-grid">${D.encounters.map(en => `<div data-wiki-entry><b>${en.name}</b><small>${en.text}</small></div>`).join('')}${D.blessings.map(b => `<div data-wiki-entry><b>Santuário: ${b.name}</b><small>${b.text}</small></div>`).join('')}</div>`; break;
       case 'events': {
@@ -985,11 +998,13 @@
   // Toda ação que muda o estado passa por this.cmd: no servidor oficial ela é validada e executada lá;
   // no modo offline roda direto no motor.
   P.cmd = function(op, ...args) {
+    if (this.session?.mode === 'neon' && ['marketList', 'marketBuyGold', 'marketClaim'].includes(op)) return KT.NeonMarket.act(this.engine, op, args).then(r => { if (!r.ok && r.error) this.toast(esc(r.error)); this.renderResources(); return r.ok ? r.result : false; });
     if (KT.Server?.enabled) return KT.Server.act(op, args).then(r => { if (!r.ok && r.error) this.toast(esc(r.error)); return r.ok ? r.result : false; });
     try { return Promise.resolve(this.engine[op](...args)); } catch (err) { console.warn(err); return Promise.resolve(false); }
   };
   P.handleAction = function(ev) {
     const b = ev.target.closest('button,[data-talent-node],[data-remove],[data-hero]'); if (!b) return;
+    if (this.socialAction?.(b)) return;
     const d = b.dataset, e = this.engine, s = this.state;
     const refresh = () => { this.refreshPanel(); this.renderResources(); };
     const c = (op, ...a) => this.cmd(op, ...a);
@@ -1080,7 +1095,7 @@
       return;
     }
     if (d.buyListing) { const price = Number(d.price); this.ask('Comprar', `Comprar este anúncio por <b>💠 ${U.fmt(price)}</b> (${gemFmt(price)})? A compra é definitiva.`, [{ id:'yes', label:'Comprar', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') KT.Net.buyListing(Number(d.buyListing)).then(r => { this.toast(r.ok ? 'Comprado! Resgate no Correio.' : esc(r.error), r.ok ? 'gold' : ''); this.loadMarket(true); }); }); return; }
-    if (d.cancelListing) { KT.Net.cancelListing(Number(d.cancelListing)).then(r => { this.toast(r.ok ? 'Anúncio cancelado: o item está no Correio.' : esc(r.error)); this.loadMarket(true); }); return; }
+    if (d.cancelListing) { MKT(this).cancelListing(Number(d.cancelListing)).then(r => { this.toast(r.ok ? 'Anúncio cancelado: o item está no Correio.' : esc(r.error)); this.loadMarket(true); }); return; }
     if (d.claimMail) { run('marketClaim', [Number(d.claimMail)], r => { if (r) { if (r.kind === 'item') this.newItems++; this.toast('Resgatado do Correio!', 'gold'); this.loadMarket(true); } }); return; }
     if (d.seller) { this.openPanel('profile', d.seller); return; }
     if (b.hasAttribute('data-deposit')) { const v = Math.round(Number(this.el.modalBody.querySelector('#dep-amount')?.value) * 100); KT.Net.deposit(v).then(r => { const out = this.el.modalBody.querySelector('#dep-out'); if (!r.ok) { this.toast(esc(r.error)); return; } if (r.credited) { this.toast('Depósito creditado (modo de teste).', 'gold'); this.loadMarket(true); return; } if (out) out.innerHTML = `<div class="recovery-code">${r.pixCopyPaste ? `<code>${esc(r.pixCopyPaste)}</code>` : ''}${r.checkoutUrl ? `<a class="action primary" href="${esc(r.checkoutUrl)}" target="_blank" rel="noopener">Abrir pagamento</a>` : ''}</div><p class="note">O saldo entra assim que o provedor confirmar o pagamento.</p>`; }); return; }

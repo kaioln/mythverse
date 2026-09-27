@@ -35,7 +35,7 @@ D.roster.forEach(h => { const b = KT.Builds.buildFor(h.id); ok(b && KT.Builds.es
 ok(new Set(Object.values(KT.Builds.essences).map(e => e.name)).size === 60, 'essências únicas');
 // Eventos por calendário (data e hora de Brasília)
 const evAt = (iso) => State.activeEvent(Date.parse(iso));
-ok(evAt('2026-09-26T23:30:00-03:00').id === 'bloodmoon' && evAt('2026-09-26T20:00:00-03:00').id === 'festival' && evAt('2026-09-24T20:30:00-03:00').id === 'calm' && evAt('2026-09-23T21:00:00-03:00').id === 'festival', 'calendário de eventos');
+ok(evAt('2026-09-26T23:30:00-03:00').id === 'bloodmoon' && evAt('2026-09-26T20:00:00-03:00').id === 'festival' && evAt('2026-09-24T07:00:00-03:00').id === 'calm' && evAt('2026-09-24T20:30:00-03:00').id === 'oninight' && evAt('2026-09-25T15:00:00-03:00').id === 'sakura' && evAt('2026-09-23T21:00:00-03:00').id === 'festival', 'calendário de eventos');
 ok(evAt('2026-09-26T12:10:00-03:00').ends === Date.parse('2026-09-26T14:00:00-03:00'), 'evento termina na hora marcada');
 ok(State.upcomingEvents(Date.parse('2026-09-26T12:00:00-03:00')).length >= 20, 'agenda da semana');
 
@@ -70,6 +70,59 @@ ok(!engine.setParty(1, state.formation[0]) || new Set(state.formation).size === 
   const old = State.mergeState({ version:3, player:{}, collection:[], formation:[null,null,null,null], inventory:[], cards:{ card_fox:1 } });
   ok(old.buildings.house === 1 && Array.isArray(old.house.display) && old.house.seen.card_fox, 'saves antigos ganham Casa do Time e Álbum');
   ok(I.cards.every(c => c.chance <= 1 / 1500), 'cartas continuam raríssimas'); }
+// Quebra de postura e Elo Kizuna.
+{ const e2 = new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {});
+  ok(e2.enterZone('hunt', { stage:1 }), 'entra na caçada para testar o combate');
+  const boss = e2.makeEnemyUnit('golem_elder', 1), hero = e2.party[0];
+  boss.windup = 2; boss.windupSpecial = { name:'Teste', eff:[] };
+  for (let k = 0; k < 400 && !(boss.broken > 0); k++) { boss.hp = boss.maxHp; e2.addBreak(hero, boss, boss.maxHp * .02, 'ult', 1); }
+  ok(boss.broken > 0 && !boss.windupSpecial && boss.windup === 0, 'postura cheia atordoa e cancela o ataque preparado');
+  ok(!e2.canAct(boss) && boss.breakMax > State.BREAK.max, 'inimigo quebrado não age e a próxima quebra exige mais');
+  const minion = e2.makeEnemyUnit('fox', 1); e2.addBreak(hero, minion, minion.maxHp, 'ult', 1.3);
+  ok(!(minion.broken > 0), 'monstros comuns não têm postura');
+  e2.enemies = [Object.assign(e2.makeEnemyUnit('golem_elder', 1), { maxHp:1e12, hp:1e12 })]; e2.phase = 'fight'; e2.party.forEach(u => { u.energy = 100; });
+  e2.castUlt(0, true); e2.zoneElapsed += 1; e2.castUlt(1, true);
+  ok(e2.ultChain === 2, 'duas ultimates seguidas de heróis diferentes formam Elo ×2');
+  e2.zoneElapsed += 1; e2.party[2].energy = 100; e2.castUlt(2, true); e2.zoneElapsed += 1; e2.party[3].energy = 100; e2.castUlt(3, true);
+  ok(e2.ultChain === 0 && (e2.state.stats.chains || 0) >= 4, 'quatro elos disparam o golpe final da equipe');
+  e2.enemies = [e2.makeEnemyUnit('golem_elder', 1)]; e2.party.forEach(u => { u.alive = true; u.hp = u.maxHp; u.effects = []; }); e2.party[0].energy = 100; e2.zoneElapsed += 10; e2.castUlt(0, true); ok(e2.ultChain === 1, 'elo reinicia depois da janela de 4s'); }
+// Economia: bolsa cheia não esconde itens valiosos; chefes e materiais raros têm limite diário.
+{ const st = State.mergeState(JSON.parse(JSON.stringify(state))), e3 = new CombatEngine(st, {});
+  st.inventory = []; st.overflow = []; while (st.inventory.length < st.invCap) st.inventory.push(I.makeItem({ ilvl:5, rarity:'common' }));
+  const leg = I.makeItem({ ilvl:20, rarity:'legendary' }); e3.addItem(leg);
+  ok(st.inventory.includes(leg) && !leg.inOverflow && st.overflow.length === 1 && st.inventory.length === st.invCap, 'lendário com bolsa cheia fica na bolsa e o comum mais fraco vai para os Excedentes');
+  st.overflow = Array.from({ length:I.OVERFLOW_CAP }, () => I.makeItem({ ilvl:20, rarity:'epic' })); st.inventory.forEach(x => { x.locked = true; });
+  const leg2 = I.makeItem({ ilvl:20, rarity:'legendary' }); e3.addItem(leg2); ok(st.overflow.includes(leg2), 'épico ou melhor nunca é destruído, mesmo com tudo cheio');
+  const common = I.makeItem({ ilvl:20, rarity:'common' }); const n0 = st.overflow.length; e3.addItem(common); ok(common.autoSalvaged && st.overflow.length === n0, 'baú cheio só de itens bons desmonta o comum novo');
+  st.progress.boss.kills = 5; e3.zone = D.zones.boss; e3.opts = { tier:0 }; e3.runLoot = [];
+  const left0 = e3.bossLootLeft('boss', 0); for (let k = 0; k < State.BOSS_LOOT_PER_DAY; k++) e3.bossClear();
+  ok(left0 === State.BOSS_LOOT_PER_DAY && e3.bossLootLeft('boss', 0) === 0, 'espólio de chefe conta por dia');
+  const star0 = st.mats.star, keys0 = st.player.keys, inv0 = st.stats.loot; e3.bossClear();
+  ok(e3.lastResult.lootLocked && st.mats.star === star0 && st.player.keys === keys0 && st.stats.loot === inv0 && e3.lastResult.rewards.gold > 0, 'depois do limite o chefe rende só ouro e EXP');
+  st.bossLoot.date = '1999-01-01'; ok(e3.bossLootLeft('boss', 0) === State.BOSS_LOOT_PER_DAY, 'espólio renova no dia seguinte');
+  e3.zone = D.zones.rift; e3.opts = { floor:30 }; const ori0 = st.mats.ori, adam0 = st.mats.adam;
+  const rng = Math.random; Math.random = () => 0; for (let k = 0; k < 50; k++) e3.dropMats('rift'); Math.random = rng;
+  ok(st.mats.ori - ori0 === State.DAILY_MAT_CAP.ori && st.mats.adam - adam0 === State.DAILY_MAT_CAP.adam, 'Oricalco e Adamantina de fontes repetíveis respeitam o teto diário'); }
+// Arena PvP: luta completa contra a defesa (instantâneo) de outro jogador, reprodutível pela semente.
+{ const snap = JSON.parse(JSON.stringify(new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {}).pvpSnapshot()));
+  ok(snap.length === 4 && snap.every(h => h.id && h.st && h.st.atk > 0 && h.maxHp > 0 && !h.st.template), 'instantâneo de defesa só com números');
+  const duel = (inputs = []) => { const st = State.mergeState(JSON.parse(JSON.stringify(state))); const rec = []; const e = new CombatEngine(st, { onArena:r => rec.push(r) });
+    e.arenaFoe = { name:'Rival', mmr:1000, defense:snap, seed:4242 };
+    const gold0 = st.player.gold, kills0 = st.stats.kills; ok(e.enterZone('arena'), 'entra na Arena com defesa rival');
+    ok(e.enemies.length === 4 && e.enemies.every(u => u.rival && u.side === 'enemy' && u.specials.length), 'rivais são heróis com habilidade e ultimate telegrafada');
+    let guard = 0; while (!rec.length && guard++ < 4000) { inputs.filter(x => x.t === e.seg?.tick).forEach(x => e.input(x.k, x.a)); e.tick(); }
+    ok(rec.length === 1 && typeof rec[0].won === 'boolean' && rec[0].endTick > 0, 'a luta termina e entrega o resultado');
+    ok(st.player.gold === gold0 && st.stats.kills === kills0, 'arena não dá ouro nem conta abates de PvE');
+    return rec[0]; };
+  const a = duel(), b = duel(); ok(a.won === b.won && a.endTick === b.endTick, 'mesma semente e mesmos comandos: mesmo resultado');
+  ok(!new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {}).enterZone('arena'), 'sem defesa rival não há arena');
+  const e5 = new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {}), star0 = e5.state.mats.star, inv0 = e5.state.inventory.length;
+  ok(e5.pvpGrant('star') && e5.state.mats.star === star0 + 1 && e5.pvpGrant('glad_weapon') && e5.state.inventory.length === inv0 + 1 && e5.state.inventory[0].setId === 'gladiator', 'Loja de Honra entrega material e peça do Gladiador');
+  ok(D.PVP_SHOP.every(o => fs.readFileSync(path.join(root, 'tools/neon_social.sql'), 'utf8').includes(`('${o.id}', ${o.price}, ${o.limit})`)), 'preços da Loja de Honra batem com o banco'); }
+// Capítulo IV
+['hunt_sky','hunt_sakura','dungeon_sky','boss_sky'].forEach(id => ok(D.zones[id] && fs.existsSync(path.join(root, 'assets/scenes', id + '.png')), 'região do Capítulo IV: ' + id));
+ok(D.zones.hunt_sky.unlock.kills.boss_sand === 1 && D.enemies.boss_sky.boss && D.guide.some(g => g.id === 'g_raijin'), 'Capítulo IV liberado depois de Apep, com chefe e guia');
+ok(['sakura','oninight','aether'].every(id => D.worldEvents.some(w => w.id === id) && D.eventSchedule.some(w => w.id === id)), 'eventos novos no calendário');
 
 // ---------- caçada ----------
 ok(engine.enterZone('hunt', { stage:1 }) && engine.active && engine.enemies.length >= 2, 'caçada inicia');

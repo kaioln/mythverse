@@ -111,6 +111,29 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   lagging.lastSeen = Date.now() + 60_000; Neon.pending = null; Neon.clearJournal();
   assert.equal((await Neon.loadSave()).player.gold, 100, 'save da nuvem mais novo (outro aparelho) vence');
 
+  // Mercado de Jogadores no modo Neon: o motor tira/devolve do save e o banco faz a custódia.
+  { const { NeonMarket, CombatEngine, Items:I } = global.KT;
+    const st = State.createState(); st.player.gold = 10000; const eng = new CombatEngine(st, {}); eng.save = () => true; Neon.flush = async () => true;
+    const it = I.makeItem({ ilvl:5, rarity:'epic' }); st.inventory.push(it);
+    let calls = [];
+    Neon.api = async (method, p, body) => { calls.push([method, p, body]); if (p.startsWith('/rpc/mv_market_list')) return { ok:false, error:'offline' }; return { ok:true, data:[] }; };
+    let r = await NeonMarket.act(eng, 'marketList', [{ kind:'item', itemUid:it.uid, price:5000 }]);
+    assert.ok(!r.ok && st.inventory.some(x => x.uid === it.uid) && st.player.gold === 10000, 'anúncio que falha devolve o item e não cobra taxa');
+    Neon.api = async (method, p) => p.startsWith('/rpc/mv_market_list') ? { ok:true, data:77 } : { ok:true, data:[] };
+    r = await NeonMarket.act(eng, 'marketList', [{ kind:'item', itemUid:it.uid, price:5000 }]);
+    assert.ok(r.ok && !st.inventory.some(x => x.uid === it.uid) && st.player.gold === 10000 - 50, 'anúncio tira o item da bolsa e cobra a taxa mínima');
+    const card = I.cards[0]; st.cards[card.id] = 1;
+    r = await NeonMarket.act(eng, 'marketList', [{ kind:'card', cardId:card.id, price:40 }]);
+    assert.ok(!r.ok && st.cards[card.id] === 1, 'preço abaixo do mínimo é recusado sem tirar a carta');
+    const bought = I.makeItem({ ilvl:5, rarity:'rare' });
+    Neon.api = async (method, p) => p.startsWith('/mv_market?') ? { ok:true, data:[{ price:3000, mine:false }] } : p === '/rpc/mv_market_buy' ? { ok:true, data:{ id:9, price:3000, kind:'item', name:bought.name } }
+      : p.startsWith('/mv_mail') ? { ok:true, data:[{ id:5, kind:'item', payload:bought, reason:'Compra' }] } : p === '/rpc/mv_mail_claim' ? { ok:true, data:{ id:5, kind:'item', payload:bought } } : { ok:true, data:[] };
+    r = await NeonMarket.act(eng, 'marketBuyGold', [9]);
+    assert.ok(r.ok && r.result.delivered === 'bag' && st.inventory.some(x => x.name === bought.name) && st.player.gold === 9950 - 3000, 'compra desconta o ouro e entrega na bolsa');
+    Neon.api = async () => ({ ok:true, data:{ id:6, kind:'gold', payload:{ amount:4750 } } });
+    r = await NeonMarket.act(eng, 'marketClaim', [6]);
+    assert.ok(r.ok && st.player.gold === 6950 + 4750, 'ouro da venda chega pelo correio'); }
+
   Neon.pending = null; Neon.clearJournal(); Neon.conflict = false;
   let requests = 0;
   global.fetch = async () => ({ ok:true, status:200, json:async () => ({ ok:true, state:State.createState(), revision:2 }) });
@@ -119,5 +142,5 @@ for (const file of ['src/data.js','src/utils.js','src/items.js','src/progression
   global.fetch = async (...args) => { requests++; return originalFetch(...args); };
   assert.ok((await Server.flush()).ok && requests === 1, 'salvar agora confirma a escrita com o servidor');
 
-  console.log(JSON.stringify({ ok:true, checks:21 }));
+  console.log(JSON.stringify({ ok:true, checks:26 }));
 })().catch(err => { console.error(err); process.exit(1); });

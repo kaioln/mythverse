@@ -21,6 +21,14 @@ node --env-file=.env tools/neon_setup.js
 
 5. Em `src/config.js`, `neon` aponta para o banco (URL sem usuário e senha). Commit e push para o GitHub Pages.
 
+## Mercado de Jogadores (ouro)
+
+Rodar `node --env-file=.env tools/neon_setup.js` também cria o mercado: `mv_listings` (anúncios), `mv_mail` (correio), as visões públicas `mv_market` e `mv_sales` e as funções `mv_market_list`, `mv_market_buy`, `mv_market_cancel` e `mv_mail_claim`. O banco garante que um anúncio só é vendido uma vez, que o correio só é resgatado uma vez, que o vendedor recebe o preço menos 5% de imposto e que cada conta tem no máximo 20 anúncios abertos. A vitrine nunca mostra o id da conta do vendedor. Teste local: `node tests/neon_market.test.js` (Postgres embutido).
+
+## Arena, Guildas e Guerra
+
+`tools/neon_social.sql` (aplicado pelo mesmo `neon_setup.js`) cria a Arena PvP, a Loja de Honra, as Guildas e a Guerra de Guildas. **Honra, MMR, ingressos diários, limites semanais, cargos e pontos de guerra vivem no banco** e só mudam por funções. Cada luta guarda a semente sorteada pelo banco e os comandos do jogador, para um servidor poder refazê-la no futuro. Teste local: `node tests/neon_social.test.js`.
+
 ## Limites deste modo
 
-Sem servidor Node, o combate e as recompensas são calculados no navegador e o save é enviado pelo jogador. Isso serve para **testar contas, login, cadastro, saves e ranking**, mas não tem a proteção antitrapaça do servidor autoritativo: um jogador técnico consegue editar o próprio save e o ranking. Mercado de Jogadores, Gemas, perfis públicos e a Invasão Mundial compartilhada dependem do servidor Node e ficam indisponíveis neste modo. Para lançar com dinheiro real, rode o servidor (`DEPLOY.md`) usando o mesmo Neon como banco (`DATABASE_URL`).
+Sem servidor Node, o combate e as recompensas são calculados no navegador e o save é enviado pelo jogador. Isso serve para **testar contas, login, cadastro, saves e ranking**, mas não tem a proteção antitrapaça do servidor autoritativo: um jogador técnico consegue editar o próprio save e o ranking. Neste modo quem informa o resultado da luta PvP é o navegador (o banco recusa durações impossíveis e conta abandono como derrota, mas um jogador técnico ainda poderia forjar uma vitória). Para lançar, rode o servidor Node, que refaz cada luta. Gemas (dinheiro real), perfis públicos completos e a Invasão Mundial compartilhada dependem do servidor Node. No Mercado em ouro, o banco protege a troca (nada é vendido ou resgatado duas vezes), mas o ouro e os itens continuam no save do jogador, que ele consegue editar e ficam indisponíveis neste modo. Para lançar com dinheiro real, rode o servidor (`DEPLOY.md`) usando o mesmo Neon como banco (`DATABASE_URL`).

@@ -1445,3 +1445,77 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
   .modal-body{padding:12px 12px calc(84px + env(safe-area-inset-bottom))}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* Postura do chefe */
+.boss-break{position:relative;height:9px;margin:5px 0 3px;border-radius:6px;background:rgba(10,8,24,.8);border:1px solid rgba(255,179,92,.35);overflow:hidden}
+.boss-break span{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#ff9a3b,#ffe08a);transition:width .15s}
+.boss-break em{position:absolute;right:6px;top:50%;transform:translateY(-50%);font:800 8px var(--ui);font-style:normal;letter-spacing:.14em;color:rgba(255,255,255,.75)}
+.boss-break.broken{border-color:#fff1c9;box-shadow:0 0 14px rgba(255,225,150,.55)}
+.boss-break.broken span{background:linear-gradient(90deg,#fff1c9,#ffffff)}
+.boss-break.broken em{color:#3a2206}
+/* ---------- Cidade: cartão de visitas ---------- */
+.village-hub{position:absolute;right:14px;top:14px;z-index:3;width:min(350px,33%);padding:14px 16px;border-radius:18px;background:var(--grain),linear-gradient(160deg,rgba(38,26,62,.93),rgba(14,11,30,.95));border:1px solid rgba(255,207,107,.35);box-shadow:0 18px 44px rgba(0,0,0,.5),inset 0 1px rgba(255,255,255,.06);backdrop-filter:blur(10px);animation:hubIn .6s var(--ease)}
+.village-hub::before{content:"";position:absolute;left:18px;right:18px;top:0;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--sakura),transparent)}
+.village-hub h3{margin:4px 0 4px;font:24px/1.1 var(--display)}
+.village-hub p{margin:0 0 12px;color:#ddd6f3;font-size:13px;line-height:1.45}
+.hub-actions{display:flex;gap:8px;flex-wrap:wrap}.hub-actions .action{flex:1 1 auto;min-height:40px}
+@keyframes hubIn{from{opacity:0;transform:translateY(14px)}}
+.signpost{position:absolute}
+.sp-badge{position:absolute;top:-8px;right:-8px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;display:grid;place-items:center;font:800 11px/1 var(--ui);font-style:normal;color:#2a1706;background:linear-gradient(180deg,#ffe6a6,var(--gold2));border:2px solid #1a0f2e;box-shadow:0 4px 12px rgba(242,161,59,.5)}
+.signpost.ready{border-color:rgba(255,207,107,.85)}
+.signpost:hover{transform:translate(-50%,-56%) scale(1.04)}
+.signpost{transition:transform .25s var(--ease),border-color .2s,box-shadow .2s}
+@media (max-width:760px){.village-hub{display:none}.sp-badge{top:-6px;right:-6px;min-width:17px;height:17px;font-size:9px}}
+
+/* ---------- Arena PvP ---------- */
+.arena-hero,.guild-hero,.war-hero{position:relative;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,207,107,.3);background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.7)),url('assets/scenes/boss_event.png') center/cover;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.arena-crest{display:grid;place-items:center;width:104px;height:104px;flex:none;border-radius:26px;text-align:center;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.22),rgba(255,255,255,.04) 60%),rgba(10,8,22,.7);border:2px solid var(--tc);box-shadow:0 0 0 4px rgba(0,0,0,.25),0 0 24px color-mix(in srgb,var(--tc) 45%,transparent)}
+.arena-crest b{font:22px var(--display);color:var(--tc)}.arena-crest small{display:block;font-weight:800;font-size:11px;color:#eee}
+.arena-copy{flex:1;min-width:240px}.arena-copy h3,.guild-hero h3,.war-hero h3{margin:4px 0 6px;font:26px var(--display)}
+.arena-copy p,.guild-hero p,.war-hero p{margin:0;color:#e2dcf6;font-size:13.5px;line-height:1.5}
+.arena-cta{display:flex;flex-direction:column;gap:8px}
+.tier-tag{display:inline-block;padding:2px 8px;border-radius:999px;font:800 10.5px var(--ui);letter-spacing:.08em;text-transform:uppercase;color:#1a0f2e;background:var(--tc)}
+.foe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.foe-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;background:var(--grain),var(--card-bg);border:1px solid rgba(255,255,255,.1);border-top:3px solid var(--tc,var(--gold));transition:transform .2s var(--ease)}
+.foe-card:hover{transform:translateY(-3px)}
+.foe-card header{display:flex;flex-direction:column;gap:3px}.foe-card header b{font:18px var(--display)}.foe-card header small{color:var(--muted);font-size:12px}
+.foe-card.beaten{opacity:.75}
+.foe-faces{display:flex;gap:6px}.foe-faces img{width:48px;height:48px;border-radius:12px;object-fit:cover;border:2px solid rgba(255,255,255,.15);background:#1a1733}
+.arena-week{display:flex;align-items:center;gap:14px;justify-content:space-between;margin-top:14px}.arena-week small{display:block;color:var(--muted);margin-top:3px}
+.arena-rules{margin-top:12px}.arena-rules ul{margin:6px 0 0;padding-left:18px;color:#ddd6f3;font-size:13px;line-height:1.6}
+.honor-card button{margin-top:auto}
+.rank-table{display:flex;flex-direction:column;gap:6px}
+.rank-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.rank-row.me{border-color:var(--gold);background:rgba(255,207,107,.08)}.rank-row.win b{color:var(--green)}.rank-row.lose b{color:var(--red)}
+.rank-row small{color:var(--muted)}.gtag{font-style:normal;color:var(--gold);font-weight:800}
+.arena-result-line{font:18px var(--display);color:var(--gold)}
+
+/* ---------- Guildas ---------- */
+.guild-hero{background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.72)),url('assets/scenes/village-expanded.png') center/cover}
+.guild-hero>div{flex:1;min-width:240px}
+.guild-emblem{display:grid;place-items:center;width:84px;height:84px;flex:none;border-radius:24px;font-size:44px;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.2),rgba(255,255,255,.04) 62%),rgba(10,8,22,.65);border:2px solid rgba(255,207,107,.5)}
+.guild-emblem.sm{width:52px;height:52px;font-size:26px;border-radius:14px}
+.guild-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px}
+.perk-list{display:flex;flex-wrap:wrap;gap:6px}.perk-list span{padding:6px 10px;border-radius:10px;font-size:12px;color:var(--dim);background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.perk-list span b{margin-right:6px}.perk-list span.on{color:#d7fff0;border-color:rgba(111,216,184,.5);background:rgba(111,216,184,.1)}
+.gm-list{display:flex;flex-direction:column;gap:6px}
+.gm-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.gm-row small{color:var(--muted);flex:1;min-width:180px}.gm-acts{display:flex;gap:4px;flex-wrap:wrap}
+.gm-role{padding:2px 8px;border-radius:8px;font:800 10px var(--ui);text-transform:uppercase;letter-spacing:.06em;background:rgba(255,255,255,.08)}
+.gm-role.r-leader{color:#2a1706;background:var(--gold)}.gm-role.r-officer{color:#0f2b24;background:var(--jade)}
+.guild-feed{display:flex;flex-direction:column;gap:6px;max-height:460px;overflow:auto;padding-right:4px}
+.feed-row{display:flex;gap:8px;align-items:baseline;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);font-size:13px}
+.feed-row span{flex:1}.feed-row small{color:var(--dim);font-size:11px}.feed-row.event{color:#ffe3a0;background:rgba(255,207,107,.06)}
+.guild-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;align-items:center}
+.guild-form input,.card-sell input{min-height:38px;padding:0 12px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid var(--line2);color:var(--text)}
+.guild-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.guild-card{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;background:var(--grain),var(--card-bg);border:1px solid var(--line)}
+.guild-card>div{flex:1}.guild-card small{display:block;color:var(--muted);margin-top:2px}.guild-card p{margin:6px 0 0;font-size:12.5px;color:#d9d3ef}
+
+/* ---------- Guerra de Guildas ---------- */
+.war-hero{flex-direction:column;align-items:stretch;background:var(--grain),linear-gradient(90deg,rgba(24,8,16,.95),rgba(24,8,16,.7)),url('assets/scenes/boss.png') center/cover;border-color:rgba(255,93,108,.4)}
+.war-hero.live{box-shadow:0 0 0 1px rgba(255,93,108,.3),0 16px 40px rgba(255,93,108,.12)}
+.war-score{display:flex;align-items:center;justify-content:center;gap:24px;margin:10px 0}
+.war-score>div{text-align:center;min-width:160px}.war-score b{display:block;font:18px var(--display)}.war-score em{display:block;font:54px/1 var(--display);font-style:normal;color:var(--gold);text-shadow:0 0 22px rgba(255,207,107,.35)}
+.war-score small{color:var(--muted)}.war-score>span{font:28px var(--display);color:var(--sakura)}
+@media (max-width:900px){.guild-grid{grid-template-columns:minmax(0,1fr)}.war-score em{font-size:40px}.arena-crest{width:80px;height:80px}}
+.foe-card header .tier-tag{align-self:flex-start}

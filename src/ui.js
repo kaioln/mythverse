@@ -24,12 +24,12 @@
         zoneTitle:$('#zone-title'), zoneKick:$('#zone-kicker'), difficulty:$('#zone-difficulty'), wave:$('#wave-label'), powerCheck:$('#power-check'),
         locations:$('#village-actions'), viewport:$('#viewport'), canvas:$('#game-canvas'), hint:$('#stage-hint'), warn:$('#warn-banner'), result:$('#result-overlay'), dialog:$('#dialog-box'), choice:$('#choice-modal'),
         party:$('#party-strip'), cons:$('#consumables'), potionBtn:$('#potion-btn'), elixirBtn:$('#elixir-btn'), potionCount:$('#potion-count'), elixirCount:$('#elixir-count'),
-        bossPanel:$('#boss-panel'), bossKind:$('#boss-kind'), bossName:$('#boss-name'), bossFill:$('#boss-fill'), bossChip:$('#boss-chip'), bossShield:$('#boss-shield'), bossPercent:$('#boss-percent'), bossPhase:$('#boss-phase'), bossTimer:$('#boss-timer'), bossMark1:$('#boss-mark-1'), bossMark2:$('#boss-mark-2'),
+        bossPanel:$('#boss-panel'), bossBreak:$('#boss-break'), bossBreakFill:$('#boss-break-fill'), bossBreakLabel:$('#boss-break-label'), bossKind:$('#boss-kind'), bossName:$('#boss-name'), bossFill:$('#boss-fill'), bossChip:$('#boss-chip'), bossShield:$('#boss-shield'), bossPercent:$('#boss-percent'), bossPhase:$('#boss-phase'), bossTimer:$('#boss-timer'), bossMark1:$('#boss-mark-1'), bossMark2:$('#boss-mark-2'),
         guide:$('#guide-card'), event:$('#event-card'), rightObjectives:$('#right-objectives'), rightLoot:$('#right-loot'), rightCombat:$('#right-combat'), lootToast:$('#loot-toast-area'),
         inventoryBadge:$('#inventory-badge'), adventureBadge:$('#adventure-badge'), questBadge:$('#quest-badge'), summonBadge:$('#summon-badge'), talentBadge:$('#talent-badge'), partyBadge:$('#party-badge'),
         auto:$('#auto-btn'), advance:$('#advance-btn'), speed:$('#speed-btn'), retreat:$('#retreat-btn'),
         modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'), modalBackNav:$('#modal-back-nav'),
-        toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
+        villageHub:$('#village-hub'), toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
       };
     }
 
@@ -78,7 +78,7 @@
       this.el.modalTabs.addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { this.view.tab = b.dataset.tab; this.refreshPanel(); } });
       this.el.modalBody.addEventListener('input', e => this.handleInput(e));
       this.el.modalBody.addEventListener('change', e => this.handleInput(e));
-      [this.el.result, this.el.hint, this.el.guide, this.el.choice, this.el.rightObjectives, this.el.event].forEach(n => n.addEventListener('click', e => this.handleAction(e)));
+      [this.el.villageHub, this.el.result, this.el.hint, this.el.guide, this.el.choice, this.el.rightObjectives, this.el.event].forEach(n => n.addEventListener('click', e => this.handleAction(e)));
       this.el.dialog.addEventListener('click', () => this.advanceDialog());
       this.el.reveal.addEventListener('click', () => this.closeReveal());
       // Foco em inimigos.
@@ -155,8 +155,9 @@
       if (z.kind === 'dungeon') { diff = `Andar ${['I','II','III'][e.opts.floor - 1]}`; wave = `Sala ${e.room}/5`; }
       if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido!' : `Sala ${e.room}/${D.RIFT.rooms}`; }
       if (z.kind === 'boss') { diff = D.bossTiers[e.opts.tier || 0].name; wave = `Fase ${(e.bossPhase || 0) + 1}/3`; }
+      if (z.kind === 'arena') { diff = `vs ${e.arenaFoe?.name || 'rival'}`; wave = e.phase === 'fight' ? `⏱ ${Math.max(0, Math.ceil(D.PVP.time - (e.arenaTime || 0)))}s` : 'Arena'; }
       this.el.difficulty.textContent = diff; this.el.wave.textContent = wave;
-      if (z.kind !== 'village') {
+      if (z.kind !== 'village' && z.kind !== 'arena') {
         const rec = e.recommendedPower(z.id, e.opts), pow = e.getPower(), ratio = pow / rec;
         this.el.powerCheck.hidden = false; this.el.powerCheck.className = ratio >= 1 ? 'ok' : ratio >= .8 ? 'warn' : 'bad';
         this.el.powerCheck.textContent = `⚔ ${compact(pow)} / ${compact(rec)}`;
@@ -164,6 +165,7 @@
       } else this.el.powerCheck.hidden = true;
       this.el.locations.hidden = z.kind !== 'village' || this.engine.heroes.length < 4;
       document.querySelector('#journey-cta').hidden = this.el.locations.hidden;
+      this.renderVillage();
       this.el.cons.hidden = z.kind === 'village';
       const needTeam = this.engine.heroes.length < 4;
       const key = needTeam ? `team-${this.engine.heroes.length}-${this.state.starterRolls}` : z.kind === 'village' ? 'village' : '';
@@ -178,6 +180,30 @@
       this.el.potionCount.textContent = c.potion; this.el.elixirCount.textContent = c.elixir;
       this.el.potionBtn.disabled = !c.potion || e.potionCd > 0 || e.phase !== 'fight'; this.el.elixirBtn.disabled = !c.elixir || e.elixirCd > 0 || e.phase !== 'fight';
       this.el.potionBtn.style.setProperty('--cd', e.potionCd / 20); this.el.elixirBtn.style.setProperty('--cd', e.elixirCd / 30);
+    }
+
+    // Cidade: painel de boas-vindas e selos vivos nas placas dos distritos.
+    renderVillage() {
+      const hub = this.el.villageHub, show = !this.el.locations.hidden;
+      hub.hidden = !show; if (!show) { this.villageKey = ''; return; }
+      const s = this.state, e = this.engine, ev = e.event(), PRG = KT.Progression;
+      const hour = new Date(e.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
+      const greet = hour < 5 ? 'Boa madrugada' : hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+      const hz = D.zones[s.lastHunt] || D.zones.hunt, hp = s.progress[hz.id] || {}, stage = Math.max(1, Math.min(hz.stages || 1, hp.cur || hp.best || 1));
+      const exp = s.expeditions.filter(x => e.now() >= x.start + x.hours * 3600000).length;
+      const contracts = (s.contracts || []).filter(c => c.progress >= c.n).length, daily = (s.daily?.list || []).filter(x => x.progress >= x.n && !x.claimed).length;
+      const shown = s.house?.display || [], freeSlots = e.houseSlots() - shown.filter(Boolean).length, freeCards = Object.entries(s.cards).some(([id, n]) => n > 0 && !shown.includes(id));
+      const cap = PRG.trainingCap(s.buildings.dojo), dojo = Object.keys(PRG.training).filter(k => (s.training[k] || 0) < cap && s.player.gold >= PRG.trainingCost(s.training[k] || 0)).length;
+      const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
+      const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
+      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); });
+      const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
+      const key = [greet, hz.id, stage, pending, ev.id, s.player.name].join('|'); if (key === this.villageKey) return; this.villageKey = key;
+      const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${ev.icon} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
+      hub.innerHTML = `<span class="eyebrow">${greet}, ${esc(s.player.name || 'Viajante')}</span>
+        <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
+        <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button">⚔ Continuar: ${esc(hz.title)} · ${stage}</button>
+        <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `🎁 ${pending} para resgatar` : '🗺 O que fazer agora'}</button></div>`;
     }
 
     renderParty() {
@@ -236,6 +262,8 @@
       if (phases[1]) this.el.bossMark1.style.left = `${phases[1].at * 100}%`; if (phases[2]) this.el.bossMark2.style.left = `${phases[2].at * 100}%`;
       this.el.bossPhase.textContent = boss.windup > 0 ? `⚠ Preparando ${boss.windupSpecial?.name || 'ataque'}!` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
       this.el.bossPanel.classList.toggle('danger', boss.windup > 0);
+      const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.BREAK.time : U.clamp(boss.breakG / boss.breakMax, 0, 1);
+      this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'POSTURA QUEBRADA · +35% DE DANO' : 'POSTURA';
       if (boss.boss) { const left = (boss.t.enrage || 150) - (this.engine.bossTimer || 0); this.el.bossTimer.textContent = left > 0 ? `Fúria em ${fmtTime(left)}` : '🔥 FÚRIA!'; this.el.bossTimer.classList.toggle('enraged', left <= 0); } else this.el.bossTimer.textContent = '';
     }
 
@@ -325,6 +353,7 @@
         this.el.lootToast.appendChild(pop); while (this.el.lootToast.children.length > 5) this.el.lootToast.firstChild.remove();
         setTimeout(() => pop.remove(), 3300);
       }
+      if (['legendary', 'mythic', 'set'].includes(item.rarity) && !item.autoSalvaged) this.toast(`🌟 <b>${esc(item.name)}</b> (${D.rarities.find(r => r.id === item.rarity).label}) está em <b>Bolsa → ${item.inOverflow ? 'Excedentes' : 'Itens'}</b>.`, 'gold');
       if (!this.el.rightLoot.hidden) this.renderLoot();
     }
     onLog(p) { const e = typeof p === 'string' ? { text:p, type:'system' } : p; this.logs.unshift(e); this.logs = this.logs.slice(0, 80); if (!this.logTimer) this.logTimer = setTimeout(() => { this.logTimer = null; this.renderCombat(); }, 300); }
@@ -387,12 +416,16 @@
         this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">INVASÃO MUNDIAL · ${esc(KT.Data.worldBoss.tiers[r.tier || 0].name)}</span><h2>${esc(r.boss)}</h2><p>Sua equipe causou <b>${U.fmt(r.damage)}</b> de dano. Ele entrou para a barra de vida compartilhada com todos os viajantes desta janela.</p><p class="dim">A recompensa pode ser resgatada em Aventuras → Invasão Mundial quando a janela terminar (ou quando a comunidade derrubar o chefe).</p><div class="result-actions"><button class="action primary" data-result="hunt" type="button">Voltar a caçar</button><button class="action" data-go="adventure:worldboss" type="button">Ver Invasão</button></div></div>`;
         this.el.result.hidden = false; this.callbacks.victory?.(); return;
       }
+      if (r.kind === 'arena') {
+        this.el.result.innerHTML = `<div class="result-card ${r.won ? 'win' : 'lose'}"><span class="eyebrow">ARENA DA FENDA · ${esc(r.foe || '')}</span><h2>${r.won ? 'VITÓRIA!' : 'DERROTA'}</h2><p>${esc(r.reason || (r.won ? 'A equipe rival caiu diante de você.' : 'Sua equipe foi derrotada.'))}</p><p class="arena-result-line">Registrando o resultado…</p><div class="result-actions"><button class="action primary" data-go="arena" type="button">Voltar à Arena</button></div></div>`;
+        this.el.result.hidden = false; if (r.won) this.callbacks.victory?.(); return;
+      }
       if (r.kind === 'defeat') {
         const tips = this.defeatTips();
         this.el.result.innerHTML = `<div class="result-card lose"><span class="eyebrow">EXPEDIÇÃO FRACASSOU</span><h2>DERROTA</h2><p>A equipe foi nocauteada em ${esc(r.zone.title)}${r.room ? ` (sala ${r.room})` : ''}. Voltando a treinar na caçada em instantes.</p><ul class="result-tips">${tips.map(t => `<li>${t}</li>`).join('')}</ul><div class="result-actions"><button class="action" data-result="retry" type="button">↻ Tentar de novo</button><button class="action primary" data-result="hunt" type="button">Treinar na caçada</button><button class="action" data-result="city" type="button">Cidade</button></div><small class="auto-note">Voltando à caçada automaticamente…</small></div>`;
       } else {
         const title = r.kind === 'boss' ? (r.first ? 'CHEFE DERROTADO!' : 'VITÓRIA!') : 'ANDAR CONQUISTADO!';
-        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">${esc(r.zone.title)}${r.kind === 'boss' ? ` · ${D.bossTiers[r.tier || 0].name}` : ` · Andar ${['I','II','III'][r.floor - 1]}`}</span><h2>${title}</h2><p>${r.kind === 'boss' ? `${esc(r.boss)} caiu diante da sua equipe.` : 'As cinco câmaras foram vencidas.'}${r.first ? ' <b>Primeira vitória!</b>' : ''}</p><div class="reward-line center">${rw}</div><div class="result-items">${lootHtml || '<small class="dim">Sem itens novos desta vez.</small>'}</div><div class="result-actions"><button class="action primary" data-result="retry" type="button">↻ Repetir</button><button class="action" data-result="hunt" type="button">Caçada</button><button class="action" data-result="map" type="button">Mapa</button></div><label class="auto-repeat"><input type="checkbox" id="auto-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir automaticamente</label></div>`;
+        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">${esc(r.zone.title)}${r.kind === 'boss' ? ` · ${D.bossTiers[r.tier || 0].name}` : ` · Andar ${['I','II','III'][r.floor - 1]}`}</span><h2>${title}</h2><p>${r.kind === 'boss' ? `${esc(r.boss)} caiu diante da sua equipe.` : 'As cinco câmaras foram vencidas.'}${r.first ? ' <b>Primeira vitória!</b>' : ''}${r.kind === 'boss' ? (r.lootLocked ? ' <b class="txt-pink">Espólio de hoje esgotado: só ouro e EXP até a meia-noite.</b>' : ` Espólio restante hoje: <b>${r.lootLeft}/${KT.State.BOSS_LOOT_PER_DAY}</b>.`) : ''}</p><div class="reward-line center">${rw}</div><div class="result-items">${lootHtml || '<small class="dim">Sem itens novos desta vez.</small>'}</div><div class="result-actions"><button class="action primary" data-result="retry" type="button">↻ Repetir</button><button class="action" data-result="hunt" type="button">Caçada</button><button class="action" data-result="map" type="button">Mapa</button></div><label class="auto-repeat"><input type="checkbox" id="auto-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir automaticamente</label></div>`;
         this.el.result.querySelector('#auto-repeat')?.addEventListener('change', e => { this.state.settings.autoRepeat = e.target.checked; this.cmd('setSetting', 'autoRepeat', e.target.checked); if (!e.target.checked) this.engine.autoAfterResult = null; else this.engine.autoAfterResult = () => this.engine.repeatRun(); });
         this.callbacks.victory?.();
       }

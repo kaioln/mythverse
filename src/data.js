@@ -187,6 +187,32 @@
     golem_clock:  E({ name:'Colosso do Relógio', sprite:'golem_clock', el:'Raio', role:'Chefe de Andar', elite:true, miniboss:true, hp:14000, atk:150, def:120, spd:.7, xp:260, gold:[200, 280], desc:'Chefe da Torre. À Meia-Noite, atordoa todos os heróis.', skill:{ name:'Tique-Taque', cd:7, eff:[{ k:'dmg', m:1.9, to:'tgt' }, { k:'st', s:'slow', d:5, v:.3, ch:1, to:'tgt' }] },
       specials:[{ name:'Meia-Noite', cd:18, windup:3.0, eff:[{ k:'dmg', m:2.6, to:'all' }, { k:'st', s:'stun', d:1.5, ch:1, to:'all' }] }] }),
 
+    // Ilhas Flutuantes, o céu partido (fracos contra Terra e Gelo).
+    fox_cloud:    E({ name:'Raposa das Nuvens', sprite:'fox_cloud', el:'Vento', role:'Ágil', hp:950, atk:112, spd:1.3, dodge:.2, desc:'Corre sobre as nuvens e ataca de cima.', skill:{ name:'Mergulho Celeste', cd:7, eff:[{ k:'dmg', m:1.8, to:'back' }, { k:'buff', s:'dodge', v:.2, d:3, to:'self' }] } }),
+    wisp_storm:   E({ name:'Centelha Celeste', sprite:'wisp_storm', el:'Raio', role:'Conjurador', hp:860, atk:114, def:34, spd:1.1, dodge:.12, desc:'Descarga que salta de herói em herói.', skill:{ name:'Arco Voltaico', cd:8, eff:[{ k:'chain', m:1.2, n:3, fall:.8 }, { k:'st', s:'stun', d:.8, ch:.3, to:'rand' }] } }),
+    spider_wind:  E({ name:'Aranha dos Ventos', sprite:'spider_wind', el:'Vento', role:'Venenosa', hp:1080, atk:100, spd:1.05, desc:'Fios de vento que cortam a armadura.', skill:{ name:'Seda Cortante', cd:8, eff:[{ k:'dmg', m:1.3, to:'tgt' }, { k:'st', s:'bleed', d:6, v:.25, ch:1, to:'tgt' }, { k:'st', s:'armorBreak', d:5, v:.2, ch:1, to:'tgt' }] } }),
+    oni_thunder:  E({ name:'Oni do Trovão', sprite:'oni_thunder', el:'Raio', role:'Brutamontes', hp:1600, atk:120, def:78, spd:.75, desc:'Toca o tambor do céu e atordoa a linha de frente.', skill:{ name:'Tambor Trovejante', cd:9, eff:[{ k:'dmg', m:1.9, to:'front' }, { k:'st', s:'stun', d:1, ch:.45, to:'front' }] } }),
+    golem_sky:    E({ name:'Colosso Alado', sprite:'golem_sky', el:'Terra', role:'Guardião', elite:true, hp:6600, atk:124, def:150, spd:.6, xp:118, gold:[90, 130], desc:'Pedra que voa. Protege a matilha com asas de granito.', skill:{ name:'Asas de Granito', cd:10, eff:[{ k:'shield', m:2.1, to:'allies', d:6 }, { k:'dmg', m:.9, to:'all' }] } }),
+    revenant_sky: E({ name:'Tengu Ancião', sprite:'revenant_sky', el:'Vento', role:'Guardião', elite:true, hp:5600, atk:150, def:92, spd:1.0, xp:118, gold:[90, 130], desc:'O leque do Tengu devolve heróis para trás.', skill:{ name:'Leque do Tengu', cd:9, eff:[{ k:'dmg', m:1.2, to:'all' }, { k:'delay', v:2, to:'all' }, { k:'buff', s:'spd', v:.3, d:5, to:'allies' }] } }),
+
+    // Vale das Cerejeiras Eternas (fracos contra Fogo e Sombra).
+    fox_sakura:   E({ name:'Kitsune Rosada', sprite:'fox_sakura', el:'Luz', role:'Ágil', hp:1000, atk:116, spd:1.3, dodge:.22, desc:'Encanta o herói mais forte com pétalas.', skill:{ name:'Encanto de Pétalas', cd:8, eff:[{ k:'st', s:'stun', d:1.2, ch:.6, to:'high' }, { k:'dmg', m:1.5, to:'high' }] } }),
+    wisp_petal:   E({ name:'Espírito da Pétala', sprite:'wisp_petal', el:'Natureza', role:'Conjurador', hp:900, atk:110, def:36, spd:1.1, dodge:.14, desc:'Cura os aliados com a chuva de flores.', skill:{ name:'Chuva de Flores', cd:8, eff:[{ k:'heal', p:.1, to:'allies' }, { k:'dmg', m:.9, to:'rand' }] } }),
+    spider_silk:  E({ name:'Tecelã de Seda', sprite:'spider_silk', el:'Natureza', role:'Venenosa', hp:1120, atk:104, spd:1.0, desc:'Casulos que prendem e envenenam.', skill:{ name:'Casulo de Seda', cd:8, eff:[{ k:'st', s:'slow', d:5, v:.45, ch:1, to:'tgt' }, { k:'st', s:'poison', d:6, v:.28, ch:1, to:'tgt' }, { k:'dmg', m:1.1, to:'tgt' }] } }),
+    oni_blossom:  E({ name:'Oni Florido', sprite:'oni_blossom', el:'Natureza', role:'Brutamontes', hp:1700, atk:122, def:80, spd:.75, desc:'Quanto mais apanha, mais floresce.', skill:{ name:'Floração Brutal', cd:9, eff:[{ k:'dmg', m:2.1, to:'tgt' }, { k:'heal', p:.08, to:'self' }, { k:'buff', s:'atk', v:.25, d:6, to:'self' }] } }),
+    golem_root:   E({ name:'Guardião de Raízes', sprite:'golem_root', el:'Natureza', role:'Guardião', elite:true, hp:7000, atk:126, def:155, spd:.6, thorns:.16, xp:122, gold:[95, 135], desc:'Raízes que provocam e regeneram.', skill:{ name:'Raízes Antigas', cd:10, eff:[{ k:'taunt', d:4 }, { k:'buff', s:'regen', v:.03, d:6, to:'self' }] } }),
+    revenant_geisha:E({ name:'Dama das Flores', sprite:'revenant_geisha', el:'Luz', role:'Guardiã', elite:true, hp:5700, atk:152, def:90, spd:1.0, xp:122, gold:[95, 135], desc:'Uma dança que silencia e marca a equipe.', skill:{ name:'Dança do Hanami', cd:9, eff:[{ k:'dmg', m:.8, to:'randEach', hits:4 }, { k:'st', s:'silence', d:1.5, ch:.4, to:'all' }] } }),
+
+    // Santuário das Nuvens (fracos contra Terra e Sombra).
+    fox_lightning:E({ name:'Raiju', sprite:'fox_lightning', el:'Raio', role:'Ágil', hp:1000, atk:120, spd:1.35, dodge:.18, desc:'A fera do relâmpago: dois golpes num piscar.', skill:{ name:'Garras de Raio', cd:7, eff:[{ k:'dmg', m:1.3, to:'low', hits:2 }, { k:'st', s:'stun', d:.6, ch:.3, to:'low' }] } }),
+    wisp_cloud:   E({ name:'Névoa Sagrada', sprite:'wisp_cloud', el:'Luz', role:'Conjurador', hp:920, atk:116, def:38, spd:1.1, dodge:.16, desc:'Esconde os aliados na névoa.', skill:{ name:'Véu de Névoa', cd:9, eff:[{ k:'buff', s:'dodge', v:.25, d:6, to:'allies' }, { k:'dmg', m:1.0, to:'rand' }] } }),
+    spider_thunder:E({ name:'Aranha Trovejante', sprite:'spider_thunder', el:'Raio', role:'Venenosa', hp:1150, atk:108, spd:1.0, desc:'Teia elétrica que drena energia.', skill:{ name:'Teia Elétrica', cd:8, eff:[{ k:'dmg', m:.7, to:'all' }, { k:'nrg', v:-15, to:'all' }] } }),
+    oni_wind:     E({ name:'Oni do Vendaval', sprite:'oni_wind', el:'Vento', role:'Brutamontes', hp:1750, atk:126, def:82, spd:.8, desc:'Um sopro que joga a retaguarda longe.', skill:{ name:'Sopro do Vendaval', cd:9, eff:[{ k:'dmg', m:1.6, to:'back' }, { k:'delay', v:1.5, to:'back' }] } }),
+    revenant_monk:E({ name:'Monge da Tempestade', sprite:'revenant_monk', el:'Raio', role:'Guardião', elite:true, hp:6000, atk:156, def:96, spd:.95, xp:128, gold:[100, 140], desc:'Medita no olho da tempestade e acelera os aliados.', skill:{ name:'Mantra Elétrico', cd:10, eff:[{ k:'cdr', v:3, to:'allies' }, { k:'buff', s:'atk', v:.25, d:6, to:'allies' }, { k:'dmg', m:1.2, to:'tgt' }] } }),
+    golem_bell:   E({ name:'Sino Colossal', sprite:'golem_bell', el:'Terra', role:'Guardião', elite:true, hp:7400, atk:128, def:165, spd:.55, xp:128, gold:[100, 140], desc:'Cada badalada atordoa quem estiver perto.', skill:{ name:'Badalada', cd:10, eff:[{ k:'dmg', m:1.0, to:'all' }, { k:'st', s:'stun', d:1.2, ch:.35, to:'all' }] } }),
+    golem_fujin:  E({ name:'Fujin, Senhor dos Ventos', sprite:'golem_fujin', el:'Vento', role:'Chefe de Andar', elite:true, miniboss:true, hp:17000, atk:165, def:130, spd:.75, xp:290, gold:[220, 300], desc:'Chefe do Santuário. O Saco dos Ventos arremessa a equipe inteira.', skill:{ name:'Rajada Divina', cd:7, eff:[{ k:'dmg', m:1.9, to:'tgt' }, { k:'st', s:'slow', d:5, v:.3, ch:1, to:'tgt' }] },
+      specials:[{ name:'Saco dos Ventos', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'delay', v:2.5, to:'all' }] }] }),
+
     // Fenda Abissal, criaturas do vazio entre mundos (fracas contra Luz).
     rift_hound:   E({ name:'Cão do Vazio', sprite:'rift_hound', el:'Sombra', role:'Ágil', hp:900, atk:100, spd:1.25, dodge:.16, desc:'Caça em matilha e morde quem está enfraquecido.', skill:{ name:'Mordida Entre Mundos', cd:7, eff:[{ k:'dmg', m:1.6, to:'low' }, { k:'st', s:'weaken', d:4, v:.15, ch:1, to:'low' }] } }),
     rift_weaver:  E({ name:'Tecelã do Abismo', sprite:'rift_weaver', el:'Sombra', role:'Venenosa', hp:980, atk:92, spd:1.0, desc:'Tece fios de vazio que prendem a retaguarda.', skill:{ name:'Fio do Vazio', cd:8, eff:[{ k:'dmg', m:1.1, to:'back' }, { k:'st', s:'slow', d:5, v:.4, ch:1, to:'back' }, { k:'st', s:'poison', d:5, v:.18, ch:1, to:'back' }] } }),
@@ -201,6 +227,7 @@
     eclipse_shade:E({ name:'Sombra Lunar', sprite:'eclipse_shade', el:'Sombra', role:'Ágil', hp:1400, atk:110, spd:1.2, dodge:.2, desc:'Criada por Shirogane a partir da lua devorada.', skill:{ name:'Lâmina Minguante', cd:8, eff:[{ k:'dmg', m:1.5, to:'back' }, { k:'st', s:'bleed', d:4, v:.25, ch:1, to:'back' }] } }),
     mizuchi_spawn:E({ name:'Cria de Mizuchi', sprite:'mizuchi_spawn', el:'Água', role:'Lutador', hp:1500, atk:112, def:60, spd:.9, lifesteal:.2, desc:'Filhotes do dragão que curam o pai ao morrer.', skill:{ name:'Jato Abissal', cd:8, eff:[{ k:'dmg', m:1.4, to:'rand' }, { k:'heal', p:.03, to:'lowAlly' }] } }),
     sand_servant: E({ name:'Servo de Âmbar', sprite:'sand_servant', el:'Terra', role:'Brutamontes', hp:1700, atk:118, def:80, spd:.75, desc:'Guerreiro moldado pela Serpente com areia do tempo.', skill:{ name:'Grilhão do Tempo', cd:9, eff:[{ k:'dmg', m:1.5, to:'front' }, { k:'delay', v:2, to:'front' }] } }),
+    storm_servant:E({ name:'Arauto do Tambor', sprite:'storm_servant', el:'Raio', role:'Brutamontes', hp:1800, atk:124, def:82, spd:.8, desc:'Servo de Raijin: carrega o trovão até os heróis.', skill:{ name:'Batida do Céu', cd:9, eff:[{ k:'dmg', m:1.5, to:'all' }, { k:'nrg', v:-10, to:'all' }] } }),
     archive_sentinel:E({ name:'Bibliotecária Espectral', sprite:'archive_sentinel', el:'Luz', role:'Guardiã', elite:true, hp:3000, atk:118, spd:1.0, dodge:.15, xp:90, gold:[65, 95], desc:'Protege os livros proibidos silenciando quem os lê.', skill:{ name:'Silêncio na Biblioteca', cd:9, eff:[{ k:'st', s:'silence', d:3, ch:1, to:'back' }, { k:'dmg', m:1.4, to:'back' }] } }),
 
     // Invasões Mundiais: chefes cooperativos (a vida deles é compartilhada por todos os jogadores).
@@ -274,6 +301,14 @@
         { at:1, text:'As areias correm', specials:[{ name:'Tempestade do Deserto', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.3, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }] },
         { at:.66, text:'Servos de âmbar despertam', summon:{ id:'sand_servant', n:2, every:26 }, specials:[{ name:'Tempestade do Deserto', cd:15, windup:2.6, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:13, windup:1.6, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.0, to:'high' }] }] },
         { at:.33, text:'A Ampulheta se quebra', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Ampulheta Quebrada', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.8, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:11, windup:1.4, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.2, to:'high' }] }] }
+      ] }),
+    boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, hp:340000, atk:230, def:170, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
+      desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
+      skill:{ name:'Rufar dos Tambores', cd:6, eff:[{ k:'chain', m:1.6, n:4, fall:.8 }] },
+      phases:[
+        { at:1, text:'Os tambores despertam', specials:[{ name:'Trovão Divino', cd:16, windup:2.8, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'stun', d:1, ch:.5, to:'all' }] }] },
+        { at:.66, text:'Arautos descem das nuvens', summon:{ id:'storm_servant', n:2, every:24 }, specials:[{ name:'Trovão Divino', cd:14, windup:2.6, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'stun', d:1, ch:.5, to:'all' }] }, { name:'Relâmpago Certeiro', cd:12, windup:1.4, eff:[{ k:'dmg', m:3.2, to:'high', pierce:.4 }] }] },
+        { at:.33, text:'Tempestade sem fim', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Chuva de Raios', cd:11, windup:2.2, eff:[{ k:'dmg', m:.9, to:'randEach', hits:5 }, { k:'nrg', v:-25, to:'all' }] }, { name:'Relâmpago Certeiro', cd:10, windup:1.2, eff:[{ k:'dmg', m:3.3, to:'high', pierce:.4 }] }] }
       ] })
   };
 
@@ -344,6 +379,25 @@
     boss_sand: { id:'boss_sand', kind:'boss', chapter:3, title:'Ninho de Apep', subtitle:'A serpente que devora as horas.', kicker:'CAPÍTULO III · CHEFE', difficulty:'Chefe', theme:'desertBoss', enemy:'boss_sand', power:1200, ilvl:44,
       weakTo:['Água','Natureza','Vento'], lore:'No coração do deserto, Apep dorme enrolada na última ampulheta. Se ela acordar por completo, o tempo deixa de existir.',
       unlock:{ stage:{ hunt_desert:12 }, floor:{ dungeon_clock:3 } } },
+    // --- Capítulo IV: O Céu Partido ---
+    hunt_sky: { id:'hunt_sky', kind:'hunt', chapter:4, title:'Ilhas Flutuantes', subtitle:'Ilhas de pedra presas por correntes de nuvem.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 12', theme:'sky',
+      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, basePower:1100, ilvl:47,
+      weakTo:['Terra','Gelo'], lore:'Quando Apep caiu, o céu rachou. Ilhas inteiras subiram com templos, pontes e criaturas, e lá no alto um tambor não para de tocar.',
+      unlock:{ kills:{ boss_sand:1 } } },
+    hunt_sakura: { id:'hunt_sakura', kind:'hunt', chapter:4, side:true, title:'Vale das Cerejeiras Eternas', subtitle:'Onde as flores nunca caem de verdade.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 8', theme:'sakura',
+      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, basePower:2100, ilvl:51,
+      weakTo:['Fogo','Sombra'], lore:'Um vale suspenso onde é sempre primavera. Lindo, e perigoso: as flores têm dentes.',
+      unlock:{ stage:{ hunt_sky:5 } } },
+    dungeon_sky: { id:'dungeon_sky', kind:'dungeon', chapter:4, title:'Santuário das Nuvens', subtitle:'Sinos, monges e o Senhor dos Ventos.', kicker:'CAPÍTULO IV · DUNGEON', difficulty:'Andares I a III', theme:'skyShrine',
+      pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, floorPower:[3400, 5900, 10000], ilvl:55,
+      weakTo:['Terra','Sombra'], lore:'O templo onde Fujin guardava os ventos. Agora os sinos tocam sozinhos e cada badalada derruba um herói.',
+      unlock:{ stage:{ hunt_sky:8 } } },
+    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', power:13000, ilvl:61,
+      weakTo:['Terra'], lore:'No topo das nuvens, Raijin toca o tambor do trovão sem parar. Cada batida abre mais a Fenda.',
+      unlock:{ stage:{ hunt_sky:12 }, floor:{ dungeon_sky:3 } } },
+    // --- PvP: a equipe rival é a defesa salva de outro jogador ---
+    arena: { id:'arena', kind:'arena', chapter:9, title:'Arena da Fenda', subtitle:'Heróis contra heróis, sob o olhar da cidade.', kicker:'PvP · ARENA', difficulty:'PvP', theme:'boss', scene:'boss_event',
+      weakTo:[], lore:'O antigo coliseu de Tsukimori reabriu. Equipes de outros viajantes defendem sua honra aqui, e cada vitória vale Honra e MMR.', unlock:{} },
     // --- Conteúdo infinito ---
     rift: { id:'rift', kind:'rift', chapter:8, title:'Fenda Abissal', subtitle:'Andares infinitos. Até onde sua equipe chega?', kicker:'SEM FIM · FENDA', difficulty:'Andar ∞', theme:'rift', scene:'summoning',
       pool:['rift_hound','rift_weaver','rift_eye','rift_devourer'], elites:['rift_colossus','rift_herald'], floorBoss:'rift_wyrm', ilvl:6,
@@ -406,6 +460,9 @@
     { id:'golden', name:'Maré Dourada', icon:'🪙', color:'#ffcf6b', text:'+40% de ouro em todas as regiões.', mods:{ gold:.4 } },
     { id:'bloodmoon', name:'Lua de Sangue', icon:'🌕', color:'#ff5d6c', text:'Inimigos +20% ATK. +40% EXP e +25% chance de itens.', mods:{ enemyAtk:.2, xp:.4, drop:.25 } },
     { id:'festival', name:'Festival das Lanternas', icon:'🏮', color:'#ff9ec7', text:'Kitsune das Lanternas disponível. +30% Éter e fogos-fátuos pelo campo.', mods:{ dust:.3 } },
+    { id:'sakura', name:'Festival das Cerejeiras', icon:'🌸', color:'#ffb3d6', text:'+30% de EXP e +15% de Éter. Pétalas cobrem Tsukimori.', mods:{ xp:.3, dust:.15 } },
+    { id:'oninight', name:'Noite dos Oni', icon:'👹', color:'#ff7a4f', text:'Inimigos +15% ATK. +35% chance de itens e +15% de ouro.', mods:{ enemyAtk:.15, drop:.35, gold:.15 } },
+    { id:'aether', name:'Maré de Éter', icon:'💫', color:'#9fb3ff', text:'+50% de Éter e encontros especiais 50% mais comuns.', mods:{ dust:.5, encounter:.5 } },
     { id:'starfall', name:'Chuva de Estrelas', icon:'🌠', color:'#6fe3ff', text:'Raridade dos itens melhorada e encontros especiais 2x mais comuns.', mods:{ rarity:.35, encounter:1 } }
   ];
   const calmEvent = { id:'calm', name:'Céu Calmo', icon:'🌙', color:'#9aa6d8', text:'Nenhum evento ativo. Confira o calendário para o próximo.', mods:{} };
@@ -415,7 +472,9 @@
     { id:'golden', days:ALL_DAYS, from:0, to:2 }, { id:'starfall', days:ALL_DAYS, from:8, to:10 },
     { id:'golden', days:ALL_DAYS, from:12, to:14 }, { id:'starfall', days:ALL_DAYS, from:16, to:18 },
     { id:'bloodmoon', days:[5], from:18, to:22 }, { id:'festival', days:[3], from:20, to:22 },
-    { id:'festival', days:[0, 6], from:19, to:22 }, { id:'bloodmoon', days:ALL_DAYS, from:22, to:24 }
+    { id:'festival', days:[0, 6], from:19, to:22 }, { id:'bloodmoon', days:ALL_DAYS, from:22, to:24 },
+    { id:'aether', days:ALL_DAYS, from:4, to:6 }, { id:'sakura', days:ALL_DAYS, from:10, to:12 }, { id:'sakura', days:[1, 3, 5], from:14, to:16 },
+    { id:'aether', days:[1], from:19, to:22 }, { id:'oninight', days:[2, 4], from:19, to:22 }
   ];
   const EVENT_TZ_OFFSET_MIN = -180;
   const EVENT_BLOCK_MS = 2 * 3600 * 1000;
@@ -467,16 +526,21 @@
       hunt_ghost:[{ who:'Sayo', text:'A Cidade Fantasma. Os moradores ainda dançam o último baile. Luz os liberta, e a Noiva Espectral não perdoa.' }],
       dungeon_clock:[{ who:'Sayo', text:'A Torre do Relógio. À Meia-Noite, tudo para. Guarde ultimates de escudo para o badalar.' }],
       boss_sand:[{ who:'Apep', text:'Eu engoli impérios, luas e memórias. O que são quatro heróis perdidos entre mundos?' }, { who:'Sayo', text:'Quando Apep mirar no herói mais forte, ele será engolido. Tenha outro pronto para carregar a equipe!' }],
+      hunt_sky:[{ who:'Sayo', text:'As Ilhas Flutuantes! O céu rachou quando Apep caiu. Raposas correm sobre as nuvens e atacam a retaguarda: proteja os curandeiros.' }, { who:'Raijin', text:'BUM. BUM. Estão ouvindo? É o som do fim do mundo.' }],
+      hunt_sakura:[{ who:'Sayo', text:'O Vale das Cerejeiras Eternas. As Kitsunes encantam o herói mais forte, e os Espíritos curam todos: derrube-os primeiro.' }],
+      dungeon_sky:[{ who:'Sayo', text:'O Santuário das Nuvens. Quando Fujin abrir o Saco dos Ventos, quebre a postura dele antes! Um chefe quebrado perde o ataque preparado.' }],
+      boss_sky:[{ who:'Raijin', text:'Quatro heróis contra o trovão? Toquem mais alto, tambores!' }, { who:'Sayo', text:'Use o Elo Kizuna: ultimates em sequência quebram a postura de Raijin rápido. Na fase final ele esvazia a energia de todos.' }],
       rift:[{ who:'Sayo', text:'A Fenda Abissal... foi por aqui que vocês chegaram. Não tem fundo. Cada andar é mais forte, lute até onde conseguir.' }]
     },
     bossWin:{
       boss:[{ who:'Shirogane', text:'Impossível... a lua... volta a brilhar...' }, { who:'Sayo', text:'O primeiro selo está restaurado! Mas o mar ainda chora. A Costa das Marés foi liberada.' }],
       boss_tide:[{ who:'Mizuchi', text:'O mar... está calmo de novo. Obrigado, heróis de outro mundo.' }, { who:'Sayo', text:'Dois selos restaurados. Continue fortalecendo a equipe: o Pesadelo e o Inferno aguardam os mais corajosos.' }],
       boss_event:[{ who:'Kitsune', text:'Hmph! Tudo bem, vocês ganharam. Levem a chave... e voltem no próximo festival!' }],
+      boss_sky:[{ who:'Raijin', text:'O tambor... silenciou...' }, { who:'Sayo', text:'Quatro selos! O céu está se fechando. Mas os tambores de Raijin acordaram algo no fundo da Fenda.' }],
       boss_sand:[{ who:'Apep', text:'As horas... escapam... de mim...' }, { who:'Sayo', text:'Três selos! O tempo volta a correr. Mas a Fenda Abissal continua aberta, e algo nos observa lá do fundo.' }]
     }
   };
-  const speakers = { Sayo:{ color:'#ff9ec7', sprite:null, title:'Guardiã do Véu' }, Shirogane:{ color:'#b58cff', sprite:'eclipse', title:'Rei do Eclipse' }, Mizuchi:{ color:'#4fb3ff', sprite:'dragon', title:'Dragão Abissal' }, Kitsune:{ color:'#ff7a4f', sprite:'lantern_kitsune', title:'Espírito do Festival' }, Apep:{ color:'#ffb938', sprite:'dragon_amber', title:'Serpente do Tempo' } };
+  const speakers = { Raijin:{ color:'#8fd3ff', sprite:'raijin', title:'Tambor do Trovão' }, Sayo:{ color:'#ff9ec7', sprite:null, title:'Guardiã do Véu' }, Shirogane:{ color:'#b58cff', sprite:'eclipse', title:'Rei do Eclipse' }, Mizuchi:{ color:'#4fb3ff', sprite:'dragon', title:'Dragão Abissal' }, Kitsune:{ color:'#ff7a4f', sprite:'lantern_kitsune', title:'Espírito do Festival' }, Apep:{ color:'#ffb938', sprite:'dragon_amber', title:'Serpente do Tempo' } };
 
   // ---------------------------------------------------------------------------
   // GUIA DO VIAJANTE, passo a passo sempre visível, com recompensas.
@@ -509,7 +573,10 @@
     { id:'g_nightmare', title:'Vença um chefe no Pesadelo', desc:'Chefes derrotados liberam dificuldades maiores com itens de conjunto.', go:'journey', cond:{ tierKill:1 }, reward:{ key:1, item:'legendary' } },
     { id:'g_desert', title:'Sobreviva às Areias, 6º estágio', desc:'O Capítulo III: chacais saltam na retaguarda.', go:'journey', cond:{ stage:['hunt_desert', 6] }, reward:{ crystal:60, ore:80 } },
     { id:'g_clock', title:'Conquiste a Torre do Relógio: Andar I', desc:'À Meia-Noite, tudo para. Escudos prontos.', go:'journey', cond:{ floor:['dungeon_clock', 1] }, reward:{ crystal:80, item:'legendary' } },
-    { id:'g_apep', title:'Derrote Apep', desc:'A Serpente do Tempo. Tenha um segundo herói forte: ela engole o mais poderoso.', go:'journey', cond:{ kills:['boss_sand', 1] }, reward:{ key:3, crystal:250 } }
+    { id:'g_apep', title:'Derrote Apep', desc:'A Serpente do Tempo. Tenha um segundo herói forte: ela engole o mais poderoso.', go:'journey', cond:{ kills:['boss_sand', 1] }, reward:{ key:3, crystal:250 } },
+    { id:'g_sky', title:'Alcance as Ilhas Flutuantes, 6º estágio', desc:'O Capítulo IV: o céu rachou. Proteja a retaguarda das Raposas das Nuvens.', go:'journey', cond:{ stage:['hunt_sky', 6] }, reward:{ crystal:80, ore:120 } },
+    { id:'g_shrine', title:'Conquiste o Santuário das Nuvens: Andar I', desc:'Quebre a postura de Fujin antes do Saco dos Ventos.', go:'journey', cond:{ floor:['dungeon_sky', 1] }, reward:{ crystal:100, item:'legendary' } },
+    { id:'g_raijin', title:'Derrote Raijin', desc:'O Tambor do Trovão. Encadeie ultimates com o Elo Kizuna.', go:'journey', cond:{ kills:['boss_sky', 1] }, reward:{ key:3, crystal:300 } }
   ];
 
   // Crônicas, depois do Guia, metas geradas sem fim, sempre um pouco mais difíceis.
@@ -593,6 +660,23 @@
       { n:94, name:'Álbum completo', stats:{ atk:.08, hp:.08, def:.08 } }
     ]
   };
+  // PvP: lutas mais longas que no PvE (HP multiplicado), limite de tempo e ultimates rivais telegrafadas.
+  const PVP = { hpParty:2.0, hpRival:2.3, time:90, ultCd:15, ultWindup:1.4, tiers:[['bronze','Bronze','#c98a52'], ['prata','Prata','#c9d2e6'], ['ouro','Ouro','#ffcf6b'], ['platina','Platina','#8fe9d8'], ['diamante','Diamante','#8fd3ff'], ['lenda','Lenda','#ff7eb6']] };
+  // Loja de Honra: preço e limite semanal espelham tools/neon_social.sql (o banco é quem cobra).
+  const PVP_SHOP = [
+    { id:'star', name:'Aço Estelar', price:60, limit:5, text:'Material raro de refino. Negociável no Mercado.' },
+    { id:'ori', name:'Oricalco', price:400, limit:1, text:'Material épico de refino. Negociável no Mercado.' },
+    { id:'glad_box', name:'Baú do Gladiador', price:300, limit:2, text:'Um item épico do nível da sua melhor caçada. Negociável.' },
+    { id:'elixir', name:'Elixires de Batalha ×3', price:40, limit:5, text:'Três Elixires de Energia.' },
+    { id:'key', name:'Chave de Convocação', price:180, limit:2, text:'Uma convocação.' },
+    { id:'glad_weapon', name:'Arma do Gladiador', price:700, limit:1, text:'Peça do conjunto Gladiador da Fenda (arma). Negociável.' },
+    { id:'glad_focus', name:'Foco do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (foco). Negociável.' },
+    { id:'glad_seal', name:'Selo do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (selo). Negociável.' },
+    { id:'glad_charm', name:'Omamori do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador da Fenda (omamori). Negociável.' }
+  ];
+  // Guildas: bônus por nível (valem para quem está na guilda) e janelas da guerra.
+  const GUILD = { createCost:50000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
+    war:{ days:[3, 6], from:20, to:22, attacks:3 } };
   // Paragão (estilo Diablo): EXP de heróis no nível máximo vira nível de conta sem limite prático.
   const PARAGON = { cap:300, per:.004, next:lv => Math.round(180000 * Math.pow(1.11, lv)) };
 
@@ -636,7 +720,7 @@
     taunt:{ name:'Provocação', icon:'📢', color:'#ff9a6b', text:'Inimigos são forçados a atacá-lo.', buff:true }
   };
 
-  const statNames = { atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
+  const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

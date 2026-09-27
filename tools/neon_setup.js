@@ -10,6 +10,8 @@ const fs = require('fs'), path = require('path'), pg = require('pg');
   const roles = await c.query("SELECT rolname FROM pg_roles WHERE rolname IN ('authenticated', 'anonymous')");
   if (roles.rowCount < 2) { console.error('Os papéis authenticated/anonymous ainda não existem: ative a Data API e rode de novo.'); await c.end(); process.exit(2); }
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_setup.sql'), 'utf8'));
-  console.log('Modo Neon pronto: tabela public.mv_saves (RLS) e visão public.mv_ranking.');
+  await c.query(fs.readFileSync(path.join(__dirname, 'neon_social.sql'), 'utf8'));
+  await c.query("NOTIFY pgrst, 'reload schema'");
+  console.log('Modo Neon pronto: saves (RLS), ranking, Mercado de Jogadores, Arena PvP, Loja de Honra, Guildas e Guerra de Guildas.');
   await c.end();
 })().catch(e => { console.error('Falhou:', e.message); process.exit(1); });

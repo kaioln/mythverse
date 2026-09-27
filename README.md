@@ -144,6 +144,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Capítulo I**: Bosque das Lanternas → Templo do Véu → **Shirogane**, com rotas secundárias: **Pântano dos Vaga-lumes** (caçada) e **Cripta de Jade** (dungeon).
 - **Capítulo II**: Costa das Marés → Arquivo Submerso → **Mizuchi**, com **Planalto Congelado** e **Forja Abissal**.
 - **Capítulo III**: Areias do Tempo → Torre do Relógio → **Apep, Serpente do Tempo**, com a **Cidade Fantasma**.
+- **Capítulo IV · O Céu Partido**: Ilhas Flutuantes → Santuário das Nuvens (Fujin, Senhor dos Ventos) → **Raijin, o Tambor do Trovão**, com o **Vale das Cerejeiras Eternas**. 21 criaturas novas, conjuntos Tambores da Tempestade e Hanami Eterno e dois míticos.
 - **Fenda Abissal**: andares infinitos com monstros próprios e uma **mutação** por andar (Fúria, Carapaça, Pressa, Sangria…), com recorde no ranking.
 - **Invasão Mundial**: um chefe mundial por dia, em duas janelas (12h30 às 14h e 20h30 às 22h de Brasília), 1 tentativa por dia, dano somado por todo o servidor e dificuldades Heroica e Mítica cooperativas.
 - **Expedições** (correm no servidor, mesmo com o PC desligado) e **Quadro de Recompensas** com loja de Marcas de Caçador.
@@ -151,7 +152,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **94 criaturas**, cada uma com habilidade própria e exclusiva da sua região (inclusive os lacaios invocados pelos chefes). As ondas variam de formato (matilhas, pares, mistos) e há variantes **Alfa** raras com loot garantido.
 - **Bestiário**: abates liberam níveis de pesquisa (+dano e +chance de carta contra aquela criatura).
 - **Chefes** com 3 fases, ataques preparados (⚠ e zona de perigo), invocações, cura e **Fúria** por tempo. Dificuldades Normal, Pesadelo e Inferno.
-- **Eventos mundiais por calendário fixo** (data e hora de Brasília, relógio do servidor): Maré Dourada, Lua de Sangue, Festival das Lanternas e Chuva de Estrelas. A agenda aparece no painel lateral e na Wiki.
+- **Eventos mundiais por calendário fixo** (data e hora de Brasília, relógio do servidor): Maré Dourada, Festival das Cerejeiras, Noite dos Oni, Maré de Éter, Lua de Sangue, Festival das Lanternas e Chuva de Estrelas. A agenda aparece no painel lateral e na Wiki.
 - **Escolhas de rota e encontros**: com AUTO ligado a equipe decide sozinha; com AUTO desligado a opção recomendada vem marcada e é escolhida sozinha após 2 minutos sem resposta.
 - **Encontros aleatórios** nas caçadas: Raposa Dourada, Mercador Errante, Santuário (bênçãos), Emboscada e Baú Misterioso (pode ser um Mímico).
 - **História** contada por Sayo, a Guardiã do Véu, com falas dos chefes.
@@ -162,13 +163,21 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Conselheiro**: duas derrotas seguidas no mesmo desafio abrem um plano com o que falta (pontos, itens melhores, formação, elemento, onde treinar), com botões para resolver na hora.
 - **Modo AFK no servidor**: até 12 horas de caça calculadas com o relógio do servidor, mesmo com o PC desligado. Rende menos que jogar ativo.
 - **Manual rende mais que AUTO**: ultimates usadas à mão dão +25% de dano e escudo e +20% de cura.
+- **Quebra de postura**: golpes em elites e chefes enchem uma barra; cheia, o inimigo fica atordoado 4 s, **perde o ataque que estava preparando** e recebe +35% de dano (cada quebra seguinte exige 30% mais).
+- **Elo Kizuna**: ultimates de heróis diferentes em até 4 s formam uma corrente (+15% por elo); com 4 elos a equipe inteira golpeia junta.
+
+### PvP, guildas e guerra
+- **Arena da Fenda (PvP assíncrono manual)**: você controla ultimates, poções e foco contra a defesa salva de outro jogador (a IA dele telegrafa as ultimates). Matchmaking por **MMR (Elo)**, ligas Bronze→Lenda, 10 ingressos por dia, recompensa semanal por liga, ranking e histórico. Fechar a aba ou abandonar conta como derrota.
+- **Loja de Honra**: Aço Estelar, Oricalco, Baú do Gladiador, peças do conjunto **Gladiador da Fenda** (negociáveis no Mercado), com limite semanal. A Honra fica no banco: não se compra com dinheiro nem se edita.
+- **Guildas completas**: fundar, entrar (aberta ou por pedido), cargos (líder, oficial, membro), expulsar, transferir liderança, doações que sobem o nível (até 30 membros), bônus de ouro/EXP/itens por nível, mural e registro de eventos.
+- **Guerra de Guildas** (quarta e sábado, 20h às 22h de Brasília): pareamento por rating, 3 investidas manuais por membro, pontos por defensor derrotado, placar ao vivo e recompensas de Honra, EXP e rating.
 
 ### Guia, missões e loja
 - **Guia do Viajante** com 27 passos e recompensas, e o menu **Aventuras**, que mostra tudo o que dá para fazer agora (invasão, expedições, recompensas, eventos, Fenda, chefes).
 - **Contratos da Guilda** com **Rank da Guilda** sem limite, **missões diárias** (meia-noite de Brasília), **login diário** em ciclo de 7 dias, **Crônicas** infinitas depois do Guia e 43 conquistas.
 - **Loja** em ouro (poções, elixires, pergaminhos de EXP, materiais) e em cristais (chaves, expansão da bolsa, incenso de EXP/ouro, redefinição de talentos), além do **Mercado** com ofertas a cada 2 horas.
 - **Gemas (dinheiro real) e Mercado de Jogadores**: 100 Gemas = R$ 1,00, depósito via Pix (Mercado Pago), saque com revisão manual e taxas configuráveis (padrão: 5% na venda, 2% no saque). Itens e cartas anunciados ficam sob custódia do servidor; compras chegam pelo Correio. Tudo fica **desligado** até você configurar `RMT_ENABLED=1` e o provedor (veja `.env.example`).
-- **Mercado de Jogadores em ouro** (para todos, sem dinheiro real, com taxa de anúncio e imposto que seguram a inflação) e **em Gemas** (dinheiro real, opcional), com filtros por tipo, espaço, raridade e preço, venda de itens, cartas e materiais raros, histórico de preço por moeda e perfil clicável de cada vendedor. Itens vindos de NPCs são **vinculados**.
+- **Mercado de Jogadores em ouro** (para todos, sem dinheiro real, com taxa de anúncio e imposto que seguram a inflação) e **em Gemas** (dinheiro real, opcional), com filtros por tipo, espaço, raridade e preço, venda de itens, cartas e materiais raros, histórico de preço por moeda e perfil clicável de cada vendedor. Itens vindos de NPCs são **vinculados**. Também funciona no **modo Neon** (GitHub Pages): anúncios, compra e correio ficam em funções atômicas do banco (veja docs/NEON.md).
 - **Painel `/admin/`** com a saúde da economia (ouro em circulação, Gemas, volume do mercado, itens mais negociados, alertas antifraude) e a fila de saques.
 - **Ranking** com pódio, retrato do herói líder, equipe de cada jogador e barra de comparação com o primeiro colocado.
 - **Ícones vetoriais autorais** para recursos, atividades e golpes (`python tools/build_icons.py`), e efeitos de combate com textura (brilho suave, cortes em crescente, estrelas de impacto, raios com núcleo).

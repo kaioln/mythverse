@@ -8,6 +8,8 @@ Este documento explica como o ouro, os itens, os materiais e as cartas entram e 
 2. **Cada fonte tem papel próprio.** Caçadas dão ouro, EXP e itens comuns a épicos. Chefes, Invasões Mundiais e eventos são a fonte principal de lendários, míticos, Oricalco e Adamantina.
 3. **Sumidouros fortes.** Construções, treino, refino (que pode regredir ou quebrar o item), culinária, transmutação, loja e Despertar consomem ouro e materiais continuamente.
 4. **Nada infla sem limite.** Compras de materiais na loja têm limite diário; o AFK tem teto de 12 h e rende menos que jogar ativo; cada Invasão Mundial tem 1 tentativa por dia.
+5. **Farm AFK tem teto.** Cada chefe dá espólio completo (itens, materiais, chaves e carta MVP) só nas **3 primeiras vitórias do dia** por dificuldade; depois, até a meia-noite de Brasília, a vitória rende 40% do ouro e a EXP. Oricalco e Adamantina de fontes repetíveis (Fenda, masmorras, guardiões) têm teto diário de 3 e 1. O chefe de andar dá 1 item por vitória e a chave aleatória de masmorra caiu para 1%.
+6. **Nada some.** Com a bolsa cheia, itens épicos ou melhores entram na bolsa e o comum/raro mais fraco (livre e destrancado) vai para os Excedentes; épicos ou melhores nunca são desmontados automaticamente.
 
 ## Fontes
 

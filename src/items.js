@@ -16,13 +16,13 @@
   // variedade de builds. Omamoris servem a todos; peças de conjunto seguem as classes do conjunto.
   const itemTypes = {
     sword:{ slot:'weapon', name:'Espada', icon:'⚔', classes:['Executor','Vanguarda'], attr:'str', implicit:{ crit:.03, critDmg:.08 }, affixW:{ crit:3, critDmg:3, atkP:2, pierce:2, lifesteal:2, boss:1.5 } },
-    heavy:{ slot:'weapon', name:'Arma pesada', icon:'🔨', classes:['Vanguarda'], attr:'vit', implicit:{ hp:.05, def:.04 }, affixW:{ hpP:3, defP:3, dr:2.5, atkP:1.5, regen:1.5, lifesteal:1.5 } },
+    heavy:{ slot:'weapon', name:'Arma pesada', icon:'🔨', classes:['Vanguarda'], attr:'vit', implicit:{ hp:.05, def:.04 }, affixW:{ hpP:3, defP:3, dr:2.5, atkP:1.5, regen:1.5, lifesteal:1.5, breakPow:3, thorns:2 } },
     ranged:{ slot:'weapon', name:'Arco / à distância', icon:'🏹', classes:['Atirador'], attr:'dex', implicit:{ spd:.05, pierce:.03 }, affixW:{ spd:3, crit:2.5, pierce:2.5, critDmg:2, boss:2, elem:1.5 } },
     arcane:{ slot:'weapon', name:'Cajado arcano', icon:'✦', classes:['Arcanista','Suporte'], attr:'int', implicit:{ skill:.08, nrg:.04 }, affixW:{ skill:3, nrg:3, cdr:2.5, elem:2, dot:2, startNrg:1.5 } },
     holy:{ slot:'weapon', name:'Relíquia sagrada', icon:'✚', classes:['Suporte'], attr:'int', implicit:{ healPow:.10, regen:.002 }, affixW:{ healPow:3.5, regen:2.5, nrg:2, cdr:2, hpP:2, dr:1.5 } },
     tome:{ slot:'focus', name:'Tomo', icon:'📖', classes:['Arcanista','Suporte'], implicit:{ skill:.05, cdr:.03 }, affixW:{ skill:3, cdr:3, healPow:2, nrg:2 } },
-    crystal:{ slot:'focus', name:'Cristal', icon:'💎', classes:['Arcanista','Atirador','Suporte'], implicit:{ nrg:.05, elem:.04 }, affixW:{ nrg:3, elem:3, startNrg:2, skill:1.5 } },
-    emblem:{ slot:'focus', name:'Emblema de guerra', icon:'🎖', classes:['Vanguarda','Executor'], implicit:{ atk:.04, critDmg:.06 }, affixW:{ atkP:3, critDmg:2.5, defP:2, boss:2 } },
+    crystal:{ slot:'focus', name:'Cristal', icon:'💎', classes:['Arcanista','Atirador','Suporte'], implicit:{ nrg:.05, elem:.04 }, affixW:{ nrg:3, elem:3, startNrg:2, skill:1.5, chainPow:2.5, ultDmg:2 } },
+    emblem:{ slot:'focus', name:'Emblema de guerra', icon:'🎖', classes:['Vanguarda','Executor'], implicit:{ atk:.04, critDmg:.06 }, affixW:{ atkP:3, critDmg:2.5, defP:2, boss:2, breakPow:2.5 } },
     quiver:{ slot:'focus', name:'Aljava', icon:'🎯', classes:['Atirador','Executor'], implicit:{ spd:.04, crit:.02 }, affixW:{ spd:3, crit:3, pierce:2, critDmg:2 } },
     plate:{ slot:'seal', name:'Selo de aço', icon:'🛡', classes:['Vanguarda','Executor','Atirador'], implicit:{ def:.06, dr:.015 }, affixW:{ defP:3, dr:3, hpP:2, lifesteal:1.5 } },
     ward:{ slot:'seal', name:'Selo espiritual', icon:'🔮', classes:['Arcanista','Suporte','Atirador'], implicit:{ hp:.05, healPow:.04 }, affixW:{ hpP:3, healPow:2.5, regen:2, dodge:2 } },
@@ -205,13 +205,25 @@
     B('celestial_omamori','charm','Omamori Celestial','magic_dust_01',160,29,'Tecido com fios de nuvem.'),
     B('scarab_charm','charm','Escaravelho de Âmbar','magic_dust_01',45,35,'Dizem que ainda está vivo.'),
     B('ghost_veil','charm','Véu da Noiva','backpack_LVL_01',190,41,'Leve como um suspiro.'),
-    B('rift_heart','charm','Coração da Fenda','magic_dust_01',330,48,'Pulsa no ritmo de dois mundos.')
+    B('rift_heart','charm','Coração da Fenda','magic_dust_01',330,48,'Pulsa no ritmo de dois mundos.'),
+    // Capítulo IV: O Céu Partido.
+    W('sword','thunder_tachi','Tachi do Trovão','katana_01',190,50,'A lâmina zumbe antes de cada tempestade.'),
+    W('heavy','bell_maul','Malho do Sino Colossal','tide_blade',20,52,'Cada golpe badala no peito do inimigo.'),
+    W('ranged','tengu_bow','Arco de Pena de Tengu','bow_loaded_01',100,48,'As flechas voltam para a aljava sozinhas.'),
+    W('arcane','cloud_staff','Cajado das Nuvens','tome_01',190,49,'Chove um pouco onde ele aponta.'),
+    W('holy','hanami_relic','Relíquia do Hanami','crystal_01',330,53,'Uma pétala que nunca murcha.'),
+    B('storm_core','focus','Núcleo de Tempestade','crystal_01',190,54,'Um relâmpago preso em cristal.','crystal'),
+    B('fujin_scroll','focus','Pergaminho de Fujin','tome_01',130,51,'Ensina a ler o vento.','tome'),
+    B('raiju_emblem','focus','Emblema do Raiju','eclipse_seal',70,50,'Arranhado por garras elétricas.','emblem'),
+    B('cloud_plate','seal','Selo de Granito Alado','lantern_seal',190,49,'Pedra que não sabe cair.','plate'),
+    B('sakura_ward','seal','Selo da Primavera Eterna','eclipse_seal',330,52,'Cheira a flores mesmo no inverno.','ward'),
+    B('drum_charm','charm','Omamori do Tambor','sea_heart',190,56,'Bate junto com o seu coração.')
   ];
 
   // ---------------------------------------------------------------------------
   // AFIXOS, atributos extras aleatórios. Raridade define a quantidade.
   // ---------------------------------------------------------------------------
-  const A = (id, stat, name, min, max, pct = true) => ({ id, stat, name, min, max, pct });
+  const A = (id, stat, name, min, max, pct = true, minIlvl = 0) => ({ id, stat, name, min, max, pct, minIlvl });
   const affixes = [
     A('atkP','atk','Feroz',.03,.10), A('hpP','hp','Robusto',.04,.12), A('defP','def','Blindado',.04,.12),
     A('crit','crit','Preciso',.02,.06), A('critDmg','critDmg','Letal',.08,.25), A('spd','spd','Veloz',.03,.09),
@@ -219,7 +231,10 @@
     A('regen','regen','Vital',.002,.006), A('healPow','healPow','Sagrado',.06,.18), A('dot','dot','Pestilento',.10,.30),
     A('boss','boss','Matador de Chefes',.06,.18), A('pierce','pierce','Perfurante',.04,.12), A('skill','skill','Arcano',.05,.15),
     A('nrg','nrg','Energizado',.05,.15), A('cdr','cdr','Ágil',.04,.12), A('startNrg','startNrg','Desperto',8,25,false),
-    A('elem','elem','Elemental',.06,.18)
+    A('elem','elem','Elemental',.06,.18),
+    // Afixos de fim de jogo (Capítulo III+): ligados à Quebra de postura e ao Elo Kizuna.
+    A('breakPow','breakPow','Quebra-Muralhas',.10,.30,true,36), A('chainPow','chainPow','Encadeado',.03,.08,true,36),
+    A('ultDmg','ultDmg','Apoteótico',.06,.18,true,44), A('thorns','thorns','Espinhoso',.06,.16,true,30)
   ];
 
   // ---------------------------------------------------------------------------
@@ -262,6 +277,15 @@
     { id:'sands', classes:['Vanguarda','Executor'], name:'Tesouro do Faraó', source:'Guardiões das Areias do Tempo e Apep', ilvl:31, color:'#ffcf6b',
       pieces:{ weapon:['Khopesh Dourado','tide_blade',45], focus:['Olho de Hórus','sea_heart',45], seal:['Selo Real','lantern_seal',45], charm:['Escaravelho Sagrado','magic_dust_01',45] },
       bonus2:{ text:'+12% HP e 0,4% HP/s', stats:{ hp:.12, regen:.004 } }, bonus4:{ text:'Abaixo de 35% de HP (1× por onda): escudo de 30% do HP e purifica efeitos negativos.', stats:{}, hook:{ low:{ th:.35, eff:[{ k:'shield', p:.30, to:'self', d:6 }, { k:'cleanse', to:'self' }] } } } },
+    { id:'gladiator', classes:null, name:'Gladiador da Fenda', source:'Loja de Honra (Arena PvP)', ilvl:30, color:'#ff9a6b',
+      pieces:{ weapon:['Gládio da Honra','katana_01',20], focus:['Estandarte do Coliseu','tome_01',20], seal:['Escudo da Arena','eclipse_seal',20], charm:['Laurel do Campeão','magic_dust_01',20] },
+      bonus2:{ text:'+8% ATK e +8% HP', stats:{ atk:.08, hp:.08 } }, bonus4:{ text:'Início de cada onda: +25 de energia e escudo de 10% do HP.', stats:{}, hook:{ start:{ eff:[{ k:'nrg', v:25, to:'self' }, { k:'shield', p:.10, to:'self', d:6 }] } } } },
+    { id:'storm', classes:['Arcanista','Atirador'], name:'Tambores da Tempestade', source:'Guardiões das Ilhas Flutuantes, Santuário das Nuvens e Raijin', ilvl:48, color:'#8fd3ff',
+      pieces:{ weapon:['Baqueta do Trovão','bow_loaded_01',190], focus:['Tambor Celeste','sea_heart',190], seal:['Selo das Nuvens','lantern_seal',190], charm:['Pena de Tengu','magic_dust_01',190] },
+      bonus2:{ text:'+10% ATK e +8% de energia', stats:{ atk:.10, nrg:.08 } }, bonus4:{ text:'Ao usar a ultimate: raio encadeado de 120% do ATK em até 4 inimigos.', stats:{}, hook:{ onUlt:{ eff:[{ k:'chain', m:1.2, n:4, fall:.8 }] } } } },
+    { id:'blossom', classes:['Suporte','Vanguarda'], name:'Hanami Eterno', source:'Guardiões do Vale das Cerejeiras Eternas', ilvl:52, color:'#ffb3d6',
+      pieces:{ weapon:['Leque de Pétalas','tome_01',330], focus:['Botão Eterno','crystal_01',330], seal:['Selo da Primavera','eclipse_seal',330], charm:['Omamori Florido','magic_dust_01',330] },
+      bonus2:{ text:'+15% de cura e +8% HP', stats:{ healPow:.15, hp:.08 } }, bonus4:{ text:'A cada 6 ataques: cura a equipe em 6% do HP máximo.', stats:{}, hook:{ every:{ n:6, eff:[{ k:'heal', p:.06, to:'allies' }] } } } },
     { id:'ghost', classes:['Executor','Atirador'], name:'Véu Fantasma', source:'Guardiões da Cidade Fantasma', ilvl:35, color:'#b8a8ff',
       pieces:{ weapon:['Lâmina do Último Baile','katana_01',250], focus:['Espelho Assombrado','crystal_01',250], seal:['Broche da Noiva','eclipse_seal',250], charm:['Véu Rasgado','backpack_LVL_01',250] },
       bonus2:{ text:'+6% esquiva', stats:{ dodge:.06 } }, bonus4:{ text:'Ao esquivar: fica furtivo por 1,5s e revida com 120% do ATK.', stats:{}, hook:{ onDodge:{ eff:[{ k:'buff', s:'stealth', v:1, d:1.5, to:'self' }, { k:'dmg', m:1.2, to:'attacker' }] } } } },
@@ -277,7 +301,7 @@
     grove:[['hunt', ['guardian'], 6], ['boss', ['boss']]], temple:[['dungeon', ['floorBoss','chest']]], eclipse:[['boss', ['boss']]],
     tide:[['hunt_tide', ['guardian'], 19]], archive:[['dungeon_tide', ['floorBoss','chest']]], dragon:[['boss_tide', ['boss']]], lantern:[['boss_event', ['boss']]],
     swamp:[['hunt_swamp', ['guardian'], 6]], crypt:[['dungeon_crypt', ['floorBoss','chest']]], frost:[['hunt_frost', ['guardian'], 18]], forge:[['dungeon_forge', ['floorBoss','chest']]],
-    sands:[['hunt_desert', ['guardian'], 32], ['boss_sand', ['boss']]], ghost:[['hunt_ghost', ['guardian']]], clock:[['dungeon_clock', ['floorBoss','chest']]], abyss:[['rift', ['floorBoss','chest','guardian'], 20]]
+    sands:[['hunt_desert', ['guardian'], 32], ['boss_sand', ['boss']]], storm:[['hunt_sky', ['guardian'], 48], ['dungeon_sky', ['floorBoss','chest']], ['boss_sky', ['boss']]], blossom:[['hunt_sakura', ['guardian']]], ghost:[['hunt_ghost', ['guardian']]], clock:[['dungeon_clock', ['floorBoss','chest']]], abyss:[['rift', ['floorBoss','chest','guardian'], 20]]
   };
 
   // ---------------------------------------------------------------------------
@@ -285,6 +309,8 @@
   // ---------------------------------------------------------------------------
   const Q = (id, slot, name, icon, hue, minIlvl, source, stats, effect, hook) => ({ id, slot, name, icon, hue, minIlvl, source, stats, effect, hook });
   const uniques = [
+    Q('raijin_drum','charm','Tambor de Raijin','sea_heart',190,60,'Raijin',{ atk:.12, spd:.08 },'A cada 4 ataques: raio encadeado de 150% do ATK em até 5 inimigos.',{ every:{ n:4, eff:[{ k:'chain', m:1.5, n:5, fall:.8 }] } }),
+    Q('fujin_bag','focus','Saco dos Ventos','magic_dust_01',130,54,'Santuário das Nuvens',{ dodge:.08, cdr:.08 },'Ao esquivar: +40 de energia.',{ onDodge:{ eff:[{ k:'nrg', v:40, to:'self' }] } }),
     Q('muramasa','weapon','Muramasa Sedenta','katana_01',0,6,'Qualquer inimigo (raro)',{ lifesteal:.10, atk:.10 },'Abates curam 10% do HP máximo.',{ onKill:{ eff:[{ k:'heal', p:.10, to:'self' }] } }),
     Q('kusanagi','weapon','Kusanagi, Cortadora de Ventos','tide_blade',100,10,'Guardiões e chefes',{ atk:.12 },'Ataques básicos também atingem todos os outros inimigos por 25% do dano.',{ cleave:.25 }),
     Q('star_bow','weapon','Arco das Mil Estrelas','bow_loaded_01',160,8,'Qualquer inimigo (raro)',{ spd:.12, crit:.05 },'25% de chance de disparar uma segunda flecha.',{ onAtk:{ ch:.25, eff:[{ k:'dmg', m:1.0, to:'tgt' }] } }),
@@ -336,7 +362,9 @@
     golem_sand:{ def:.08, hp:.08 }, revenant_mummy:{ lifesteal:.03, hp:.06 }, golem_ghost:{ thorns:.10, def:.05 }, revenant_ghost:{ critDmg:.12 },
     revenant_time:{ spd:.07, cdr:.04 }, revenant_chrono:{ nrg:.10, spd:.03 },
     wb_titan:{ def:.15, hp:.12 }, wb_frost_dragon:{ critDmg:.20, crit:.05 }, wb_storm_kitsune:{ spd:.10, nrg:.10 }, wb_blood_moon:{ lifesteal:.06, atk:.10 },
-    rift_wyrm:{ boss:.10, elem:.08 }
+    rift_wyrm:{ boss:.10, elem:.08 },
+    golem_sky:{ def:.09, hp:.07 }, revenant_sky:{ spd:.06, dodge:.04 }, golem_root:{ thorns:.10, regen:.003 }, revenant_geisha:{ healPow:.10, skill:.05 },
+    revenant_monk:{ cdr:.06, nrg:.06 }, golem_bell:{ dr:.05, def:.06 }, golem_fujin:{ spd:.08, pierce:.06 }, boss_sky:{ atk:.14, crit:.06, elem:.10 }
   };
   // Monstros comuns sem carta própria recebem um bônus pelo papel e um toque do elemento.
   const roleCard = { 'Ágil':{ dodge:.035, crit:.02 }, Venenosa:{ dot:.12 }, Conjurador:{ skill:.07 }, Tanque:{ def:.07 }, Brutamontes:{ atk:.045 }, Lutador:{ lifesteal:.03 } };
@@ -366,6 +394,8 @@
     revenant_king:{ text:'Ao usar a ultimate: silencia o inimigo mais forte por 2s.', hook:{ onUlt:{ eff:[{ k:'st', s:'silence', d:2, ch:1, to:'high' }] } } },
     golem_forge:{ text:'A cada 5 ataques: golpe de 200% do ATK.', hook:{ every:{ n:5, eff:[{ k:'dmg', m:2.0, to:'tgt' }] } } },
     golem_clock:{ text:'Ao usar a habilidade: −1s na recarga dos aliados.', hook:{ onSkill:{ eff:[{ k:'cdr', v:1, to:'allies' }] } } },
+    golem_fujin:{ text:'Ao usar a habilidade: +30% de velocidade de ataque por 5s.', hook:{ onSkill:{ eff:[{ k:'buff', s:'spd', v:.3, d:5, to:'self' }] } } },
+    boss_sky:{ text:'Críticos disparam um raio encadeado de 90% do ATK em até 3 inimigos.', hook:{ onCrit:{ eff:[{ k:'chain', m:.9, n:3, fall:.8 }] } } },
     rift_wyrm:{ text:'Ultimates removem escudos e bônus dos inimigos.', hook:{ onUlt:{ eff:[{ k:'dispel', to:'all' }] } } },
     wb_titan:{ text:'Ao ser atingido (10%): escudo de 12% do HP.', hook:{ onHurt:{ ch:.1, eff:[{ k:'shield', p:.12, to:'self', d:5 }] } } },
     wb_frost_dragon:{ text:'Ataques têm 8% de chance de congelar (1,5s).', hook:{ onAtk:{ ch:.08, eff:[{ k:'st', s:'freeze', d:1.5, ch:1, to:'tgt' }] } } },
@@ -386,7 +416,7 @@
   const rarityById = id => D.rarities.find(r => r.id === id) || D.rarities[0];
 
   function rollAffix(ilvl, exclude = [], weights = null) {
-    const pool = affixes.filter(a => !exclude.includes(a.id));
+    const pool = affixes.filter(a => !exclude.includes(a.id) && (a.minIlvl || 0) <= ilvl);
     const a = weights ? U.weighted(pool, x => weights[x.id] || 1) : U.pick(pool); const roll = U.random();
     const scale = 1 + Math.min(ilvl, 40) / 40;
     let v = (a.min + (a.max - a.min) * roll) * scale;
@@ -484,7 +514,7 @@
     return makeItem({ ilvl, rarity, prefer });
   }
   const SOURCE_ZONES = { 'Shirogane':['boss'], 'Mizuchi':['boss_tide'], 'Kitsune':['boss_event'], 'Festival':['boss_event'], 'Templo':['dungeon'], 'Arquivo':['dungeon_tide'], 'Costa':['hunt_tide'],
-    'Pântano':['hunt_swamp'], 'Cripta':['dungeon_crypt'], 'Planalto':['hunt_frost'], 'Forja':['dungeon_forge'], 'Areias':['hunt_desert'], 'Apep':['boss_sand'], 'Cidade Fantasma':['hunt_ghost'], 'Torre':['dungeon_clock'], 'Fenda':['rift'] };
+    'Pântano':['hunt_swamp'], 'Cripta':['dungeon_crypt'], 'Planalto':['hunt_frost'], 'Forja':['dungeon_forge'], 'Areias':['hunt_desert'], 'Apep':['boss_sand'], 'Cidade Fantasma':['hunt_ghost'], 'Torre':['dungeon_clock'], 'Fenda':['rift'], 'Ilhas':['hunt_sky'], 'Cerejeiras':['hunt_sakura'], 'Santuário das Nuvens':['dungeon_sky'], 'Raijin':['boss_sky'] };
   function sourceMatches(q, zone, source) {
     const s = q.source;
     if (s.includes('Qualquer')) return true;

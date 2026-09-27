@@ -16,6 +16,14 @@
   const DT = .05;           // passo fixo da simulação (20 passos por segundo de jogo)
   const MAX_SPEED = 3;
   const INPUT_KINDS = new Set(['ult', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance']);
+  // Quebra de postura (elites e chefes) e Elo Kizuna (ultimates encadeadas).
+  const BREAK = { gain:5, max:100, grow:1.3, time:4, dmg:.35, kindMult:{ ult:2.2, skill:1.5, basic:1, proc:.6 } };
+  const CHAIN = { window:4, per:.15, finale:4, finaleMult:.9 };
+  // Economia: chefes dão espólio completo só nas primeiras vitórias do dia (como o bloqueio de raide do WoW);
+  // Oricalco e Adamantina de fontes repetíveis (Fenda, masmorras, guardiões) têm teto diário.
+  const BOSS_LOOT_PER_DAY = 3;
+  const DAILY_MAT_CAP = { ori:3, adam:1 };
+  const RARITY_RANK = { common:0, rare:1, epic:2, set:3, legendary:3, mythic:4 };
 
   // ===========================================================================
   // ESTADO
@@ -38,7 +46,7 @@
       market:{ offers:[], refreshedAt:0 }, boostUntil:0, freeRespec:1,
       story:{ seen:{} }, codex:{ enemies:[] }, bestiary:{},
       guildRank:{ lv:1, xp:0 }, chronicle:null, daily:{ date:'', list:[] }, login:{ last:'', streak:0, claimed:'' }, stuck:{ key:'', n:0 },
-      worldBoss:{ day:'', window:-1, boss:'', tier:0, damage:0, claimed:true }, expeditions:[], bounty:{ active:null, offers:[], points:0, done:0 }, crafted:{ date:'', n:{} },
+      worldBoss:{ day:'', window:-1, boss:'', tier:0, damage:0, claimed:true }, bossLoot:{ date:'', n:{} }, matDaily:{ date:'', ori:0, adam:0 }, expeditions:[], bounty:{ active:null, offers:[], points:0, done:0 }, crafted:{ date:'', n:{} },
       lastSeen:Date.now(), totalPlaySeconds:0, created:Date.now()
     };
   }
@@ -52,7 +60,7 @@
     const fresh = createState();
     if (!raw || raw.version !== 3) return fresh;
     const s = { ...fresh, ...raw };
-    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon','bossLoot','matDaily']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
     s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
@@ -190,7 +198,7 @@
     const rar = D.heroRarities.find(r => r.id === rec.rarity)?.mult || 1;
     const star = 1 + (rec.stars - 1) * .12;
     const base = { hp:c.base.hp * (t.prof.hp || 1), atk:c.base.atk * (t.prof.atk || 1), def:c.base.def * (t.prof.def || 1) };
-    const s = { spd:c.base.spd, crit:c.base.crit, critDmg:c.base.critDmg, dodge:c.base.dodge, lifesteal:0, dr:0, regen:0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, startNrg:0, elem:0, ultDmg:0, thorns:0, skillMastery:0 };
+    const s = { spd:c.base.spd, crit:c.base.crit, critDmg:c.base.critDmg, dodge:c.base.dodge, lifesteal:0, dr:0, regen:0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, startNrg:0, elem:0, ultDmg:0, thorns:0, skillMastery:0, breakPow:0, chainPow:0 };
     const pctAdd = { hp:0, atk:0, def:0 }; const flat = { hp:0, atk:0, def:0 };
     const add = (stats, m = 1) => Object.entries(stats || {}).forEach(([k, v]) => {
       if (k === 'hpFlat') flat.hp += v * m; else if (k === 'atkFlat') flat.atk += v * m; else if (k === 'defFlat') flat.def += v * m;
@@ -260,7 +268,7 @@
     heroPower(rec, ctx) { return statPower(this.heroStats(rec, ctx)); }
     getPower() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
     event() { return activeEvent(this.now()); }
-    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .5 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return v; }
+    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .5 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return v; }
 
     recommendedPower(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z || z.kind === 'village') return 0;
@@ -288,6 +296,7 @@
     // Valida e posiciona a equipe numa região (mesma regra no navegador e no servidor).
     prepareZone(zoneId, opts = {}) {
       const z = D.zones[zoneId]; if (!z) return false;
+      if (z.kind === 'arena' && !this.arenaFoe) return false;
       const lock = this.zoneLock(zoneId);
       if (lock.locked) { this.emit('onToast', `Bloqueado: ${lock.reasons.filter(r => !r.met).map(r => r.text).join(' · ')}.`); return false; }
       opts = { ...opts };
@@ -323,6 +332,7 @@
     // servidor fornece a semente; o navegador grava os comandos do jogador (ultimates, poções, alvo,
     // escolhas) com o passo em que aconteceram, e o servidor refaz a luta para calcular as recompensas.
     startRun() {
+      if (this.zone.kind === 'arena') { this.beginSegment({ id:null, seed:this.arenaFoe.seed, at:null }); return; }
       if (this.segmentProvider && !this.replay) { this.phase = 'waiting'; this.segWaiting = true; this.enemies = []; this.segmentProvider.request({ zone:this.zone.id, opts:{ ...this.opts } }); return; }
       this.beginSegment(null);
     }
@@ -394,7 +404,8 @@
     startRunCore() {
       const ctx = this.ctx();
       this.party = this.state.formation.map((uid, slot) => { const rec = uid && this.record(uid); return rec ? this.makeHeroUnit(rec, slot, ctx) : null; }).filter(Boolean);
-      this.wave = 0; this.room = 0; this.bossPhase = 0; this.stageMods = {}; this.encounterUsed = false; this.potionCd = 0; this.elixirCd = 0;
+      this.wave = 0; this.room = 0; this.bossPhase = 0; this.ultChain = 0; this.lastUltAt = -99; this.lastUltHero = -1; this.chainBonus = 0; this.stageMods = {}; this.encounterUsed = false; this.potionCd = 0; this.elixirCd = 0;
+      if (this.zone.kind === 'arena') this.party.forEach(u => { u.maxHp = Math.round(u.maxHp * D.PVP.hpParty); u.hp = u.maxHp; });
       this.nextWave();
     }
 
@@ -416,7 +427,7 @@
         st:{ atk:t.atk * (t.atkMul || 1) * P * atkMod, baseAtk:t.atk * P, def:t.def * P, spd:t.spd, crit:t.crit || .05, critDmg:1.5, dodge:t.dodge || 0, lifesteal:t.lifesteal || 0, dr:0, regen:t.regen || 0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, elem:0, ultDmg:0 },
         maxHp:Math.round(t.hp * (t.hpMul || 1) * P), hp:Math.round(t.hp * (t.hpMul || 1) * P), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:t.thorns || 0, elite:!!t.elite, boss:!!t.boss, miniboss:!!t.miniboss, treasure:!!t.treasure, level:lvl, P,
-        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, ...extra };
+        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, ...extra };
       if (t.specials) u.specials = t.specials.map(s => ({ ...s, t:s.cd * .6 }));
       if (t.boss) this.applyBossPhase(u, 0, true);
       return u;
@@ -480,6 +491,10 @@
         this.enemies.forEach(e => { const m = mut.enemy || {}; if (m.hp) { e.maxHp = Math.round(e.maxHp * (1 + m.hp)); e.hp = e.maxHp; } if (m.atk) e.st.atk *= 1 + m.atk; if (m.spd) e.st.spd *= 1 + m.spd; if (m.lifesteal) e.st.lifesteal += m.lifesteal; if (m.thorns) e.thorns += m.thorns; });
         if (mut.reward?.drop) this.stageMods.drop = Math.max(this.stageMods.drop || 0, mut.reward.drop);
         this.emit('onWave', { label:`Andar ${floor} · Sala ${this.room}/${D.RIFT.rooms}`, detail:this.room === D.RIFT.rooms ? (floor % 5 === 0 ? `Guardião do abismo: ${this.enemies[0].name}` : 'Sala dos guardiões') : `Mutação: ${mut.name}. ${mut.text}` });
+      } else if (z.kind === 'arena') {
+        this.wave = 1; this.arenaTime = 0;
+        this.enemies = (this.arenaFoe.defense || []).slice(0, 4).map((h, i) => this.makeRivalUnit(h, i)).filter(Boolean);
+        this.emit('onWave', { label:`Arena · ${this.arenaFoe.name}`, detail:`${this.enemies.length} heróis rivais · ${D.PVP.time}s`, boss:true });
       } else if (z.kind === 'worldboss') {
         this.wave = 1; const tier = D.worldBoss.tiers[this.opts.tier || 0], id = this.wbBossId();
         this.enemies = [this.makeEnemyUnit(id, tier.P, { worldBoss:true })];
@@ -494,6 +509,38 @@
       }
       this.phase = 'fight';
       this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; if (u.alive) this.fire(u, 'start', {}); });
+    }
+
+    // Herói rival (defesa de outro jogador): atributos já calculados no jogo dele; age pela IA,
+    // usa a habilidade própria e solta a ultimate como ataque telegrafado.
+    makeRivalUnit(h, slot) {
+      const t = this.template(h?.id); if (!t || !h.st) return null;
+      const num = (v, d = 0) => Number.isFinite(Number(v)) ? Number(v) : d;
+      const st = { atk:num(h.st.atk, 100), baseAtk:num(h.st.atk, 100), def:num(h.st.def), spd:num(h.st.spd, 1), crit:U.clamp(num(h.st.crit, .05), 0, .85), critDmg:num(h.st.critDmg, 1.5), dodge:U.clamp(num(h.st.dodge), 0, .6),
+        lifesteal:num(h.st.lifesteal), dr:U.clamp(num(h.st.dr), -.5, .6), regen:num(h.st.regen), healPow:num(h.st.healPow), dot:num(h.st.dot), boss:0, pierce:num(h.st.pierce), skill:num(h.st.skill), nrg:0, cdr:num(h.st.cdr), elem:num(h.st.elem), ultDmg:num(h.st.ultDmg), breakPow:0, chainPow:0 };
+      const hp = Math.max(1, Math.round(num(h.maxHp, 1000) * D.PVP.hpRival));
+      const pseudo = { name:t.name, role:t.cls, skill:{ name:t.skill.name, cd:t.skill.cd, eff:t.skill.eff }, specials:[{ name:t.ult.name, cd:D.PVP.ultCd + slot * 1.5, windup:D.PVP.ultWindup, eff:t.ult.eff }] };
+      const hooks = {}; [t.passive.hooks, ...(Array.isArray(h.hooks) ? h.hooks : [])].forEach(hk => Object.entries(hk || {}).forEach(([k, v]) => { if (k !== 'stats' && k !== 'aura') (hooks[k] = hooks[k] || []).push(v); }));
+      const u = { uid:`rv_${slot}_${t.id}`, side:'enemy', id:t.id, name:t.name, sprite:t.sprite, el:t.el, cls:t.cls, color:t.color, t:pseudo, st, maxHp:hp, hp, shield:0, shieldT:0, energy:0,
+        atkCd:U.rand(.3, .8), skillCd:t.skill.cd * .5, effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:num(h.st.thorns), level:num(h.level, 1), P:1,
+        specials:pseudo.specials.map(s => ({ ...s, t:s.cd * .7 })), windup:0, windupMax:0, windupSpecial:null, hooks, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, rival:true, stars:num(h.stars, 1) };
+      return u;
+    }
+    // Instantâneo da equipe para a defesa no PvP (só números e efeitos, sem funções).
+    pvpSnapshot() {
+      const ctx = this.ctx();
+      return this.heroes.map(r => { const st = heroStats(this.state, r, ctx); const clean = {}; Object.entries(st).forEach(([k, v]) => { if (typeof v === 'number') clean[k] = Math.round(v * 10000) / 10000; });
+        return { id:r.id, level:r.level, stars:r.stars, rarity:r.rarity, maxHp:st.maxHp, st:clean, hooks:st.hooks || [] }; });
+    }
+    // Fim da luta de arena: entrega semente/comandos para o registro e volta para a caçada.
+    arenaEnd(won, reason = '') {
+      if (this.phase !== 'fight') return;
+      const seg = this.seg, rec = { won, inputs:seg ? seg.inputs.slice() : [], endTick:seg ? seg.tick : 0, foe:this.arenaFoe, reason };
+      this.endSegment(won ? 'clear' : 'defeat');
+      this.phase = 'result'; this.timer = 6; this.lastResult = { kind:'arena', won, zone:this.zone, foe:this.arenaFoe?.name, reason };
+      this.autoAfterResult = () => { this.emit('onResultClose'); this.arenaFoe = null; this.fallbackToHunt(); };
+      this.emit('onArena', rec);
+      this.emit('onResult', this.lastResult);
     }
 
     // Cada andar da Fenda tem uma mutação fixa (a mesma para todos os jogadores).
@@ -584,6 +631,10 @@
       this.enemies.forEach(e => { if (e.treasure && e.alive) { e.fleeT = (e.fleeT || 0) + dt; if (e.fleeT > 12) { e.alive = false; e.fled = true; this.emit('onFx', { type:'text', uid:e.uid, text:'FUGIU!', color:'#ffd76a' }); this.emit('onLog', { text:'A Raposa Dourada fugiu!', type:'system' }); } } });
       if (this.zone.kind === 'boss' || this.zone.kind === 'worldboss') this.tickBossTimer(dt);
       if (this.zone.kind === 'worldboss' && this.phase === 'fight' && this.zoneElapsedFight() >= D.worldBoss.duration) { this.wbFinish(); return; }
+      if (this.zone.kind === 'arena' && this.phase === 'fight') {
+        this.arenaTime = (this.arenaTime || 0) + dt;
+        if (this.arenaTime >= D.PVP.time) { const frac = list => list.reduce((a, u) => a + Math.max(0, u.hp) / u.maxHp, 0) / Math.max(1, list.length); this.arenaEnd(frac(this.party) > frac(this.enemies), 'Tempo esgotado: vence quem tem mais vida.'); return; }
+      }
       this.checkOutcome();
     }
 
@@ -622,6 +673,7 @@
 
     tickEffects(u, dt) {
       if (!u.alive) return;
+      if (u.broken > 0) { u.broken -= dt; if (u.broken <= 0) { u.broken = 0; this.emit('onFx', { type:'text', uid:u.uid, text:'RECOMPOSTO', color:'#c9c4e6' }); } }
       if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
       let regen = u.st.regen + this.eff(u, 'regen');
       if (u.hooks?.lowRegen && u.hp / u.maxHp < .5) regen += Math.max(...u.hooks.lowRegen);
@@ -641,7 +693,7 @@
     }
 
     // ---------- ações ----------
-    canAct(u) { return u.alive && !u.effects.some(e => CC.has(e.s)); }
+    canAct(u) { return u.alive && !(u.broken > 0) && !u.effects.some(e => CC.has(e.s)); }
     actHero(u, i, dt) {
       if (!this.canAct(u)) return;
       const living = this.enemies.filter(e => e.alive); if (!living.length) return;
@@ -708,13 +760,37 @@
       this.state.stats.ults++; this.count('ults');
       if (manual) { this.state.stats.manualUlts++; }
       this.emit('onFx', { type:'cast', source:u.uid, heroIndex:i, manual, ult:true, name:u.template.ult.name, color:u.color, kind:'ult' });
+      // Elo Kizuna: ultimates de heróis diferentes em sequência rápida se fortalecem.
+      this.ultChain = this.zoneElapsed - this.lastUltAt <= CHAIN.window && this.lastUltHero !== i ? this.ultChain + 1 : 1;
+      this.lastUltAt = this.zoneElapsed; this.lastUltHero = i; this.chainBonus = (this.ultChain - 1) * (CHAIN.per + (u.st.chainPow || 0));
+      if (this.ultChain > 1) { this.emit('onFx', { type:'chain', n:this.ultChain, uid:u.uid, color:u.color }); this.state.stats.chains = Math.max(this.state.stats.chains || 0, this.ultChain); }
       this.execute(u, u.template.ult.eff, { isUlt:true, manual });
+      this.chainBonus = 0;
+      if (this.ultChain >= CHAIN.finale) this.kizunaFinale();
       this.fire(u, 'onUlt', {});
       this.emit('onFx', { type:'hitstop', time:manual ? .12 : .06 });
       this.emit('onState');
       return true;
     }
     useSkill(i, manual = true) { return this.castUlt(i, manual); }
+    // Quatro ultimates encadeadas: toda a equipe ataca junta todos os inimigos.
+    kizunaFinale() {
+      this.ultChain = 0; this.lastUltAt = -99; this.lastUltHero = -1;
+      this.emit('onFx', { type:'finale' }); this.emit('onLog', { text:'ELO KIZUNA! A equipe inteira golpeia junta.', type:'skill' });
+      this.party.filter(h => h.alive).forEach(h => this.enemies.filter(e => e.alive).forEach(e => this.hit(h, e, CHAIN.finaleMult, { kind:'ult', pierce:.3 })));
+      this.emit('onFx', { type:'hitstop', time:.18 });
+    }
+    // Quebra de postura: dano em elites/chefes enche a barra; cheia, o inimigo fica atordoado e vulnerável.
+    addBreak(src, tg, final, kind, em) {
+      if (src.side !== 'hero' || tg.side !== 'enemy' || !(tg.elite || tg.boss || tg.miniboss || tg.guardian) || tg.broken > 0 || !tg.alive) return;
+      tg.breakG += final / tg.maxHp * 100 * BREAK.gain * (BREAK.kindMult[kind] || 1) * (em === 1.3 ? 1.5 : 1) * (1 + (src.st.breakPow || 0));
+      if (tg.breakG < tg.breakMax) return;
+      tg.breakG = 0; tg.breakMax *= BREAK.grow; tg.broken = BREAK.time;
+      const canceled = !!tg.windupSpecial; tg.windup = 0; tg.windupSpecial = null;
+      this.state.stats.breaks = (this.state.stats.breaks || 0) + 1;
+      this.emit('onFx', { type:'break', uid:tg.uid, canceled, color:tg.color });
+      this.emit('onLog', { text:`${tg.name.split(',')[0]} teve a postura QUEBRADA${canceled ? ' e perdeu o ataque preparado' : ''}!`, type:'skill' });
+    }
 
     // ---------- alvos ----------
     opponents(u) { const list = (u.side === 'hero' ? this.enemies : this.party).filter(x => x.alive); const vis = list.filter(x => !this.has(x, 'stealth')); return vis.length ? vis : list; }
@@ -837,6 +913,8 @@
       if (o.kind === 'skill') raw *= 1 + (src.st.skillMastery || 0);
       if (o.kind === 'ult') raw *= 1 + (src.st.ultDmg || 0);
       if (o.kind === 'ult' && o.manual) raw *= 1.25; // comando manual: ultimate no momento certo rende mais
+      if (o.kind === 'ult' && this.chainBonus) raw *= 1 + this.chainBonus;
+      if (tg.broken > 0) raw *= 1 + BREAK.dmg;
       if (src.side === 'hero' && tg.worldBoss && this.opts.ally) raw *= 1 + Math.min(.5, this.opts.ally * .02); // Bênção da Aliança
       const critChance = this.stat(src, 'crit') + (o.crit || 0);
       const crit = U.random() < critChance;
@@ -855,7 +933,8 @@
       if (tg.side === 'hero' && this.stageMods.dr) raw *= 1 - this.stageMods.dr;
       raw *= U.rand(.92, 1.08);
       const dmg = Math.max(1, Math.round(raw));
-      const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em });
+      const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em, broken:tg.broken > 0 });
+      this.addBreak(src, tg, final, o.kind, em);
       if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) this.applyRawDamage(src, Math.max(1, Math.round(final * tg.thorns)), tg, { kind:'thorns', color:'#d8ad6a' });
       const ls = this.stat(src, 'lifesteal');
       if (ls > 0 && o.kind !== 'dot') this.heal(src, src, final * ls, true);
@@ -899,6 +978,7 @@
       if (killer?.side === 'hero') {
         this.fire(killer, 'onKill', { target:tg });
       }
+      if (tg.rival) return;
       this.rewardKill(tg);
     }
 
@@ -926,6 +1006,7 @@
     checkOutcome() {
       if (this.phase !== 'fight') return;
       if (this.zone.kind === 'worldboss') { if (!this.party.some(u => u.alive)) this.wbFinish(); return; }
+      if (this.zone.kind === 'arena') { if (!this.party.some(u => u.alive)) this.arenaEnd(false); else if (!this.enemies.some(e => e.alive)) this.arenaEnd(true); return; }
       if (!this.party.some(u => u.alive)) { this.onDefeat(); return; }
       if (this.enemies.some(e => e.alive)) return;
       const z = this.zone;
@@ -990,7 +1071,7 @@
       const items = [this.drop('chest', z, ilvl, this.mod('drop'))];
       if (this.state.routeChoice === 'risk') items.push(this.drop('chest', z, ilvl, this.mod('drop')));
       this.dropMats('chest');
-      const rewards = { gold:Math.round(320 * zonePower(z, { floor })), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .03 ? 1 : 0), items };
+      const rewards = { gold:Math.round(320 * zonePower(z, { floor })), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .01 ? 1 : 0), items };
       if (first) p.best = floor;
       this.grant(rewards);
       this.state.stats.floors++; this.count('floors');
@@ -998,19 +1079,27 @@
       this.showResult({ kind:'dungeon', zone:z, floor, first, rewards, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
       this.endSegment('clear');
     }
+    // Vitórias com espólio que ainda restam hoje contra este chefe nesta dificuldade.
+    bossLootLeft(zoneId = this.zone.id, tier = this.opts.tier || 0) {
+      const b = this.state.bossLoot || (this.state.bossLoot = { date:'', n:{} }), key = dayKey(this.now());
+      if (b.date !== key) { b.date = key; b.n = {}; }
+      return Math.max(0, BOSS_LOOT_PER_DAY - (b.n[`${zoneId}:${tier}`] || 0));
+    }
     bossClear() {
       const z = this.zone, p = this.state.progress[z.id], tier = this.opts.tier || 0, tr = D.bossTiers[tier];
-      const firstKill = (p.kills || 0) === 0;
+      const firstKill = (p.kills || 0) === 0, loot = firstKill || this.bossLootLeft(z.id, tier) > 0;
       p.kills = (p.kills || 0) + 1; p.tierKills[tier] = (p.tierKills[tier] || 0) + 1;
       this.state.stats.bossKills++;
+      if (loot) this.state.bossLoot.n[`${z.id}:${tier}`] = (this.state.bossLoot.n[`${z.id}:${tier}`] || 0) + 1;
       const ilvl = itemLevelFor(z, this.opts);
-      const items = [this.drop('boss', z, ilvl, this.mod('drop') + tier * .5)];
-      if (tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
-      this.dropMats('boss');
-      const rewards = { gold:Math.round(2000 * zonePower(z, this.opts) / 3 * tr.reward), crystal:Math.round((firstKill ? 80 : 6) * tr.reward), keys:z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
+      const items = loot ? [this.drop('boss', z, ilvl, this.mod('drop') + tier * .5)] : [];
+      if (loot && tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
+      if (loot) this.dropMats('boss');
+      else this.emit('onToast', `<b>Espólio de hoje esgotado</b> contra ${esc(D.enemies[z.enemy].name.split(',')[0])}: a vitória rende só ouro e EXP até a meia-noite (Brasília).`);
+      const rewards = { gold:Math.round(2000 * zonePower(z, this.opts) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
       this.grant(rewards);
       if (firstKill && D.story.bossWin[z.id]) this.emit('onDialog', D.story.bossWin[z.id]);
-      this.showResult({ kind:'boss', zone:z, tier, first:firstKill, rewards, boss:D.enemies[z.enemy].name, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
+      this.showResult({ kind:'boss', zone:z, tier, first:firstKill, lootLocked:!loot, lootLeft:this.bossLootLeft(z.id, tier), rewards, boss:D.enemies[z.enemy].name, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
       this.endSegment('clear');
     }
     showResult(r) {
@@ -1109,21 +1198,27 @@
       const src = e.boss ? null : e.miniboss ? 'floorBoss' : e.alpha || e.guardian ? 'guardian' : e.elite ? 'elite' : e.treasure ? 'chest' : 'normal';
       if (src) {
         const chance = e.alpha ? 1 : { normal:.03, elite:.12, guardian:.25, floorBoss:1, chest:1 }[src] * (1 + this.mod('drop'));
-        const n = src === 'floorBoss' ? 2 : 1;
+        const n = 1;
         for (let i = 0; i < n; i++) if (U.random() < chance) { const it = this.drop(src, this.zone, itemLevelFor(this.zone, this.opts) + (e.alpha ? 2 : 0), this.mod('drop') + (activeEvent(this.now()).mods?.rarity || 0) + (e.alpha ? .8 : 0)); it.fromUid = e.uid; this.addItem(it); this.emit('onLoot', it); }
         if (U.random() < .07 * (e.elite ? 3 : 1)) { const c = U.random() < .5 ? 'ore' : 'dust'; s.player[c] += e.elite ? 2 : 1; }
         this.dropMats(src, e.alpha);
       }
       const card = I.cards.find(c => c.enemy === e.id);
       const cardMult = (1 + this.mod('drop')) * (e.boss ? 1 + (this.opts.tier || 0) : 1) * (e.alpha ? 3 : 1) * (1 + this.research(e.id) * D.RESEARCH.card);
-      if (card && U.random() < card.chance * cardMult) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; if (s.house) s.house.seen[card.id] = 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
+      const lootOk = !e.boss || this.zone.kind !== 'boss' || this.bossLootLeft() > 0 || !(this.state.progress[this.zone.id]?.kills);
+      if (card && lootOk && U.random() < card.chance * cardMult) { s.cards[card.id] = (s.cards[card.id] || 0) + 1; if (s.house) s.house.seen[card.id] = 1; s.stats.cards = (s.stats.cards || 0) + 1; this.emit('onCard', { card, mvp:card.mvp }); this.emit('onLog', { text:`${card.mvp ? 'MVP! ' : ''}Obteve ${card.name}!`, type:'reward' }); }
       if (e.boss) this.emit('onToast', `<b>MVP!</b> ${e.name.split(',')[0]} derrotado.`);
       if (e.treasure) { s.player.gold += gold * 4; this.emit('onToast', `Raposa Dourada derrotada: +${(gold * 5).toLocaleString('pt-BR')} ouro!`); }
     }
     // Materiais raros de refino: Aço Estelar (elites e chefes), Oricalco (chefes), Adamantina (chefes difíceis e eventos).
     dropMats(src, alpha = false) {
       const m = this.state.mats, tier = this.opts.tier || 0, deep = this.zone.kind === 'rift' ? (this.opts.floor || 1) : 0, got = {};
-      const give = (k, n) => { if (n > 0) { m[k] = (m[k] || 0) + n; got[k] = (got[k] || 0) + n; } };
+      const md = this.state.matDaily || (this.state.matDaily = { date:'', ori:0, adam:0 }), today = dayKey(this.now());
+      if (md.date !== today) { md.date = today; md.ori = 0; md.adam = 0; }
+      const give = (k, n) => {
+        if (n > 0 && src !== 'boss' && DAILY_MAT_CAP[k] !== undefined) { n = Math.min(n, DAILY_MAT_CAP[k] - (md[k] || 0)); if (n > 0) md[k] = (md[k] || 0) + n; }
+        if (n > 0) { m[k] = (m[k] || 0) + n; got[k] = (got[k] || 0) + n; }
+      };
       const r = () => U.random();
       if (src === 'elite' && r() < .003) give('star', 1);
       if (src === 'guardian' && r() < (alpha ? .12 : .008)) give('star', 1);
@@ -1291,12 +1386,23 @@
       if (auto !== 'none' && order.indexOf(item.rarity) >= 0 && order.indexOf(item.rarity) <= order.indexOf(auto)) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; s.player.gold += v.gold; s.stats.salvage++; this.count('salvage'); item.autoSalvaged = true; this.runLoot.push(item); return; }
       // Bolsa cheia: nada se perde. O item vai para o Baú de Excedentes; se o baú também lotar,
       // só o item COMUM de menor valor é desmontado para abrir espaço.
+      if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG) && (RARITY_RANK[item.rarity] || 0) >= 2) {
+        // Item valioso com a bolsa cheia: o item comum/raro mais fraco (livre e destrancado) cede a vaga e vai para os Excedentes.
+        const weak = s.inventory.filter(x => (RARITY_RANK[x.rarity] || 0) <= 1 && !x.locked && !this.ownerOf(x.uid)).sort((a, b) => (RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]) || I.itemScore(a) - I.itemScore(b))[0];
+        if (weak) { s.inventory.splice(s.inventory.indexOf(weak), 1); s.overflow = s.overflow || []; s.overflow.unshift(weak); weak.inOverflow = true; }
+      }
       if (s.inventory.length >= Math.min(s.invCap, I.MAX_BAG)) {
         s.overflow = s.overflow || [];
         if (s.overflow.length >= I.OVERFLOW_CAP) {
           const commons = s.overflow.map((x, i) => [x, i]).filter(([x]) => x.rarity === 'common').sort((a, b) => I.itemScore(a[0]) - I.itemScore(b[0]));
           if (commons.length) { const [junk, idx] = commons[0]; s.overflow.splice(idx, 1); const v = I.salvageValue(junk); s.player.ore += v.ore; s.player.dust += v.dust; }
-          else if (item.rarity === 'common') { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; item.autoSalvaged = true; this.runLoot.push(item); return; }
+          else if ((RARITY_RANK[item.rarity] || 0) <= 1) {
+            // Baú cheio só de itens bons: um raro mais fraco dá lugar, ou o próprio item comum/raro é desmontado. Épicos ou melhores nunca somem.
+            const rares = s.overflow.map((x, i) => [x, i]).filter(([x]) => x.rarity === 'rare').sort((a, b) => I.itemScore(a[0]) - I.itemScore(b[0]));
+            const victim = item.rarity === 'rare' && rares.length && I.itemScore(rares[0][0]) < I.itemScore(item) ? rares[0] : null;
+            if (victim) { s.overflow.splice(victim[1], 1); const v = I.salvageValue(victim[0]); s.player.ore += v.ore; s.player.dust += v.dust; }
+            else { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; item.autoSalvaged = true; this.runLoot.push(item); return; }
+          }
         }
         s.overflow.unshift(item); item.inOverflow = true; this.runLoot.push(item);
         if (!this.overflowWarned) { this.overflowWarned = true; this.emit('onToast', 'Bolsa cheia! Novos itens estão indo para o <b>Baú de Excedentes</b> (Bolsa → Excedentes).'); }
@@ -1430,6 +1536,47 @@
     }
     refreshPartyUnits() { if (!this.party.length) return; const ctx = this.ctx(); this.party.forEach(u => { const r = this.record(u.recUid); if (r) { const st = heroStats(this.state, r, ctx); const ratio = u.hp / u.maxHp; u.st = st; u.maxHp = st.maxHp; u.hp = Math.max(u.alive ? 1 : 0, Math.round(st.maxHp * ratio)); } }); }
 
+    // ---------- Mercado de Jogadores no modo Neon (a escrow fica no banco; aqui só entra/sai do save) ----------
+    marketTake(kind, arg, qty = 1) {
+      const s = this.state;
+      if (kind === 'item') {
+        const i = s.inventory.findIndex(x => x.uid === arg), it = s.inventory[i];
+        if (!it) { this.lastError = 'Item não encontrado.'; return null; }
+        if (it.locked) { this.lastError = 'Destranque o item antes de anunciar.'; return null; }
+        if (it.bound) { this.lastError = 'Este item está vinculado à sua conta e não pode ser vendido.'; return null; }
+        if (this.ownerOf(it.uid)) { this.lastError = 'Desequipe o item antes de anunciar.'; return null; }
+        s.inventory.splice(i, 1); return { ...it, locked:false, isNew:true };
+      }
+      if (kind === 'card') { if (!I.cardById(arg) || (s.cards[arg] || 0) < 1) { this.lastError = 'Você não tem essa carta livre.'; return null; } s.cards[arg]--; return { id:arg }; }
+      if (kind === 'mat') {
+        const m = I.materials[arg]; qty = Math.floor(qty);
+        if (!m?.tradeable || !(qty > 0) || (s.mats[m.key] || 0) < qty) { this.lastError = 'Quantidade de material indisponível.'; return null; }
+        s.mats[m.key] -= qty; return { id:arg, qty };
+      }
+      return null;
+    }
+    marketReceive(kind, payload) {
+      const s = this.state;
+      if (kind === 'gold') { const n = Math.max(0, Math.floor(Number(payload?.amount) || 0)); s.player.gold += n; return n > 0; }
+      if (kind === 'item' && payload?.slot && I.slots[payload.slot]) { const it = { cards:[], ...payload, locked:false }; if (s.inventory.some(x => x.uid === it.uid)) it.uid = U.uid('it'); this.addItem(it); return true; }
+      if (kind === 'card' && I.cardById(payload?.id)) { s.cards[payload.id] = (s.cards[payload.id] || 0) + 1; if (s.house) s.house.seen[payload.id] = 1; return true; }
+      if (kind === 'mat' && I.materials[payload?.id]?.tradeable) { const k = I.materials[payload.id].key; s.mats[k] = (s.mats[k] || 0) + Math.max(0, Math.floor(Number(payload.qty) || 0)); return true; }
+      return false;
+    }
+
+    // ---------- Loja de Honra (PvP) ----------
+    pvpGrant(itemId) {
+      const s = this.state, hz = D.zones[s.lastHunt || 'hunt'] || D.zones.hunt, ilvl = Math.max(10, itemLevelFor(hz, { stage:Math.max(1, s.progress[hz.id]?.best || 1) }));
+      if (itemId === 'star') { s.mats.star += 1; return 'Aço Estelar'; }
+      if (itemId === 'ori') { s.mats.ori += 1; return 'Oricalco'; }
+      if (itemId === 'elixir') { s.consumables.elixir += 3; return '3 Elixires de Energia'; }
+      if (itemId === 'key') { s.player.keys += 1; return 'Chave de Convocação'; }
+      if (itemId === 'glad_box') { const it = I.makeItem({ ilvl, rarity:'epic', prefer:this.preferWT() }); this.addItem(it); this.emit('onLoot', it); return it.name; }
+      const slot = { glad_weapon:'weapon', glad_focus:'focus', glad_seal:'seal', glad_charm:'charm' }[itemId];
+      if (slot) { const it = I.makeItem({ ilvl, set:'gladiator', slot }); this.addItem(it); this.emit('onLoot', it); return it.name; }
+      return null;
+    }
+
     // ---------- Casa do Time ----------
     houseSlots() { return D.HOUSE.slots(this.state.buildings.house || 1); }
     albumCount() { return albumIds(this.state).length; }
@@ -1539,7 +1686,7 @@
     // ---------- loja ----------
     shopPrice(offer) {
       if (!offer.scale) return offer.price;
-      const best = Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best + 12, (this.state.progress.hunt_desert?.best || 0) + 24);
+      const best = Math.max(this.state.progress.hunt.best, this.state.progress.hunt_tide.best + 12, (this.state.progress.hunt_desert?.best || 0) + 24, (this.state.progress.hunt_sky?.best || 0) + 36);
       const m = 1 + best * .15;
       return Object.fromEntries(Object.entries(offer.price).map(([k, v]) => [k, Math.round(v * m)]));
     }
@@ -1840,6 +1987,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, heroXpNext, accountXpNext, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

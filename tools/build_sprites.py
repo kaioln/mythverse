@@ -303,3 +303,45 @@ def build_unique():
 
 if __name__ == '__main__':
     build_unique()
+
+
+# ---------------------------------------------------------------------------
+# Capítulo IV: O Céu Partido. Criaturas e cenários derivados com matiz própria.
+# Uso: python -c "import sys; sys.path.insert(0, 'tools'); import build_sprites as b; b.build_chapter4()"
+# ---------------------------------------------------------------------------
+CHAPTER4_ENEMIES = [
+    # (id, base, matiz, saturação, brilho, espelhar, cor da aura ou None)
+    ('fox_cloud', 'fox', 185, .35, 1.35, False, None), ('wisp_storm', 'wisp', -110, 1.5, 1.15, False, None),
+    ('spider_wind', 'spider', 150, .5, 1.25, True, None), ('oni_thunder', 'oni', -120, 1.2, 1.05, True, None),
+    ('golem_sky', 'golem', 170, .35, 1.3, True, (170, 220, 255)), ('revenant_sky', 'revenant', 100, .9, 1.1, True, (140, 255, 210)),
+    ('fox_sakura', 'fox', 60, .9, 1.3, True, None), ('wisp_petal', 'wisp', 145, 1.0, 1.3, True, None),
+    ('spider_silk', 'spider', -60, .35, 1.4, False, None), ('oni_blossom', 'oni', -30, 1.1, 1.15, False, None),
+    ('golem_root', 'golem', 80, .9, .85, False, (140, 255, 140)), ('revenant_geisha', 'revenant', -25, 1.2, 1.2, False, (255, 170, 220)),
+    ('fox_lightning', 'fox', 160, 1.4, 1.15, False, (255, 240, 120)), ('wisp_cloud', 'wisp', 0, .15, 1.4, True, None),
+    ('spider_thunder', 'spider', 190, 1.3, 1.1, True, None), ('oni_wind', 'oni', 140, .7, 1.1, False, None),
+    ('revenant_monk', 'revenant', 40, 1.0, 1.1, True, (255, 230, 120)), ('golem_bell', 'golem', 30, 1.1, 1.05, True, (255, 200, 110)),
+    ('golem_fujin', 'golem', 120, 1.1, 1.1, False, (140, 255, 200)),
+    ('storm_servant', 'oni', 170, 1.3, 1.0, True, (120, 200, 255)), ('raijin', 'eclipse', 55, 1.4, 1.15, True, (120, 210, 255)),
+]
+CHAPTER4_SCENES = [
+    ('hunt_sky', 'hunt_tide', -25, .55, 1.3), ('hunt_sakura', 'hunt', 12, 1.25, 1.12),
+    ('dungeon_sky', 'dungeon_tide', 35, .55, 1.25), ('boss_sky', 'boss', -95, 1.25, 1.05),
+]
+
+
+def build_chapter4():
+    sp = os.path.join(ROOT, 'assets', 'sprites')
+    for vid, base, h, s, v, flip, col in CHAPTER4_ENEMIES:
+        img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
+        if col:
+            pad = 16
+            canvas = Image.new('RGBA', (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
+            canvas.paste(img, (pad, pad))
+            img = canvas
+        img = shift(img, h, s, v)
+        if flip:
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        (aura(img, col) if col else img).save(os.path.join(sp, f'{vid}.png'), optimize=True)
+    sc = os.path.join(ROOT, 'assets', 'scenes')
+    for sid, base, h, s, v in CHAPTER4_SCENES:
+        shift(Image.open(os.path.join(sc, f'{base}.png')).convert('RGBA'), h, s, v).convert('RGB').save(os.path.join(sc, f'{sid}.png'), optimize=True)
