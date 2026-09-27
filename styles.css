@@ -1689,3 +1689,112 @@ body.hud-clean .zone-meta #wave-label{opacity:.85}
 .more-grid svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
 .more-grid em{position:absolute;top:4px;right:8px;min-width:14px;height:14px;border-radius:7px;background:var(--sakura);font:800 9px var(--ui);font-style:normal;display:grid;place-items:center}
 @keyframes sheetUp{from{transform:translateY(30px);opacity:0}}
+
+/* ---------- HUD de combate suave e responsivo ---------- */
+body.in-combat{--dock-h:100px}
+body.in-combat .stage-col{gap:7px;padding:9px}
+body.in-combat .stage{border-color:rgba(255,255,255,.1);box-shadow:0 18px 48px rgba(0,0,0,.46),0 0 0 1px rgba(255,207,107,.05)}
+body.in-combat .stage-top{inset:8px 8px auto;align-items:flex-start}
+body.in-combat .zone-chip{max-width:min(34%,300px);padding:7px 10px 8px;border-color:rgba(255,255,255,.1);background:rgba(10,9,25,.68);box-shadow:0 6px 18px rgba(0,0,0,.2)}
+body.in-combat .zone-kicker{display:none}
+body.in-combat .zone-chip h1{margin:0 0 4px;font-size:clamp(14px,1.35vw,18px);font-family:var(--ui);font-weight:800;letter-spacing:0}
+body.in-combat .zone-meta{gap:4px}
+body.in-combat .zone-meta span{padding:2px 7px;font-size:10px;background:rgba(255,255,255,.065)}
+body.in-combat .stage-controls{gap:2px;padding:3px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(10,9,25,.66);box-shadow:0 6px 18px rgba(0,0,0,.2);backdrop-filter:blur(10px)}
+body.in-combat .ctl{min-width:45px;height:38px;padding:0 7px;border-color:transparent;border-radius:9px;background:transparent;backdrop-filter:none}
+body.in-combat .ctl:hover:not(:disabled){transform:none;background:rgba(255,255,255,.08)}
+body.in-combat .ctl span{font-size:7px;letter-spacing:.08em}
+body.in-combat .ctl b{font:13px/1.05 var(--ui);font-weight:800}
+body.in-combat .ctl.active{background:rgba(95,227,154,.09);box-shadow:inset 0 0 0 1px rgba(95,227,154,.28)}
+body.in-combat .ctl.danger{background:rgba(255,93,108,.06)}
+body.in-combat .boss-panel{padding:7px 11px 6px;border-color:rgba(255,93,108,.25);background:rgba(10,9,25,.74);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+body.in-combat .boss-track{height:10px;margin:4px 0 3px}
+body.in-combat .boss-break{height:9px}
+body.in-combat .boss-line strong,body.in-combat .boss-line b{font-size:14px}
+body.in-combat .boss-sub small{font-size:10px}
+body.in-combat .consumables{left:9px;bottom:9px;gap:4px}
+body.in-combat .cons{width:44px;height:44px;border-radius:12px;background:rgba(10,9,25,.7)}
+body.in-combat .cons img{width:31px;height:31px;margin-top:5px}
+body.in-combat .loot-pop{padding:4px 9px 4px 4px;font-size:11px;background:rgba(10,9,25,.78)}
+body.in-combat .dock{gap:6px}
+body.in-combat .hero-slot{grid-template-columns:48px minmax(0,1fr);gap:4px 7px;padding:7px;border-radius:14px;background:linear-gradient(145deg,rgba(24,21,48,.86),rgba(13,12,29,.78));border-color:rgba(255,255,255,.09);backdrop-filter:blur(7px)}
+body.in-combat .hero-portrait{width:48px;height:48px;border-radius:12px;box-shadow:none}
+body.in-combat .hero-info header b{font-size:12.5px}
+body.in-combat .hero-info header small{font-size:9px}
+body.in-combat .skill-line{display:none}
+body.in-combat .bar{height:9px;margin-top:4px}
+body.in-combat .bar em{font-size:8px;top:-2px}
+body.in-combat .ult-btn{height:28px;gap:5px;padding-right:6px;border-radius:9px;background:rgba(0,0,0,.28)}
+body.in-combat .ult-btn kbd{width:20px;height:20px;font-size:11px}
+body.in-combat .ult-btn b{font-size:10.5px}
+body.in-combat .ult-btn small{font-size:8px}
+body.in-combat .ult-btn.ready{animation:combatReady 1.7s ease-in-out infinite}
+@keyframes combatReady{50%{border-color:#ffe29a;box-shadow:0 0 12px rgba(255,207,107,.42)}}
+
+@media (max-width:860px){
+  body.in-combat{--top-h:52px}
+  body.in-combat .hud-top{padding-inline:6px}
+  body.in-combat .stage-col{padding:5px;gap:5px}
+  body.in-combat .stage-top{inset:4px 4px auto}
+  body.in-combat .zone-chip{max-width:42%;padding:4px 7px;background:rgba(10,9,25,.6)}
+  body.in-combat .zone-chip h1{margin:0;font-size:11px}
+  body.in-combat #zone-difficulty{display:none}
+  body.in-combat .zone-meta #wave-label{font-size:8px;padding:1px 5px}
+  body.in-combat .stage-controls{gap:1px;padding:2px;border-radius:10px}
+  body.in-combat .ctl{min-width:31px;height:28px;padding:0 3px;border-radius:7px}
+  body.in-combat .ctl span{font-size:6px}
+  body.in-combat .ctl b{font-size:9px}
+  body.in-combat .boss-panel{top:35px;left:4px;right:4px;padding:4px 7px}
+  body.in-combat .boss-line span{font-size:8px}
+  body.in-combat .boss-line strong,body.in-combat .boss-line b{font-size:11px}
+  body.in-combat .boss-sub{display:none}
+  body.in-combat .boss-break{margin-top:3px}
+  body.in-combat #afk-banner{bottom:5px}
+}
+
+@media (max-width:640px){
+  body.in-combat .dock{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  body.in-combat .hero-slot{grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto auto;gap:3px 4px;padding:4px;border-radius:10px;min-width:0}
+  body.in-combat .hero-portrait{grid-row:1;width:30px;height:30px;border-radius:8px;border-width:1px}
+  body.in-combat .hero-portrait .lv{font-size:7px}
+  body.in-combat .hero-portrait .cls{display:none}
+  body.in-combat .hero-info header b{font-size:9px}
+  body.in-combat .hero-info header small{display:none}
+  body.in-combat .bar{height:7px;margin-top:3px}
+  body.in-combat .bar em{display:none}
+  body.in-combat .ult-btn{grid-column:1/-1;height:25px;padding:0 3px;justify-content:center}
+  body.in-combat .ult-btn .ult-ic{gap:2px}
+  body.in-combat .ult-btn .ult-ic>i{width:17px;height:17px}
+  body.in-combat .ult-btn kbd{width:17px;height:17px;border-radius:5px;font-size:9px}
+  body.in-combat .ult-btn>span:nth-of-type(2) b{display:none}
+  body.in-combat .ult-btn>span:nth-of-type(2){flex:0 1 auto}
+  body.in-combat .ult-btn small{font-size:7px;letter-spacing:0}
+  body.in-combat .consumables{left:5px;bottom:5px}
+  body.in-combat .cons{width:34px;height:34px;border-radius:9px}
+  body.in-combat .cons img{width:24px;height:24px;margin-top:4px}
+  body.in-combat .cons kbd{display:none}
+  body.in-combat .cons b{font-size:11px}
+}
+
+@media (max-width:480px){
+  .hud-top .save-status{width:32px;min-width:32px;padding:0;justify-content:center}
+  .hud-top .save-status b{display:none}
+  .hud-top #sound-btn{display:none}
+  .player-avatar{width:34px;height:34px}
+  .player-chip{flex:none}
+  body.in-combat .zone-chip{max-width:38%}
+  body.in-combat .zone-chip h1{font-size:10px}
+  body.in-combat .ctl{min-width:28px}
+  body.in-combat .ctl span{display:none}
+  body.in-combat .stage-controls #boost-btn span,body.in-combat .stage-controls #adv-ctl-btn span{display:block;font-size:10px}
+}
+
+@media (max-height:700px) and (min-width:861px){
+  body.in-combat{--top-h:56px;--dock-h:88px}
+  body.in-combat .hud-top{gap:8px}
+  body.in-combat .brand img{max-height:34px}
+  body.in-combat .stage-col{padding:6px;gap:5px}
+  body.in-combat .hero-slot{grid-template-columns:40px minmax(0,1fr);padding:5px}
+  body.in-combat .hero-portrait{width:40px;height:40px}
+  body.in-combat .ult-btn{height:25px}
+}

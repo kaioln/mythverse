@@ -64,7 +64,7 @@
   P.renderGoalChip = function(force) {
     const chip = this.el.goalChip; if (!chip) return;
     const panelOpen = !this.el.app.classList.contains('panel-hidden') && !matchMedia('(max-width:1100px)').matches;
-    if (!document.body.classList.contains('hud-clean') || panelOpen) { chip.hidden = true; return; }
+    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active) { chip.hidden = true; return; }
     const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
     let title = '', sub = '', btn = '';
     if (g) {

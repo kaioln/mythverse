@@ -149,6 +149,8 @@
 
     renderZone() {
       const z = this.engine.zone, e = this.engine;
+      document.body.classList.toggle('in-combat', z.kind !== 'village');
+      document.body.classList.toggle('boss-combat', z.kind === 'boss' || e.enemies?.some(x => x.alive && (x.boss || x.miniboss)));
       this.el.zoneTitle.textContent = z.title; this.el.zoneKick.textContent = z.kicker;
       let diff = z.difficulty, wave = z.kind === 'village' ? '8 distritos ativos' : 'Cidade segura';
       if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido!' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
