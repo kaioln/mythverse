@@ -15,6 +15,14 @@ const path = require('node:path');
     INSERT INTO public.users (username, pass_hash) VALUES ('x', 'hash');
     GRANT ALL ON public.users TO authenticated;`);
   const sql = f => fs.readFileSync(path.join(__dirname, '..', 'tools', f), 'utf8');
+  await db.exec(sql('neon_setup.sql') + sql('neon_social.sql') + sql('neon_economy.sql'));
+  // Save gravado antes da escala compacta (força bruta), como o do ranking real.
+  await db.exec(`ALTER TABLE public.mv_saves DISABLE TRIGGER mv_saves_guard;
+    INSERT INTO public.mv_saves (user_id, data, display_name, power) VALUES ('velho', '{"player":{"gold":1}}', 'Alemao', 684800);
+    ALTER TABLE public.mv_saves ENABLE TRIGGER mv_saves_guard;
+    INSERT INTO public.mv_pvp (user_id, display_name, power) VALUES ('velho', 'Alemao', 684800);`);
+  await db.exec(sql('neon_admin.sql'));
+  // Rodar tudo de novo não pode quebrar nada nem converter duas vezes.
   await db.exec(sql('neon_setup.sql') + sql('neon_social.sql') + sql('neon_economy.sql') + sql('neon_admin.sql'));
   let checks = 0;
   const as = async (uid, q, params = []) => db.transaction(async t => {
@@ -48,5 +56,14 @@ const path = require('node:path');
   await fails(as('bia', `SELECT public.mv_gift('bia', 'keys', '{"n":99}'::jsonb, 'x')`), 'jogador não consegue se dar presentes');
   await fails(as('bia', 'SELECT * FROM public.users'), 'tabela legada com senha fechada para a API');
   await fails(as('bia', `DELETE FROM public.users`), 'tabela legada não pode ser apagada pela API');
+  const conv = Math.round(Math.pow(684800, .7));
+  const [old] = (await db.query(`SELECT power FROM public.mv_saves WHERE user_id = 'velho'`)).rows, [pv] = (await db.query(`SELECT power FROM public.mv_pvp WHERE user_id = 'velho'`)).rows;
+  ok(Number(old.power) === conv && Number(pv.power) === conv, `migração converte o poder antigo uma única vez (${old.power})`);
+  await as('velho', `UPDATE public.mv_saves SET data = $1::jsonb, power = 700000, revision = revision + 1`, [data()]);
+  ok(Number((await db.query(`SELECT power FROM public.mv_saves WHERE user_id = 'velho'`)).rows[0].power) === Math.round(Math.pow(700000, .7)), 'jogo antigo em cache: o banco converte o poder ao salvar');
+  await as('velho', `UPDATE public.mv_saves SET data = $1::jsonb, power = 12000, revision = revision + 1`, [data({ powerScale:2 })]);
+  ok(Number((await db.query(`SELECT power FROM public.mv_saves WHERE user_id = 'velho'`)).rows[0].power) === 12000, 'jogo novo: poder já compacto é mantido');
+  await as('velho', `SELECT public.mv_pvp_defense('Alemao', 999999999, '[{"id":"solen","level":30}]'::jsonb)`);
+  ok(Number((await db.query(`SELECT power FROM public.mv_pvp WHERE user_id = 'velho'`)).rows[0].power) === 12000, 'Arena usa o poder do save, não o número enviado');
   console.log(JSON.stringify({ ok:true, checks }));
 })().catch(e => { console.error(e); process.exit(1); });

@@ -59,6 +59,8 @@ BEGIN
              WHERE coalesce((h->>'level')::numeric, 1) > 100 OR coalesce((h->>'stars')::numeric, 1) > 6 OR coalesce((h->>'level')::numeric, 1) < 1) THEN
     RAISE EXCEPTION 'save inválido (herói acima do limite)';
   END IF;
+  -- Poder do ranking em escala compacta (força^0,7). Jogo antigo em cache envia a força bruta: o banco converte.
+  IF coalesce(NEW.data->>'powerScale', '1') <> '2' THEN NEW.power := round(power(greatest(0, NEW.power)::numeric, 0.7)); END IF;
   IF coalesce((NEW.data->'player'->>'gold')::numeric, 0) < 0 OR coalesce((NEW.data->'player'->>'keys')::numeric, 0) < 0 OR coalesce((NEW.data->'player'->>'crystal')::numeric, 0) < 0 THEN
     RAISE EXCEPTION 'save inválido (recurso negativo)';
   END IF;

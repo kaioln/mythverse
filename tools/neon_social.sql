@@ -6,6 +6,11 @@
 -- ===========================================================================
 
 -- Dia e semana no horário de Brasília.
+-- Poder de quem chama, sempre o do save no banco (escala compacta), nunca o número enviado pelo aparelho.
+CREATE OR REPLACE FUNCTION public.mv_my_power() RETURNS bigint LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT coalesce((SELECT power FROM public.mv_saves WHERE user_id = auth.user_id()), 0) $$;
+REVOKE ALL ON FUNCTION public.mv_my_power() FROM PUBLIC;
+
 CREATE OR REPLACE FUNCTION public.mv_brt_day() RETURNS date LANGUAGE sql STABLE AS $$ SELECT (now() AT TIME ZONE 'America/Sao_Paulo')::date $$;
 CREATE OR REPLACE FUNCTION public.mv_brt_week() RETURNS text LANGUAGE sql STABLE AS $$ SELECT to_char(now() AT TIME ZONE 'America/Sao_Paulo', 'IYYY-"S"IW') $$;
 CREATE OR REPLACE FUNCTION public.mv_clean_name(p text) RETURNS text LANGUAGE sql IMMUTABLE AS $$ SELECT left(coalesce(nullif(btrim(regexp_replace(coalesce(p, ''), '[<>"&]', '', 'g')), ''), 'Viajante'), 24) $$;
@@ -152,8 +157,8 @@ DECLARE me text := auth.user_id();
 BEGIN
   PERFORM public.mv_pvp_me();
   IF jsonb_typeof(p_defense) <> 'array' OR jsonb_array_length(p_defense) < 1 OR jsonb_array_length(p_defense) > 4 THEN RAISE EXCEPTION 'Equipe de defesa inválida.'; END IF;
-  UPDATE public.mv_pvp SET display_name = public.mv_clean_name(p_name), power = greatest(0, p_power), defense = p_defense, updated_at = now() WHERE user_id = me;
-  UPDATE public.mv_guild_members SET display_name = public.mv_clean_name(p_name), power = greatest(0, p_power) WHERE user_id = me;
+  UPDATE public.mv_pvp SET display_name = public.mv_clean_name(p_name), power = public.mv_my_power(), defense = p_defense, updated_at = now() WHERE user_id = me;
+  UPDATE public.mv_guild_members SET display_name = public.mv_clean_name(p_name), power = public.mv_my_power() WHERE user_id = me;
   RETURN true;
 END $$;
 
@@ -319,7 +324,7 @@ BEGIN
   IF upper(btrim(coalesce(p_tag, ''))) !~ '^[A-Z0-9]{2,4}$' THEN RAISE EXCEPTION 'Sigla: 2 a 4 letras ou números.'; END IF;
   IF EXISTS (SELECT 1 FROM public.mv_guilds WHERE lower(name) = lower(btrim(p_name)) OR tag = upper(btrim(p_tag))) THEN RAISE EXCEPTION 'Já existe uma guilda com esse nome ou sigla.'; END IF;
   INSERT INTO public.mv_guilds (name, tag, emblem, motto, leader, open) VALUES (btrim(p_name), upper(btrim(p_tag)), left(coalesce(nullif(p_emblem, ''), '⚔'), 4), left(regexp_replace(coalesce(p_motto, ''), '[<>]', '', 'g'), 120), me, coalesce(p_open, true)) RETURNING id INTO gid;
-  INSERT INTO public.mv_guild_members (user_id, guild_id, role, display_name, power) VALUES (me, gid, 'leader', public.mv_clean_name(p_display), greatest(0, p_power));
+  INSERT INTO public.mv_guild_members (user_id, guild_id, role, display_name, power) VALUES (me, gid, 'leader', public.mv_clean_name(p_display), public.mv_my_power());
   DELETE FROM public.mv_guild_requests WHERE user_id = me;
   PERFORM public.mv_guild_event(gid, public.mv_clean_name(p_display) || ' fundou a guilda.');
   RETURN gid;
@@ -334,10 +339,10 @@ BEGIN
   SELECT count(*) INTO n FROM public.mv_guild_members WHERE guild_id = g.id;
   IF n >= public.mv_guild_cap(g.level) THEN RAISE EXCEPTION 'A guilda está cheia (%).', n; END IF;
   IF NOT g.open THEN
-    INSERT INTO public.mv_guild_requests (guild_id, user_id, display_name, power) VALUES (g.id, me, public.mv_clean_name(p_display), greatest(0, p_power)) ON CONFLICT (guild_id, user_id) DO NOTHING;
+    INSERT INTO public.mv_guild_requests (guild_id, user_id, display_name, power) VALUES (g.id, me, public.mv_clean_name(p_display), public.mv_my_power()) ON CONFLICT (guild_id, user_id) DO NOTHING;
     RETURN 'requested';
   END IF;
-  INSERT INTO public.mv_guild_members (user_id, guild_id, display_name, power) VALUES (me, g.id, public.mv_clean_name(p_display), greatest(0, p_power));
+  INSERT INTO public.mv_guild_members (user_id, guild_id, display_name, power) VALUES (me, g.id, public.mv_clean_name(p_display), public.mv_my_power());
   DELETE FROM public.mv_guild_requests WHERE user_id = me;
   PERFORM public.mv_guild_event(g.id, public.mv_clean_name(p_display) || ' entrou na guilda.');
   RETURN 'joined';
