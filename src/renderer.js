@@ -2,7 +2,8 @@
   const KT = globalThis.KT = globalThis.KT || {};
   const U = KT.Utils, D = KT.Data;
   const W = 1280, H = 720;
-  const DISPLAY_FONT = '"Lilita One", "Arial Black", Impact, sans-serif';
+  const DISPLAY_FONT = '"Shippori Mincho B1", "Shippori Mincho", serif'; // mesma serifa da marca (faixas, ultimates, Elo)
+  const DISPLAY_FONT_W = DISPLAY_FONT;
   const UI_FONT = 'Outfit, "Segoe UI", system-ui, sans-serif';
 
   // Vagas 1 e 2 = linha de frente (mais perto dos inimigos); 3 e 4 = retaguarda.
@@ -166,12 +167,12 @@
       }
       if (t === 'chain') {
         const p = this.posOf(fx.uid);
-        this.chainFx = { n:fx.n, t:0, dur:1.6, color:fx.color || '#ff7eb6' };
-        if (p) this.ring(p.x, p.y, fx.color || '#ff7eb6', 120 + fx.n * 30);
+        this.chainFx = { n:fx.n, t:0, dur:1.6, color:fx.color || '#c9472d' };
+        if (p) this.ring(p.x, p.y, fx.color || '#c9472d', 120 + fx.n * 30);
         return;
       }
       if (t === 'finale') {
-        this.showBanner('ELO KIZUNA', 'a equipe inteira ataca junta', '#ff7eb6');
+        this.showBanner('ELO KIZUNA', 'a equipe inteira ataca junta', '#c9472d');
         this.screenFlash = { color:'#ffd1e8', t:.45, max:.45 }; this.shake = Math.max(this.shake, 20);
         this.engine.enemies.forEach(u => { if (!u.alive) return; const q = this.posOf(u.uid); if (q) this.later(.15, () => { this.ring(q.x, q.y - q.h * .4, '#ff7eb6', 170, true); this.sparks(q.x, q.y - q.h * .5, 24, '#ffe1f0', 480); this.impact(q.x, q.y - q.h * .5, '#ff7eb6', 1.8); }); });
         return;
@@ -539,7 +540,7 @@
       }
       if (e.broken > 0) { this.stunStars(x, y - height - 4); c.save(); c.globalAlpha = .18 + .1 * Math.sin(this.worldTime * 10); c.fillStyle = '#ffe9b0'; c.beginPath(); c.ellipse(x, y - height * .45, height * .36, height * .52, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
       if (e.windup > 0) {
-        c.save(); c.font = `64px ${DISPLAY_FONT}`; c.textAlign = 'center'; c.fillStyle = '#ff4a6a'; c.strokeStyle = '#1a0610'; c.lineWidth = 8; const bob = Math.sin(this.worldTime * 14) * 6;
+        c.save(); c.font = `800 64px ${DISPLAY_FONT_W}`; c.textAlign = 'center'; c.fillStyle = '#ff4a6a'; c.strokeStyle = '#1a0610'; c.lineWidth = 8; const bob = Math.sin(this.worldTime * 14) * 6;
         c.strokeText('!', x, y - height - 30 + bob); c.fillText('!', x, y - height - 30 + bob);
         const k = 1 - e.windup / e.windupMax; c.fillStyle = 'rgba(0,0,0,.6)'; c.fillRect(x - 60, y - height - 20, 120, 8); c.fillStyle = '#ff4a6a'; c.fillRect(x - 60, y - height - 20, 120 * k, 8);
         c.restore();
@@ -679,7 +680,7 @@
         c.save(); c.globalAlpha = Math.min(1, a * 2.2);
         if (p.kind === 'num' || p.kind === 'label') {
           const pop = p.kind === 'num' ? (age < .12 ? 1 + (1 - age / .12) * (p.crit ? .9 : .5) : 1) : easeOutBack(Math.min(1, age / .25));
-          c.translate(p.x, p.y); c.scale(pop, pop); c.font = `${p.size}px ${DISPLAY_FONT}`; c.lineJoin = 'round';
+          c.translate(p.x, p.y); c.scale(pop, pop); c.font = `800 ${p.size}px ${UI_FONT}`; c.lineJoin = 'round';
           c.lineWidth = p.kind === 'num' ? 7 : 6; c.strokeStyle = 'rgba(14,6,26,.95)'; c.strokeText(p.text, 0, 0);
           if (p.crit) { c.shadowColor = '#ff9d2e'; c.shadowBlur = 16; }
           c.fillStyle = p.color; c.fillText(p.text, 0, 0);
@@ -741,7 +742,7 @@
       c.fillStyle = ci.color; c.fillRect(0, y + 22, W, 4); c.fillRect(0, y + h + 6, W, 4);
       c.textAlign = 'left'; c.textBaseline = 'middle'; const tx = ci.manual ? 420 : 330;
       c.font = `600 17px ${UI_FONT}`; c.fillStyle = 'rgba(255,255,255,.8)'; c.fillText(`${ci.unit.name.toUpperCase()} · ULTIMATE`, tx, y + (ci.manual ? 60 : 44));
-      c.font = `${ci.manual ? 58 : 40}px ${DISPLAY_FONT}`; c.lineJoin = 'round'; c.lineWidth = 8; c.strokeStyle = '#0c0820'; c.strokeText(ci.name, tx, y + (ci.manual ? 110 : 80));
+      c.font = `800 ${ci.manual ? 58 : 40}px ${DISPLAY_FONT_W}`; c.lineJoin = 'round'; c.lineWidth = 8; c.strokeStyle = '#0c0820'; c.strokeText(ci.name, tx, y + (ci.manual ? 110 : 80));
       c.shadowColor = ci.color; c.shadowBlur = 20; c.fillStyle = '#fff'; c.fillText(ci.name, tx, y + (ci.manual ? 110 : 80));
       c.restore();
     }
@@ -750,8 +751,8 @@
       const f = this.chainFx; if (!f) return;
       const c = this.ctx, k = f.t / f.dur, pop = easeOutBack(Math.min(1, f.t / .25)), fade = k > .7 ? 1 - (k - .7) / .3 : 1;
       c.save(); c.globalAlpha = fade; c.translate(W - 170, 150); c.scale(pop, pop); c.rotate(-.06); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
-      c.font = `22px ${DISPLAY_FONT}`; c.lineWidth = 6; c.strokeStyle = '#1a0a1e'; c.strokeText('ELO KIZUNA', 0, -34); c.fillStyle = '#ffd1e8'; c.fillText('ELO KIZUNA', 0, -34);
-      c.font = `72px ${DISPLAY_FONT}`; c.lineWidth = 10; c.strokeText(`×${f.n}`, 0, 16); c.shadowColor = f.color; c.shadowBlur = 22; c.fillStyle = '#fff6df'; c.fillText(`×${f.n}`, 0, 16); c.shadowBlur = 0;
+      c.font = `800 22px ${DISPLAY_FONT_W}`; c.lineWidth = 6; c.strokeStyle = '#1a0a1e'; c.strokeText('ELO KIZUNA', 0, -34); c.fillStyle = '#efe7d8'; c.fillText('ELO KIZUNA', 0, -34);
+      c.font = `800 72px ${DISPLAY_FONT_W}`; c.lineWidth = 10; c.strokeText(`×${f.n}`, 0, 16); c.shadowColor = f.color; c.shadowBlur = 22; c.fillStyle = '#fff6df'; c.fillText(`×${f.n}`, 0, 16); c.shadowBlur = 0;
       c.font = `600 15px ${UI_FONT}`; c.fillStyle = '#ffd1e8'; c.fillText(`+${f.n * 15 - 15}% nas ultimates`, 0, 60);
       c.restore();
     }
@@ -763,7 +764,7 @@
       c.fillStyle = band; c.fillRect(0, y - 58 * inK, W, 116 * inK);
       c.fillStyle = b.color; c.fillRect(W / 2 - 220 * inK, y - 58 * inK, 440 * inK, 2); c.fillRect(W / 2 - 220 * inK, y + 56 * inK, 440 * inK, 2);
       c.translate(W / 2, y - 8); c.scale(inK, inK);
-      c.font = `60px ${DISPLAY_FONT}`; c.lineJoin = 'round'; c.lineWidth = 9; c.strokeStyle = '#0c0820'; c.strokeText(b.title, 0, 0);
+      c.font = `800 60px ${DISPLAY_FONT_W}`; c.lineJoin = 'round'; c.lineWidth = 9; c.strokeStyle = '#0c0820'; c.strokeText(b.title, 0, 0);
       c.shadowColor = b.color; c.shadowBlur = 24; c.fillStyle = '#fff6df'; c.fillText(b.title, 0, 0); c.shadowBlur = 0;
       if (b.sub) { c.font = `600 19px ${UI_FONT}`; c.fillStyle = b.color; c.fillText(b.sub.toUpperCase(), 0, 42); }
       c.restore();

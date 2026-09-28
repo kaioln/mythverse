@@ -755,13 +755,13 @@
     renamed:{ itachi:'sasuke_susanoo', kakashi:'vegeta_ego', yor:'ichigo_bankai', denji:'tanjiro_hinokami', frieren:'gojo_void', makima:'goku_ui',
       asta:'luffy_gear5', rem:'naruto_kurama', lux:'sailor_eternal', sage:'mercy_valkyrie', link:'dante_dt', jett:'jinx_arcane' } };
   const BOXES = [
-    { id:'worlds', name:'Caixa dos Mundos', icon:'✦', cost:1, color:'#c07dff', pity:30, pool:'base',
+    { id:'worlds', name:'Caixa dos Mundos', icon:'✦', cost:1, color:'#b4ab9c', pity:30, pool:'base',
       rates:{ legendary:.03, epic:.12, rare:.30, common:.55 }, text:'A convocação clássica: todos os heróis fora da temporada.' },
-    { id:'class', name:'Caixa de Classe', icon:'⚔', cost:2, color:'#4fb3ff', pity:25, pool:'class',
+    { id:'class', name:'Caixa de Classe', icon:'⚔', cost:2, color:'#86b6c4', pity:25, pool:'class',
       rates:{ legendary:.05, epic:.17, rare:.33, common:.45 }, text:'Você escolhe a classe. Só saem heróis dela (fora da temporada).' },
-    { id:'season', name:'Caixa da Temporada', icon:'🌒', cost:3, color:'#ff7eb6', pity:20, pool:'season', featured:.6,
+    { id:'season', name:'Caixa da Temporada', icon:'🌒', cost:3, color:'#c9472d', pity:20, pool:'season', featured:.6,
       rates:{ legendary:.08, epic:.22, rare:.35, common:.35 }, text:'60% de chance de uma forma despertada da temporada. A garantia de lendário é sempre uma forma despertada.' },
-    { id:'astral', name:'Caixa Astral', icon:'🌟', cost:10, color:'#ffb938', pity:8, pool:'all',
+    { id:'astral', name:'Caixa Astral', icon:'🌟', cost:10, color:'#d8b062', pity:8, pool:'all',
       rates:{ legendary:.20, epic:.45, rare:.35, common:0 }, text:'Sem comuns. Qualquer herói, inclusive os da temporada.' }
   ];
 

@@ -327,8 +327,8 @@
     onZone(zone) {
       this.logs = []; this.onLog({ text:`Você chegou a ${zone.title}.`, type:'system' });
       this.el.result.hidden = true; this.el.choice.hidden = true; this.el.warn.hidden = true; this.dockKey = '';
-      if (zone.kind !== 'village') this.renderer.showBanner(zone.title, zone.kicker, '#ff9ec7');
-      else { this.renderer.banner = null; this.renderer.cutin = null; this.renderer.screenFlash = null; } // nada da batalha fica na tela da cidade
+      if (zone.kind !== 'village') this.renderer.showBanner(zone.title, zone.kicker, '#d8b062');
+      else { this.renderer.banner = null; this.renderer.cutin = null; this.renderer.screenFlash = null; this.renderer.chainFx = null; } // nada da batalha fica na tela da cidade
       this.renderAll();
     }
     onWave(info) {
@@ -337,7 +337,7 @@
       if (info.special) this.renderer.showBanner(info.label, info.detail.slice(0, 60), '#ffd76a');
       else if (info.guardian) this.renderer.showBanner('GUARDIÃO!', info.detail, '#c77dff');
       else if (z.kind === 'dungeon') this.renderer.showBanner(`SALA ${this.engine.room}/5`, info.detail, '#c9b8ff');
-      else if (z.kind === 'hunt' && this.engine.wave === 1) this.renderer.showBanner(`ESTÁGIO ${this.engine.opts.stage}`, z.title, '#ff9ec7');
+      else if (z.kind === 'hunt' && this.engine.wave === 1) this.renderer.showBanner(`ESTÁGIO ${this.engine.opts.stage}`, z.title, '#d8b062');
       this.renderZone();
     }
     onPhase(p) { this.renderer.showBanner(`FASE ${p.idx + 1}`, p.text, '#ff6b7a'); this.callbacks.warn?.(); }
@@ -465,7 +465,7 @@
       const order = { legendary:0, epic:1, rare:2, common:3 }, single = results.length === 1;
       const best = results.reduce((a, h) => order[h.rarityRolled] < order[a.rarityRolled] ? h : a, results[0]);
       const label = r => D.heroRarities.find(x => x.id === r)?.label || r;
-      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${D.classes[t.cls].icon} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><img src="assets/brand/emblem.png?v=2" alt=""></div></div></div>`; }).join('')}</div><p class="reveal-hint">Toque em qualquer lugar para continuar</p></div>`;
+      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${D.classes[t.cls].icon} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><span class="hanko" aria-hidden="true">神話</span></div></div></div>`; }).join('')}</div><p class="reveal-hint">Toque em qualquer lugar para continuar</p></div>`;
       this.el.reveal.hidden = false;
       this.callbacks.summon?.(best.rarityRolled);
     }

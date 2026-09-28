@@ -19,7 +19,7 @@
       this.el = document.querySelector('#auth'); this.el.hidden = false;
       document.querySelector('#boot')?.classList.add('done');
       this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="alertdialog" aria-labelledby="auth-off-title">
-        <div class="auth-brand"><img class="auth-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos"></div>
+        <div class="auth-brand"><div class="auth-mark"><span class="mark"><span class="hanko" aria-hidden="true">神話</span><span class="wordmark">Mythverse</span></span><small>Heróis de todos os mundos</small></div></div>
         <h2 id="auth-off-title" class="auth-off-title">Servidor indisponível</h2>
         <p class="auth-note">Não foi possível falar com o servidor do jogo, então login, cadastro e saves na nuvem não estão disponíveis agora. Tente de novo em alguns instantes.</p>
         <button class="action primary big" type="button" data-off="retry">Tentar de novo</button>
@@ -55,7 +55,7 @@
           <button class="action primary big" type="submit">Redefinir senha</button>
         </form>`;
       this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="dialog" aria-labelledby="auth-title">
-        <div class="auth-brand"><img class="auth-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos"><h1 id="auth-title" class="sr-only">Mythverse</h1></div>
+        <div class="auth-brand"><div class="auth-mark"><span class="mark"><span class="hanko" aria-hidden="true">神話</span><span class="wordmark">Mythverse</span></span><small>Heróis de todos os mundos</small></div><h1 id="auth-title" class="sr-only">Mythverse</h1></div>
         <div class="auth-tabs">${tab('login', 'Entrar')}${tab('register', 'Criar conta')}</div>
         <div class="auth-msg ${message ? 'show' : ''}" role="alert">${message}</div>
         ${form}
@@ -100,7 +100,7 @@
     showRecovery(code, isNew) {
       return new Promise(resolve => {
         this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card">
-          <div class="auth-brand"><img class="auth-logo small" src="assets/brand/emblem.png?v=2" alt=""><div class="auth-title"><h1>${isNew ? 'Conta criada!' : 'Senha redefinida!'}</h1><p>Guarde seu código de recuperação.</p></div></div>
+          <div class="auth-brand"><span class="hanko auth-hanko" aria-hidden="true">神話</span><div class="auth-title"><h1>${isNew ? 'Conta criada!' : 'Senha redefinida!'}</h1><p>Guarde seu código de recuperação.</p></div></div>
           <p class="auth-note">Este código é a <b>única forma</b> de recuperar a conta se você esquecer a senha. Ele só é mostrado agora.</p>
           <div class="recovery-code"><code>${esc(code)}</code><button type="button" class="action small" data-copy>Copiar</button></div>
           <label class="check"><input type="checkbox" data-saved> <span>Guardei meu código em um lugar seguro.</span></label>

@@ -13,13 +13,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;500;600;700;800&family=Shippori+Mincho:wght@700&family=Shippori+Mincho+B1:wght@700;800&display=swap">
-  <link rel="stylesheet" href="styles.css?v=20260929h">
-  <link rel="stylesheet" href="theme-sumi.css?v=20260929h">
+  <link rel="stylesheet" href="styles.css?v=20260929i">
+  <link rel="stylesheet" href="theme-sumi.css?v=20260929i">
 </head>
 <body>
   <div class="boot" id="boot">
     <div class="boot-inner">
-      <img class="boot-logo" src="assets/brand/logo-full.png?v=2" alt="Mythverse: Heróis de todos os mundos">
+      <div class="boot-mark"><span class="mark"><span class="hanko" aria-hidden="true">神話</span><span class="wordmark">Mythverse</span></span><small>Heróis de todos os mundos</small></div>
       <div class="boot-bar"><span id="boot-fill"></span></div>
       <small id="boot-label">Preparando a jornada…</small>
     </div>
@@ -30,10 +30,10 @@
 
   <div class="app" id="app">
     <header class="hud-top">
-      <div class="brand"><img src="assets/brand/logo-horizontal.png?v=2" alt="Mythverse"></div>
+      <div class="brand" aria-label="Mythverse"><span class="mark"><span class="hanko" aria-hidden="true">神話</span><span class="wordmark">Mythverse</span></span></div>
 
       <button class="player-chip" id="player-chip" type="button" title="Perfil e configurações">
-        <span class="player-avatar"><img id="player-avatar-img" alt="" hidden><img class="avatar-fallback" src="assets/brand/emblem.png?v=2" alt=""><i class="cloud-dot" id="cloud-dot" data-tip="Salvamento"></i></span>
+        <span class="player-avatar"><img id="player-avatar-img" alt="" hidden><span class="avatar-fallback hanko" aria-hidden="true">神</span><i class="cloud-dot" id="cloud-dot" data-tip="Salvamento"></i></span>
         <span class="player-copy">
           <strong id="player-name">Viajante</strong>
           <small><span id="player-level">Conta Nv. 1</span> · <span id="power-label">Poder,</span></small>
@@ -102,16 +102,16 @@
           <button class="signpost" style="left:17%;top:31%" data-open="city:guild" type="button" data-badge="guild"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-shield"></i></span><span><b>Guilda</b><small>Contratos e recompensas</small></span></button>
           <button class="signpost" style="left:10%;top:52%" data-open="city:dojo" type="button" data-badge="dojo"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-fist"></i></span><span><b>Dojo</b><small>Treino da equipe</small></span></button>
           <button class="signpost" style="left:49%;top:34%" data-open="collection" type="button" data-badge="collection"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-star"></i></span><span><b>Salão de Convocação</b><small>Descobrir heróis</small></span></button>
-          <button class="signpost" style="left:83%;top:47%" data-open="city:shrine" type="button" data-badge="shrine"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-lantern"></i></span><span><b>Santuário</b><small>Despertar heróis</small></span></button>
-          <button class="signpost hot" style="left:67%;top:57%" data-open="city:forge" type="button" data-badge="forge"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-anvil"></i></span><span><b>Forja</b><small>Aprimorar equipamentos</small></span></button>
+          <button class="signpost" style="left:85%;top:61%" data-open="city:shrine" type="button" data-badge="shrine"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-lantern"></i></span><span><b>Santuário</b><small>Despertar heróis</small></span></button>
+          <button class="signpost hot" style="left:67%;top:64%" data-open="city:forge" type="button" data-badge="forge"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-anvil"></i></span><span><b>Forja</b><small>Aprimorar equipamentos</small></span></button>
           <button class="signpost bank" style="left:24%;top:88%" data-open="bank" type="button" data-badge="bank"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-gem"></i></span><span><b>Banco Kogane</b><small>Economia, cotações e carteira</small></span></button>
           <button class="signpost" style="left:13%;top:73%" data-open="shop:market" type="button" data-badge="market"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-scale"></i></span><span><b>Mercado</b><small>Ofertas e recursos</small></span></button>
           <button class="signpost house" style="left:31%;top:62%" data-open="city:house" type="button" data-badge="house"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-cards"></i></span><span><b>Casa do Time</b><small>Galeria e Álbum de cartas</small></span></button>
           <button class="signpost" style="left:48%;top:80%" data-open="city:workshop" type="button" data-badge="workshop"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-orb"></i></span><span><b>Oficina</b><small>Criar e encantar</small></span></button>
-          <button class="signpost featured" style="left:86%;top:70%" data-open="adventure:expeditions" type="button" data-badge="expeditions"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-compass"></i></span><span><b>Casa de Expedições</b><small>Enviar equipes agora</small></span></button>
+          <button class="signpost featured" style="left:84%;top:74%" data-open="adventure:expeditions" type="button" data-badge="expeditions"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="ic ic-compass"></i></span><span><b>Casa de Expedições</b><small>Enviar equipes agora</small></span></button>
         </div>
         <button class="journey-cta" id="journey-cta" data-open="journey" type="button" hidden>
-          <span class="cta-emblem"><img src="assets/brand/emblem.png?v=2" alt=""></span>
+          <span class="cta-emblem"><i class="ic ic-compass"></i></span>
           <span class="cta-text"><b>MAPA</b><small>Escolher o próximo destino</small></span>
           <span class="cta-arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
         </button>
@@ -160,28 +160,28 @@
   <div class="tooltip" id="tooltip" hidden></div>
   <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
 
-  <script src="src/config.js?v=20260929h"></script>
-  <script src="src/data.js?v=20260929h"></script>
-  <script src="src/utils.js?v=20260929h"></script>
-  <script src="src/items.js?v=20260929h"></script>
-  <script src="src/progression.js?v=20260929h"></script>
-  <script src="src/roster.js?v=20260929h"></script>
-  <script src="src/builds.js?v=20260929h"></script>
-  <script src="src/engine.js?v=20260929h"></script>
-  <script src="src/net.js?v=20260929h"></script>
-  <script src="src/neon.js?v=20260929h"></script>
-  <script src="src/social.js?v=20260929h"></script>
-  <script src="src/auth.js?v=20260929h"></script>
-  <script src="src/assets.js?v=20260929h"></script>
-  <script src="src/sprite-meta.js?v=20260929h"></script>
-  <script src="src/renderer.js?v=20260929h"></script>
-  <script src="src/ui.js?v=20260929h"></script>
-  <script src="src/panels.js?v=20260929h"></script>
-  <script src="src/social-ui.js?v=20260929h"></script>
-  <script src="src/economy-ui.js?v=20260929h"></script>
-  <script src="src/afk-ui.js?v=20260929h"></script>
-  <script src="src/coach.js?v=20260929h"></script>
-  <script src="src/hud.js?v=20260929h"></script>
-  <script src="src/main.js?v=20260929h"></script>
+  <script src="src/config.js?v=20260929i"></script>
+  <script src="src/data.js?v=20260929i"></script>
+  <script src="src/utils.js?v=20260929i"></script>
+  <script src="src/items.js?v=20260929i"></script>
+  <script src="src/progression.js?v=20260929i"></script>
+  <script src="src/roster.js?v=20260929i"></script>
+  <script src="src/builds.js?v=20260929i"></script>
+  <script src="src/engine.js?v=20260929i"></script>
+  <script src="src/net.js?v=20260929i"></script>
+  <script src="src/neon.js?v=20260929i"></script>
+  <script src="src/social.js?v=20260929i"></script>
+  <script src="src/auth.js?v=20260929i"></script>
+  <script src="src/assets.js?v=20260929i"></script>
+  <script src="src/sprite-meta.js?v=20260929i"></script>
+  <script src="src/renderer.js?v=20260929i"></script>
+  <script src="src/ui.js?v=20260929i"></script>
+  <script src="src/panels.js?v=20260929i"></script>
+  <script src="src/social-ui.js?v=20260929i"></script>
+  <script src="src/economy-ui.js?v=20260929i"></script>
+  <script src="src/afk-ui.js?v=20260929i"></script>
+  <script src="src/coach.js?v=20260929i"></script>
+  <script src="src/hud.js?v=20260929i"></script>
+  <script src="src/main.js?v=20260929i"></script>
 </body>
 </html>

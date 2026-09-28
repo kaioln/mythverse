@@ -20,7 +20,7 @@
       const more = document.createElement('button'); more.className = 'nav nav-more'; more.type = 'button';
       more.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
       more.dataset.tip = 'Todos os outros lugares: Aventuras, Ranking, Arena, Guilda, Talentos, Loja e Wiki.';
-      more.addEventListener('click', () => { if (matchMedia('(max-width:760px)').matches) this.toggleMoreSheet(); else nav.classList.toggle('more-open'); });
+      more.addEventListener('click', () => { if (matchMedia('(max-width:900px)').matches) this.toggleMoreSheet(); else nav.classList.toggle('more-open'); });
       nav.addEventListener('click', e => { if (e.target.closest('.nav-extra')) nav.classList.remove('more-open'); });
       nav.appendChild(more);
     }
@@ -29,8 +29,17 @@
       const chip = document.createElement('div'); chip.id = 'goal-chip'; vp.appendChild(chip); this.el.goalChip = chip;
       chip.addEventListener('click', e => this.handleAction(e));
     }
+    // Celular: os distritos da cidade viram uma grade de botões abaixo do cenário (as placas não cabem sobre a arte).
+    const dock = document.querySelector('#party-strip');
+    if (dock && !document.querySelector('#district-grid')) {
+      const grid = document.createElement('nav'); grid.id = 'district-grid'; grid.setAttribute('aria-label', 'Distritos da cidade'); dock.before(grid); this.el.districts = grid;
+      grid.addEventListener('click', e => { const b = e.target.closest('[data-district]'); if (!b) return; const src = document.querySelectorAll('#village-actions .signpost')[+b.dataset.district]; src?.click(); });
+    }
+    // O cartão de objetivo fica sobre a arena no PC e abaixo dela no celular (não cobre a luta).
+    const placeChip = () => { const chip = this.el.goalChip, mob = matchMedia('(max-width:900px)').matches; if (!chip) return; if (mob) document.querySelector('#district-grid')?.before(chip); else document.querySelector('#viewport')?.appendChild(chip); };
+    placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
     this.applyHud();
-    setInterval(() => this.renderGoalChip(), 1000);
+    setInterval(() => { this.renderGoalChip(); this.renderDistricts(); }, 1000);
   };
 
   // Celular: "Mais" abre uma folha com os atalhos em grade (a barra de baixo continua com 6 + Mais).
@@ -53,11 +62,17 @@
     this.renderGoalChip(true);
   };
 
+  P.renderDistricts = function() {
+    const grid = this.el.districts; if (!grid) return;
+    const show = this.engine.zone?.kind === 'village'; grid.hidden = !show; if (!show) return;
+    const html = [...document.querySelectorAll('#village-actions .signpost')].map((sp, i) => { const badge = sp.querySelector('.sp-badge'); return `<button type="button" data-district="${i}">${sp.querySelector('.sp-icon')?.innerHTML || ''}<span>${sp.querySelector('b')?.textContent || ''}</span>${badge && !badge.hidden ? `<em>${badge.textContent}</em>` : ''}</button>`; }).join('');
+    if (html !== this._distHtml) { this._distHtml = html; grid.innerHTML = html; }
+  };
   // Cartão de objetivo na arena: um só "o que fazer agora", com o botão certo.
   P.renderGoalChip = function(force) {
     const chip = this.el.goalChip; if (!chip) return;
     const panelOpen = !this.el.app.classList.contains('panel-hidden') && !matchMedia('(max-width:1100px)').matches;
-    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active || this.engine.zone?.kind === 'village') { chip.hidden = true; return; } // cidade: o objetivo fica no painel de boas-vindas
+    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active || (this.engine.zone?.kind === 'village' && !matchMedia('(max-width:900px)').matches)) { chip.hidden = true; return; } // cidade no PC: o objetivo fica no painel de boas-vindas (no celular o painel não aparece)
     const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
     let title = '', sub = '', btn = '';
     if (g) {
