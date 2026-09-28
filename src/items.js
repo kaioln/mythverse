@@ -351,7 +351,18 @@
     Q('bride_ring','charm','Anel da Noiva Espectral','magic_dust_01',250,36,'Cidade Fantasma',{ dodge:.08, hp:.08 },'Ao esquivar: cura 5% do HP máximo.',{ onDodge:{ eff:[{ k:'heal', p:.05, to:'self' }] } }),
     Q('midnight_bell','seal','Sino da Meia-Noite','eclipse_seal',290,40,'Torre do Relógio',{ def:.12 },'No início de cada onda, atordoa todos os inimigos por 1s.',{ start:{ eff:[{ k:'st', s:'stun', d:1, ch:1, to:'all' }] } }),
     Q('rift_shard','focus','Estilhaço Primordial','crystal_01',330,25,'Fenda Abissal',{ ultDmg:.30, nrg:.10 },'Ultimates também causam 80% do ATK em todos os inimigos.',{ onUlt:{ eff:[{ k:'dmg', m:.8, to:'all' }] } }),
-    Q('void_omamori','charm','Omamori do Vazio','magic_dust_01',330,30,'Fenda Abissal',{ hp:.12, dr:.06 },'Aura: toda a equipe recebe +5% ATK.',{ aura:{ atk:.05 } })
+    Q('void_omamori','charm','Omamori do Vazio','magic_dust_01',330,30,'Fenda Abissal',{ hp:.12, dr:.06 },'Aura: toda a equipe recebe +5% ATK.',{ aura:{ atk:.05 } }),
+    // Novos únicos (capítulos II a IV e Fenda): cada região tem um item-assinatura para caçar.
+    Q('frost_fang','weapon','Presa do Planalto','katana_01',190,22,'Planalto',{ atk:.08, crit:.04 },'Ataques têm 15% de chance de Congelar o alvo por 1,5s.',{ onAtk:{ ch:.15, eff:[{ k:'st', s:'freeze', d:1.5, ch:1, to:'tgt' }] } }),
+    Q('wave_mirror','focus','Espelho da Maré','crystal_01',190,26,'Costa',{ skill:.10, elem:.06 },'Ao usar a ultimate: escudo de 10% do HP em toda a equipe.',{ onUlt:{ eff:[{ k:'shield', p:.10, to:'allies', d:6 }] } }),
+    Q('abyss_heart','seal','Coração da Fenda','sea_heart',290,32,'Fenda Abissal',{ hp:.12, dr:.05 },'Ao receber dano: 10% de chance de escudo de 12% do HP.',{ onHurt:{ ch:.1, eff:[{ k:'shield', p:.12, to:'self', d:5 }] } }),
+    Q('ghost_lantern','focus','Lanterna do Barqueiro','lantern_seal',250,37,'Cidade Fantasma',{ dodge:.06, dot:.15 },'Ataques têm 20% de chance de Envenenar o alvo.',{ onAtk:{ ch:.2, eff:[{ k:'st', s:'poison', d:4, v:.3, ch:1, to:'tgt' }] } }),
+    Q('apep_glass','charm','Ampulheta de Apep','crystal_01',45,44,'Apep',{ cdr:.10, spd:.05 },'Ao abater: −1s na recarga da habilidade.',{ onKill:{ eff:[{ k:'cdr', v:1, to:'self' }] } }),
+    Q('sky_chain','weapon','Corrente das Ilhas','tide_blade',190,48,'Ilhas',{ atk:.10, pierce:.08 },'Ataques têm 20% de chance de Atordoar o alvo por 1s.',{ onAtk:{ ch:.2, eff:[{ k:'st', s:'stun', d:1, ch:1, to:'tgt' }] } }),
+    Q('eternal_petal','charm','Pétala Eterna','magic_dust_01',330,50,'Cerejeiras',{ healPow:.15, hp:.08 },'Ao usar a habilidade: cura 4% do HP de toda a equipe.',{ onSkill:{ eff:[{ k:'heal', p:.04, to:'allies' }] } }),
+    Q('cloud_bell','focus','Sino das Nuvens','lantern_seal',190,56,'Santuário das Nuvens',{ nrg:.10, skill:.08 },'No início de cada onda: +25 de energia.',{ start:{ eff:[{ k:'nrg', v:25, to:'self' }] } }),
+    Q('thunder_crown','seal','Coroa do Trovão','eclipse_seal',45,62,'Raijin',{ crit:.06, critDmg:.20 },'Críticos têm 30% de chance de lançar um raio de 80% do ATK em até 3 inimigos.',{ onCrit:{ ch:.3, eff:[{ k:'chain', m:.8, n:3, fall:.8 }] } }),
+    Q('ronin_scroll','charm','Pergaminho do Ronin','tome_01',20,4,'Qualquer inimigo (raro)',{ spd:.06, lifesteal:.04 },'A cada 5 ataques: golpe extra de 90% do ATK.',{ every:{ n:5, eff:[{ k:'dmg', m:.9, to:'tgt' }] } }),
   ];
 
 
