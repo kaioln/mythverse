@@ -6,15 +6,15 @@
   // -20% ao atacar quem é forte contra ele. Luz e Sombra são fortes entre si.
   // ---------------------------------------------------------------------------
   const elements = {
-    Fogo:     { color:'#ff7a4f', icon:'🔥', strong:['Natureza','Gelo'] },
-    Água:     { color:'#4fb3ff', icon:'💧', strong:['Fogo','Terra'] },
-    Natureza: { color:'#5fe39a', icon:'🌿', strong:['Água','Terra'] },
-    Terra:    { color:'#d8ad6a', icon:'⛰', strong:['Raio','Fogo'] },
-    Raio:     { color:'#c9a4ff', icon:'⚡', strong:['Água','Vento'] },
-    Vento:    { color:'#9ce9cc', icon:'🌪', strong:['Natureza','Terra'] },
-    Gelo:     { color:'#91dfff', icon:'❄', strong:['Vento','Natureza'] },
-    Luz:      { color:'#ffe19a', icon:'☀', strong:['Sombra'] },
-    Sombra:   { color:'#b58cff', icon:'☾', strong:['Luz'] }
+    Fogo:     { color:'#ff7a4f', icon:'火', strong:['Natureza','Gelo'] },
+    Água:     { color:'#4fb3ff', icon:'水', strong:['Fogo','Terra'] },
+    Natureza: { color:'#5fe39a', icon:'木', strong:['Água','Terra'] },
+    Terra:    { color:'#d8ad6a', icon:'土', strong:['Raio','Fogo'] },
+    Raio:     { color:'#c9a4ff', icon:'雷', strong:['Água','Vento'] },
+    Vento:    { color:'#9ce9cc', icon:'風', strong:['Natureza','Terra'] },
+    Gelo:     { color:'#91dfff', icon:'氷', strong:['Vento','Natureza'] },
+    Luz:      { color:'#ffe19a', icon:'光', strong:['Sombra'] },
+    Sombra:   { color:'#b58cff', icon:'闇', strong:['Luz'] }
   };
 
   // ---------------------------------------------------------------------------
@@ -22,19 +22,19 @@
   // Vagas 1 e 2 são a LINHA DE FRENTE; vagas 3 e 4, a RETAGUARDA.
   // ---------------------------------------------------------------------------
   const classes = {
-    Vanguarda: { icon:'🛡', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
+    Vanguarda: { icon:'盾', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
       trait:'Linha de frente: base de HP e DEF altas; atrai mais ataques por estar à frente.', baseBonus:{ def:.15 }, threat:2,
       synergy:[{ n:2, text:'Equipe +10% DEF', stats:{ def:.10 } }, { n:3, text:'Equipe +10% DEF e +10% HP', stats:{ def:.10, hp:.10 } }] },
-    Executor:  { icon:'⚔', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
+    Executor:  { icon:'刃', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
       trait:'Duelista: base de ATK e dano crítico altas, pouca defesa.', baseBonus:{ critDmg:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe +12% dano crítico', stats:{ critDmg:.12 } }, { n:3, text:'Equipe +12% dano crítico e +5% crítico', stats:{ critDmg:.12, crit:.05 } }] },
-    Arcanista: { icon:'✦', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
+    Arcanista: { icon:'術', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
       trait:'Canalizador: base de dano de habilidade alta, corpo frágil.', baseBonus:{ skill:.20 }, threat:1,
       synergy:[{ n:2, text:'Equipe +10% dano de habilidade', stats:{ skill:.10 } }, { n:3, text:'Equipe +10% dano de habilidade e +10% energia', stats:{ skill:.10, nrg:.10 } }] },
-    Atirador:  { icon:'🏹', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
+    Atirador:  { icon:'弓', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
       trait:'Atirador: base de velocidade e crítico altas.', baseBonus:{ spd:.10 }, threat:1,
       synergy:[{ n:2, text:'Equipe +8% velocidade de ataque', stats:{ spd:.08 } }, { n:3, text:'Equipe +8% velocidade e ignora 10% da DEF', stats:{ spd:.08, pierce:.10 } }] },
-    Suporte:   { icon:'✚', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
+    Suporte:   { icon:'癒', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
       trait:'Protetor: base de poder de cura e escudo alta.', baseBonus:{ healPow:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe regenera 0,6% do HP por segundo', stats:{ regen:.006 } }, { n:3, text:'Equipe regenera 0,6% HP/s e recebe 8% menos dano', stats:{ regen:.006, dr:.08 } }] }
   };
@@ -483,15 +483,15 @@
   // igual para todos os jogadores e independente de quando o servidor reiniciou.
   // ---------------------------------------------------------------------------
   const worldEvents = [
-    { id:'golden', name:'Maré Dourada', icon:'🪙', color:'#ffcf6b', text:'+40% de ouro em todas as regiões.', mods:{ gold:.4 } },
-    { id:'bloodmoon', name:'Lua de Sangue', icon:'🌕', color:'#ff5d6c', text:'Inimigos +20% ATK. +40% EXP e +25% chance de itens.', mods:{ enemyAtk:.2, xp:.4, drop:.25 } },
-    { id:'festival', name:'Festival das Lanternas', icon:'🏮', color:'#ff9ec7', text:'Kitsune das Lanternas disponível. +30% Éter e fogos-fátuos pelo campo.', mods:{ dust:.3 } },
-    { id:'sakura', name:'Festival das Cerejeiras', icon:'🌸', color:'#ffb3d6', text:'+30% de EXP e +15% de Éter. Pétalas cobrem Tsukimori.', mods:{ xp:.3, dust:.15 } },
-    { id:'oninight', name:'Noite dos Oni', icon:'👹', color:'#ff7a4f', text:'Inimigos +15% ATK. +35% chance de itens e +15% de ouro.', mods:{ enemyAtk:.15, drop:.35, gold:.15 } },
-    { id:'aether', name:'Maré de Éter', icon:'💫', color:'#9fb3ff', text:'+50% de Éter e encontros especiais 50% mais comuns.', mods:{ dust:.5, encounter:.5 } },
-    { id:'starfall', name:'Chuva de Estrelas', icon:'🌠', color:'#6fe3ff', text:'Raridade dos itens melhorada e encontros especiais 2x mais comuns.', mods:{ rarity:.35, encounter:1 } }
+    { id:'golden', name:'Maré Dourada', icon:'金', color:'#ffcf6b', text:'+40% de ouro em todas as regiões.', mods:{ gold:.4 } },
+    { id:'bloodmoon', name:'Lua de Sangue', icon:'血', color:'#ff5d6c', text:'Inimigos +20% ATK. +40% EXP e +25% chance de itens.', mods:{ enemyAtk:.2, xp:.4, drop:.25 } },
+    { id:'festival', name:'Festival das Lanternas', icon:'灯', color:'#ff9ec7', text:'Kitsune das Lanternas disponível. +30% Éter e fogos-fátuos pelo campo.', mods:{ dust:.3 } },
+    { id:'sakura', name:'Festival das Cerejeiras', icon:'桜', color:'#ffb3d6', text:'+30% de EXP e +15% de Éter. Pétalas cobrem Tsukimori.', mods:{ xp:.3, dust:.15 } },
+    { id:'oninight', name:'Noite dos Oni', icon:'鬼', color:'#ff7a4f', text:'Inimigos +15% ATK. +35% chance de itens e +15% de ouro.', mods:{ enemyAtk:.15, drop:.35, gold:.15 } },
+    { id:'aether', name:'Maré de Éter', icon:'霊', color:'#9fb3ff', text:'+50% de Éter e encontros especiais 50% mais comuns.', mods:{ dust:.5, encounter:.5 } },
+    { id:'starfall', name:'Chuva de Estrelas', icon:'星', color:'#6fe3ff', text:'Raridade dos itens melhorada e encontros especiais 2x mais comuns.', mods:{ rarity:.35, encounter:1 } }
   ];
-  const calmEvent = { id:'calm', name:'Céu Calmo', icon:'🌙', color:'#9aa6d8', text:'Nenhum evento ativo. Confira o calendário para o próximo.', mods:{} };
+  const calmEvent = { id:'calm', name:'Céu Calmo', icon:'月', color:'#9aa6d8', text:'Nenhum evento ativo. Confira o calendário para o próximo.', mods:{} };
   const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
   // days: 0 = domingo … 6 = sábado · from/to em horas (horário de Brasília).
   const eventSchedule = [
@@ -664,13 +664,13 @@
   // CIDADE, construções com bônus permanentes.
   // ---------------------------------------------------------------------------
   const buildings = {
-    forge:    { id:'forge', name:'Forja de Ren', icon:'⚒', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.45 },
-    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'🥋', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.45 },
-    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'⛩', desc:'Convocações, troca de cristais por chaves e qualidade dos heróis. Cada nível reduz em 5% o custo da evolução.', baseCost:1200, growth:1.5 },
-    workshop: { id:'workshop', name:'Oficina de Aoi', icon:'⚗', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.42 },
-    guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'🏯', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.45 },
-    market:   { id:'market', name:'Mercado do Porto', icon:'🏮', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.5 },
-    house:    { id:'house', name:'Casa do Time', icon:'🏡', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.5 }
+    forge:    { id:'forge', name:'Forja de Ren', icon:'鍛', desc:'Aprimora e desmonta itens. Cada nível libera +2 no limite de aprimoramento e reduz o custo em 4%.', baseCost:800, growth:1.45 },
+    dojo:     { id:'dojo', name:'Dojo do Eco', icon:'道', desc:'Treina ATK, HP, DEF e Crítico de toda a equipe e aumenta a EXP de combate em 4% por nível.', baseCost:900, growth:1.45 },
+    shrine:   { id:'shrine', name:'Santuário da Lua', icon:'社', desc:'Convocações, troca de cristais por chaves e qualidade dos heróis. Cada nível reduz em 5% o custo da evolução.', baseCost:1200, growth:1.5 },
+    workshop: { id:'workshop', name:'Oficina de Aoi', icon:'工', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.42 },
+    guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'城', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.45 },
+    market:   { id:'market', name:'Mercado do Porto', icon:'市', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.5 },
+    house:    { id:'house', name:'Casa do Time', icon:'家', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.5 }
   };
   // Casa do Time: Galeria de cartas expostas e Álbum (coleção, como o livro de cartas do Ragnarok).
   const HOUSE = {
@@ -705,11 +705,11 @@
     war:{ days:[3, 6], from:20, to:22, attacks:3 } };
   // Profissões (coleta e criação, como ESO, GW2 e WoW). Materiais de coleta são negociáveis.
   const PROF = {
-    gather:{ mining:{ name:'Mineração', icon:'⛏', color:'#c9b38a', text:'Veios de minério surgem entre as ondas de caçadas e masmorras.' },
-      herbalism:{ name:'Herbalismo', icon:'🌿', color:'#7fe39a', text:'Ervas raras crescem onde a Fenda tocou o chão.' },
-      essence:{ name:'Extração de Essências', icon:'✨', color:'#b99bff', text:'Monstros derrotados deixam essências que só um extrator treinado recolhe.' } },
-    craft:{ alchemy:{ name:'Alquimia', icon:'⚗', color:'#6fd8b8', text:'Poções maiores e frascos de batalha.' },
-      smithing:{ name:'Artesania', icon:'🔨', color:'#ffb35c', text:'Equipamentos criados à mão, negociáveis no Mercado.' } },
+    gather:{ mining:{ name:'Mineração', icon:'鉱', color:'#c9b38a', text:'Veios de minério surgem entre as ondas de caçadas e masmorras.' },
+      herbalism:{ name:'Herbalismo', icon:'薬', color:'#7fe39a', text:'Ervas raras crescem onde a Fenda tocou o chão.' },
+      essence:{ name:'Extração de Essências', icon:'魂', color:'#b99bff', text:'Monstros derrotados deixam essências que só um extrator treinado recolhe.' } },
+    craft:{ alchemy:{ name:'Alquimia', icon:'錬', color:'#6fd8b8', text:'Poções maiores e frascos de batalha.' },
+      smithing:{ name:'Artesania', icon:'匠', color:'#ffb35c', text:'Equipamentos criados à mão, negociáveis no Mercado.' } },
     maxLevel:50, gatherChance:.3, rareChance:.02,
     next:lv => Math.round(60 * Math.pow(lv, 1.35)),
     tierIlvl:[0, 8, 20, 34, 50]
@@ -767,48 +767,48 @@
     renamed:{ itachi:'sasuke_susanoo', kakashi:'vegeta_ego', yor:'ichigo_bankai', denji:'tanjiro_hinokami', frieren:'gojo_void', makima:'goku_ui',
       asta:'luffy_gear5', rem:'naruto_kurama', lux:'sailor_eternal', sage:'mercy_valkyrie', link:'dante_dt', jett:'jinx_arcane' } };
   const BOXES = [
-    { id:'worlds', name:'Caixa dos Mundos', icon:'✦', cost:1, color:'#b4ab9c', pity:30, pool:'base',
+    { id:'worlds', name:'Caixa dos Mundos', icon:'界', cost:1, color:'#b4ab9c', pity:30, pool:'base',
       rates:{ legendary:.03, epic:.12, rare:.30, common:.55 }, text:'A convocação clássica: todos os heróis fora da temporada.' },
-    { id:'class', name:'Caixa de Classe', icon:'⚔', cost:2, color:'#86b6c4', pity:25, pool:'class',
+    { id:'class', name:'Caixa de Classe', icon:'刃', cost:2, color:'#86b6c4', pity:25, pool:'class',
       rates:{ legendary:.05, epic:.17, rare:.33, common:.45 }, text:'Você escolhe a classe. Só saem heróis dela (fora da temporada).' },
-    { id:'season', name:'Caixa da Temporada', icon:'🌒', cost:3, color:'#c9472d', pity:20, pool:'season', featured:.6,
+    { id:'season', name:'Caixa da Temporada', icon:'季', cost:3, color:'#c9472d', pity:20, pool:'season', featured:.6,
       rates:{ legendary:.08, epic:.22, rare:.35, common:.35 }, text:'60% de chance de uma forma despertada da temporada. A garantia de lendário é sempre uma forma despertada.' },
-    { id:'astral', name:'Caixa Astral', icon:'🌟', cost:10, color:'#d8b062', pity:8, pool:'all',
+    { id:'astral', name:'Caixa Astral', icon:'星', cost:10, color:'#d8b062', pity:8, pool:'all',
       rates:{ legendary:.20, epic:.45, rare:.35, common:0 }, text:'Sem comuns. Qualquer herói, inclusive os da temporada.' }
   ];
 
   // ARMAZÉM DO TANUKI: guarda de itens (como o armazém do Ragnarok). Itens desequipados e os de heróis que saem da
   // equipe vão para lá; nada no Armazém é desmontado nem ocupa a bolsa. Enfeites cosméticos (compra única) aumentam o espaço.
   const STORAGE = { base:300, decor:[
-    { id:'lanterns', name:'Lanternas de Papel', icon:'🏮', slots:50, price:{ crystal:250 }, text:'Um corredor iluminado de lanternas vermelhas.' },
-    { id:'screen', name:'Biombo das Garças', icon:'🪭', slots:100, price:{ crystal:500 }, text:'Biombo pintado a ouro que divide as prateleiras.' },
-    { id:'chest', name:'Baú Laqueado de Sakura', icon:'🌸', slots:150, price:{ crystal:900 }, text:'Laca negra com cerejeiras em madrepérola.' },
-    { id:'dragon', name:'Cofre do Dragão Dourado', icon:'🐉', slots:200, price:{ crystal:1500 }, text:'O cofre lendário dos mercadores de Tsukimori.' }
+    { id:'lanterns', name:'Lanternas de Papel', icon:'灯', slots:50, price:{ crystal:250 }, text:'Um corredor iluminado de lanternas vermelhas.' },
+    { id:'screen', name:'Biombo das Garças', icon:'屏', slots:100, price:{ crystal:500 }, text:'Biombo pintado a ouro que divide as prateleiras.' },
+    { id:'chest', name:'Baú Laqueado de Sakura', icon:'箱', slots:150, price:{ crystal:900 }, text:'Laca negra com cerejeiras em madrepérola.' },
+    { id:'dragon', name:'Cofre do Dragão Dourado', icon:'龍', slots:200, price:{ crystal:1500 }, text:'O cofre lendário dos mercadores de Tsukimori.' }
   ] };
 
   // Efeitos de status, texto usado na UI e na wiki.
   const statusInfo = {
-    burn:{ name:'Queimadura', icon:'🔥', color:'#ff7a4f', text:'Dano por segundo baseado no ATK de quem aplicou. Ignora defesa.' },
-    poison:{ name:'Veneno', icon:'☠', color:'#8fe36b', text:'Dano por segundo que acumula até 5 vezes.' },
-    bleed:{ name:'Sangramento', icon:'🩸', color:'#ff4a6a', text:'Dano por segundo. Alvos sangrando recebem +10% de dano crítico.' },
-    stun:{ name:'Atordoamento', icon:'💫', color:'#ffe98a', text:'Não pode agir. Chefes resistem a 60% da duração.' },
-    freeze:{ name:'Congelamento', icon:'❄', color:'#91dfff', text:'Não pode agir e recebe +20% de dano. Chefes resistem a 60%.' },
-    slow:{ name:'Lentidão', icon:'🐌', color:'#9fb3ff', text:'Velocidade de ataque reduzida.' },
-    armorBreak:{ name:'Quebra de Armadura', icon:'⛨', color:'#ffd76a', text:'Defesa reduzida.' },
-    mark:{ name:'Marca', icon:'🎯', color:'#ff9ec7', text:'Recebe mais dano de todas as fontes.' },
+    burn:{ name:'Queimadura', icon:'焼', color:'#ff7a4f', text:'Dano por segundo baseado no ATK de quem aplicou. Ignora defesa.' },
+    poison:{ name:'Veneno', icon:'毒', color:'#8fe36b', text:'Dano por segundo que acumula até 5 vezes.' },
+    bleed:{ name:'Sangramento', icon:'血', color:'#ff4a6a', text:'Dano por segundo. Alvos sangrando recebem +10% de dano crítico.' },
+    stun:{ name:'Atordoamento', icon:'眩', color:'#ffe98a', text:'Não pode agir. Chefes resistem a 60% da duração.' },
+    freeze:{ name:'Congelamento', icon:'凍', color:'#91dfff', text:'Não pode agir e recebe +20% de dano. Chefes resistem a 60%.' },
+    slow:{ name:'Lentidão', icon:'遅', color:'#9fb3ff', text:'Velocidade de ataque reduzida.' },
+    armorBreak:{ name:'Quebra de Armadura', icon:'破', color:'#ffd76a', text:'Defesa reduzida.' },
+    mark:{ name:'Marca', icon:'印', color:'#ff9ec7', text:'Recebe mais dano de todas as fontes.' },
     weaken:{ name:'Fraqueza', icon:'⬇', color:'#c9a4ff', text:'ATK reduzido.' },
-    silence:{ name:'Silêncio', icon:'🤐', color:'#aaa5d0', text:'Não pode usar habilidades nem ultimates.' },
-    atk:{ name:'Fúria', icon:'⚔', color:'#ff9a6b', text:'ATK aumentado.', buff:true },
-    def:{ name:'Guarda', icon:'🛡', color:'#6fb8ff', text:'DEF aumentada.', buff:true },
-    spd:{ name:'Pressa', icon:'💨', color:'#9ce9cc', text:'Velocidade de ataque aumentada.', buff:true },
-    crit:{ name:'Precisão', icon:'🎯', color:'#ffd76a', text:'Chance de crítico aumentada.', buff:true },
-    critDmg:{ name:'Letalidade', icon:'💥', color:'#ffb938', text:'Dano crítico aumentado.', buff:true },
-    dodge:{ name:'Evasão', icon:'🌀', color:'#9ce9cc', text:'Esquiva aumentada.', buff:true },
-    lifesteal:{ name:'Vampirismo', icon:'🩸', color:'#ff5d8f', text:'Cura parte do dano causado.', buff:true },
-    dr:{ name:'Barreira', icon:'🔰', color:'#8fe9ff', text:'Recebe menos dano.', buff:true },
+    silence:{ name:'Silêncio', icon:'黙', color:'#aaa5d0', text:'Não pode usar habilidades nem ultimates.' },
+    atk:{ name:'Fúria', icon:'怒', color:'#ff9a6b', text:'ATK aumentado.', buff:true },
+    def:{ name:'Guarda', icon:'守', color:'#6fb8ff', text:'DEF aumentada.', buff:true },
+    spd:{ name:'Pressa', icon:'速', color:'#9ce9cc', text:'Velocidade de ataque aumentada.', buff:true },
+    crit:{ name:'Precisão', icon:'精', color:'#ffd76a', text:'Chance de crítico aumentada.', buff:true },
+    critDmg:{ name:'Letalidade', icon:'殺', color:'#ffb938', text:'Dano crítico aumentado.', buff:true },
+    dodge:{ name:'Evasão', icon:'避', color:'#9ce9cc', text:'Esquiva aumentada.', buff:true },
+    lifesteal:{ name:'Vampirismo', icon:'吸', color:'#ff5d8f', text:'Cura parte do dano causado.', buff:true },
+    dr:{ name:'Barreira', icon:'障', color:'#8fe9ff', text:'Recebe menos dano.', buff:true },
     regen:{ name:'Regeneração', icon:'✚', color:'#5fe39a', text:'Recupera HP por segundo.', buff:true },
-    stealth:{ name:'Furtividade', icon:'👤', color:'#aaa5d0', text:'Não pode ser alvo de ataques diretos.', buff:true },
-    taunt:{ name:'Provocação', icon:'📢', color:'#ff9a6b', text:'Inimigos são forçados a atacá-lo.', buff:true }
+    stealth:{ name:'Furtividade', icon:'影', color:'#aaa5d0', text:'Não pode ser alvo de ataques diretos.', buff:true },
+    taunt:{ name:'Provocação', icon:'挑', color:'#ff9a6b', text:'Inimigos são forçados a atacá-lo.', buff:true }
   };
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };

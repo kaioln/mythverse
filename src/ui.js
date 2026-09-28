@@ -165,8 +165,8 @@
         const rec = e.recommendedPower(z.id, e.opts), pow = e.getPower(), ratio = pow / rec;
         this.el.powerCheck.hidden = false; this.el.powerCheck.className = ratio >= 1 ? 'ok' : ratio >= .8 ? 'warn' : 'bad';
         const dl = KT.difficultyLabel ? KT.difficultyLabel(ratio) : null;
-        this.el.powerCheck.textContent = `⚔ ${compact(pow)} / ${compact(rec)}${dl ? ` · ${dl[0]}` : ''}`;
-        this.el.powerCheck.dataset.tip = 'Seu Poder / Poder recomendado. Fácil ou Justo: pode seguir. Difícil: arrisque. Muito difícil: fique mais forte (⚡ FORÇA, Forja, Dojo, nível).';
+        this.el.powerCheck.textContent = `${compact(pow)} / ${compact(rec)}${dl ? ` · ${dl[0]}` : ''}`;
+        this.el.powerCheck.dataset.tip = 'Seu Poder / Poder recomendado. Fácil ou Justo: pode seguir. Difícil: arrisque. Muito difícil: fique mais forte (FORÇA, Forja, Dojo, nível).';
         this.el.powerCheck.dataset.tip = `Poder da equipe / poder recomendado.${ratio < .8 ? ' Sua equipe está fraca para esta região, treine em estágios anteriores.' : ''}`;
       } else this.el.powerCheck.hidden = true;
       this.el.locations.hidden = z.kind !== 'village' || this.engine.heroes.length < 4;
@@ -225,7 +225,7 @@
           const idx = village ? i : e.party.indexOf(u);
           return `<article class="hero-slot rarity-${rec.rarity}" data-uid="${rec.uid}" style="--hc:${t.color};--rc:var(--${rec.rarity})">
             <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${D.classes[t.cls].icon}</span></button>
-            <div class="hero-info"><header><b>${esc(t.name)}</b><small>${D.elements[t.el].icon} <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
+            <div class="hero-info"><header><b>${esc(t.name)}</b><small><i class="kj" style="color:${D.elements[t.el].color}">${D.elements[t.el].icon}</i> <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
               <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div>
               <div class="skill-line"><span class="skill-cd" data-tip="<b>${esc(t.skill.name)}</b> (automática)<br>${esc(t.skillText)}"><i></i>${esc(t.skill.name)}</span></div></div>
             <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>
@@ -271,7 +271,7 @@
       this.el.bossPanel.classList.toggle('danger', boss.windup > 0);
       const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.BREAK.time : U.clamp(boss.breakG / boss.breakMax, 0, 1);
       this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'POSTURA QUEBRADA · +35% DE DANO' : 'POSTURA';
-      if (boss.boss) { const left = (boss.t.enrage || 150) - (this.engine.bossTimer || 0); this.el.bossTimer.textContent = left > 0 ? `Fúria em ${fmtTime(left)}` : '🔥 FÚRIA!'; this.el.bossTimer.classList.toggle('enraged', left <= 0); } else this.el.bossTimer.textContent = '';
+      if (boss.boss) { const left = (boss.t.enrage || 150) - (this.engine.bossTimer || 0); this.el.bossTimer.textContent = left > 0 ? `Fúria em ${fmtTime(left)}` : 'FÚRIA!'; this.el.bossTimer.classList.toggle('enraged', left <= 0); } else this.el.bossTimer.textContent = '';
     }
 
     renderControls() {
@@ -292,7 +292,7 @@
       if (g) main = `<span class="eyebrow">PRÓXIMO PASSO · ${D.guide.indexOf(g) + 1}/${D.guide.length}</span><strong>${esc(g.title)}</strong><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div>${e.guideDone(g) ? `<button class="action primary small" data-claim-guide type="button">✓ Resgatar recompensa</button>` : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : ''}`;
       else if (ch) { const v = e.chronicleValue(ch), done = v >= ch.target; main = `<span class="eyebrow">CRÔNICA ${ch.k} · SEM FIM</span><strong>${esc(ch.title)}</strong><small>${esc(ch.text)}</small><div class="meter"><span style="width:${Math.min(1, (v - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div><small class="dim">${U.fmt(v)} / ${U.fmt(ch.target)}</small>${done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : ''}`; }
       else main = `<span class="eyebrow">GUIA DO VIAJANTE</span><strong>Jornada concluída!</strong>`;
-      const extra = `<div class="guide-extra">${ls.available ? `<button class="action pink small" data-claim-login type="button">🎁 Login do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte.">🧭 Travado? Conselheiro</button></div>`;
+      const extra = `<div class="guide-extra">${ls.available ? `<button class="action pink small" data-claim-login type="button"><i class="ic ic-chest"></i> Login do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte."><i class="ic ic-compass"></i> Travado? Conselheiro</button></div>`;
       const html = main + extra, done = (g && e.guideDone(g)) || (ch && e.chronicleValue(ch) >= ch.target);
       if (html !== this.guideHtml) { this.guideHtml = html; this.el.guide.innerHTML = html; this.el.guide.classList.toggle('done', !!done); }
     }
@@ -361,7 +361,7 @@
         this.el.lootToast.appendChild(pop); while (this.el.lootToast.children.length > 5) this.el.lootToast.firstChild.remove();
         setTimeout(() => pop.remove(), 3300);
       }
-      if (['legendary', 'mythic', 'set'].includes(item.rarity) && !item.autoSalvaged) this.toast(`🌟 <b>${esc(item.name)}</b> (${D.rarities.find(r => r.id === item.rarity).label}) está em <b>Bolsa → ${item.inOverflow ? 'Excedentes' : 'Itens'}</b>.`, 'gold');
+      if (['legendary', 'mythic', 'set'].includes(item.rarity) && !item.autoSalvaged) this.toast(`<b>${esc(item.name)}</b> (${D.rarities.find(r => r.id === item.rarity).label}) está em <b>Bolsa → ${item.inOverflow ? 'Excedentes' : 'Itens'}</b>.`, 'gold');
       if (!this.el.rightLoot.hidden) this.renderLoot();
     }
     onLog(p) { const e = typeof p === 'string' ? { text:p, type:'system' } : p; this.logs.unshift(e); this.logs = this.logs.slice(0, 80); if (!this.logTimer) this.logTimer = setTimeout(() => { this.logTimer = null; this.renderCombat(); }, 300); }
@@ -373,7 +373,7 @@
       const pop = document.createElement('div'); pop.className = `loot-pop card-pop ${c.mvp ? 'mvp' : ''}`;
       pop.innerHTML = `<span class="card-mini"><img src="${KT.spriteUrl(card.sprite)}" alt=""></span><span><b>${esc(card.name)}</b> <small>${c.mvp ? 'CARTA MVP' : 'Carta'}</small></span>`;
       this.el.lootToast.appendChild(pop); setTimeout(() => pop.remove(), 4200);
-      this.toast(`${c.mvp ? '🌟 <b>CARTA MVP!</b>' : '🃏 Nova carta:'} <b>${esc(card.name)}</b>, encaixe na Oficina → Cartas.`, 'gold');
+      this.toast(`${c.mvp ? '<b>CARTA MVP!</b>' : 'Nova carta:'} <b>${esc(card.name)}</b>, encaixe na Oficina → Cartas.`, 'gold');
     }
     renderCloud() {
       const dot = document.querySelector('#cloud-dot'), badge = this.el.saveStatus; if (!dot) return;
@@ -393,7 +393,7 @@
       if (badge) { badge.className = `save-status ${cls}`; badge.dataset.tip = tip; badge.querySelector('b').textContent = label; }
     }
     onChoice(c) {
-      this.el.choice.innerHTML = `<section><span class="eyebrow">${c.kind === 'route' ? 'DECISÃO DE ROTA' : 'ENCONTRO ESPECIAL'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text || 'Escolha como a equipe continuará. A decisão altera risco e recompensa desta expedição.')}</p><div class="choice-options ${c.options.length > 2 ? 'many' : ''}">${c.options.map(o => `<button class="choice-option ${o.item ? `rarity-${o.item.rarity}` : ''} ${o.id === c.recommended ? 'recommended' : ''}" data-choice="${o.id}" data-kind="${c.kind}" type="button" ${o.price && this.state.player.gold < o.price ? 'disabled' : ''}>${o.id === c.recommended ? '<span class="rec-badge">★ RECOMENDADO</span>' : ''}${o.item ? KT.itemIcon(o.item) : ''}<b>${o.id === 'risk' ? '🔥 ' : o.id === 'safe' ? '🌙 ' : ''}${esc(o.label)}</b><small>${esc(o.desc)}</small>${o.item ? `<small class="aff">${this.itemLines(o.item).join(' · ')}</small>` : ''}</button>`).join('')}</div><p class="choice-timer" id="choice-timer"></p></section>`;
+      this.el.choice.innerHTML = `<section><span class="eyebrow">${c.kind === 'route' ? 'DECISÃO DE ROTA' : 'ENCONTRO ESPECIAL'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text || 'Escolha como a equipe continuará. A decisão altera risco e recompensa desta expedição.')}</p><div class="choice-options ${c.options.length > 2 ? 'many' : ''}">${c.options.map(o => `<button class="choice-option ${o.item ? `rarity-${o.item.rarity}` : ''} ${o.id === c.recommended ? 'recommended' : ''}" data-choice="${o.id}" data-kind="${c.kind}" type="button" ${o.price && this.state.player.gold < o.price ? 'disabled' : ''}>${o.id === c.recommended ? '<span class="rec-badge">★ RECOMENDADO</span>' : ''}${o.item ? KT.itemIcon(o.item) : ''}<b>${o.id === 'risk' ? '<i class="ic ic-flame"></i> ' : o.id === 'safe' ? '<i class="ic ic-moon"></i> ' : ''}${esc(o.label)}</b><small>${esc(o.desc)}</small>${o.item ? `<small class="aff">${this.itemLines(o.item).join(' · ')}</small>` : ''}</button>`).join('')}</div><p class="choice-timer" id="choice-timer"></p></section>`;
       this.el.choice.hidden = false; this.renderChoiceTimer();
     }
     renderChoiceTimer() {
@@ -403,7 +403,7 @@
     }
     onChoiceResolved() { this.el.choice.hidden = true; }
     onStuck(p) {
-      if (!this.el.modal.hidden) { this.toast('🧭 A equipe está travada, veja o <b>Conselheiro</b> (Missões → Conselheiro).'); return; }
+      if (!this.el.modal.hidden) { this.toast('A equipe está travada, veja o <b>Conselheiro</b> (Missões → Conselheiro).'); return; }
       this.openPanel('quests', 'advisor');
       this.toast('A equipe caiu duas vezes no mesmo desafio. <b>Sayo preparou um plano.</b>', 'gold');
     }
@@ -413,7 +413,7 @@
       if (!line) { this.el.dialog.hidden = true; this.engine.paused = false; return; }
       const sp = D.speakers[line.who] || { color:'#fff', title:'' };
       this.engine.paused = true;
-      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : '<span>🌸</span>'}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(sp.title)}</small></span><p>${esc(line.text)}</p><small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
+      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : '<span class="dlg-mark">神</span>'}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(sp.title)}</small></span><p>${esc(line.text)}</p><small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
       this.el.dialog.hidden = false;
       const p = this.el.dialog.querySelector('p'); p.classList.remove('typing'); void p.offsetWidth; p.classList.add('typing');
     }

@@ -22,14 +22,14 @@
     const head = `<section class="arena-hero" style="--tc:${t[2]}"><div class="arena-crest"><b>${t[1]}</b><small>${U.fmt(st.mmr || 1000)} MMR</small></div>
       <div class="arena-copy"><span class="eyebrow">COLISEU CARMESIM · #${st.rank || '–'}</span><h3>${U.fmt(st.honor || 0)} de Honra</h3>
       <p>${st.wins || 0} vitórias · ${st.losses || 0} derrotas${st.streak > 1 ? ` · <b>${st.streak} seguidas</b>` : ''}. Ingressos hoje: <b>${(st.attacksMax || 10) - (st.attacks || 0)}/${st.attacksMax || 10}</b>. Você luta no <b>manual</b> contra a defesa salva de outro jogador.</p></div>
-      <div class="arena-cta"><button class="action primary" data-pvp-save-def type="button">🛡 Salvar minha defesa</button><button class="action small" data-pvp-refresh type="button">↻ Atualizar</button></div></section>`;
+      <div class="arena-cta"><button class="action primary" data-pvp-save-def type="button"><i class="ic ic-shield"></i> Salvar minha defesa</button><button class="action small" data-pvp-refresh type="button">↻ Atualizar</button></div></section>`;
     if (tab === 'shop') return head + this.honorShopHtml(st);
     if (tab === 'ranking') { if (!so.ranking) so.loadRanking(); return head + this.pvpRankingHtml(); }
     if (tab === 'history') { if (!so.history) so.loadHistory(); return head + this.pvpHistoryHtml(); }
     const week = `<div class="panel arena-week"><div><b>Liga da semana ${esc(st.week || '')}</b><small>Lute ao menos 5 vezes (${Math.min(5, st.weekMatches || 0)}/5) e resgate Honra pela sua liga: Bronze 70 · Prata 120 · Ouro 200 · Platina 300 · Diamante 420 · Lenda 600.</small></div>
       <button class="action ${st.weekMatches >= 5 && !st.weekClaimed ? 'pink' : ''}" data-pvp-week type="button" ${st.weekMatches >= 5 && !st.weekClaimed ? '' : 'disabled'}>${st.weekClaimed ? 'Resgatado ✓' : 'Resgatar'}</button></div>`;
     const foes = (so.foes || []).map(f => `<article class="foe-card" style="--tc:${tierOf(f.tier)[2]}"><header>${tierTag(f.tier)}<b>${esc(f.name)}</b><small>${U.fmt(f.mmr)} MMR · poder ${compact(f.power)} · ${f.wins}V/${f.losses}D</small></header>
-      <div class="foe-faces">${faces(f.team)}</div><button class="action primary" data-pvp-attack="${esc(f.ref)}" type="button" ${st.attacks >= st.attacksMax ? 'disabled' : ''}>⚔ Desafiar</button></article>`).join('');
+      <div class="foe-faces">${faces(f.team)}</div><button class="action primary" data-pvp-attack="${esc(f.ref)}" type="button" ${st.attacks >= st.attacksMax ? 'disabled' : ''}>Desafiar</button></article>`).join('');
     return `${head}${!st.hasDefense ? '<p class="note warn-note">Salve sua equipe de defesa para aparecer no matchmaking e ganhar Honra quando defender.</p>' : ''}
       <h4 class="sub-title">Oponentes do seu nível</h4><div class="foe-grid">${foes || '<p class="empty-note">Ainda não há outros jogadores com defesa salva. Chame seus amigos: cada um salva a defesa aqui.</p>'}</div>
       ${week}
@@ -39,7 +39,7 @@
     const bought = st.shopWeek || {};
     return `<p class="note">A Honra fica guardada no servidor: não dá para comprar com dinheiro nem editar. Tudo o que é marcado como negociável pode ser vendido no Mercado de Jogadores.</p>
       <div class="shop-grid">${D.PVP_SHOP.map(o => { const n = bought[o.id] || 0, can = (st.honor || 0) >= o.price && n < o.limit;
-        return `<article class="shop-card honor-card"><b>${esc(o.name)}</b><small>${esc(o.text)}</small><small class="dim">Nesta semana: ${n}/${o.limit}</small><button class="action ${can ? 'primary' : ''}" data-pvp-buy="${o.id}" type="button" ${can ? '' : 'disabled'}>🏅 ${U.fmt(o.price)} Honra</button></article>`; }).join('')}</div>`;
+        return `<article class="shop-card honor-card"><b>${esc(o.name)}</b><small>${esc(o.text)}</small><small class="dim">Nesta semana: ${n}/${o.limit}</small><button class="action ${can ? 'primary' : ''}" data-pvp-buy="${o.id}" type="button" ${can ? '' : 'disabled'}>${U.fmt(o.price)} Honra</button></article>`; }).join('')}</div>`;
   };
   P.pvpRankingHtml = function() {
     const rows = S().ranking; if (!rows) return '<p class="empty-note">Carregando ranking…</p>';
@@ -81,9 +81,9 @@
   };
   P.guildCreateHtml = function() {
     const so = S(), pend = so.guild?.requests || [];
-    return `<section class="guild-hero"><span class="guild-emblem">🏯</span><div><span class="eyebrow">SEM GUILDA</span><h3>Encontre seus companheiros</h3><p>Guildas sobem de nível com doações de ouro, vitórias na Arena e na Guerra de Guildas, e dão bônus de ouro, EXP e itens a todos os membros.</p></div></section>
+    return `<section class="guild-hero"><span class="guild-emblem"><i class="ic ic-lantern"></i></span><div><span class="eyebrow">SEM GUILDA</span><h3>Encontre seus companheiros</h3><p>Guildas sobem de nível com doações de ouro, vitórias na Arena e na Guerra de Guildas, e dão bônus de ouro, EXP e itens a todos os membros.</p></div></section>
       ${pend.length ? `<p class="note">Pedidos aguardando resposta: ${pend.map(p => `<b>${esc(p.name)}</b>`).join(', ')}.</p>` : ''}
-      <div class="box-actions"><button class="action primary" data-tab-go="list" type="button">🔎 Procurar guildas</button></div>
+      <div class="box-actions"><button class="action primary" data-tab-go="list" type="button">Procurar guildas</button></div>
       <h4 class="sub-title">Fundar uma guilda (${U.fmt(D.GUILD.createCost)} de ouro)</h4>
       <div class="guild-form"><input id="gc-name" maxlength="22" placeholder="Nome (3 a 22)"><input id="gc-tag" maxlength="4" placeholder="Sigla (2 a 4)"><input id="gc-emblem" maxlength="4" placeholder="Emblema (ex.: 🏮)"><input id="gc-motto" maxlength="120" placeholder="Lema"><label class="check"><input type="checkbox" id="gc-open" checked> Qualquer um pode entrar</label>
       <button class="action pink" data-guild-create type="button" ${this.state.player.gold >= D.GUILD.createCost ? '' : 'disabled'}>Fundar guilda</button></div>`;
@@ -102,9 +102,9 @@
       const done = b.us && !b.claimed ? `<div class="box-actions"><button class="action pink big" data-gvg-claim type="button">Resgatar recompensa da última guerra</button></div>` : '';
       return `<section class="war-hero"><span class="eyebrow">GUERRA DE GUILDAS</span><h3>Fora da janela</h3><p>Próximas batalhas: ${warWindowText()}.</p>${b.us ? `<p>Última guerra: <b>${esc(b.us.name)}</b> ${b.us.points} × ${b.them?.points ?? 0} <b>${esc(b.them?.name || '')}</b>.</p>` : ''}</section>${done}${rules}`;
     }
-    if (!b.entered) return `<section class="war-hero live"><span class="eyebrow">GUERRA DE GUILDAS · AO VIVO</span><h3>A janela está aberta!</h3><p>Inscreva a guilda para ser pareada e começar as investidas.</p><button class="action pink big" data-gvg-enter type="button">⚔ Inscrever a guilda</button></section>${rules}`;
+    if (!b.entered) return `<section class="war-hero live"><span class="eyebrow">GUERRA DE GUILDAS · AO VIVO</span><h3>A janela está aberta!</h3><p>Inscreva a guilda para ser pareada e começar as investidas.</p><button class="action pink big" data-gvg-enter type="button">Inscrever a guilda</button></section>${rules}`;
     const left = D.GUILD.war.attacks - (b.myAttacks || 0);
-    const targets = (so.targets || []).map(t => `<article class="foe-card ${t.beaten ? 'beaten' : ''}"><header><b>${esc(t.name)}</b><small>${U.fmt(t.mmr)} MMR · poder ${compact(t.power)}${t.beaten ? ' · já derrotado (1 ponto)' : ' · vale 3 pontos'}</small></header><div class="foe-faces">${faces(t.team)}</div><button class="action ${t.beaten ? '' : 'primary'}" data-gvg-attack="${esc(t.ref)}" type="button" ${left > 0 ? '' : 'disabled'}>⚔ Investir</button></article>`).join('');
+    const targets = (so.targets || []).map(t => `<article class="foe-card ${t.beaten ? 'beaten' : ''}"><header><b>${esc(t.name)}</b><small>${U.fmt(t.mmr)} MMR · poder ${compact(t.power)}${t.beaten ? ' · já derrotado (1 ponto)' : ' · vale 3 pontos'}</small></header><div class="foe-faces">${faces(t.team)}</div><button class="action ${t.beaten ? '' : 'primary'}" data-gvg-attack="${esc(t.ref)}" type="button" ${left > 0 ? '' : 'disabled'}>Investir</button></article>`).join('');
     return `<section class="war-hero live"><span class="eyebrow">GUERRA DE GUILDAS · AO VIVO · atualiza sozinho</span>
         <div class="war-score"><div><b>${esc(b.us.name)}</b><em>${b.us.points}</em><small>${b.us.wins} vitórias em ${b.us.attacks} investidas</small></div><span>×</span><div><b>${esc(b.them.name)}</b><em>${b.them.points}</em><small>${b.them.npc ? 'meta da Legião' : `${b.them.wins} vitórias em ${b.them.attacks} investidas`}</small></div></div>
         <p>Suas investidas: <b>${left}/${D.GUILD.war.attacks}</b>.</p></section>

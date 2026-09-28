@@ -310,3 +310,19 @@ body.in-combat .zone-meta span{font-size:11px!important}
   .chapter-steps .journey-card,.chapter-side .journey-card{width:100%;min-height:74px}
   .journey-card b{font-size:15px;white-space:normal}
 }
+
+
+/* Camada 3D (three.js) */
+.stage canvas.atmos-canvas{pointer-events:none}
+.illustrated-map .map3d-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;opacity:0;transition:opacity .5s}
+.illustrated-map.map3d-ready .map3d-canvas{opacity:1}
+.illustrated-map.map3d-ready > img{visibility:hidden}
+.illustrated-map.map3d .map-pin{z-index:2;transition:none}
+.illustrated-map.map3d .map-pin.focus{z-index:6}
+.illustrated-map .map3d-canvas:active{cursor:grabbing}
+.dlg-mark{font:800 40px/1 "Shippori Mincho B1",serif;color:#c9472d}
+.dlg-portrait.small .dlg-mark{font-size:24px}
+.pow-big .ic{--icc:var(--gold,#d8b062)}
+/* Selos kanji (elementos, classes, eventos, efeitos): tinta colorida em vez de emoji */
+.kj{font:800 1.05em/1 "Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif;font-style:normal;color:var(--ec,var(--cc,currentColor))}
+.el-tag .kj,.cls-tag .kj{margin-right:1px}

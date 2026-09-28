@@ -35,18 +35,18 @@
   P.toggleAfk = async function(force) {
     const on = force ?? !this.state.settings.afk;
     if (on) {
-      const ok = await this.ask('🌙 Ativar o Modo AFK Total?', `<div class="afk-explain"><p>Sua equipe passa a jogar <b>sozinha</b>, sem parar:</p><ul>
-        <li>⚔ Luta com ultimates automáticas e escolhe os eventos sozinha.</li>
-        <li>🔁 <b>Farma</b> o estágio atual sem parar (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
-        <li>🧪 Usa poções quando a vida fica baixa e elixires contra chefes.</li>
-        <li>⚡ A cada ~45 s equipa itens melhores e distribui pontos de atributo e talento.</li>
-        <li>🔁 Masmorras e chefes se repetem enquanto derem espólio; depois volta a caçar.</li></ul>
+      const ok = await this.ask('Ativar o Modo AFK Total?', `<div class="afk-explain"><p>Sua equipe passa a jogar <b>sozinha</b>, sem parar:</p><ul>
+        <li>Luta com ultimates automáticas e escolhe os eventos sozinha.</li>
+        <li><b>Farma</b> o estágio atual sem parar (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
+        <li>Usa poções quando a vida fica baixa e elixires contra chefes.</li>
+        <li>A cada ~45 s equipa itens melhores e distribui pontos de atributo e talento.</li>
+        <li>Masmorras e chefes se repetem enquanto derem espólio; depois volta a caçar.</li></ul>
         <p class="dim">Com o jogo fechado, o progresso continua pelo AFK offline (até 12 h, rendendo menos). Toque em <b>Sair do AFK</b> a qualquer momento.</p></div>`,
         [{ id:'yes', label:'Ativar AFK Total', primary:true }, { id:'no', label:'Cancelar' }]);
       if (ok !== 'yes') return;
     }
     if (this.engine.seg) this.engine.input('afk', on); else { this.engine.setAfk(on); this.cmd('setSetting', 'afk', on); }
-    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>🌙 Modo AFK Total ativado.</b> Farmando este estágio: pode deixar rolando!', 'gold'); }
+    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>Modo AFK Total ativado.</b> Farmando este estágio: pode deixar rolando!', 'gold'); }
     else { const r = this.afkSummary(); this.afkSession = null; this.toast(`<b>AFK encerrado.</b> ${r ? `Em ${r.time}: +${U.fmt(r.gold)} ouro, ${U.fmt(r.kills)} abates, ${r.loot} itens, +${r.lv} níveis.` : ''}`); }
     this.renderControls(); this.renderAfk();
   };
@@ -60,7 +60,7 @@
   P.afkManage = function() {
     if (!this.state.settings.afk) return;
     const e = this.engine; if (e.phase === 'fight' && e.zone?.kind !== 'village' && e.enemies?.some(x => x.alive)) { this._afkPending = true; return; }
-    if (e.optimizeHint().any) Promise.resolve(this.cmd('optimizeTeam')).then(r => { this.renderParty?.(); this.renderResources(); if (r?.changes?.length) this.toast(`<b>🌙 AFK trocou equipamento:</b> ${this.describeChanges(r.changes)}`); });
+    if (e.optimizeHint().any) Promise.resolve(this.cmd('optimizeTeam')).then(r => { this.renderParty?.(); this.renderResources(); if (r?.changes?.length) this.toast(`<b>AFK trocou equipamento:</b> ${this.describeChanges(r.changes)}`); });
     this._afkPending = false;
   };
 
@@ -91,7 +91,7 @@
     Promise.resolve(this.cmd('optimizeTeam')).then(r => {
       if (!r) return;
       const parts = [r.items && `${r.items} item(ns) equipado(s)`, r.attr && `${r.attr} ponto(s) de atributo`, r.talents && `${r.talents} talento(s)`].filter(Boolean);
-      this.toast(parts.length ? `<b>⚡ Equipe fortalecida!</b> ${parts.join(', ')}. Poder ${U.fmt(r.before)} → <b>${U.fmt(r.after)}</b>.${r.changes?.length ? `<br>${this.describeChanges(r.changes)}` : ''}` : 'Sua equipe já está no melhor que dá agora. Para crescer: caçar (nível), Forja (refino) e Dojo (treino).', parts.length ? 'gold' : '');
+      this.toast(parts.length ? `<b>Equipe fortalecida!</b> ${parts.join(', ')}. Poder ${U.fmt(r.before)} → <b>${U.fmt(r.after)}</b>.${r.changes?.length ? `<br>${this.describeChanges(r.changes)}` : ''}` : 'Sua equipe já está no melhor que dá agora. Para crescer: caçar (nível), Forja (refino) e Dojo (treino).', parts.length ? 'gold' : '');
       if (parts.length) this.callbacks.reward?.();
       this.renderParty?.(); this.renderResources(); if (this.view?.panel) this.refreshPanel();
       this.coachEvent?.('optimized');

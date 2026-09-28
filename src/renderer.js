@@ -555,7 +555,7 @@
     }
     statusIcons(u, x, y) {
       const c = this.ctx, seen = new Set(); let ix = x;
-      u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 120) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return; c.save(); c.font = `12px ${UI_FONT}`; c.textAlign = 'left'; c.fillStyle = 'rgba(12,10,30,.75)'; this.roundRect(ix - 1, y - 12, 18, 16, 4); c.fill(); c.fillStyle = info.color; c.fillText(info.icon, ix + 1, y); c.restore(); ix += 19; });
+      u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 120) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return; c.save(); c.font = `800 12px ${DISPLAY_FONT}`; c.textAlign = 'left'; c.fillStyle = 'rgba(12,10,30,.75)'; this.roundRect(ix - 1, y - 12, 18, 16, 4); c.fill(); c.fillStyle = info.color; c.fillText(info.icon, ix + 1, y); c.restore(); ix += 19; });
     }
     // ---------- animação por folha de sprites (heróis 3D) ----------
     playClip(uid, clip) { const s = this.v(uid); s.clip = clip; s.clipAt = this.worldTime; }

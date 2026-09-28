@@ -1,0 +1,2 @@
+// Subconjunto do three.js usado pelo jogo (mapa 3D e atmosfera). Gerado por: npm run build:three
+export { WebGLRenderer, Scene, PerspectiveCamera, PlaneGeometry, Mesh, MeshBasicMaterial, ShaderMaterial, TextureLoader, SRGBColorSpace, BufferGeometry, BufferAttribute, Points, Vector3, Vector2, Color, AdditiveBlending, NormalBlending, MathUtils, Group, LinearFilter, LinearMipmapLinearFilter } from 'three';
