@@ -19,11 +19,13 @@
   // MAPA 3D
   // ---------------------------------------------------------------------------
   const MW = 16, MH = 9;                    // tamanho do plano (mesma proporção da arte 16:9)
-  const OVER = 16.2;                        // distância da câmera na visão geral (o mapa inteiro cabe)
+  const OVER = 15.2;                        // distância da câmera na visão geral (o mapa inteiro cabe)
   const bend = (x, y) => -.018 * x * x - .026 * y * y; // leve curvatura: o mundo "cai" nas bordas
   const Map3D = {
     T:null, r:null, scene:null, cam:null, mesh:null, lanterns:null, canvas:null, host:null, pins:[], raf:0,
     look:{ x:0, y:0, dist:OVER }, want:{ x:0, y:0, dist:OVER }, drag:null, focusId:null, t0:0, lastT:0,
+    // Prepara renderizador e textura antes do jogador abrir o mapa (o painel abre instantâneo).
+    async prewarm() { if (this.r || !enabled() || !webgl()) return; const T = this.T || await load(); if (!T || this.r) return; this.T = T; this.build(T); },
     async attach(host, focusId) {
       if (!host || !enabled() || !webgl()) return;
       const T = this.T || await load(); if (!T || !host.isConnected) return;
@@ -47,7 +49,7 @@
       const r = this.r = new T.WebGLRenderer({ canvas, antialias:true, alpha:false, powerPreference:'low-power' });
       r.setPixelRatio(Math.min(1.75, devicePixelRatio || 1)); r.outputColorSpace = T.SRGBColorSpace; r.setClearColor(0x14121c, 1);
       this.scene = new T.Scene(); this.cam = new T.PerspectiveCamera(30, 16 / 9, .1, 100);
-      const tex = new T.TextureLoader().load(new URL('assets/scenes/world-map.png', document.baseURI).href, () => { this.texReady = true; this.host?.classList.add('map3d-ready'); });
+      const tex = new T.TextureLoader().load(new URL(KT.sceneUrl('world-map'), document.baseURI).href, () => { this.texReady = true; this.host?.classList.add('map3d-ready'); });
       tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy()); tex.minFilter = T.LinearMipmapLinearFilter;
       const geo = new T.PlaneGeometry(MW, MH, 96, 54), pos = geo.attributes.position;
       for (let i = 0; i < pos.count; i++) pos.setZ(i, bend(pos.getX(i), pos.getY(i)));
@@ -101,7 +103,7 @@
       L.x += (W2.x - L.x) * k; L.y += (W2.y - L.y) * k; L.dist += (W2.dist - L.dist) * k;
       const sway = Math.sin(t / 4000) * .12;
       // Câmera inclinada ~28°: perspectiva de mesa de guerra, sem esconder o norte do mapa.
-      this.cam.position.set(L.x + sway * (L.dist / 10), L.y - L.dist * .36, L.dist * .93); this.cam.lookAt(L.x, L.y + .1, 0);
+      this.cam.position.set(L.x + sway * (L.dist / 10), L.y - L.dist * .27, L.dist * .96); this.cam.lookAt(L.x, L.y + .05, 0);
       this.mat.uniforms.uTime.value = t / 1000; this.lanterns.material.uniforms.uTime.value = t / 1000;
       this.r.render(this.scene, this.cam);
       const w = this.host.clientWidth, h = this.host.clientHeight, v = new this.T.Vector3();

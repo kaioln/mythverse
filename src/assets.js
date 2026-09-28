@@ -2,8 +2,8 @@
   const KT = globalThis.KT = globalThis.KT || {};
   // Sprites e retratos gerados por tools/build_sprites.py (recortados, com contorno);
   // variantes de monstros e ícones são versões com matiz alterada das artes originais.
-  const spritePath = id => `assets/sprites/${id}.png`;
-  const portraitPath = id => `assets/portraits/${id}.png`;
+  const spritePath = id => `assets/sprites/web/${id}.webp`;
+  const portraitPath = id => `assets/portraits/web/${id}.webp`;
   const iconPath = (name, hue = 0) => `assets/icons/${String(name).replace(/\.png$/, '')}${hue ? `_h${hue}` : ''}.png`;
 
   function iconList() {
@@ -15,11 +15,17 @@
     return [...out];
   }
 
+  // Cenário leve: 'web' (palco) ou 'thumb' (cartões e banners).
+  const sceneUrl = (name, size = 'web') => `assets/scenes/${size}/${name}.webp`;
   class AssetBank {
     constructor() { this.images = new Map(); this.loaded = 0; this.failed = 0; this.total = 0; this.onProgress = null; }
     loadAll() {
       const sprites = new Set([...KT.Data.roster.map(h => h.sprite), ...Object.values(KT.Data.enemies).map(e => e.sprite)]);
-      const paths = [...[...sprites].map(spritePath), ...iconList(), ...Object.values(KT.Data.zones).map(z => `assets/scenes/${z.scene || z.id}.png`)];
+      // Cenários (webp, ~7 MB no total) não entram no carregamento inicial: só a cidade e o mapa; o resto vem sob demanda
+      // e é pré-carregado aos poucos depois que o jogo abre (antes eram 69 MB de PNG na abertura).
+      const paths = [...[...sprites].map(spritePath), ...iconList(), sceneUrl('village'), sceneUrl('world-map')];
+      const later = () => Object.values(KT.Data.zones).forEach((z, i) => setTimeout(() => this.loadScene(sceneUrl(z.scene || z.id)), 1500 + i * 400));
+      setTimeout(later, 4000);
       this.total = paths.length;
       return Promise.all(paths.map(path => new Promise(resolve => {
         const img = new Image(); img.decoding = 'async';
@@ -46,10 +52,12 @@
     sprite(id) { const img = this.image(spritePath(id)); return img ? [spritePath(id), 0, 0, img.width, img.height] : null; }
     spriteImage(id) { return this.image(spritePath(id)); }
     item(name, hue = 0) { return this.image(iconPath(name, hue)); }
-    scene(zoneId) { const z = KT.Data.zones[zoneId]; return this.image(`assets/scenes/${z?.scene || zoneId}.png`); }
+    loadScene(path) { if (this.images.has(path) || this._pending?.has(path)) return; (this._pending ||= new Set()).add(path); const img = new Image(); img.decoding = 'async'; img.onload = () => { this.images.set(path, img); this._pending.delete(path); }; img.onerror = () => this._pending.delete(path); img.src = path; }
+    scene(zoneId) { const z = KT.Data.zones[zoneId], p = sceneUrl(z?.scene || zoneId); const img = this.image(p); if (!img) this.loadScene(p); return img; }
   }
 
   KT.AssetBank = AssetBank;
+  KT.sceneUrl = sceneUrl;
   KT.portraitUrl = portraitPath;
   KT.spriteUrl = spritePath;
   KT.iconUrl = iconPath;

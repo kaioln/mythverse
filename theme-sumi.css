@@ -11,7 +11,7 @@
   --bg0:#0d0c12; --bg1:#14121b; --bg2:#1b1824; --bg3:#252130;
   --glass:rgba(17,15,24,.86); --glass-strong:rgba(13,12,18,.96);
   --line:rgba(236,226,208,.08); --line2:rgba(236,226,208,.15);
-  --text:#efe7d8; --muted:#b4ab9c; --dim:#81796c;
+  --text:#efe7d8; --muted:#b4ab9c; --dim:#9b9284;
   --gold:#d8b062; --gold2:#b98c3c; --sakura:#c9472d; --cyan:#86b6c4; --green:#86c095; --red:#d9574b; --violet:#9d90c9;
   --shu:#c9472d; --shu2:#a8361f; --washi:#efe7d8; --ink:#0d0c12;
   --display:"Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif; --ui:Outfit,"Segoe UI",system-ui,sans-serif;
@@ -151,7 +151,7 @@ body.in-combat .zone-chip h1{font-family:var(--display);font-weight:800}
 .modal-panel>header,.modal-back-nav,.panel:hover,.chapter,.map-back,.foe-card,.formation-slot.filled,.collection-card,.collection-card .art,.item,.item-head .item-art,
 .city-overview,.building-list .building-head,.shop-card,.gem-hero,.record-banner,.job-badge.on,.tag.job,.tdetail,.socket.full,.card-mini,.rank-me,
 .equip-target-bar,.build-hero,.chronicle-card,.advisor-head,.wallet-strip,.wallet-hero,.doll,.adv-card.hot,.wb-hero,.bounty-active,.rk-pod,.rk-pod.p1,.rk-pod.p2,.rk-pod.p3,
-.inv-tabs button.cards-tab,.gallery-frame,.eco-hero,.eco-hero.hot,.eco-gauge,.season-banner,.box-card,.bank-kpis span,.more-grid,.cons,.map-pin,.talent-tree,
+.inv-tabs button.cards-tab,.gallery-frame,.eco-hero,.eco-hero.hot,.eco-gauge,.season-banner,.box-card,.bank-kpis span,.more-grid,.cons,.talent-tree,
 .summon-reveal,.reveal-back,.reveal-face footer,.card-tile,.card-tile .card-art{background:var(--surf)!important;background-image:none!important;box-shadow:none!important}
 .modal-panel>header{border-bottom:1px solid var(--line)}.modal-panel>header::after{display:none!important}
 .dialog-box{border:1px solid var(--line2)!important;border-left:3px solid var(--gold)!important}
@@ -185,7 +185,7 @@ body{background-image:none}
 .mark{display:inline-flex;align-items:center;gap:10px;white-space:nowrap}
 .hanko{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:4px;background:var(--shu);color:#fff3e8;font:800 11px/1 "Shippori Mincho B1",serif;letter-spacing:-.02em;writing-mode:vertical-rl;text-orientation:upright;box-shadow:inset 0 0 0 1.5px rgba(255,243,232,.35)}
 .wordmark{font:800 21px/1 var(--display);letter-spacing:.02em;color:var(--washi)}
-.brand{display:flex;align-items:center}.brand img{display:none}
+.brand{display:flex;align-items:center}.brand img{display:block;height:50px;width:auto;filter:none;margin:-4px 0}
 .boot-mark{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
 .boot-mark .hanko{width:48px;height:48px;font-size:17px;border-radius:6px}
 .boot-mark .wordmark{font-size:44px}
@@ -326,3 +326,83 @@ body.in-combat .zone-meta span{font-size:11px!important}
 /* Selos kanji (elementos, classes, eventos, efeitos): tinta colorida em vez de emoji */
 .kj{font:800 1.05em/1 "Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif;font-style:normal;color:var(--ec,var(--cc,currentColor))}
 .el-tag .kj,.cls-tag .kj{margin-right:1px}
+
+/* Logo original refinado (tools/build_logo2.py): sem halo, sem estrelas; sombra de tinta já embutida */
+.boot-logo{width:min(440px,82vw);height:auto;filter:none;animation:none;margin:0 auto 14px}
+.auth-logo{width:min(340px,100%);height:auto;filter:none;margin:0 auto 4px}
+.auth-logo.small{width:72px}
+.auth-brand picture{display:block;text-align:center}
+
+/* ===== Mapa do mundo (redesenho): menos ruído, hierarquia clara ===== */
+.illustrated-map{border:1px solid rgba(216,176,98,.28);border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.map-pin{gap:1px;padding:5px 11px 6px;border-radius:8px;background:rgba(16,14,22,.9);border:1px solid rgba(216,176,98,.45);box-shadow:0 4px 12px rgba(0,0,0,.5);color:#efe6d4;animation:none}
+.map-pin .pin-name{font:800 14px/1.1 "Shippori Mincho B1",serif}
+.map-pin small{font:600 10.5px/1.2 Outfit,sans-serif;color:#b9b0a0;letter-spacing:.01em}
+.map-pin:hover{transform:translate(-50%,-50%) scale(1.05)}
+.map-pin.done{border-color:rgba(127,190,140,.6)}
+.map-pin.done small{color:#9fd3a8}
+.map-pin.boss:not(.locked){border-color:rgba(201,71,45,.75)}
+.map-pin.current{background:#d8b062;border-color:#f3dfae;color:#1b1712;animation:none}
+.map-pin.current .pin-name{color:#1b1712}.map-pin.current small{color:#3b2f1c;font-weight:700}
+.map-pin.next{border:1.5px solid #c9472d;box-shadow:0 0 0 4px rgba(201,71,45,.18),0 4px 12px rgba(0,0,0,.5)}
+.map-pin.next small{color:#f0a894;font-weight:700}
+/* Bloqueados: só um ponto; o nome aparece ao passar o mouse (title) */
+.map-pin.locked{width:12px;height:12px;min-width:0;padding:0;border-radius:50%;background:rgba(14,12,20,.85);border:1.5px solid rgba(239,230,212,.4);box-shadow:none}
+.map-pin.locked .pin-name,.map-pin.locked small{display:none}
+.map-pin.locked:hover{transform:translate(-50%,-50%) scale(1.3)}
+.map-pin.locked.focus .pin-name{display:block;position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:2px 7px;border-radius:6px;background:rgba(16,14,22,.92);font-size:12px;white-space:nowrap}
+.map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:-8px 2px 0;font:600 12px Outfit,sans-serif;color:#a79f90}
+.map-legend span{display:inline-flex;align-items:center;gap:6px}
+.map-legend .lg{display:inline-block;width:10px;height:10px;border-radius:3px;border:1.5px solid}
+.lg.current{background:#d8b062;border-color:#d8b062}.lg.next{border-color:#c9472d;background:rgba(201,71,45,.3)}.lg.open{border-color:rgba(216,176,98,.6)}.lg.done{border-color:rgba(127,190,140,.8)}.lg.locked{border-radius:50%;border-color:rgba(239,230,212,.4)}
+.chapter{background:rgba(255,255,255,.025);border-radius:10px}
+.chapter.locked{opacity:.55}
+.chapter-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.chapter-head h4{margin:0;flex:1;min-width:0;font:800 16px "Shippori Mincho B1",serif;color:#efe6d4}
+.chapter-prog{width:80px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.chapter-prog i{display:block;height:100%;background:#d8b062}
+.chapter-head small{font:700 12px Outfit,sans-serif;color:#a79f90;min-width:30px;text-align:right}
+@media (max-width:760px){.map-legend{font-size:11px;gap:4px 10px;margin-top:-10px}.map-pin .pin-name{font-size:11px}.map-pin{padding:3px 7px}.map-pin.locked{width:9px;height:9px;padding:0}}
+
+/* Legibilidade mínima no HUD (auditoria: nada abaixo de ~11 px, contraste AA). Prefixo body vence as regras antigas. */
+body .stage-controls .ctl span,body.in-combat .stage-controls .ctl span{font-size:10.5px;letter-spacing:.06em;color:#cfc6b6}
+body #key-caption{font-size:11px;color:#cfc6b6}
+body .nav-badge,body #quest-badge{font-size:11px;min-width:18px;height:18px;line-height:18px;background:#b73a22;color:#fff}
+body .hero-slot .bar em{font-size:11px;top:-3px}
+body .hero-slot .ult-btn small{font-size:11px}
+body .hero-portrait .lv{font-size:11px}
+@media (max-width:900px){body .stage-controls .ctl span{font-size:9.5px}body .hero-slot .bar em,body .hero-slot .ult-btn small{font-size:10.5px}}
+.action.pink{background:#b33b22}.action.pink:hover:not(:disabled){background:#c9472d}
+.stars .off{color:#5d564c}
+/* Rótulos em shu precisam de um tom mais claro para ler sobre a tinta (AA) */
+.eyebrow,#modal-kicker{color:#e07a5f}
+@media (max-width:900px){:root{--dim:#a39a8c}}
+
+/* ===== Celular em combate: usar a tela inteira ===== */
+@media (max-width:640px){
+  body.in-combat .dock{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  body.in-combat .hero-slot{grid-template-columns:44px minmax(0,1fr);gap:6px 8px;padding:8px;border-radius:10px}
+  body.in-combat .hero-portrait{width:44px;height:44px;border-radius:8px}
+  body.in-combat .hero-portrait .lv{font-size:10.5px}
+  body.in-combat .hero-info header b{font-size:13px}
+  body.in-combat .bar{height:10px;margin-top:5px}
+  body.in-combat .bar em{display:block;font-size:10.5px;top:-2px}
+  body.in-combat .ult-btn{height:40px;padding:0 8px;justify-content:flex-start}
+  body.in-combat .ult-btn>span:nth-of-type(2) b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.in-combat .ult-btn>span:nth-of-type(2){flex:1 1 auto;min-width:0}
+  body.in-combat .ult-btn small{font-size:10.5px}
+  body .stage-controls .ctl{min-width:40px;height:40px}
+  body.in-combat .stage-controls .ctl b{font-size:12px}
+  body .consumables .cons{width:40px;height:40px}
+  body.in-combat #zone-title,#zone-title{font-size:14px}
+  #afk-banner{position:static;inset:auto;margin:6px 0 0;width:auto;transform:none}
+  #goal-chip{margin-top:8px}
+}
+@media (max-width:900px){
+  #afk-banner{position:static;inset:auto;margin:6px 0 0;width:auto;max-width:none;transform:none}
+  body.afk-on #goal-chip:not([hidden]){display:flex}
+  .stage-controls.below-stage{position:static;width:100%;align-self:stretch;box-sizing:border-box;display:flex;justify-content:flex-end;gap:6px;margin:6px 0 0;padding:0;background:none;border:0;box-shadow:none;flex-wrap:nowrap}
+  .stage-controls.below-stage .ctl{flex:1 1 0;min-width:0;height:44px;flex-direction:row;gap:6px;border-radius:8px}
+  .stage-controls.below-stage .ctl span{display:inline-flex!important;align-items:center;gap:4px;font-size:11px}
+  .stage-controls.below-stage .ctl b{font-size:13px}
+}

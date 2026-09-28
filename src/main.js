@@ -251,6 +251,7 @@
       if (state.settings.sound) document.addEventListener('pointerdown', () => sound.enable(true).then(() => document.querySelector('#sound-btn').classList.add('on')), { once:true });
       // Atmosfera 3D do palco (three.js sob demanda; some sozinha sem WebGL ou com "reduzir movimento").
       KT.__zone = () => engine.zone; KT.Atmos?.mount(document.querySelector('#viewport'));
+      setTimeout(() => KT.Map3D?.prewarm(), 2500);
       globalThis.__KIZUNA__ = { state, engine, renderer, ui, assets, sound };
     } catch (err) {
       console.error(err);

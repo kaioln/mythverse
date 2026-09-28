@@ -523,7 +523,7 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .set-status{margin-top:10px}.set-status p{margin:4px 0!important;padding:8px 12px;border-radius:10px;border-left:3px solid var(--sc);background:rgba(255,255,255,.03);font-size:12.5px!important}
 
 /* ---------- Convocação / coleção ---------- */
-.summon-banner{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);min-height:290px;border-radius:20px;overflow:hidden;background:url('assets/scenes/summoning.png') center/cover;border:1px solid var(--line2)}
+.summon-banner{position:relative;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);min-height:290px;border-radius:20px;overflow:hidden;background:url('assets/scenes/web/summoning.webp') center/cover;border:1px solid var(--line2)}
 .summon-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,10,34,.97) 30%,rgba(14,10,34,.55) 65%,rgba(14,10,34,.1))}
 .summon-copy{position:relative;padding:26px}
 .summon-copy h3{font-size:32px!important;margin:6px 0 8px!important}
@@ -891,7 +891,7 @@ a.action{text-decoration:none;color:inherit}
    Tela de entrada
    ========================================================= */
 .auth{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;overflow:auto}
-.auth-bg{position:fixed;inset:0;background:linear-gradient(180deg,rgba(11,10,26,.55),rgba(11,10,26,.92)),url("assets/scenes/summoning.png") center/cover}
+.auth-bg{position:fixed;inset:0;background:linear-gradient(180deg,rgba(11,10,26,.55),rgba(11,10,26,.92)),url("assets/scenes/web/summoning.webp") center/cover}
 .auth-card{position:relative;width:min(440px,100%);padding:26px 26px 20px;border-radius:24px;background:linear-gradient(180deg,rgba(28,25,60,.94),rgba(14,12,32,.97));border:1px solid rgba(255,207,107,.3);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(255,126,182,.12);backdrop-filter:blur(12px);animation:modalIn .4s cubic-bezier(.2,1.2,.4,1)}
 .auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .auth-brand .brand-mark{width:56px;height:56px;font-size:32px;border-radius:16px}
@@ -1364,7 +1364,7 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .tone-dragon .ic{--icc:linear-gradient(160deg,#ffc1a1,#ff5d4f)}.tone-compass .ic{--icc:linear-gradient(160deg,#c6fff0,#39c9a4)}.tone-target .ic{--icc:linear-gradient(160deg,#ffd0e6,#ff5d8f)}
 
 /* ---------- Aventuras ---------- */
-.adv-hero{position:relative;display:flex;align-items:flex-end;min-height:132px;margin-bottom:16px;padding:20px 22px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,207,107,.22);background:linear-gradient(90deg,rgba(13,10,28,.96) 0%,rgba(13,10,28,.72) 48%,rgba(13,10,28,.25)),var(--art,url('assets/scenes/village-expanded.png')) center/cover;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.adv-hero{position:relative;display:flex;align-items:flex-end;min-height:132px;margin-bottom:16px;padding:20px 22px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,207,107,.22);background:linear-gradient(90deg,rgba(13,10,28,.96) 0%,rgba(13,10,28,.72) 48%,rgba(13,10,28,.25)),var(--art,url('assets/scenes/web/village-expanded.webp')) center/cover;box-shadow:0 16px 40px rgba(0,0,0,.35)}
 .adv-hero h3{margin:4px 0 6px;font:28px/1.1 var(--display);letter-spacing:.01em}
 .adv-hero p{margin:0;max-width:720px;color:#ddd7f2;font-size:14px;line-height:1.5}
 .adv-hero.sub{min-height:112px}
@@ -1399,7 +1399,7 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .card-tile .card-note{color:#2e6b3a!important;font-weight:800}
 
 /* ---------- Casa do Time ---------- */
-.house-hero{border-color:rgba(111,216,184,.35);background:var(--grain),radial-gradient(700px 240px at 0% 0%,rgba(111,216,184,.16),transparent 60%),linear-gradient(90deg,rgba(18,14,34,.97),rgba(18,14,34,.72)),url('assets/scenes/village.png') center/cover}
+.house-hero{border-color:rgba(111,216,184,.35);background:var(--grain),radial-gradient(700px 240px at 0% 0%,rgba(111,216,184,.16),transparent 60%),linear-gradient(90deg,rgba(18,14,34,.97),rgba(18,14,34,.72)),url('assets/scenes/web/village.webp') center/cover}
 .house-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .house-kpis span{display:flex;flex-direction:column;padding:8px 14px;border-radius:12px;background:rgba(10,8,22,.55);border:1px solid rgba(255,255,255,.12);font-size:11.5px;color:var(--muted)}
 .house-kpis b{font:22px var(--display);color:var(--jade)}
@@ -1467,7 +1467,7 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 @media (max-width:760px){.village-hub{display:none}.sp-badge{top:-6px;right:-6px;min-width:17px;height:17px;font-size:9px}}
 
 /* ---------- Arena PvP ---------- */
-.arena-hero,.guild-hero,.war-hero{position:relative;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,207,107,.3);background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.7)),url('assets/scenes/boss_event.png') center/cover;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.arena-hero,.guild-hero,.war-hero{position:relative;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:18px 20px;margin-bottom:12px;border-radius:20px;overflow:hidden;border:1px solid rgba(255,207,107,.3);background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.7)),url('assets/scenes/web/boss_event.webp') center/cover;box-shadow:0 16px 40px rgba(0,0,0,.35)}
 .arena-crest{display:grid;place-items:center;width:104px;height:104px;flex:none;border-radius:26px;text-align:center;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.22),rgba(255,255,255,.04) 60%),rgba(10,8,22,.7);border:2px solid var(--tc);box-shadow:0 0 0 4px rgba(0,0,0,.25),0 0 24px color-mix(in srgb,var(--tc) 45%,transparent)}
 .arena-crest b{font:22px var(--display);color:var(--tc)}.arena-crest small{display:block;font-weight:800;font-size:11px;color:#eee}
 .arena-copy{flex:1;min-width:240px}.arena-copy h3,.guild-hero h3,.war-hero h3{margin:4px 0 6px;font:26px var(--display)}
@@ -1490,7 +1490,7 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .arena-result-line{font:18px var(--display);color:var(--gold)}
 
 /* ---------- Guildas ---------- */
-.guild-hero{background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.72)),url('assets/scenes/village-expanded.png') center/cover}
+.guild-hero{background:var(--grain),linear-gradient(90deg,rgba(16,12,32,.96),rgba(16,12,32,.72)),url('assets/scenes/web/village-expanded.webp') center/cover}
 .guild-hero>div{flex:1;min-width:240px}
 .guild-emblem{display:grid;place-items:center;width:84px;height:84px;flex:none;border-radius:24px;font-size:44px;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.2),rgba(255,255,255,.04) 62%),rgba(10,8,22,.65);border:2px solid rgba(255,207,107,.5)}
 .guild-emblem.sm{width:52px;height:52px;font-size:26px;border-radius:14px}
@@ -1512,7 +1512,7 @@ body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1
 .guild-card>div{flex:1}.guild-card small{display:block;color:var(--muted);margin-top:2px}.guild-card p{margin:6px 0 0;font-size:12.5px;color:#d9d3ef}
 
 /* ---------- Guerra de Guildas ---------- */
-.war-hero{flex-direction:column;align-items:stretch;background:var(--grain),linear-gradient(90deg,rgba(24,8,16,.95),rgba(24,8,16,.7)),url('assets/scenes/boss.png') center/cover;border-color:rgba(255,93,108,.4)}
+.war-hero{flex-direction:column;align-items:stretch;background:var(--grain),linear-gradient(90deg,rgba(24,8,16,.95),rgba(24,8,16,.7)),url('assets/scenes/web/boss.webp') center/cover;border-color:rgba(255,93,108,.4)}
 .war-hero.live{box-shadow:0 0 0 1px rgba(255,93,108,.3),0 16px 40px rgba(255,93,108,.12)}
 .war-score{display:flex;align-items:center;justify-content:center;gap:24px;margin:10px 0}
 .war-score>div{text-align:center;min-width:160px}.war-score b{display:block;font:18px var(--display)}.war-score em{display:block;font:54px/1 var(--display);font-style:normal;color:var(--gold);text-shadow:0 0 22px rgba(255,207,107,.35)}

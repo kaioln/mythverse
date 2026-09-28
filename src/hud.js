@@ -36,7 +36,11 @@
       grid.addEventListener('click', e => { const b = e.target.closest('[data-district]'); if (!b) return; const src = document.querySelectorAll('#village-actions .signpost')[+b.dataset.district]; src?.click(); });
     }
     // O cartão de objetivo fica sobre a arena no PC e abaixo dela no celular (não cobre a luta).
-    const placeChip = () => { const chip = this.el.goalChip, mob = matchMedia('(max-width:900px)').matches; if (!chip) return; if (mob) document.querySelector('#district-grid')?.before(chip); else document.querySelector('#viewport')?.appendChild(chip); };
+    // No celular o objetivo e a faixa do AFK ficam abaixo do palco (não cobrem a luta e usam o espaço livre da tela).
+    const placeChip = () => { const chip = this.el.goalChip, banner = this.el.afkBanner, mob = matchMedia('(max-width:900px)').matches, vp = document.querySelector('#viewport'), dock = document.querySelector('#party-strip'); if (chip) { if (mob) document.querySelector('#district-grid')?.before(chip); else vp?.appendChild(chip); } if (banner) { if (mob) dock?.before(banner); else vp?.appendChild(banner); }
+      // Controles da batalha: sobre o palco no PC; no celular numa barra logo abaixo (o palco é pequeno e eles cobriam a luta).
+      const ctl = this._ctl ||= document.querySelector('.stage-controls'), top = this._ctlHome ||= ctl?.parentElement;
+      if (ctl) { if (mob) vp?.after(ctl); else if (ctl.parentElement !== top) top?.appendChild(ctl); ctl.classList.toggle('below-stage', mob); } };
     placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
     this.applyHud();
     setInterval(() => { this.renderGoalChip(); this.renderDistricts(); }, 1000);
@@ -72,7 +76,8 @@
   P.renderGoalChip = function(force) {
     const chip = this.el.goalChip; if (!chip) return;
     const panelOpen = !this.el.app.classList.contains('panel-hidden') && !matchMedia('(max-width:1100px)').matches;
-    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active || (this.engine.zone?.kind === 'village' && !matchMedia('(max-width:900px)').matches)) { chip.hidden = true; return; } // cidade no PC: o objetivo fica no painel de boas-vindas (no celular o painel não aparece)
+    const mob = matchMedia('(max-width:900px)').matches;
+    if (!document.body.classList.contains('hud-clean') || panelOpen || (this.engine.active && !mob) || (this.engine.zone?.kind === 'village' && !mob)) { chip.hidden = true; return; } // no PC o cartão fica sobre a arena: some em combate; no celular fica abaixo dela // cidade no PC: o objetivo fica no painel de boas-vindas (no celular o painel não aparece)
     const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
     let title = '', sub = '', btn = '';
     if (g) {
