@@ -1,0 +1,109 @@
+/* =========================================================
+   MYTHVERSE · Identidade "Sumi" (tinta, laca e papel)
+   Tsukimori é uma cidade de lanternas, laca e papel washi: a interface usa a mesma matéria.
+   · base de tinta índigo, texto cor de papel;
+   · UM acento de ação (vermelho-laca 朱) e ouro-folha só para recompensa/valor;
+   · linhas finas em vez de brilho; cantos discretos; títulos em serifa japonesa (Shippori Mincho B1);
+   · ícones desenhados (assets/ui) no lugar de emoji.
+   Carregado depois de styles.css: só redefine tokens e acabamentos.
+   ========================================================= */
+:root{
+  --bg0:#0d0c12; --bg1:#14121b; --bg2:#1b1824; --bg3:#252130;
+  --glass:rgba(17,15,24,.86); --glass-strong:rgba(13,12,18,.96);
+  --line:rgba(236,226,208,.08); --line2:rgba(236,226,208,.15);
+  --text:#efe7d8; --muted:#b4ab9c; --dim:#81796c;
+  --gold:#d8b062; --gold2:#b98c3c; --sakura:#c9472d; --cyan:#86b6c4; --green:#86c095; --red:#d9574b; --violet:#9d90c9;
+  --shu:#c9472d; --shu2:#a8361f; --washi:#efe7d8; --ink:#0d0c12;
+  --display:"Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif; --ui:Outfit,"Segoe UI",system-ui,sans-serif;
+  --radius:10px; --shadow:0 14px 34px rgba(0,0,0,.45);
+  --card-bg:linear-gradient(180deg,#1a1723,#15131c);
+}
+body{background-color:var(--bg0);background-image:var(--grain),radial-gradient(1200px 700px at 50% -20%,rgba(216,176,98,.05),transparent 60%)}
+
+/* Tipografia: títulos em serifa, números alinhados */
+h1,h2,h3,h4{font-family:var(--display);font-weight:800;letter-spacing:.005em}
+.eyebrow{letter-spacing:.1em;font-size:10.5px;font-weight:700;color:var(--dim)}
+b,strong{font-variant-numeric:tabular-nums}
+
+/* Botões: sólidos, sem brilho */
+.action{border-radius:8px;background:rgba(236,226,208,.06);border:1px solid var(--line2);color:var(--text);box-shadow:none}
+.action:hover:not(:disabled){background:rgba(236,226,208,.12);transform:none}
+.action.primary{color:#1b1307;background:var(--gold);border-color:transparent;box-shadow:none}
+.action.primary:hover:not(:disabled){background:#e6c47c;box-shadow:none}
+.action.pink{color:#fff5ec;background:var(--shu);border-color:transparent;box-shadow:none}
+.action.pink:hover:not(:disabled){background:#dc5738}
+.action.red{background:var(--shu2);border-color:transparent}
+.action.big{border-radius:10px}
+.action.small{border-radius:7px}
+.action.ghost{background:transparent;border-color:var(--line2);color:var(--muted)}
+
+/* Superfícies */
+.panel,.mat-card,.train-card,.exp-card,.shop-card{background-image:none;background:var(--card-bg);border-color:var(--line)}
+.modal-panel{background-image:var(--grain),linear-gradient(180deg,#16141e,#100e16);border-color:var(--line2);border-radius:14px}
+.hud-top{background:rgba(13,12,18,.92);border-bottom:1px solid var(--line)}
+.side-nav{background:rgba(13,12,18,.7);border-right:1px solid var(--line)}
+.side-nav .nav.active,.side-nav .nav:hover{background:rgba(236,226,208,.06)}
+.side-nav .nav.active{box-shadow:inset 3px 0 0 var(--shu)}
+.side-panel{background:rgba(13,12,18,.72)}
+
+/* Controles de batalha */
+.ctl{border-radius:8px;background:rgba(13,12,18,.86);border:1px solid var(--line2);backdrop-filter:none}
+.ctl span{color:var(--dim);letter-spacing:.06em}
+.ctl.active{border-color:rgba(216,176,98,.55);box-shadow:none}.ctl.active b{color:var(--gold)}
+.ctl.afk.active{background:#1c1830;border-color:#9d90c9;box-shadow:none}.ctl.afk.active b{color:#cfc5f2}
+.ctl.boost.pulse{animation:none;border-color:var(--gold)}
+.ctl .ic{font-size:17px;--icc:var(--washi)}
+.ctl-dot{background:var(--shu);box-shadow:none}
+
+/* Cidade: placas de madeira laqueada, pequenas, sem cobrir a ilustração */
+.signpost{min-width:0;gap:7px;padding:5px 10px 5px 6px;border-radius:6px;background:rgba(13,12,18,.84);border:1px solid rgba(236,226,208,.14);border-left:3px solid var(--shu);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+.signpost::after,.signpost::before{display:none}
+.signpost .sp-icon{width:26px;height:26px;border-radius:5px;background:rgba(236,226,208,.07);border:0;font-size:15px}
+.signpost .sp-icon .ic{--icc:var(--washi)}
+.signpost b{font:700 13px var(--display);color:var(--washi)}
+.signpost:hover{border-color:rgba(216,176,98,.5);border-left-color:var(--gold)}
+.signpost.hot,.signpost.featured,.signpost.house,.signpost.bank{border-left-color:var(--gold)}
+.sp-badge{background:var(--shu);box-shadow:none}
+.village-hub{border-radius:12px;background:var(--grain),linear-gradient(180deg,rgba(22,19,30,.95),rgba(15,13,21,.95));border:1px solid var(--line2);box-shadow:var(--shadow)}
+.village-hub h3{font-family:var(--display)}
+.journey-cta{border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+
+/* Objetivo, AFK e tutorial */
+#goal-chip{border-radius:10px;background:rgba(15,13,21,.94);border:1px solid var(--line2);border-left:3px solid var(--gold);box-shadow:0 10px 24px rgba(0,0,0,.45);backdrop-filter:none}
+#goal-chip.done{border-left-color:var(--green);animation:none;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.goal-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:7px;background:rgba(216,176,98,.12);font-size:16px}
+.goal-ic .ic{--icc:var(--gold)}
+.goal-txt small{color:var(--gold);letter-spacing:.1em}
+.goal-txt b{font-family:var(--display);font-weight:800}
+#afk-banner{border-radius:10px;background:rgba(20,17,34,.95);border:1px solid #6f6497;box-shadow:0 10px 26px rgba(0,0,0,.5)}
+#afk-banner b{font-family:var(--display);font-weight:800;letter-spacing:.02em;color:#e3dbfb}
+.afk-moon{animation:none}.afk-moon .ic{--icc:#cfc5f2;font-size:20px}
+body.afk-on #viewport{box-shadow:inset 0 0 0 2px rgba(157,144,201,.55)}
+.coach-bubble{border-radius:12px;background:#17141f;border:1px solid var(--gold);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+.coach-title{font-family:var(--display);font-weight:800}
+.coach-hole{border-radius:10px;box-shadow:0 0 0 9999px rgba(8,7,12,.66),0 0 0 2px var(--gold);animation:none}
+
+/* Equipe (dock) */
+.dock{background:rgba(13,12,18,.6)}
+.toast{border-radius:8px}
+
+/* Objetivo dentro do painel de boas-vindas da cidade */
+.hub-goal{display:flex;align-items:center;gap:10px;margin:10px 0 2px;padding:9px 10px;border-radius:8px;background:rgba(236,226,208,.05);border:1px solid var(--line);border-left:3px solid var(--gold)}
+.hub-goal.done{border-left-color:var(--green)}
+.hub-goal .ic{font-size:18px;--icc:var(--gold)}.hub-goal div{flex:1;min-width:0}
+.hub-goal small{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.hub-goal b{display:block;font:800 14px/1.2 var(--display);color:var(--washi)}
+
+/* HUD de combate (body.in-combat) na mesma identidade */
+body.in-combat .ctl.active{background:rgba(216,176,98,.1);box-shadow:inset 0 0 0 1px rgba(216,176,98,.35)}
+body.in-combat .ctl.active b{color:var(--gold)}
+body.in-combat .ctl.afk.active{background:rgba(157,144,201,.14);box-shadow:inset 0 0 0 1px rgba(157,144,201,.45)}
+body.in-combat .stage-controls,body.in-combat .zone-chip,body.in-combat .boss-panel{background:rgba(13,12,18,.78);border-color:var(--line2);backdrop-filter:none}
+body.in-combat .hero-slot{background:linear-gradient(180deg,rgba(26,23,35,.92),rgba(16,14,22,.9));border-color:var(--line)}
+body.in-combat .zone-chip h1{font-family:var(--display);font-weight:800}
+@keyframes combatReady{50%{border-color:var(--gold);box-shadow:0 0 0 1px rgba(216,176,98,.45)}}
+.village-hub h3{font-size:22px;line-height:1.15}
+.zone-chip h1{font-family:var(--display);font-weight:800;font-size:clamp(17px,1.6vw,22px);line-height:1.15}
+.signpost.featured{background:rgba(13,12,18,.84);border-color:rgba(236,226,208,.14);border-left-color:var(--gold)}
+.action .ic{font-size:1.1em;--icc:currentColor}
+.action.primary .ic{--icc:#1b1307}.action.pink .ic{--icc:#fff5ec}

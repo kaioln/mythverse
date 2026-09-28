@@ -2155,8 +2155,13 @@
     }
     // "⚡ Fortalecer equipe": equipa o melhor, distribui atributos e talentos de toda a equipe de uma vez.
     optimizeTeam() {
-      const before = this.getPower(), out = { items:0, attr:0, talents:0 };
+      const before = this.getPower(), out = { items:0, attr:0, talents:0 }, snap = new Map(this.heroes.map(r => [r.uid, { ...r.equipped }]));
       this.heroes.forEach(r => { out.items += this.autoEquip(r.uid); if (this.freeAttr(r) > 0) out.attr += this.autoAttr(r.uid) || 0; if (this.heroTalentPoints(r) > 0) out.talents += this.autoTalents(r.uid) || 0; });
+      // O que mudou de lugar (para avisar o jogador: nada some sem explicação).
+      const name = uid => [...this.state.inventory, ...this.state.storage].find(x => x.uid === uid)?.name || '';
+      const where = uid => this.state.storage.some(x => x.uid === uid) ? 'Armazém' : this.ownerOf(uid) ? this.template(this.ownerOf(uid).id).name : 'Bolsa';
+      out.changes = [];
+      this.heroes.forEach(r => Object.keys(I.slots).forEach(sl => { const was = snap.get(r.uid)?.[sl], now = r.equipped[sl]; if (was !== now && now) out.changes.push({ hero:this.template(r.id).name, item:name(now), old:was ? name(was) : '', oldTo:was ? where(was) : '' }); }));
       this.refreshPartyUnits(); this.emit('onState');
       return { ...out, before, after:this.getPower() };
     }

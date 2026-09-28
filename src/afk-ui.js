@@ -12,10 +12,10 @@
     const ctl = document.querySelector('.stage-controls'); if (!ctl || document.querySelector('#afk-btn')) return;
     const afk = document.createElement('button'); afk.id = 'afk-btn'; afk.className = 'ctl afk'; afk.type = 'button';
     afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual sem parar, usa poções, equipa itens e distribui pontos sozinho. Não avança.';
-    afk.innerHTML = '<span>AFK</span><b>OFF</b>'; ctl.prepend(afk);
+    afk.innerHTML = '<span><i class="ic ic-moon"></i> AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
     boost.dataset.tip = 'Fortalecer equipe: equipa os melhores itens e distribui atributos e talentos de todos de uma vez.';
-    boost.innerHTML = '<span>⚡</span><b>FORÇA</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
+    boost.innerHTML = '<span><i class="ic ic-bolt"></i></span><b>FORÇA</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
     const banner = document.createElement('div'); banner.id = 'afk-banner'; banner.hidden = true; document.querySelector('#viewport')?.appendChild(banner);
     this.el.afk = afk; this.el.boost = boost; this.el.afkBanner = banner;
     afk.addEventListener('click', () => this.toggleAfk());
@@ -60,7 +60,7 @@
   P.afkManage = function() {
     if (!this.state.settings.afk) return;
     const e = this.engine; if (e.phase === 'fight' && e.zone?.kind !== 'village' && e.enemies?.some(x => x.alive)) { this._afkPending = true; return; }
-    if (e.optimizeHint().any) Promise.resolve(this.cmd('optimizeTeam')).then(() => { this.renderParty?.(); this.renderResources(); });
+    if (e.optimizeHint().any) Promise.resolve(this.cmd('optimizeTeam')).then(r => { this.renderParty?.(); this.renderResources(); if (r?.changes?.length) this.toast(`<b>🌙 AFK trocou equipamento:</b> ${this.describeChanges(r.changes)}`); });
     this._afkPending = false;
   };
 
@@ -69,6 +69,8 @@
     const on = !!this.state.settings.afk, b = this.el.afkBanner, village = this.engine.zone?.kind === 'village';
     this.el.afk.classList.toggle('active', on); this.el.afk.querySelector('b').textContent = on ? 'ON' : 'OFF';
     this.el.afk.hidden = village;
+    // Durante o AFK ele controla AUTO e AVANÇO: os dois saem da tela para não confundir.
+    ['#auto-btn', '#advance-btn'].forEach(id => { const x = document.querySelector(id); if (x) x.classList.toggle('afk-hide', on); });
     const hint = this.engine.optimizeHint(); this.el.boost.querySelector('.ctl-dot').hidden = !hint.any;
     this.el.boost.classList.toggle('pulse', hint.any && !on);
     document.body.classList.toggle('afk-on', on && !village);
@@ -76,15 +78,20 @@
     if (this._afkPending && this.engine.phase !== 'fight') this.afkManage();
     const r = this.afkSummary() || { time:'0 min', gold:0, kills:0, loot:0, lv:0, power:0 };
     b.hidden = false;
-    b.innerHTML = `<span class="afk-moon">🌙</span><div><b>AFK · FARMANDO ${esc(this.engine.zone?.title || '')}${this.engine.opts?.stage ? ` ${this.engine.opts.stage}` : this.engine.opts?.floor ? ` · andar ${this.engine.opts.floor}` : ''}</b><small>${r.time} · +${U.fmt(r.gold)} ouro · ${U.fmt(r.kills)} abates · ${r.loot} itens · +${r.lv} níveis${r.power > 0 ? ` · +${U.fmt(r.power)} Poder` : ''}</small></div><button class="action small" data-afk-off type="button">Sair do AFK</button>`;
+    b.innerHTML = `<span class="afk-moon"><i class="ic ic-moon"></i></span><div><b>AFK · FARMANDO ${esc(this.engine.zone?.title || '')}${this.engine.opts?.stage ? ` ${this.engine.opts.stage}` : this.engine.opts?.floor ? ` · andar ${this.engine.opts.floor}` : ''}</b><small>${r.time} · +${U.fmt(r.gold)} ouro · ${U.fmt(r.kills)} abates · ${r.loot} itens · +${r.lv} níveis${r.power > 0 ? ` · +${U.fmt(r.power)} Poder` : ''}</small></div><button class="action small" data-afk-off type="button">Sair do AFK</button>`;
   };
 
+  const esc2 = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  P.describeChanges = function(list) {
+    const shown = list.slice(0, 3).map(c => `<b>${esc2(c.item)}</b> → ${esc2(c.hero)}${c.old ? ` <small>(${esc2(c.old)} foi para ${c.oldTo === 'Armazém' ? 'o Armazém' : c.oldTo === 'Bolsa' ? 'a Bolsa' : esc2(c.oldTo)})</small>` : ''}`);
+    return shown.join(' · ') + (list.length > 3 ? ` e mais ${list.length - 3}.` : '.');
+  };
   P.optimizeTeam = function() {
     if (!this.engine.heroes.length) { this.toast('Monte a equipe primeiro.'); this.openPanel('party'); return; }
     Promise.resolve(this.cmd('optimizeTeam')).then(r => {
       if (!r) return;
       const parts = [r.items && `${r.items} item(ns) equipado(s)`, r.attr && `${r.attr} ponto(s) de atributo`, r.talents && `${r.talents} talento(s)`].filter(Boolean);
-      this.toast(parts.length ? `<b>⚡ Equipe fortalecida!</b> ${parts.join(', ')}. Poder ${U.fmt(r.before)} → <b>${U.fmt(r.after)}</b>.` : 'Sua equipe já está no melhor que dá agora. Para crescer: caçar (nível), Forja (refino) e Dojo (treino).', parts.length ? 'gold' : '');
+      this.toast(parts.length ? `<b>⚡ Equipe fortalecida!</b> ${parts.join(', ')}. Poder ${U.fmt(r.before)} → <b>${U.fmt(r.after)}</b>.${r.changes?.length ? `<br>${this.describeChanges(r.changes)}` : ''}` : 'Sua equipe já está no melhor que dá agora. Para crescer: caçar (nível), Forja (refino) e Dojo (treino).', parts.length ? 'gold' : '');
       if (parts.length) this.callbacks.reward?.();
       this.renderParty?.(); this.renderResources(); if (this.view?.panel) this.refreshPanel();
       this.coachEvent?.('optimized');

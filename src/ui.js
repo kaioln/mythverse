@@ -202,12 +202,13 @@
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
       document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); });
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
-      const key = [greet, hz.id, stage, pending, ev.id, s.player.name].join('|'); if (key === this.villageKey) return; this.villageKey = key;
+      const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${ev.icon} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
       hub.innerHTML = `<span class="eyebrow">${greet}, ${esc(s.player.name || 'Viajante')}</span>
         <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
-        <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button">⚔ Continuar: ${esc(hz.title)} · ${stage}</button>
-        <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `🎁 ${pending} para resgatar` : '🗺 O que fazer agora'}</button></div>`;
+        ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${g.go}" type="button">Ir</button>` : ''}</div>`; })()}
+        <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> Continuar: ${esc(hz.title)} · ${stage}</button>
+        <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-compass"></i> O que fazer agora'}</button></div>`;
     }
 
     renderParty() {
@@ -327,6 +328,7 @@
       this.logs = []; this.onLog({ text:`Você chegou a ${zone.title}.`, type:'system' });
       this.el.result.hidden = true; this.el.choice.hidden = true; this.el.warn.hidden = true; this.dockKey = '';
       if (zone.kind !== 'village') this.renderer.showBanner(zone.title, zone.kicker, '#ff9ec7');
+      else { this.renderer.banner = null; this.renderer.cutin = null; this.renderer.screenFlash = null; } // nada da batalha fica na tela da cidade
       this.renderAll();
     }
     onWave(info) {

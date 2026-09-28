@@ -204,11 +204,25 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
-      // Com a aba em segundo plano (ou a janela coberta) o requestAnimationFrame pausa: mantém a caçada rodando.
-      let bgSave = 0;
-      setInterval(() => { if (!document.hidden && performance.now() - last < 1000) return; engine.update(.5); if (++bgSave >= 20) { bgSave = 0; engine.save(); } }, 500);
+      // Aba em segundo plano, minimizada ou coberta: o requestAnimationFrame para e o navegador espaça os timers
+      // (até 1 por minuto). A caçada continua pelo TEMPO REAL decorrido: cada chamada simula tudo o que passou
+      // (até 30 min por vez) e, ao voltar para a aba, recupera o que faltou.
+      let bgSave = 0, bgLast = performance.now();
+      const catchUp = () => {
+        const now = performance.now(); let gap = Math.min((now - bgLast) / 1000, 1800); bgLast = now;
+        while (gap > .05) { const d = Math.min(1, gap); engine.update(d); gap -= d; }
+        renderer.hitstop = 0;
+      };
+      setInterval(() => {
+        if (!document.hidden && performance.now() - last < 1000) { bgLast = performance.now(); return; }
+        catchUp(); if (++bgSave >= 10) { bgSave = 0; engine.save(); }
+      }, 1000);
       addEventListener('beforeunload', () => engine.save());
-      document.addEventListener('visibilitychange', () => { if (document.hidden) engine.save(); last = performance.now(); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { bgLast = performance.now(); engine.save(); }
+        else { catchUp(); engine.save(); ui.renderAll(); }
+        last = performance.now();
+      });
       if (state.settings.sound) document.addEventListener('pointerdown', () => sound.enable(true).then(() => document.querySelector('#sound-btn').classList.add('on')), { once:true });
       globalThis.__KIZUNA__ = { state, engine, renderer, ui, assets, sound };
     } catch (err) {

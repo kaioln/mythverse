@@ -1798,3 +1798,6 @@ body.in-combat .ult-btn.ready{animation:combatReady 1.7s ease-in-out infinite}
   body.in-combat .hero-portrait{width:40px;height:40px}
   body.in-combat .ult-btn{height:25px}
 }
+.compare.busy{color:#9fb3ff}
+body.hud-clean #auto-btn:not([hidden]),body.hud-clean #advance-btn:not([hidden]){display:flex}
+#auto-btn.afk-hide,#advance-btn.afk-hide{display:none!important}

@@ -18,18 +18,11 @@
     if (nav && !nav.querySelector('.nav-more')) {
       nav.querySelectorAll('.nav[data-panel]').forEach(b => { if (!MAIN.includes(b.dataset.panel)) b.classList.add('nav-extra'); });
       const more = document.createElement('button'); more.className = 'nav nav-more'; more.type = 'button';
-      more.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg><b>Mais</b><em class="nav-badge nav-more-badge" hidden></em>';
+      more.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
+      more.dataset.tip = 'Todos os outros lugares: Aventuras, Ranking, Arena, Guilda, Talentos, Loja e Wiki.';
       more.addEventListener('click', () => { if (matchMedia('(max-width:760px)').matches) this.toggleMoreSheet(); else nav.classList.toggle('more-open'); });
       nav.addEventListener('click', e => { if (e.target.closest('.nav-extra')) nav.classList.remove('more-open'); });
       nav.appendChild(more);
-    }
-    const ctl = document.querySelector('.stage-controls');
-    if (ctl && !document.querySelector('#adv-ctl-btn')) {
-      const g = document.createElement('button'); g.id = 'adv-ctl-btn'; g.className = 'ctl gear'; g.type = 'button';
-      g.dataset.tip = 'Mais controles: AUTO (ultimates sozinhas) e AVANÇO (ir ao próximo estágio ao vencer).';
-      g.innerHTML = '<span>⚙</span><b>MAIS</b>';
-      g.addEventListener('click', () => ctl.classList.toggle('adv-open'));
-      document.querySelector('#retreat-btn')?.before(g);
     }
     const vp = document.querySelector('#viewport');
     if (vp && !document.querySelector('#goal-chip')) {
@@ -48,7 +41,7 @@
       sh.addEventListener('click', e => { const b = e.target.closest('[data-more-panel]'); if (b) { sh.hidden = true; document.querySelector(`.nav[data-panel="${b.dataset.morePanel}"]`)?.click(); } else if (e.target === sh) sh.hidden = true; });
     }
     const open = force ?? sh.hidden;
-    if (open) sh.innerHTML = `<div class="more-grid"><b>Mais opções</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" data-more-panel="${n.dataset.panel}">${n.querySelector('svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
+    if (open) sh.innerHTML = `<div class="more-grid"><b>Menu</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" data-more-panel="${n.dataset.panel}">${n.querySelector('svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
     sh.hidden = !open;
   };
   P.applyHud = function() {
@@ -64,7 +57,7 @@
   P.renderGoalChip = function(force) {
     const chip = this.el.goalChip; if (!chip) return;
     const panelOpen = !this.el.app.classList.contains('panel-hidden') && !matchMedia('(max-width:1100px)').matches;
-    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active) { chip.hidden = true; return; }
+    if (!document.body.classList.contains('hud-clean') || panelOpen || this.engine.active || this.engine.zone?.kind === 'village') { chip.hidden = true; return; } // cidade: o objetivo fica no painel de boas-vindas
     const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
     let title = '', sub = '', btn = '';
     if (g) {
@@ -74,8 +67,8 @@
       const v = e.chronicleValue(ch), done = v >= ch.target; title = ch.title; sub = `${U.fmt(v)} / ${U.fmt(ch.target)}`;
       btn = done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : '';
     } else { title = 'Jornada concluída!'; sub = 'Explore a Fenda e os chefes em Pesadelo.'; }
-    const gift = ls.available ? `<button class="action pink small" data-claim-login type="button" data-tip="Presente de login do dia">🎁 Presente</button>` : '';
-    const html = `<span class="goal-ic">🎯</span><div class="goal-txt"><small>OBJETIVO</small><b>${esc(title)}</b><em>${esc(sub)}</em></div>${btn}${gift}`;
+    const gift = ls.available ? `<button class="action pink small" data-claim-login type="button" data-tip="Presente de login do dia"><i class="ic ic-chest"></i> Presente</button>` : '';
+    const html = `<span class="goal-ic"><i class="ic ic-target"></i></span><div class="goal-txt"><small>OBJETIVO</small><b>${esc(title)}</b><em>${esc(sub)}</em></div>${btn}${gift}`;
     chip.hidden = false;
     if (force || html !== this._goalHtml) { this._goalHtml = html; chip.innerHTML = html; chip.classList.toggle('done', /data-claim-(guide|chronicle)/.test(btn)); }
     // Selo do "Mais": algum atalho escondido tem novidade.

@@ -416,15 +416,17 @@
         <button class="action small" data-hero="${tr.uid}" type="button">Ficha completa</button></aside>`;
     }
     const cardTotal = Object.values(s.cards).reduce((a, b) => a + b, 0);
-    const tabs = [['items', `Itens (${e.bagCount()}/${s.invCap})`], ['storage', `🏯 Armazém (${(s.storage || []).length}/${e.storageCap()})`, 'storage-tab'], ['cards', `🃏 Cartas${cardTotal ? ` · ${cardTotal}` : ''}`, 'cards-tab'], ['overflow', `Excedentes (${s.overflow?.length || 0})`], ['mats', 'Materiais'], ['cons', 'Consumíveis']];
+    const inUse = inv.length - e.bagCount();
+    const tabs = [['items', `Bolsa (${e.bagCount()}/${s.invCap}${inUse ? ` · ${inUse} em uso` : ''})`], ['storage', `🏯 Armazém (${(s.storage || []).length}/${e.storageCap()})`, 'storage-tab'], ['cards', `🃏 Cartas${cardTotal ? ` · ${cardTotal}` : ''}`, 'cards-tab'], ['overflow', `Excedentes (${s.overflow?.length || 0})`], ['mats', 'Materiais'], ['cons', 'Consumíveis']];
     let body = '';
     if (tab === 'items' || tab === 'overflow' || tab === 'storage') {
       const src = tab === 'items' ? inv : tab === 'storage' ? (s.storage || []) : (s.overflow || []);
       const scoreCache = new Map(), scoreFor = it => { if (!scoreCache.has(it.uid)) scoreCache.set(it.uid, tr ? (e.itemGain(tr, it) ?? -9) : I.itemScore(it)); return scoreCache.get(it.uid); };
-      // Itens equipados em outros heróis não aparecem aqui (ficam na ficha de quem os usa).
-      let list = src.filter(it => (f.slot === 'all' || it.slot === f.slot) && (tab !== 'items' || !e.ownerOf(it.uid) || e.ownerOf(it.uid).uid === target));
+      // Todos os itens aparecem; os que estão em uso por outro herói ganham o selo "Em uso" e vão para o fim.
+      let list = src.filter(it => (f.slot === 'all' || it.slot === f.slot));
       if (f.usable && tr) list = list.filter(it => I.canEquip(it, tr));
-      list = list.slice().sort((a, b) => f.sort === 'score' ? scoreFor(b) - scoreFor(a) : f.sort === 'level' ? b.ilvl - a.ilvl : (RORDER[a.rarity] - RORDER[b.rarity]) || b.ilvl - a.ilvl);
+      const busyOther = it => { const o = e.ownerOf(it.uid); return o && o.uid !== target ? o : null; };
+      list = list.slice().sort((a, b) => (!!busyOther(a) - !!busyOther(b)) || (f.sort === 'score' ? scoreFor(b) - scoreFor(a) : f.sort === 'level' ? b.ilvl - a.ilvl : (RORDER[a.rarity] - RORDER[b.rarity]) || b.ilvl - a.ilvl));
       src.forEach(it => { it.isNew = false; });
       const decor = D.STORAGE.decor.map(dc => { const own = !!s.decor?.[dc.id]; return `<div class="decor ${own ? 'own' : ''}"><span>${dc.icon}</span><div><b>${esc(dc.name)}</b><small>${esc(dc.text)} +${dc.slots} espaços.</small></div>${own ? '<em>Instalado</em>' : `<button class="action small" data-buy-decor="${dc.id}" type="button" ${s.player.crystal >= dc.price.crystal ? '' : 'disabled'}>${U.fmt(dc.price.crystal)} 💎</button>`}</div>`; }).join('');
       const storageHead = `<section class="storage-hero"><div class="storage-deco">${D.STORAGE.decor.filter(dc => s.decor?.[dc.id]).map(dc => `<span title="${esc(dc.name)}">${dc.icon}</span>`).join('') || '<span class="dim">📦</span>'}</div><div><span class="eyebrow">ARMAZÉM DO TANUKI · 狸の蔵</span><h3>Ponta, o guardião das prateleiras</h3>
@@ -439,8 +441,8 @@
         <label class="check"><input type="checkbox" id="inv-usable" ${f.usable ? 'checked' : ''}> Só o que ${tt ? esc(tt.name.split(' ')[0]) : 'o herói'} pode usar</label></div>${tools}
         <div class="inventory-grid">${list.map(it => {
           const v = I.salvageValue(it), chk = tr ? I.equipCheck(it, tr) : { ok:false }, cur = tr && inv.find(x => x.uid === tr.equipped[it.slot]), isCur = cur === it;
-          const d = tr && chk.ok && !isCur && tab === 'items' ? scoreFor(it) - (cur ? scoreFor(cur) : 0) : null;
-          const compare = isCur ? `<span class="compare eq">✓ Equipado em ${esc(tt.name)}</span>` : !chk.ok && tr ? `<span class="compare no">✕ ${esc(chk.reason)}</span>` : d === null ? '' : `<span class="compare ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d).toLocaleString('pt-BR')} para ${esc(tt.name)}</span>`;
+          const d = tr && chk.ok && !isCur && tab !== 'overflow' ? scoreFor(it) - (cur ? scoreFor(cur) : 0) : null, other = tab === 'items' && busyOther(it);
+          const compare = other ? `<span class="compare busy">Em uso por ${esc(e.template(other.id).name)}</span>` : isCur ? `<span class="compare eq">✓ Equipado em ${esc(tt.name)}</span>` : !chk.ok && tr ? `<span class="compare no">✕ ${esc(chk.reason)}</span>` : d === null ? '' : `<span class="compare ${d >= 0 ? 'up' : 'down'}">${d >= 0 ? '▲ melhor' : '▼ pior'} para ${esc(tt.name)}: ${d >= 0 ? '+' : '−'}${tr ? `${(Math.abs(d) * 100).toFixed(1).replace('.', ',')}% de força` : Math.abs(Math.round(d)).toLocaleString('pt-BR')}</span>`;
           const actions = tab === 'items'
             ? `<button class="action small primary" data-equip-target="${it.uid}" type="button" ${chk.ok && !isCur ? '' : 'disabled'}>${isCur ? 'Equipado' : tt ? `Equipar em ${esc(tt.name.split(' ')[0])}` : 'Equipar'}</button><button class="action small" data-lock="${it.uid}" type="button" data-tip="${it.locked ? 'Destrancar' : 'Trancar (protege de desmontagem)'}">${it.locked ? '🔓' : '🔒'}</button><button class="action small" data-store="${it.uid}" type="button" data-tip="Guardar no Armazém (protegido, não ocupa a bolsa)">🏯</button><button class="action small" data-salvage="${it.uid}" type="button" ${it.locked || e.ownerOf(it.uid) ? 'disabled' : ''} data-tip="Desmontar: +${v.ore} Tamahagane, +${v.dust} Éter, +${v.gold} ouro">♻</button><button class="action small" data-forge-item="${it.uid}" type="button" data-tip="Refinar na Forja">⚒</button>${tradeMode(this) ? `<button class="action small" data-sell-item="${it.uid}" type="button" data-tip="${it.bound ? 'Item vinculado: não pode ser vendido' : 'Vender no Mercado de Jogadores'}" ${it.locked || it.bound || e.ownerOf(it.uid) ? 'disabled' : ''}>💠</button>` : ''}`
             : tab === 'storage' ? `<button class="action small primary" data-equip-target="${it.uid}" type="button" ${chk.ok ? '' : 'disabled'}>${tt ? `Equipar em ${esc(tt.name.split(' ')[0])}` : 'Equipar'}</button><button class="action small" data-retrieve="${it.uid}" type="button" ${e.bagFull() ? 'disabled' : ''}>Para a bolsa</button>`
@@ -1109,7 +1111,7 @@
     if (d.scroll) { run('useScroll', [d.scroll]); return; }
     if (d.pickSlot) { this.pickSlot = this.pickSlot === d.pickSlot ? null : d.pickSlot; this.refreshPanel(); return; }
     if (d.equip) { run('equip', [this.view.param, d.equip], () => { this.pickSlot = null; this.callbacks.click?.(); }); return; }
-    if (d.unequip) { run('unequip', [d.unequipHero || this.view.param, d.unequip]); return; }
+    if (d.unequip) { run('unequip', [d.unequipHero || this.view.param, d.unequip], r => { if (r) this.toast('Item removido e guardado no <b>🏯 Armazém</b> (Bolsa → Armazém).'); }); return; }
     if (d.equipTarget) { const to = this.equipTargetUid(); if (!to) { this.toast('Monte a equipe primeiro.'); return; } run('equip', [to, d.equipTarget], r => { if (r) { this.toast(`Equipado em <b>${esc(e.template(e.record(to).id).name)}</b>.`); this.callbacks.click?.(); } }); return; }
     if (d.equipTo) { this.equipTarget = d.equipTo; this.heroPickerOpen = false; refresh(); return; }
     if (b.hasAttribute('data-hero-picker')) { this.heroPickerOpen = !this.heroPickerOpen; this.refreshPanel(); return; }
