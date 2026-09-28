@@ -82,10 +82,13 @@
     }
 
     // ---------- eventos ----------
+    // Efeitos de combate: "suave" (padrão) = sem tremor de tela, pausa de impacto mínima, flashes fracos, números
+    // compactos e brilho reduzido. "intenso" (Perfil → Configurações) volta ao estilo antigo.
+    get intense() { if (this._fxAt !== this.worldTime) { this._fxAt = this.worldTime; try { this._intense = KT.Utils.safeStorage.get('mythverse-fx') === 'intense'; } catch { this._intense = false; } } return this._intense; }
     emit(fx) {
       if (!fx) return;
       const t = fx.type;
-      if (t === 'hitstop') { this.hitstop = Math.max(this.hitstop, fx.time || .05); return; }
+      if (t === 'hitstop') { if (this.intense) this.hitstop = Math.max(this.hitstop, fx.time || .05); return; }
       if (t === 'attack') {
         const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
         const ranged = RANGED.has(fx.role);
@@ -107,7 +110,7 @@
           this.number(p.x + U.rand(-26, 26), p.y - p.h - 8, fx.value, color, fx.crit, hero, dot);
           if (fx.weak && !dot) this.text(p.x + 40, p.y - p.h + 14, 'FRACO!', '#ffe28a', 15, .8);
           if (fx.resist && !dot) this.text(p.x + 40, p.y - p.h + 14, 'RESISTE', '#aab4c8', 14, .8);
-          if (!dot) this.sparks(p.x, p.y - p.h * .5, fx.crit ? 12 : 5, fx.crit ? '#ffe28a' : hero ? '#ff8a8a' : fx.color || '#ffe9c9', fx.crit ? 320 : 200);
+          if (!dot) this.sparks(p.x, p.y - p.h * .5, (fx.crit ? 12 : 5) * (this.intense ? 1 : .5), fx.crit ? '#ffe28a' : hero ? '#ff8a8a' : fx.color || '#ffe9c9', fx.crit ? 320 : 200);
           if (!dot && (fx.crit || fx.kind !== 'basic')) this.impact(p.x + U.rand(-12, 12), p.y - p.h * .5 + U.rand(-10, 10), fx.crit ? '#ffcf6b' : fx.color || '#ffe9c9', fx.crit ? 1.15 : .8);
           if (fx.crit) this.shake = Math.max(this.shake, 6);
         });
@@ -193,8 +196,11 @@
     later(d, fn) { if (d <= 0) fn(); else this.delayed.push({ t:d, fn }); }
     hitActor(uid, dir, str) { const s = this.v(uid); s.hit = .22 * str + .08; s.hitDir = dir; s.flash = .16 + .08 * str; }
     number(x, y, value, color, crit = false, hurt = false, dot = false) {
-      const txt = typeof value === 'number' ? U.fmt(value) : String(value);
-      this.particles.push({ kind:'num', x, y, vx:U.rand(-40, 40), vy:crit ? -170 : dot ? -70 : -130, text:crit ? `${txt}!` : hurt ? `-${txt}` : txt, color, life:crit ? 1.15 : .9, max:crit ? 1.15 : .9, size:crit ? 44 : dot ? 20 : hurt ? 26 : 30, crit });
+      const calm = !this.intense, n = typeof value === 'number' ? value : null;
+      const txt = n === null ? String(value) : calm ? (n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e4 ? `${(n / 1e3).toFixed(1)}K` : U.fmt(n)).replace('.', ',') : U.fmt(n);
+      if (calm) { const nums = this.particles.filter(p => p.kind === 'num'); if (nums.length > 12) this.particles.splice(this.particles.indexOf(nums[0]), 1); }
+      const size = calm ? (crit ? 30 : dot ? 16 : hurt ? 20 : 22) : (crit ? 44 : dot ? 20 : hurt ? 26 : 30);
+      this.particles.push({ kind:'num', x, y, vx:U.rand(-40, 40) * (calm ? .5 : 1), vy:crit ? -150 : dot ? -60 : -110, text:crit && !calm ? `${txt}!` : hurt ? `-${txt}` : txt, color, life:crit ? 1.05 : .85, max:crit ? 1.05 : .85, size, crit });
     }
     text(x, y, text, color, size = 20, life = 1, fixed = false) { this.particles.push({ kind:'label', x, y, text, color, size, life, max:life, fixed }); }
     // Texturas de efeito geradas uma vez por cor: brilho radial, corte em crescente e estrela de impacto.
@@ -323,7 +329,7 @@
 
     // ---------- atualização ----------
     update(dt) {
-      this.worldTime += dt; this.shake = Math.max(0, this.shake - dt * 40); this.hitstop = Math.max(0, this.hitstop - dt);
+      this.worldTime += dt; this.shake = Math.max(0, this.shake - dt * 40); this.hitstop = this.intense ? Math.max(0, this.hitstop - dt) : 0;
       if (this.engine.zone.id !== this.zoneId || this.engine.party !== this.lastParty) {
         if (this.engine.zone.id !== this.zoneId) { this.zoneId = this.engine.zone.id; this.zoneFade = 0; this.particles = []; this.loot = []; this.projectiles = []; this.delayed = []; this.seedAmbient(); }
         this.lastParty = this.engine.party; this.vis.clear();
@@ -384,7 +390,7 @@
       const c = this.ctx;
       c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.canvas.width, this.canvas.height); c.setTransform(this.scale, 0, 0, this.scale, 0, 0);
       c.save();
-      if (this.shake > 0) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
+      if (this.shake > 0 && this.intense) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
       this.hotspots = [];
       this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawAmbient(false);
       c.restore();
@@ -675,14 +681,15 @@
     }
     drawParticles() {
       const c = this.ctx; c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
+      const glowK = this.intense ? 1 : .55;
       for (const p of this.particles) {
         const a = U.clamp(p.life / p.max, 0, 1), age = p.max - p.life;
-        c.save(); c.globalAlpha = Math.min(1, a * 2.2);
+        c.save(); c.globalAlpha = Math.min(1, a * 2.2) * (p.kind === 'num' || p.kind === 'label' ? 1 : glowK);
         if (p.kind === 'num' || p.kind === 'label') {
-          const pop = p.kind === 'num' ? (age < .12 ? 1 + (1 - age / .12) * (p.crit ? .9 : .5) : 1) : easeOutBack(Math.min(1, age / .25));
+          const calm = !this.intense, pop = p.kind === 'num' ? (age < .12 ? 1 + (1 - age / .12) * (calm ? (p.crit ? .25 : .12) : (p.crit ? .9 : .5)) : 1) : easeOutBack(Math.min(1, age / .25));
           c.translate(p.x, p.y); c.scale(pop, pop); c.font = `800 ${p.size}px ${UI_FONT}`; c.lineJoin = 'round';
-          c.lineWidth = p.kind === 'num' ? 7 : 6; c.strokeStyle = 'rgba(14,6,26,.95)'; c.strokeText(p.text, 0, 0);
-          if (p.crit) { c.shadowColor = '#ff9d2e'; c.shadowBlur = 16; }
+          c.lineWidth = calm ? (p.kind === 'num' ? 4.5 : 4) : (p.kind === 'num' ? 7 : 6); c.strokeStyle = 'rgba(14,10,20,.92)'; c.strokeText(p.text, 0, 0);
+          if (p.crit && !calm) { c.shadowColor = '#ff9d2e'; c.shadowBlur = 16; }
           c.fillStyle = p.color; c.fillText(p.text, 0, 0);
         } else if (p.kind === 'ring') {
           const t = 1 - a, r = p.radius * (.3 + easeOut(t) * .9); c.globalCompositeOperation = 'lighter'; c.strokeStyle = p.color; c.lineWidth = 4 * a + 1; c.globalAlpha = a * .8;
@@ -720,8 +727,8 @@
     }
     drawOverlay() {
       const c = this.ctx;
-      if (this.engine.enemies.some(e => e.alive && e.windup > 0)) { const pulse = .5 + .5 * Math.sin(this.worldTime * 16); const g = c.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .9); g.addColorStop(0, 'rgba(255,0,40,0)'); g.addColorStop(1, `rgba(255,20,60,${.22 + .18 * pulse})`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
-      if (this.screenFlash) { c.save(); c.globalAlpha = (this.screenFlash.t / this.screenFlash.max) * .14; c.globalCompositeOperation = 'screen'; c.fillStyle = this.screenFlash.color; c.fillRect(0, 0, W, H); c.restore(); }
+      if (this.engine.enemies.some(e => e.alive && e.windup > 0)) { const pulse = .5 + .5 * Math.sin(this.worldTime * (this.intense ? 16 : 5)), k = this.intense ? 1 : .45; const g = c.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .9); g.addColorStop(0, 'rgba(255,0,40,0)'); g.addColorStop(1, `rgba(200,40,50,${(.22 + .18 * pulse) * k})`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+      if (this.screenFlash) { c.save(); c.globalAlpha = (this.screenFlash.t / this.screenFlash.max) * (this.intense ? .14 : .05); c.globalCompositeOperation = 'screen'; c.fillStyle = this.screenFlash.color; c.fillRect(0, 0, W, H); c.restore(); }
       if (this.engine.pendingRoute || this.engine.pendingEncounter || this.engine.paused) { c.fillStyle = 'rgba(6,4,18,.45)'; c.fillRect(0, 0, W, H); }
     }
     portrait(sprite) {
@@ -730,6 +737,17 @@
     }
     drawCutin() {
       const ci = this.cutin; if (!ci || !ci.unit) return;
+      if (!this.intense) {
+        const c = this.ctx, k = ci.t / ci.dur, inK = easeOut(Math.min(1, ci.t / .2)), outK = k > .8 ? (k - .8) / .2 : 0;
+        const w = 460, h = 64, x = 24 - (1 - inK) * 40, y = 118;
+        c.save(); c.globalAlpha = inK * (1 - outK);
+        c.fillStyle = 'rgba(14,12,20,.86)'; c.fillRect(x, y, w, h); c.fillStyle = ci.color; c.fillRect(x, y, 3, h);
+        const img = this.portrait(ci.unit.sprite); if (img) { c.save(); c.beginPath(); c.rect(x + 3, y, 64, h); c.clip(); c.drawImage(img, x + 3, y - 4, 72, 72); c.restore(); }
+        c.textAlign = 'left'; c.textBaseline = 'alphabetic';
+        c.font = `600 13px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.72)'; c.fillText(`${ci.unit.name} · ultimate`, x + 80, y + 24);
+        c.font = `800 24px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(ci.name, x + 80, y + 52, w - 96);
+        c.restore(); return;
+      }
       const c = this.ctx, k = ci.t / ci.dur, inK = easeOut(Math.min(1, ci.t / .18)), outK = k > .78 ? easeOut((k - .78) / .22) : 0;
       const y = 250, h = ci.manual ? 170 : 110, slide = (1 - inK) * -W + outK * W;
       c.save(); c.globalAlpha = 1 - outK * .6; c.translate(slide, ci.manual ? 0 : 40);
@@ -749,6 +767,14 @@
     // Contador do Elo Kizuna (canto superior direito do palco).
     drawChain() {
       const f = this.chainFx; if (!f) return;
+      if (!this.intense) {
+        const c = this.ctx, k = f.t / f.dur, fade = k > .7 ? 1 - (k - .7) / .3 : 1;
+        c.save(); c.globalAlpha = fade * Math.min(1, f.t / .15); c.textAlign = 'right'; c.textBaseline = 'alphabetic';
+        const x = W - 32, y = 150; c.fillStyle = 'rgba(14,12,20,.8)'; c.fillRect(x - 196, y - 38, 200, 58); c.fillStyle = '#d8b062'; c.fillRect(x + 1, y - 38, 3, 58);
+        c.font = `600 12px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.7)'; c.fillText(`Elo Kizuna · +${f.n * 15 - 15}% nas ultimates`, x - 10, y - 18);
+        c.font = `800 26px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(`×${f.n}`, x - 10, y + 10);
+        c.restore(); return;
+      }
       const c = this.ctx, k = f.t / f.dur, pop = easeOutBack(Math.min(1, f.t / .25)), fade = k > .7 ? 1 - (k - .7) / .3 : 1;
       c.save(); c.globalAlpha = fade; c.translate(W - 170, 150); c.scale(pop, pop); c.rotate(-.06); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
       c.font = `800 22px ${DISPLAY_FONT_W}`; c.lineWidth = 6; c.strokeStyle = '#1a0a1e'; c.strokeText('ELO KIZUNA', 0, -34); c.fillStyle = '#efe7d8'; c.fillText('ELO KIZUNA', 0, -34);
@@ -758,6 +784,14 @@
     }
     drawBanner() {
       const b = this.banner; if (!b) return;
+      if (!this.intense) {
+        const c = this.ctx, k = b.t / b.dur, inK = easeOut(Math.min(1, b.t / .25)), fade = k > .75 ? 1 - (k - .75) / .25 : 1;
+        c.save(); c.globalAlpha = fade * inK; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
+        const y = 150; c.fillStyle = 'rgba(14,12,20,.72)'; c.fillRect(W / 2 - 260, y - 44, 520, b.sub ? 74 : 56); c.fillStyle = b.color; c.fillRect(W / 2 - 260, y - 44, 520, 2);
+        c.font = `800 32px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(b.title, W / 2, y - 4);
+        if (b.sub) { c.font = `600 14px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.72)'; c.fillText(b.sub, W / 2, y + 20); }
+        c.restore(); return;
+      }
       const c = this.ctx, k = b.t / b.dur, inK = easeOutBack(Math.min(1, b.t / .35)), fade = k > .75 ? 1 - (k - .75) / .25 : 1;
       c.save(); c.globalAlpha = fade; c.textAlign = 'center'; c.textBaseline = 'middle';
       const y = 200, band = c.createLinearGradient(0, 0, W, 0); band.addColorStop(0, 'rgba(10,8,26,0)'); band.addColorStop(.5, 'rgba(10,8,26,.8)'); band.addColorStop(1, 'rgba(10,8,26,0)');

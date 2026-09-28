@@ -16,7 +16,7 @@ const TEAM = (process.env.TEAM || 'hayato,aurelia,kenji,sora').split(','); // pa
 function referenceState(L, zone, opts) {
   const s = State.createState();
   const ilvl = State.itemLevelFor(zone, opts), plus = Math.min(12, Math.floor(L / 9)), stars = L < 30 ? 2 : L < 60 ? 3 : L < 85 ? 4 : 5;
-  s.collection = TEAM.map(id => ({ ...State.newHeroRecord(D.roster.find(t => t.id === id), L < 40 ? 'rare' : 'epic'), level:L, stars, job:L >= 30 ? 1 : 0, classLevel:Math.min(50, Math.round(L / 2)) }));
+  s.collection = TEAM.map(id => ({ ...State.newHeroRecord(D.roster.find(t => t.id === id), L < 40 ? 'rare' : 'epic'), level:L, stars, job:L >= 60 ? 2 : L >= 30 ? 1 : 0, classLevel:Math.min(50, Math.round(L / 2)) }));
   s.formation = s.collection.map(h => h.uid);
   s.buildings.dojo = Math.max(1, Math.min(20, Math.floor(L / 5))); s.buildings.forge = Math.max(1, Math.floor(L / 8)); s.buildings.house = 1;
   Object.keys(PR.training).forEach(k => { s.training[k] = Math.min(PR.trainingCap(s.buildings.dojo), Math.floor(L * .45)); });
@@ -44,9 +44,9 @@ function fight(zoneId, opts) {
   let t = 0; const LIMIT = z.kind === 'boss' ? 240 : 420;
   while (t < LIMIT) {
     e.update(.1); t += .1;
-    if (e.phase === 'stageClear' || (e.phase === 'result' && e.lastResult)) break;
+    if (e.phase === 'stageClear' || e.phase === 'defeat' || (e.phase === 'result' && e.lastResult)) break; // derrota encerra (antes o estágio recomeçava e contava como vitória)
   }
-  const won = e.phase === 'stageClear' || (e.phase === 'result' && e.lastResult && e.lastResult.kind !== 'defeat');
+  const won = e.phase !== 'defeat' && s.stats.deaths === 0 && (e.phase === 'stageClear' || (e.phase === 'result' && e.lastResult && e.lastResult.kind !== 'defeat'));
   const hp = e.party.length ? e.party.reduce((a, u) => a + Math.max(0, u.hp) / u.maxHp, 0) / e.party.length : 0;
   return { won, t, hp, L, power:e.getPower(), rec:e.recommendedPower(zoneId, opts) };
 }

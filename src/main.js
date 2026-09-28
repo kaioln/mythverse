@@ -205,22 +205,47 @@
       }
       requestAnimationFrame(frame);
       // Aba em segundo plano, minimizada ou coberta: o requestAnimationFrame para e o navegador espaça os timers
-      // (até 1 por minuto). A caçada continua pelo TEMPO REAL decorrido: cada chamada simula tudo o que passou
-      // (até 30 min por vez) e, ao voltar para a aba, recupera o que faltou.
-      let bgSave = 0, bgLast = performance.now();
-      const catchUp = () => {
-        const now = performance.now(); let gap = Math.min((now - bgLast) / 1000, 1800); bgLast = now;
-        while (gap > .05) { const d = Math.min(1, gap); engine.update(d); gap -= d; }
-        renderer.hitstop = 0;
+      // (até 1 por minuto). A caçada continua pelo TEMPO REAL decorrido e, ao voltar, recupera o que faltou (até 30 min).
+      // A recuperação roda em fatias de ~12 ms por quadro e SEM efeitos (números, sons, avisos, registro): antes ela
+      // simulava tudo de uma vez e despejava milhares de efeitos na tela, e o jogo travava por vários segundos.
+      const QUIET = new Set(['onFx', 'onLog', 'onToast', 'onWarn', 'onWave', 'onPhase', 'onLoot', 'onCard', 'onState', 'onStageClear', 'onDefeatHunt']);
+      let bgSave = 0, bgLast = performance.now(), debt = 0, catching = false, caught = null;
+      const quietRun = (budgetMs) => {
+        const live = engine.events, t0 = performance.now();
+        engine.events = Object.fromEntries(Object.entries(live).filter(([k]) => !QUIET.has(k)));
+        engine.events.onLoot = () => { caught.loot++; }; engine.events.onCard = () => { caught.cards++; };
+        try { while (debt > .05 && performance.now() - t0 < budgetMs) { const d = Math.min(1, debt); engine.update(d); debt -= d; } }
+        finally { engine.events = live; }
+      };
+      const finishCatch = () => {
+        catching = false; renderer.hitstop = 0; renderer.particles = []; renderer.delayed = []; renderer.projectiles = [];
+        document.querySelector('#catchup')?.remove();
+        const c = caught; caught = null; engine.save(); ui.renderAll();
+        if (c && c.secs >= 30 && engine.active) { const g = state.player.gold - c.gold, min = Math.max(1, Math.round(c.secs / 60)); ui.toast(`<b>De volta!</b> A equipe seguiu caçando por ${min} min: +${KT.Utils.fmt(Math.max(0, g))} ouro${c.loot ? `, ${c.loot} itens` : ''}${c.cards ? `, ${c.cards} carta(s)` : ''}.`); }
+      };
+      const catchUp = (visible) => {
+        const now = performance.now(), gap = (now - bgLast) / 1000; bgLast = now;
+        debt = Math.min(debt + gap, 1800);
+        if (!caught) caught = { secs:0, loot:0, cards:0, gold:state.player.gold };
+        caught.secs += gap;
+        if (!visible) { quietRun(250); return; }
+        if (catching) return;
+        if (debt <= .05) { finishCatch(); return; }
+        catching = true;
+        if (debt > 8) { const el = document.createElement('div'); el.id = 'catchup'; el.innerHTML = '<b>Recuperando a caçada</b><i><s></s></i>'; document.body.appendChild(el); }
+        const total = debt;
+        const slice = () => { quietRun(12); const bar = document.querySelector('#catchup s'); if (bar) bar.style.width = `${Math.round(100 * (1 - debt / total))}%`; if (debt > .05) requestAnimationFrame(slice); else finishCatch(); };
+        slice();
       };
       setInterval(() => {
         if (!document.hidden && performance.now() - last < 1000) { bgLast = performance.now(); return; }
-        catchUp(); if (++bgSave >= 10) { bgSave = 0; engine.save(); }
+        if (catching) return;
+        catchUp(false); if (++bgSave >= 10) { bgSave = 0; engine.save(); }
       }, 1000);
       addEventListener('beforeunload', () => engine.save());
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden) { bgLast = performance.now(); engine.save(); }
-        else { catchUp(); engine.save(); ui.renderAll(); }
+        if (document.hidden) { bgLast = performance.now(); caught = { secs:0, loot:0, cards:0, gold:state.player.gold }; engine.save(); }
+        else catchUp(true);
         last = performance.now();
       });
       if (state.settings.sound) document.addEventListener('pointerdown', () => sound.enable(true).then(() => document.querySelector('#sound-btn').classList.add('on')), { once:true });

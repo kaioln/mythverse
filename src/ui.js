@@ -5,6 +5,8 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const portrait = id => KT.portraitUrl(id);
   const fmtTime = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`; };
+  // "Ir →" de um objetivo: quando ele fala de uma região, o mapa abre com ela destacada.
+  KT.goOf = g => { if (!g?.go || g.go !== 'journey') return g?.go || ''; const c = g.cond || {}, z = (c.stage || c.floor || c.kills)?.[0] || c.entered; return z && D.zones[z] ? `journey:${z}` : 'journey'; };
   const compact = n => n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e4 ? `${(n / 1e3).toFixed(1)}K` : U.fmt(n);
 
   class UIController {
@@ -206,7 +208,7 @@
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${ev.icon} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
       hub.innerHTML = `<span class="eyebrow">${greet}, ${esc(s.player.name || 'Viajante')}</span>
         <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
-        ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${g.go}" type="button">Ir</button>` : ''}</div>`; })()}
+        ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
         <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> Continuar: ${esc(hz.title)} · ${stage}</button>
         <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-compass"></i> O que fazer agora'}</button></div>`;
     }
@@ -287,7 +289,7 @@
     renderGuide() {
       const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
       let main;
-      if (g) main = `<span class="eyebrow">PRÓXIMO PASSO · ${D.guide.indexOf(g) + 1}/${D.guide.length}</span><strong>${esc(g.title)}</strong><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div>${e.guideDone(g) ? `<button class="action primary small" data-claim-guide type="button">✓ Resgatar recompensa</button>` : g.go ? `<button class="action small" data-go="${g.go}" type="button">Ir →</button>` : ''}`;
+      if (g) main = `<span class="eyebrow">PRÓXIMO PASSO · ${D.guide.indexOf(g) + 1}/${D.guide.length}</span><strong>${esc(g.title)}</strong><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div>${e.guideDone(g) ? `<button class="action primary small" data-claim-guide type="button">✓ Resgatar recompensa</button>` : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : ''}`;
       else if (ch) { const v = e.chronicleValue(ch), done = v >= ch.target; main = `<span class="eyebrow">CRÔNICA ${ch.k} · SEM FIM</span><strong>${esc(ch.title)}</strong><small>${esc(ch.text)}</small><div class="meter"><span style="width:${Math.min(1, (v - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div><small class="dim">${U.fmt(v)} / ${U.fmt(ch.target)}</small>${done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : ''}`; }
       else main = `<span class="eyebrow">GUIA DO VIAJANTE</span><strong>Jornada concluída!</strong>`;
       const extra = `<div class="guide-extra">${ls.available ? `<button class="action pink small" data-claim-login type="button">🎁 Login do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte.">🧭 Travado? Conselheiro</button></div>`;

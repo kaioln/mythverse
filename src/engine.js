@@ -92,6 +92,8 @@
       // Integridade: nada de poder impossível vindo de bug antigo ou save editado.
       h.stars = U.clamp(Math.floor(Number(h.stars) || 1), 1, HERO_MAX_STARS);
       if (!D.heroRarities.some(r => r.id === h.rarity)) h.rarity = 'common';
+      h.job = U.clamp(Math.floor(Number(h.job) || 0), 0, 2); h.branch = h.branch === 'b' ? 'b' : 'a';
+      if (h.job >= 2 && h.level < PR.JOB2_LEVEL) h.job = 1;
       if (h.job && (h.level < PR.JOB_LEVEL)) h.job = 0;
       const attrs = Object.keys(PR.attributes), attrSum = attrs.reduce((a, k) => a + Math.max(0, Math.floor(Number(h.attr[k]) || 0)), 0);
       attrs.forEach(k => { h.attr[k] = Math.max(0, Math.floor(Number(h.attr[k]) || 0)); });
@@ -101,7 +103,7 @@
       if (tree.length) {
         const clean = {}; let spent = 0;
         Object.entries(h.talents).forEach(([id, rk]) => { const n = tree.find(x => x.id === id); rk = Math.floor(Number(rk) || 0); if (n && rk > 0) { clean[id] = Math.min(rk, n.max); spent += clean[id]; } });
-        h.talents = spent > (h.level - 1) + (h.job ? 5 : 0) ? {} : clean;
+        h.talents = spent > (h.level - 1) + 5 * h.job ? {} : clean;
       }
     });
     const tcap = PR.trainingCap(s.buildings.dojo || 1);
@@ -274,8 +276,9 @@
     ctx.elSyn.forEach(e => e.tiers.forEach(tier => { if (tier.n === 4 || e.el === t.el) add(tier.stats); }));
     ctx.bonds.forEach(b => { if (b.ids.includes(t.id)) add(b.stats); });
     const tree = PR.treeFor(t.id), talentHooks = [];
-    Object.entries(rec.talents || {}).forEach(([id, rank]) => { const n = tree.find(x => x.id === id); if (!n || !rank) return; add(n.stats, rank); if (n.hook) talentHooks.push(n.hook(rank)); });
-    if (rec.job) { pctAdd.hp += .10; pctAdd.atk += .10; pctAdd.def += .10; }
+    Object.entries(rec.talents || {}).forEach(([id, rank]) => { const n = tree.find(x => x.id === id); if (!n || !rank || (n.branch && n.branch !== PR.branchOf(rec))) return; add(n.stats, rank); if (n.hook) talentHooks.push(n.hook(rank)); });
+    // Árvore de classes: +10% HP/ATK/DEF por grau (avançada, transcendida) e o bônus do caminho escolhido.
+    if (rec.job) { const g = .10 * Math.min(2, rec.job); pctAdd.hp += g; pctAdd.atk += g; pctAdd.def += g; add(PR.jobs[t.cls]?.[PR.branchOf(rec)]?.stats, Math.min(2, rec.job)); }
     Object.entries(state.training || {}).forEach(([k, lv]) => { const tr = PR.training[k]; if (tr && lv) add({ [tr.stat]:tr.per * lv }); });
     // Equipamentos e conjuntos.
     const setCount = {}; const hooks = [...talentHooks];
@@ -505,6 +508,8 @@
         maxHp:Math.round(t.hp * (t.hpMul || 1) * P), hp:Math.round(t.hp * (t.hpMul || 1) * P), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:t.thorns || 0, elite:!!t.elite, boss:!!t.boss, miniboss:!!t.miniboss, treasure:!!t.treasure, level:lvl, P,
         specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, ...extra };
+      const zk = this.zone?.kind;
+      if ((zk === 'hunt' || zk === 'dungeon') && !t.treasure && !t.boss) { const th = D.threat(lvl, zk), zm = this.zone.threat || 1; u.maxHp = u.hp = Math.round(u.maxHp * th.hp * zm); u.st.atk *= th.atk * zm; u.st.baseAtk *= th.atk * zm; }
       if (t.specials) u.specials = t.specials.map(s => ({ ...s, t:s.cd * .6 }));
       if (t.boss) this.applyBossPhase(u, 0, true);
       return u;
@@ -1671,14 +1676,24 @@
     useScroll(uid) { const r = this.record(uid); if (!r || r.level >= HERO_LEVEL_CAP || this.state.consumables.scroll < 1 || this.shopBoughtToday('scroll_use') >= 3) return false; this.state.consumables.scroll--; this.state.shopDaily.bought.scroll_use = this.shopBoughtToday('scroll_use') + 1; const amt = Math.max(10, Math.round(heroXpNext(r.level) * .08)); if (this.gainHeroXp(r, amt)) this.emit('onToast', `${this.template(r.id).name} alcançou o nível ${r.level}!`); this.emit('onState'); return true; }
 
     // ---------- talentos por herói e classe avançada ----------
-    heroTalentPoints(r) { const spent = Object.values(r.talents || {}).reduce((a, b) => a + b, 0); return (r.level - 1) + (r.job ? 5 : 0) - spent; }
-    talentPoints() { return this.heroes.reduce((s, r) => s + Math.max(0, this.heroTalentPoints(r)), 0); }
+    heroTalentPoints(r) { const spent = Object.values(r.talents || {}).reduce((a, b) => a + b, 0); return (r.level - 1) + 5 * Math.min(2, r.job || 0) - spent; }
+    // Pontos que dá para gastar AGORA (a árvore pode estar completa até a próxima classe): é isto que acende avisos.
+    usableTalentPoints(r) {
+      const free = this.heroTalentPoints(r); if (free <= 0) return 0;
+      const tree = PR.treeFor(r.id), br = PR.branchOf(r);
+      let room = 0; tree.forEach(n => { if ((n.tier === 2 && !r.job) || (n.tier === 3 && (r.job || 0) < 2) || (n.branch && n.branch !== br)) return; room += n.max - (r.talents?.[n.id] || 0); });
+      if (!tree.some(n => this.talentState(r, n.id).ok)) return 0;
+      return Math.min(free, room);
+    }
+    talentPoints() { return this.heroes.reduce((s, r) => s + this.usableTalentPoints(r), 0); }
     treeSpent(r) { return Object.values(r.talents || {}).reduce((a, b) => a + b, 0); }
     talentState(r, id) {
       const tree = PR.treeFor(r.id), n = tree.find(x => x.id === id); if (!n) return { ok:false, reason:'Nó inválido.' };
       const rank = r.talents?.[id] || 0;
       if (rank >= n.max) return { ok:false, reason:'Rank máximo.', n, rank };
-      if (n.tier === 2 && !r.job) return { ok:false, reason:`Requer a classe avançada (${PR.jobs[this.template(r.id).cls].name}).`, n, rank };
+      if (n.tier === 2 && !r.job) return { ok:false, reason:'Requer a classe avançada (nível 30).', n, rank };
+      if (n.tier === 3 && (r.job || 0) < 2) return { ok:false, reason:`Requer a Transcendência (nível ${PR.JOB2_LEVEL}).`, n, rank };
+      if (n.branch && n.branch !== PR.branchOf(r)) return { ok:false, reason:`Exclusivo de ${PR.jobs[this.template(r.id).cls][n.branch].trans}.`, n, rank };
       if (this.treeSpent(r) < PR.TIER_REQ[n.tier]) return { ok:false, reason:`Requer ${PR.TIER_REQ[n.tier]} pontos investidos nesta árvore.`, n, rank };
       if (n.req.length && !n.req.every(q => q.split('|').some(x => (r.talents?.[x] || 0) > 0))) return { ok:false, reason:'Aprenda o talento anterior primeiro.', n, rank };
       if (this.heroTalentPoints(r) < 1) return { ok:false, reason:'Sem pontos de talento (1 por nível).', n, rank };
@@ -1692,10 +1707,19 @@
       r.talents = {}; this.refreshPartyUnits(); this.emit('onState'); return true;
     }
     canJobChange(r) { return !r.job && r.level >= PR.JOB_LEVEL && (r.classLevel || 1) >= PR.JOB_CLASS_LEVEL && this.state.player.gold >= PR.jobCost.gold && this.state.player.crystal >= PR.jobCost.crystal; }
-    jobChange(uid) {
-      const r = this.record(uid); if (!r || !this.canJobChange(r)) return false;
-      this.state.player.gold -= PR.jobCost.gold; this.state.player.crystal -= PR.jobCost.crystal; r.job = 1;
-      this.emit('onToast', `<b>${this.template(r.id).name}</b> tornou-se <b>${PR.jobs[this.template(r.id).cls].name}</b>! +5 pontos de talento e o Círculo III foi liberado.`);
+    // Nível 30: escolhe o caminho ('a' ou 'b') da árvore de classes.
+    jobChange(uid, branch = 'a') {
+      const r = this.record(uid); if (!r || !this.canJobChange(r) || !['a', 'b'].includes(branch)) return false;
+      this.state.player.gold -= PR.jobCost.gold; this.state.player.crystal -= PR.jobCost.crystal; r.job = 1; r.branch = branch;
+      this.emit('onToast', `<b>${this.template(r.id).name}</b> tornou-se <b>${PR.jobTitle(this.template(r.id).cls, r)}</b>! +5 pontos de talento e o Círculo III foi liberado.`);
+      this.refreshPartyUnits(); this.emit('onState'); return true;
+    }
+    canTranscend(r) { return r.job === 1 && r.level >= PR.JOB2_LEVEL && (r.classLevel || 1) >= PR.JOB2_CLASS_LEVEL && this.state.player.gold >= PR.job2Cost.gold && this.state.player.crystal >= PR.job2Cost.crystal; }
+    // Nível 60: Transcendência do caminho escolhido (+10% HP/ATK/DEF, bônus do caminho em dobro, +5 pontos, Círculo IV).
+    transcend(uid) {
+      const r = this.record(uid); if (!r || !this.canTranscend(r)) return false;
+      this.state.player.gold -= PR.job2Cost.gold; this.state.player.crystal -= PR.job2Cost.crystal; r.job = 2;
+      this.emit('onToast', `<b>${this.template(r.id).name}</b> transcendeu: <b>${PR.jobTitle(this.template(r.id).cls, r)}</b>! +5 pontos de talento e o Círculo IV foi liberado.`);
       this.refreshPartyUnits(); this.emit('onState'); return true;
     }
     refreshPartyUnits() { if (!this.party.length) return; const ctx = this.ctx(); this.party.forEach(u => { const r = this.record(u.recUid); if (r) { const st = heroStats(this.state, r, ctx); const ratio = u.hp / u.maxHp; u.st = st; u.maxHp = st.maxHp; u.hp = Math.max(u.alive ? 1 : 0, Math.round(st.maxHp * ratio)); } }); }
@@ -2125,7 +2149,8 @@
     autoTalents(uid) {
       const r = this.record(uid); if (!r) return 0;
       const path = KT.Builds.buildFor(r.id).talents; let n = 0, progress = true;
-      while (progress && this.heroTalentPoints(r) > 0) { progress = false; for (const id of path) { if (this.talentState(r, id).ok) { r.talents[id] = (r.talents[id] || 0) + 1; n++; progress = true; break; } } }
+      const extra = PR.treeFor(r.id).filter(x => !path.includes(x.id) && !x.keystone).sort((a, b) => a.tier - b.tier).map(x => x.id), order = [...path, ...extra];
+      while (progress && this.heroTalentPoints(r) > 0) { progress = false; for (const id of order) { if (this.talentState(r, id).ok) { r.talents[id] = (r.talents[id] || 0) + 1; n++; progress = true; break; } } }
       if (n) { this.refreshPartyUnits(); this.emit('onState'); }
       return n;
     }
@@ -2156,7 +2181,7 @@
     // "⚡ Fortalecer equipe": equipa o melhor, distribui atributos e talentos de toda a equipe de uma vez.
     optimizeTeam() {
       const before = this.getPower(), out = { items:0, attr:0, talents:0 }, snap = new Map(this.heroes.map(r => [r.uid, { ...r.equipped }]));
-      this.heroes.forEach(r => { out.items += this.autoEquip(r.uid); if (this.freeAttr(r) > 0) out.attr += this.autoAttr(r.uid) || 0; if (this.heroTalentPoints(r) > 0) out.talents += this.autoTalents(r.uid) || 0; });
+      this.heroes.forEach(r => { out.items += this.autoEquip(r.uid); if (this.freeAttr(r) > 0) out.attr += this.autoAttr(r.uid) || 0; if (this.usableTalentPoints(r) > 0) out.talents += this.autoTalents(r.uid) || 0; });
       // O que mudou de lugar (para avisar o jogador: nada some sem explicação).
       const name = uid => [...this.state.inventory, ...this.state.storage].find(x => x.uid === uid)?.name || '';
       const where = uid => this.state.storage.some(x => x.uid === uid) ? 'Armazém' : this.ownerOf(uid) ? this.template(this.ownerOf(uid).id).name : 'Bolsa';
@@ -2167,7 +2192,7 @@
     }
     // Quanto dá para melhorar agora (para mostrar o botão com destaque).
     optimizeHint() {
-      let items = 0, pts = 0; this.heroes.forEach(r => { pts += Math.max(0, this.freeAttr(r)) + Math.max(0, this.heroTalentPoints(r)); Object.keys(I.slots).forEach(sl => { if (this.bestItemFor(r, sl)) items++; }); });
+      let items = 0, pts = 0; this.heroes.forEach(r => { pts += Math.max(0, this.freeAttr(r)) + this.usableTalentPoints(r); Object.keys(I.slots).forEach(sl => { if (this.bestItemFor(r, sl)) items++; }); });
       return { items, pts, any:items + pts > 0 };
     }
     // "Montar melhor equipe": 1 Vanguarda e 1 Suporte garantidos, depois os de maior poder; frente e retaguarda certas.
@@ -2198,7 +2223,7 @@
       const s = this.state, tips = [], add = (prio, text, action = null, extra = {}) => tips.push({ prio, text, action, ...extra });
       const ctx = this.ctx(), zone = this.zone.kind !== 'village' ? this.zone : D.zones[s.lastHunt || 'hunt'];
       this.heroes.forEach(r => {
-        const name = esc(this.template(r.id).name), fa = this.freeAttr(r), tp = this.heroTalentPoints(r);
+        const name = esc(this.template(r.id).name), fa = this.freeAttr(r), tp = this.usableTalentPoints(r);
         if (fa > 0) add(10, `<b>${name}</b> tem ${fa} ponto(s) de atributo livres.`, 'autoAttr', { uid:r.uid, label:'Distribuir (build recomendada)' });
         if (tp > 0) add(9, `<b>${name}</b> tem ${tp} ponto(s) de talento livres.`, 'autoTalents', { uid:r.uid, label:'Aprender (build recomendada)' });
         if (this.canJobChange(r)) add(8, `<b>${name}</b> pode mudar de classe (+10% atributos e Círculo III).`, 'open', { go:'hero', uid:r.uid, label:'Ver ficha' });

@@ -89,7 +89,7 @@
     if (name === 'hero') tab = PANELS.hero.tabs.some(t => t[0] === this.pendingHeroTab) ? this.pendingHeroTab : this.view.panel === 'hero' ? this.view.tab : 'stats';
     this.pendingHeroTab = null;
     if (name === 'talents') { param = param || this.view.talentHero || this.state.formation.find(Boolean) || this.state.collection[0]?.uid || null; this.view.talentHero = param; }
-    this.view = { panel:name, tab, param:['hero','destination','talents','profile'].includes(name) ? param : this.view.panel === name ? this.view.param : null, talentHero:this.view.talentHero, node:name === this.view.panel ? this.view.node : null };
+    this.view = { panel:name, tab, param:['hero','destination','talents','profile','journey'].includes(name) ? param : this.view.panel === name ? this.view.param : null, talentHero:this.view.talentHero, node:name === this.view.panel ? this.view.node : null };
     if (name === 'inventory') this.newItems = 0;
     this.pickSlot = null; this.hideTip();
     this.el.modal.hidden = false;
@@ -125,7 +125,7 @@
   const CHAPTERS = [[1, 'Capítulo I · O Eclipse', ['hunt','dungeon','boss'], ['hunt_swamp','dungeon_crypt']], [2, 'Capítulo II · A Maré', ['hunt_tide','dungeon_tide','boss_tide'], ['hunt_frost','dungeon_forge']], [3, 'Capítulo III · As Areias do Tempo', ['hunt_desert','dungeon_clock','boss_sand'], ['hunt_ghost']], [4, 'Capítulo IV · O Céu Partido', ['hunt_sky','dungeon_sky','boss_sky'], ['hunt_sakura']], [8, 'Sem fim', ['rift'], []], [9, 'Evento por calendário', ['boss_event'], []]];
   P.zoneStatus = function(id) {
     const z = D.zones[id], p = this.state.progress[id] || {}, lock = this.engine.zoneLock(id);
-    if (lock.locked) return { cls:'locked', txt:'🔒 Bloqueado' };
+    if (lock.locked) return { cls:'locked', txt:'Bloqueado' };
     if (z.kind === 'hunt') return { cls:p.best >= z.stages ? 'done' : '', txt:`Estágio ${p.best || 0}/${z.stages}` };
     if (z.kind === 'dungeon') return { cls:p.best >= z.floors ? 'done' : '', txt:`Andar ${p.best || 0}/${z.floors}` };
     if (z.kind === 'rift') return { cls:'rift', txt:p.best ? `Recorde: andar ${p.best}` : 'Nenhum andar ainda' };
@@ -134,10 +134,11 @@
   };
   P.journeyCard = function(id, small = false) {
     const z = D.zones[id], st = this.zoneStatus(id);
-    return `<button class="journey-card ${small ? 'side' : ''} ${st.cls} ${id === this.state.zone ? 'current' : ''}" data-preview-zone="${id}" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97) 8%,rgba(9,8,22,.35) 70%,rgba(9,8,22,.15)),url('${sceneUrl(id)}')"><span>${z.side ? 'ROTA SECUNDÁRIA · ' : ''}${kindLabel(z.kind)}</span><b>${esc(z.title)}</b><small>${st.txt}</small></button>`;
+    return `<button class="journey-card ${small ? 'side' : ''} ${st.cls} ${id === this.state.zone ? 'current' : ''} ${id === this.mapFocus ? 'focus' : ''}" data-preview-zone="${id}" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97) 8%,rgba(9,8,22,.35) 70%,rgba(9,8,22,.15)),url('${sceneUrl(id)}')"><span>${z.side ? 'ROTA SECUNDÁRIA · ' : ''}${kindLabel(z.kind)}</span><b>${esc(z.title)}</b><small>${st.txt}</small></button>`;
   };
-  P.journeyPanel = function() {
-    return `<div class="map-wrap"><div class="illustrated-map"><img src="assets/scenes/world-map.png" alt="Mapa do mundo">${Object.keys(MAP_PINS).map(id => { const st = this.zoneStatus(id), z = D.zones[id]; return `<button class="map-pin ${id === this.state.zone ? 'current' : ''} ${st.cls} ${z.side ? 'side' : ''} ch${z.chapter}" style="left:${MAP_PINS[id][0]}%;top:${MAP_PINS[id][1]}%" data-preview-zone="${id}" type="button">${MAP_LABELS[id]}<small>${st.txt}</small></button>`; }).join('')}</div>
+  P.journeyPanel = function(focus) {
+    this.mapFocus = D.zones[focus] ? focus : null;
+    return `<div class="map-wrap"><div class="illustrated-map"><img src="assets/scenes/world-map.png" alt="Mapa do mundo">${Object.keys(MAP_PINS).map(id => { const st = this.zoneStatus(id), z = D.zones[id]; return `<button class="map-pin ${id === this.mapFocus ? 'focus' : ''} ${id === this.state.zone ? 'current' : ''} ${st.cls} ${z.side ? 'side' : ''} ch${z.chapter}" style="left:${MAP_PINS[id][0]}%;top:${MAP_PINS[id][1]}%" data-preview-zone="${id}" type="button">${MAP_LABELS[id]}<small>${st.txt}</small></button>`; }).join('')}</div>
       <div class="chapters">${CHAPTERS.map(([n, title, ids, side]) => `<section class="chapter"><h4>${title}</h4><div class="chapter-steps">${ids.map((id, i) => `${i ? '<span class="arrow">→</span>' : ''}${this.journeyCard(id)}`).join('')}</div>${side.length ? `<div class="chapter-side"><small>Rotas secundárias · monstros, itens e conjuntos próprios</small><div>${side.map(id => this.journeyCard(id, true)).join('')}</div></div>` : ''}</section>`).join('')}
       <button class="journey-card village" data-enter="village" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97),rgba(9,8,22,.2) 75%),url('assets/scenes/village-expanded.png')"><span>CAPITAL</span><b>Voltar para Tsukimori</b><small>8 distritos, atividades e melhorias</small></button></div></div>`;
   };
@@ -284,12 +285,12 @@
     const xpNext = S().heroXpNext(r.level), cap = S().heroMaxLevel(), classNext = S().classXpNext(r.classLevel || 1), aw = S().awakenCost(r.stars, this.state.buildings.shrine), shards = this.state.shards[r.id] || 0, scrollUses = e.shopBoughtToday('scroll_use');
     const head = `<div class="hero-head rarity-${r.rarity}" style="--hc:${t.color}"><div class="hero-art"><img src="${KT.spriteUrl(t.sprite)}" alt=""></div><div class="hero-meta">
       <span class="eyebrow">${esc(t.world)}</span><h3>${esc(t.name)} ${stars(r.stars)}</h3>
-      <div class="tags">${clsTag(t.cls)} ${elTag(t.el)} <span class="rar-tag">${rarLabel(r.rarity)}</span> <span class="tag">${D.classes[t.cls].row}</span>${r.job ? `<span class="tag job">⚜ ${PR.jobs[t.cls].name}</span>` : ''}</div>
+      <div class="tags">${clsTag(t.cls)} ${elTag(t.el)} <span class="rar-tag">${rarLabel(r.rarity)}</span> <span class="tag">${D.classes[t.cls].row}</span>${r.job ? `<span class="tag job">${esc(PR.jobTitle(t.cls, r))}</span>` : ''}</div>
       <div class="lvl-line"><b>Nível ${r.level}</b><small>/ ${cap}</small><div class="meter"><span style="width:${r.level >= cap ? 100 : r.xp / xpNext * 100}%"></span></div><small>${r.level >= cap ? 'Nível máximo; a EXP excedente alimenta o Paragão' : `${U.fmt(r.xp)} / ${U.fmt(xpNext)} EXP`}</small><b>Classe ${r.classLevel || 1}</b><small>/ ${PR.CLASS_LEVEL_CAP}</small><div class="meter"><span style="width:${(r.classLevel || 1) >= PR.CLASS_LEVEL_CAP ? 100 : (r.classXp || 0) / classNext * 100}%"></span></div><small>${(r.classLevel || 1) >= PR.CLASS_LEVEL_CAP ? 'Classe dominada' : `${U.fmt(r.classXp || 0)} / ${U.fmt(classNext)} EXP de classe`}</small></div>
       <div class="hero-actions"><span class="pow-big">⚔ ${compact(pw)}</span>
         <button class="action ${shards >= aw.shards && this.state.player.gold >= aw.gold && r.stars < 6 ? 'pink' : ''}" data-awaken="${uid}" type="button" ${r.stars >= 6 ? 'disabled' : ''} data-tip="Elevar qualidade: +1★ e +12% em HP, ATK e DEF. Fragmentos vêm de convocações repetidas e do Mercado.">★ Qualidade ${r.stars >= 6 ? '(máx.)' : `· ${shards}/${aw.shards} frag. · ${compact(aw.gold)} ouro`}</button>
-        ${e.heroTalentPoints(r) > 0 ? `<button class="action pink" data-tab-go="talents" type="button">✦ ${e.heroTalentPoints(r)} ponto(s) de talento</button>` : ''}
-        ${!r.job ? `<button class="action ${e.canJobChange(r) ? 'pink' : ''}" data-job="${uid}" type="button" ${e.canJobChange(r) ? '' : 'disabled'} data-tip="Mudança de Classe: nível ${PR.JOB_LEVEL} e classe ${PR.JOB_CLASS_LEVEL}. Vira ${PR.jobs[t.cls].name} (+10% HP/ATK/DEF, +5 pontos e Círculo III).">⚜ ${PR.jobs[t.cls].name}</button>` : ''}
+        ${e.usableTalentPoints(r) > 0 ? `<button class="action pink" data-tab-go="talents" type="button">${e.usableTalentPoints(r)} ponto(s) de talento</button>` : ''}
+        ${(!r.job && e.canJobChange(r)) || e.canTranscend(r) ? `<button class="action pink" data-tab-go="talents" type="button" data-tip="Árvore de classes: escolha o caminho no nível ${PR.JOB_LEVEL} e transcenda no ${PR.JOB2_LEVEL}.">${r.job ? 'Transcender classe' : 'Escolher classe avançada'}</button>` : ''}
         <button class="action" data-scroll="${uid}" type="button" ${r.level < cap && this.state.consumables.scroll && scrollUses < 3 ? '' : 'disabled'} data-tip="Concede 8% do próximo nível. Não alimenta o Paragão. Uso diário: ${scrollUses}/3.">📜 EXP (${this.state.consumables.scroll})</button></div>
       </div></div>`;
     let body = '';
@@ -333,7 +334,7 @@
     const total = Object.values(b.attr).reduce((a, x) => a + x, 0);
     const attrBars = Object.entries(b.attr).map(([k, w]) => `<div class="bw-row" style="--ac:${PR.attributes[k].color}"><b>${PR.attributes[k].short}</b><span class="bw-bar"><i style="width:${w / total * 100}%"></i></span><small>${Math.round(w / total * 100)}% · agora ${r.attr[k] || 0}</small></div>`).join('');
     const path = b.talents.map((id, i) => { const n = tree.find(x => x.id === id); if (!n) return ''; const rk = r.talents[id] || 0; return `<li class="${rk >= n.max ? 'done' : rk ? 'some' : ''}"><em>${i + 1}</em>${esc(n.sig === 'skill' ? `Maestria: ${t.skill.name}` : n.sig === 'ult' ? `Ápice: ${t.ult.name}` : n.name)} <small>${rk}/${n.max}</small></li>`; }).join('');
-    const free = e.freeAttr(r), tp = e.heroTalentPoints(r), better = Object.keys(I.slots).filter(sl => e.bestItemFor(r, sl)).length;
+    const free = e.freeAttr(r), tp = e.usableTalentPoints(r), better = Object.keys(I.slots).filter(sl => e.bestItemFor(r, sl)).length;
     return `<div class="build-layout">
       <section class="build-hero"><span class="eyebrow">ESTILO</span><h3>${esc(b.style)}</h3><p>${esc(b.note)}</p>
         <div class="build-actions"><button class="action primary big" data-auto="all" data-uid="${r.uid}" type="button">⚡ Aplicar build completa</button>
@@ -467,7 +468,7 @@
   // ---------------------------------------------------------------------------
   // TALENTOS
   // ---------------------------------------------------------------------------
-  const TREE_Y = { 0:98, 1:272, 2:556 }, NOTABLE_Y = 388;
+  const TREE_Y = { 0:98, 1:272, 2:556, 3:728 }, NOTABLE_Y = 388, CAPSTONE_Y = 818;
   const svgIcon = (key, size = 26, color = 'currentColor') => `<svg class="ticon" viewBox="0 0 24 24" width="${size}" height="${size}" style="color:${color}"><path d="${PR.icons[key] || PR.icons.star}"/></svg>`;
   P.nodeEffectText = function(n, rank, t) {
     const lines = Object.entries(n.stats || {}).map(([k, v]) => statValue(k === 'skillMastery' ? 'skillMastery' : k, v * rank));
@@ -481,51 +482,71 @@
   P.talentPanel = function(uid) {
     const e = this.engine, r = e.record(uid);
     if (!r) return '<div class="empty-state"><h3>Nenhum herói</h3><p>Convoque heróis para distribuir talentos.</p><button class="action pink" data-go="collection" type="button">Convocar</button></div>';
-    const picker = `<div class="hero-picker">${(this.state.formation.filter(Boolean).length ? this.state.formation.filter(Boolean) : this.state.collection.slice(0, 8).map(h => h.uid)).map(id => { const h = e.record(id), tt = e.template(h.id), pts = e.heroTalentPoints(h); return `<button class="hero-pick ${id === uid ? 'active' : ''}" data-talent-hero="${id}" type="button"><img src="${portrait(tt.id)}" alt="">${esc(tt.name)}${pts > 0 ? `<em>${pts}</em>` : ''}</button>`; }).join('')}<button class="action small" data-go="collection:owned" type="button">Outros heróis…</button></div>`;
+    const picker = `<div class="hero-picker">${(this.state.formation.filter(Boolean).length ? this.state.formation.filter(Boolean) : this.state.collection.slice(0, 8).map(h => h.uid)).map(id => { const h = e.record(id), tt = e.template(h.id), pts = e.usableTalentPoints(h); return `<button class="hero-pick ${id === uid ? 'active' : ''}" data-talent-hero="${id}" type="button"><img src="${portrait(tt.id)}" alt="">${esc(tt.name)}${pts > 0 ? `<em>${pts}</em>` : ''}</button>`; }).join('')}<button class="action small" data-go="collection:owned" type="button">Outros heróis…</button></div>`;
     return picker + this.talentTree(uid);
+  };
+  // Árvore de classes do herói: classe base → caminho A ou B (nível 30) → Transcendência (nível 60).
+  P.classPath = function(r, t) {
+    const e = this.engine, job = PR.jobs[t.cls], br = PR.branchOf(r), uid = r.uid;
+    const need = (lv, cl) => `Nv. ${r.level}/${lv} · Classe ${r.classLevel || 1}/${cl}`;
+    const step = (on, name, sub) => `<li class="${on ? 'on' : ''}"><b>${esc(name)}</b><small>${esc(sub)}</small></li>`;
+    let action = '';
+    if (!r.job) {
+      const ready = r.level >= PR.JOB_LEVEL && (r.classLevel || 1) >= PR.JOB_CLASS_LEVEL, can = e.canJobChange(r);
+      action = `<div class="branch-pick">${['a', 'b'].map(k => `<article class="branch ${can ? 'ready' : ''}"><small>${esc(job[k].role)}</small><b>${esc(job[k].name)}</b><p>${esc(job[k].text)}</p><em>Transcende em ${esc(job[k].trans)}</em><button class="action small ${can ? 'primary' : ''}" data-job="${uid}" data-branch="${k}" type="button" ${can ? '' : 'disabled'}>${ready ? `Escolher · ${compact(PR.jobCost.gold)} ouro · ${PR.jobCost.crystal} cristais` : need(PR.JOB_LEVEL, PR.JOB_CLASS_LEVEL)}</button></article>`).join('')}</div><small class="branch-note">A escolha é permanente. Cada caminho tem bônus próprios e uma pedra-angular exclusiva no Círculo IV.</small>`;
+    } else if (r.job === 1) {
+      const ready = r.level >= PR.JOB2_LEVEL && (r.classLevel || 1) >= PR.JOB2_CLASS_LEVEL, can = e.canTranscend(r);
+      action = `<button class="action small ${can ? 'primary' : ''}" data-transcend="${uid}" type="button" ${can ? '' : 'disabled'}>${ready ? `Transcender em ${esc(job[br].trans)} · ${compact(PR.job2Cost.gold)} ouro · ${PR.job2Cost.crystal} cristais` : `Transcendência: ${need(PR.JOB2_LEVEL, PR.JOB2_CLASS_LEVEL)}`}</button>`;
+    }
+    return `<div class="class-path"><ol>${step(true, t.cls, 'Classe base')}${step(r.job >= 1, r.job ? job[br].name : `${job.a.name} ou ${job.b.name}`, `Nível ${PR.JOB_LEVEL} · +10% HP/ATK/DEF · Círculo III`)}${step(r.job >= 2, r.job ? job[br].trans : 'Transcendência', `Nível ${PR.JOB2_LEVEL} · +10% HP/ATK/DEF · Círculo IV`)}</ol>${action}</div>`;
   };
   P.talentTree = function(uid) {
     const e = this.engine, r = e.record(uid), t = e.template(r.id), tree = PR.treeFor(t.id), c = D.classes[t.cls];
     const pts = e.heroTalentPoints(r), spent = e.treeSpent(r), job = PR.jobs[t.cls];
-    const pos = n => ({ x:n.x, y:n.notable ? NOTABLE_Y : TREE_Y[n.tier] });
+    const pos = n => ({ x:n.x, y:n.notable ? NOTABLE_Y : n.capstone ? CAPSTONE_Y : TREE_Y[n.tier] });
     const links = [];
     tree.forEach(n => n.req.forEach(q => q.split('|').forEach(id => { const o = tree.find(x => x.id === id); if (!o) return; const A = pos(o), B = pos(n); const on = (r.talents[id] || 0) && (r.talents[n.id] || 0); links.push(`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="${on ? 'on' : (r.talents[id] || 0) ? 'avail' : ''}"/>`); })));
     const sel = tree.find(n => n.id === this.view.node) || tree[0];
     const nodes = tree.map(n => {
       const rank = r.talents[n.id] || 0, st = e.talentState(r, n.id), P2 = pos(n);
       const state = rank >= n.max ? 'max' : rank ? 'some' : st.ok ? 'avail' : 'locked';
-      const rad = n.keystone ? 42 : n.notable ? 38 : 32;
-      const color = n.keystone ? '#c9472d' : n.notable ? '#ffcf6b' : n.sig ? t.color : c.color;
-      return `<g class="tnode ${state} ${n.keystone ? 'keystone' : n.notable ? 'notable' : n.sig ? 'sig' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})" style="--nc:${color}">
+      const rad = n.keystone || n.capstone ? 42 : n.notable ? 38 : 32;
+      const color = n.keystone ? '#c9472d' : n.capstone ? '#d8b062' : n.notable ? '#ffcf6b' : n.sig ? t.color : c.color;
+      return `<g class="tnode ${state} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${n.keystone || n.capstone ? 'keystone' : n.notable ? 'notable' : n.sig ? 'sig' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})" style="--nc:${color}">
         <circle class="halo" r="${rad + 8}"/><circle class="ring" r="${rad}"/>
         ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" opacity=".55"/>` : ''}
         <g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>
         <g transform="translate(0,${rad + 6})"><rect x="-20" y="-8" width="40" height="17" rx="8.5" class="rank-bg"/><text y="4.5" class="rank">${rank}/${n.max}</text></g>
         <text y="${rad + 30}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
     }).join('');
-    const bands = [0, 1, 2].map(i => `<rect x="10" y="${[14, 188, 486][i]}" width="940" height="${[162, 286, 168][i]}" rx="16" class="band ${i === 2 && !r.job ? 'locked' : spent >= PR.TIER_REQ[i] ? 'open' : 'locked'}"/><text x="28" y="${[38, 212, 510][i]}" class="band-lbl">CÍRCULO ${['I', 'II', 'III'][i]} · ${i === 0 ? 'livre' : i === 1 ? `${PR.TIER_REQ[1]} pontos investidos` : `${job.name} + ${PR.TIER_REQ[2]} pontos`}</text>`).join('');
+    const jb = job[PR.branchOf(r)];
+    const bandLocked = i => (i === 2 && !r.job) || (i === 3 && (r.job || 0) < 2) || spent < PR.TIER_REQ[i];
+    const bandTxt = i => i === 0 ? 'livre' : i === 1 ? `${PR.TIER_REQ[1]} pontos investidos` : i === 2 ? `classe avançada + ${PR.TIER_REQ[2]} pontos` : `Transcendência (nível ${PR.JOB2_LEVEL}) + ${PR.TIER_REQ[3]} pontos`;
+    const bands = [0, 1, 2, 3].map(i => `<rect x="10" y="${[14, 188, 486, 670][i]}" width="940" height="${[162, 286, 168, 236][i]}" rx="16" class="band ${bandLocked(i) ? 'locked' : 'open'}"/><text x="28" y="${[38, 212, 510, 694][i]}" class="band-lbl">CÍRCULO ${['I', 'II', 'III', 'IV'][i]} · ${bandTxt(i)}</text>`).join('');
     const srank = r.talents[sel.id] || 0, sst = e.talentState(r, sel.id);
     const cur = srank ? this.nodeEffectText(sel, srank, t) : [], next = srank < sel.max ? this.nodeEffectText(sel, srank + 1, t) : [];
     const reqs = [];
     if (sel.tier > 0) reqs.push([spent >= PR.TIER_REQ[sel.tier], `${PR.TIER_REQ[sel.tier]} pontos investidos nesta árvore (${spent})`]);
-    if (sel.tier === 2) reqs.push([!!r.job, `Classe avançada: ${job.name}`]);
+    if (sel.tier === 2) reqs.push([!!r.job, 'Classe avançada (nível 30)']);
+    if (sel.tier === 3) reqs.push([(r.job || 0) >= 2, `Transcendência (nível ${PR.JOB2_LEVEL})`]);
+    if (sel.branch) reqs.push([sel.branch === PR.branchOf(r), `Caminho: ${job[sel.branch].name} → ${job[sel.branch].trans}`]);
     sel.req.forEach(q => reqs.push([q.split('|').some(x => (r.talents[x] || 0) > 0), `Ter ${q.split('|').map(x => tree.find(n => n.id === x)?.name || x).join(' ou ')}`]));
     const detail = `<aside class="tdetail" style="--nc:${sel.keystone ? '#c9472d' : sel.notable ? '#ffcf6b' : c.color}">
-      <div class="tdetail-head"><span class="tdetail-ico">${svgIcon(sel.icon, 34)}</span><div><small>${sel.keystone ? 'PEDRA-CHAVE' : sel.notable ? 'NOTÁVEL' : sel.sig ? 'EXCLUSIVO DO HERÓI' : `CÍRCULO ${['I', 'II', 'III'][sel.tier]}`}</small><h4>${esc(sel.sig === 'skill' ? `Maestria: ${t.skill.name}` : sel.sig === 'ult' ? `Ápice: ${t.ult.name}` : sel.sig === 'ess' ? `Essência: ${sel.name}` : sel.name)}</h4><span class="rank-pill">Rank ${srank}/${sel.max}</span></div></div>
+      <div class="tdetail-head"><span class="tdetail-ico">${svgIcon(sel.icon, 34)}</span><div><small>${sel.keystone ? 'PEDRA-CHAVE' : sel.capstone ? 'PEDRA-ANGULAR' : sel.notable ? 'NOTÁVEL' : sel.sig ? 'EXCLUSIVO DO HERÓI' : `CÍRCULO ${['I', 'II', 'III', 'IV'][sel.tier]}`}</small><h4>${esc(sel.sig === 'skill' ? `Maestria: ${t.skill.name}` : sel.sig === 'ult' ? `Ápice: ${t.ult.name}` : sel.sig === 'ess' ? `Essência: ${sel.name}` : sel.name)}</h4><span class="rank-pill">Rank ${srank}/${sel.max}</span></div></div>
       <p>${esc(sel.desc)}</p>
       ${cur.length ? `<div class="teff"><b>Efeito atual</b>${cur.map(l => `<span>${l}</span>`).join('')}</div>` : ''}
       ${next.length ? `<div class="teff next"><b>${srank ? 'Próximo rank' : 'Ao aprender'}</b>${next.map(l => `<span>${l}</span>`).join('')}</div>` : '<div class="teff max"><b>Rank máximo alcançado</b></div>'}
       ${reqs.length ? `<ul class="treqs">${reqs.map(([ok2, txt]) => `<li class="${ok2 ? 'ok' : 'no'}">${ok2 ? '✓' : '✕'} ${esc(txt)}</li>`).join('')}</ul>` : ''}
       <button class="action ${sst.ok ? 'primary' : ''} big" data-learn="${sel.id}" type="button" ${sst.ok ? '' : 'disabled'}>${sst.ok ? 'Aprender (1 ponto)' : esc(sst.reason || 'Indisponível')}</button>
     </aside>`;
-    const jobBox = r.job ? `<div class="job-badge on">⚜ ${job.name}</div>` : `<div class="job-badge"><b>Mudança de Classe: ${job.name}</b><small>Nível ${PR.JOB_LEVEL} · Classe ${PR.JOB_CLASS_LEVEL} · ${compact(PR.jobCost.gold)} ouro · ${PR.jobCost.crystal} cristais: ${job.text}</small><button class="action small ${e.canJobChange(r) ? 'pink' : ''}" data-job="${uid}" type="button" ${e.canJobChange(r) ? '' : 'disabled'}>${r.level < PR.JOB_LEVEL || (r.classLevel || 1) < PR.JOB_CLASS_LEVEL ? `Nv. ${r.level}/${PR.JOB_LEVEL} · Classe ${r.classLevel || 1}/${PR.JOB_CLASS_LEVEL}` : 'Mudar de classe'}</button></div>`;
+    const jobBox = this.classPath(r, t);
     return `<div class="tree-top"><div class="tree-hero"><img src="${portrait(t.id)}" alt=""><div><b>${esc(t.name)}</b><small>${clsTag(t.cls)} Nv. ${r.level}</small></div></div>
-      <div class="tree-points"><span class="pts-big ${pts > 0 ? 'has' : ''}">${pts} ponto(s) livre(s)</span><small>${spent} investidos · 1 ponto por nível${r.job ? ' · +5 da classe avançada' : ''}</small></div>
+      <div class="tree-points"><span class="pts-big ${pts > 0 ? 'has' : ''}">${pts} ponto(s) livre(s)</span><small>${spent} investidos · 1 ponto por nível${r.job ? ` · +${5 * Math.min(2, r.job)} da árvore de classes` : ''}</small></div>
       ${jobBox}
       <button class="action small primary" data-auto="talents" data-uid="${uid}" type="button" ${pts > 0 ? '' : 'disabled'} data-tip="Aprende os talentos na ordem da build recomendada deste herói.">⚡ Build recomendada</button>
       <button class="action small" data-hero-talent-reset="${uid}" type="button" ${spent ? '' : 'disabled'}>${this.state.freeRespec ? `Redefinir (grátis ×${this.state.freeRespec})` : `Redefinir (${compact(e.talentResetCost(r))} ouro)`}</button></div>
       <div class="talent-legend"><span><i class="lg-available"></i>Disponível</span><span><i class="lg-learned"></i>Aprendido</span><span><i class="lg-locked"></i>Bloqueado</span><small>Toque em um talento para ver efeitos e requisitos.</small></div>
-      <div class="tree-layout"><div class="talent-tree"><svg viewBox="0 0 960 666" preserveAspectRatio="xMidYMid meet">${bands}${links.join('')}${nodes}</svg></div>${detail}</div>`;
+      <div class="tree-layout"><div class="talent-tree"><svg viewBox="0 0 960 920" preserveAspectRatio="xMidYMid meet">${bands}${links.join('')}${nodes}</svg></div>${detail}</div>`;
   };
 
   // ---------------------------------------------------------------------------
@@ -889,7 +910,7 @@
     }
     const cur = e.guideStep(), ch = e.ensureChronicle();
     const chron = ch ? `<div class="chronicle-card"><span class="eyebrow">CRÔNICA ${ch.k} · metas sem fim</span><h3>${esc(ch.title)}</h3><p>${esc(ch.text)}</p><div class="meter"><span style="width:${Math.min(1, (e.chronicleValue(ch) - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div><small>${U.fmt(e.chronicleValue(ch))} / ${U.fmt(ch.target)}</small><div class="guide-reward">${this.rewardPills(e.chronicleReward(ch))}</div>${e.chronicleValue(ch) >= ch.target ? '<button class="action primary" data-claim-chronicle type="button">Resgatar</button>' : ''}</div>` : '';
-    return `${chron}<p class="note">O Guia do Viajante mostra o próximo passo da jornada. Cada etapa dá recompensas. Depois dele, as <b>Crônicas</b> seguem sem fim.</p><ol class="guide-list">${D.guide.map(g => { const claimed = this.state.guide.claimed[g.id], isCur = g === cur, done = isCur && e.guideDone(g); return `<li class="${claimed ? 'claimed' : isCur ? 'current' : 'future'}"><div><b>${esc(g.title)}</b><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div></div>${claimed ? '<span class="tag green">✓</span>' : isCur ? (done ? '<button class="action small primary" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${g.go}" type="button">Ir →</button>` : '') : '<span class="tag">🔒</span>'}</li>`; }).join('')}</ol>`;
+    return `${chron}<p class="note">O Guia do Viajante mostra o próximo passo da jornada. Cada etapa dá recompensas. Depois dele, as <b>Crônicas</b> seguem sem fim.</p><ol class="guide-list">${D.guide.map(g => { const claimed = this.state.guide.claimed[g.id], isCur = g === cur, done = isCur && e.guideDone(g); return `<li class="${claimed ? 'claimed' : isCur ? 'current' : 'future'}"><div><b>${esc(g.title)}</b><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div></div>${claimed ? '<span class="tag green">✓</span>' : isCur ? (done ? '<button class="action small primary" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : '') : '<span class="tag">🔒</span>'}</li>`; }).join('')}</ol>`;
   };
 
   P.advisorHtml = function() {
@@ -909,7 +930,7 @@
     return `<div class="record-banner"><span class="eyebrow">PERFIL</span><h3>${esc(p.name)}</h3><p>Conta nível ${p.level} · Poder ${compact(this.engine.getPower())} · ${this.state.collection.length} heróis</p><div class="player-name-edit"><input id="player-name-entry" maxlength="20" placeholder="Seu nome de viajante" value="${esc(p.name)}" aria-label="Nome"><button class="action primary" data-save-name type="button">Salvar nome</button></div></div>
       <div class="record-grid">${stats.map(([n, v]) => `<article><b>${typeof v === 'number' ? U.fmt(v) : v}</b><span>${n}</span></article>`).join('')}</div>
       ${this.accountHtml()}
-      <h4 class="sub-title">Configurações</h4><div class="settings"><label data-tip="HUD limpo mostra só o essencial (objetivo, equipe e controles principais). HUD completo mostra todos os painéis e atalhos."><input type="checkbox" id="set-hud" ${this.hudFull?.() ? 'checked' : ''}> HUD completo (mostrar tudo)</label><label data-tip="Ao subir de nível, os pontos de atributo e de talento vão sozinhos para a build recomendada de cada herói."><input type="checkbox" id="set-points" ${this.state.settings.autoPoints ? 'checked' : ''}> Distribuir pontos automaticamente</label><label><input type="checkbox" id="set-sound" ${this.state.settings.sound ? 'checked' : ''}> Som</label><label><input type="checkbox" id="set-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir dungeons/chefes automaticamente</label><button class="action" data-save type="button">💾 Salvar agora</button><button class="action red" data-reset-save type="button">Apagar save e recomeçar</button></div>`;
+      <h4 class="sub-title">Configurações</h4><div class="settings"><label data-tip="HUD limpo mostra só o essencial (objetivo, equipe e controles principais). HUD completo mostra todos os painéis e atalhos."><input type="checkbox" id="set-hud" ${this.hudFull?.() ? 'checked' : ''}> HUD completo (mostrar tudo)</label><label data-tip="Ao subir de nível, os pontos de atributo e de talento vão sozinhos para a build recomendada de cada herói."><input type="checkbox" id="set-points" ${this.state.settings.autoPoints ? 'checked' : ''}> Distribuir pontos automaticamente</label><label data-tip="Tremor de tela, flashes fortes e números grandes. Desligado: combate mais limpo e confortável de assistir."><input type="checkbox" id="set-fx" ${U.safeStorage.get('mythverse-fx') === 'intense' ? 'checked' : ''}> Efeitos de combate intensos</label><label><input type="checkbox" id="set-sound" ${this.state.settings.sound ? 'checked' : ''}> Som</label><label><input type="checkbox" id="set-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir dungeons/chefes automaticamente</label><button class="action" data-save type="button">💾 Salvar agora</button><button class="action red" data-reset-save type="button">Apagar save e recomeçar</button></div>`;
   };
   P.accountHtml = function() {
     const ses = this.session || {}, c = KT.Server || {};
@@ -967,8 +988,10 @@
       case 'elements': html = `<article class="wiki-art"><h3>Vantagens elementais</h3><p>Atacar um elemento fraco causa <b>+30%</b> de dano (mais o bônus Elemental dos itens). Atacar quem é forte contra você causa <b>−20%</b>. Luz e Sombra são fortes uma contra a outra.</p><div class="wiki-grid">${Object.entries(D.elements).map(([el, e2]) => `<div data-wiki-entry><b style="color:${e2.color}">${e2.icon} ${el}</b><small>Forte contra: ${e2.strong.join(', ')}</small><small>Fraco contra: ${Object.entries(D.elements).filter(([, o]) => o.strong.includes(el)).map(([k]) => k).join(', ') || ', '}</small></div>`).join('')}</div><h4>Sinergia de elemento</h4><ul>${D.elementSynergy.map(s2 => `<li>(${s2.n} heróis) ${s2.text}</li>`).join('')}</ul></article>`; break;
       case 'synergy': html = `<article class="wiki-art"><h3>Laços</h3><p>Heróis com história juntos ganham bônus quando estão na mesma equipe. Um herói pode ativar vários laços.</p><div class="wiki-grid wide">${D.bonds.map(b => `<div class="bond" data-wiki-entry><div class="bond-faces">${b.ids.map(id => `<img src="${portrait(id)}" alt="">`).join('')}</div><div><b>${esc(b.name)}</b><small>${b.ids.map(id => D.roster.find(h => h.id === id).name).join(' + ')}</small><small>${esc(b.text)}</small></div></div>`).join('')}</div></article>`; break;
       case 'heroes': html = `<div class="wiki-heroes">${D.roster.map(h => `<article class="wiki-hero" data-wiki-entry><img src="${portrait(h.id)}" alt="" loading="lazy"><div><h4>${esc(h.name)} <small>${esc(h.world)}</small></h4><div class="tags">${clsTag(h.cls)} ${elTag(h.el)}</div><p><b>Passiva: ${esc(h.passive.name)}:</b> ${esc(h.passiveText)}</p><p><b>Habilidade: ${esc(h.skill.name)}</b> (${String(h.skill.cd).replace('.', ',')}s): ${esc(h.skillText)}</p><p><b>Ultimate: ${esc(h.ult.name)}:</b> ${esc(h.ultText)}</p></div></article>`).join('')}</div>`; break;
-      case 'trees': html = `<article class="wiki-art"><h3>Árvores de talento e classes avançadas</h3><p>Cada herói tem sua própria árvore, baseada na classe. Ganha <b>1 ponto por nível</b> (+5 ao mudar de classe). A árvore tem três círculos: o I é livre, o II exige ${PR.TIER_REQ[1]} pontos investidos e o III exige a <b>classe avançada</b> e ${PR.TIER_REQ[2]} pontos. Nós <b>Notáveis</b> dão bônus grandes; <b>Pedras-chave</b> mudam o estilo de jogo com uma desvantagem. Os nós <b>Maestria</b> e <b>Ápice</b> fortalecem a habilidade e a ultimate exclusivas do herói.</p><p><b>Mudança de Classe:</b> exige nível ${PR.JOB_LEVEL} e classe ${PR.JOB_CLASS_LEVEL}; custa ${U.fmt(PR.jobCost.gold)} ouro e ${PR.jobCost.crystal} cristais: +10% HP/ATK/DEF, +5 pontos e acesso ao Círculo III.</p>
-        ${Object.entries(PR.classTrees).map(([cls, tree]) => `<h4>${D.classes[cls].icon} ${cls} → ${PR.jobs[cls].name}</h4><div class="wiki-grid">${tree.filter(n => !n.sig).map(n => `<div data-wiki-entry class="uniq"><span class="wiki-ico" style="--nc:${n.keystone ? '#ff7eb6' : n.notable ? '#ffcf6b' : D.classes[cls].color}">${svgIcon(n.icon, 22)}</span><div><b>${esc(n.name)}</b><small>Círculo ${['I', 'II', 'III'][n.tier]} · até ${n.max} rank(s)</small><small>${esc(n.hookText ? n.hookText(n.max) : Object.entries(n.stats).map(([k, v]) => statValue(k, v * n.max)).join(', ') || n.desc)}${n.max > 1 ? ' (no rank máximo)' : ''}</small>${n.keystone ? `<small>${esc(n.desc)}</small>` : ''}</div></div>`).join('')}</div>`).join('')}</article>`; break;
+      case 'trees': html = `<article class="wiki-art"><h3>Árvores de talento e árvore de classes</h3><p>Cada herói tem sua própria árvore, baseada na classe. Ganha <b>1 ponto por nível</b> (+5 em cada evolução de classe). A árvore tem quatro círculos: o I é livre, o II exige ${PR.TIER_REQ[1]} pontos investidos, o III exige a <b>classe avançada</b> e ${PR.TIER_REQ[2]} pontos, e o IV exige a <b>Transcendência</b> e ${PR.TIER_REQ[3]} pontos. Nós <b>Notáveis</b> dão bônus grandes; <b>Pedras-chave</b> mudam o estilo de jogo com uma desvantagem; cada caminho tem uma <b>Pedra-angular</b> exclusiva no Círculo IV.</p><p><b>Árvore de classes:</b> no nível ${PR.JOB_LEVEL} (classe ${PR.JOB_CLASS_LEVEL}) o herói escolhe um de dois caminhos, por ${U.fmt(PR.jobCost.gold)} ouro e ${PR.jobCost.crystal} cristais. No nível ${PR.JOB2_LEVEL} (classe ${PR.JOB2_CLASS_LEVEL}) ele transcende, por ${U.fmt(PR.job2Cost.gold)} ouro e ${PR.job2Cost.crystal} cristais. Cada grau dá +10% HP/ATK/DEF e o bônus do caminho.</p>
+        ${Object.keys(PR.jobs).map(cls => `<p><b>${cls}</b>: ${['a', 'b'].map(k => `${esc(PR.jobs[cls][k].name)} → ${esc(PR.jobs[cls][k].trans)} (${esc(PR.jobs[cls][k].text)})`).join(' · ')}</p>`).join('')}
+
+        ${Object.entries(PR.classTrees).map(([cls, tree]) => `<h4>${cls}</h4><div class="wiki-grid">${tree.filter(n => !n.sig).map(n => `<div data-wiki-entry class="uniq"><span class="wiki-ico" style="--nc:${n.keystone ? '#ff7eb6' : n.notable ? '#ffcf6b' : D.classes[cls].color}">${svgIcon(n.icon, 22)}</span><div><b>${esc(n.name)}</b><small>Círculo ${['I', 'II', 'III', 'IV'][n.tier]} · até ${n.max} rank(s)</small><small>${esc(n.hookText ? n.hookText(n.max) : Object.entries(n.stats).map(([k, v]) => statValue(k, v * n.max)).join(', ') || n.desc)}${n.max > 1 ? ' (no rank máximo)' : ''}</small>${n.keystone ? `<small>${esc(n.desc)}</small>` : ''}</div></div>`).join('')}</div>`).join('')}</article>`; break;
       case 'cards': html = `<article class="wiki-art"><h3>Cartas</h3><p>Cada monstro tem uma carta, e cartas são <b>raríssimas de propósito</b>: mesmo caçando o mesmo monstro o dia inteiro, conseguir uma leva dias. Cada carta tem uma raridade que define a chance por abate e a força dos atributos:</p><div class="wiki-grid">${Object.values(I.cardTiers).map(t => `<div data-wiki-entry><b style="color:${t.color}">${t.label}</b><small>1 em ${U.fmt(Math.round(1 / t.chance))} abates · atributos ×${String(t.mult).replace('.', ',')}</small></div>`).join('')}</div><p>Cartas de chefes são MVP; cartas épicas e MVP também trazem um <b>efeito especial</b>. Variantes Alfa e a pesquisa do Bestiário aumentam a chance. Cartas encaixam nos slots dos equipamentos: raros têm 0 a 1, épicos e conjuntos têm 1, lendários 1 ou 2 e míticos 2. Encaixar é permanente; remover custa 30 cristais e devolve a carta. Cartas ficam na <b>Bolsa → Cartas</b> e não ocupam espaço.</p><p><b>Casa do Time</b>: exponha cartas na Galeria (cada uma dá 25% dos seus atributos à equipe inteira; até 6 espaços) e complete o <b>Álbum</b>: ${D.HOUSE.album.map(m => `${m.n} cartas diferentes`).join(', ')} liberam bônus permanentes.</p><div class="card-grid">${I.cards.map(cd => `<div class="card-tile ${cd.mvp ? 'mvp' : ''}" data-wiki-entry><span class="card-art"><img src="${KT.spriteUrl(cd.sprite)}" alt="" loading="lazy"></span><b>${esc(cd.name)}</b><small>${Object.entries(cd.stats).map(([k, v]) => statValue(k, v)).join(', ')}</small><small class="dim" style="color:${cd.color}">${esc(cd.tierLabel)} · 1 em ${U.fmt(Math.round(1 / cd.chance))}</small>${cd.effect ? `<small>✦ ${esc(cd.effect)}</small>` : ''}</div>`).join('')}</div></article>`; break;
       case 'items': html = `<article class="wiki-art"><h3>Equipamentos</h3><p>Cada herói tem 4 espaços: ${Object.values(I.slots).map(s2 => `<b>${s2.name}</b> (${s2.desc.replace('.', '')})`).join(', ')}. O nível do item (Nv.) depende da região e do estágio.</p>
         <h4>Raridades</h4><div class="wiki-grid">${D.rarities.map(r => `<div data-wiki-entry><b style="color:${r.color}">${r.label}</b><small>Atributo principal ×${String(r.mult).replace('.', ',')} · ${r.affixes} afixo(s)${r.id === 'mythic' ? ' + efeito único' : r.id === 'set' ? ' + bônus de conjunto' : ''}</small></div>`).join('')}</div>
@@ -1057,6 +1080,7 @@
     if (t.id === 'auto-salvage' && e.type === 'change') { this.cmd('setSetting', 'autoSalvage', t.value); this.toast(t.value === 'none' ? 'Auto-desmontar desligado.' : `Itens ${t.value === 'common' ? 'comuns' : t.value === 'rare' ? 'comuns e raros' : 'até épicos'} serão desmontados automaticamente.`); }
     if (t.id === 'set-sound' && e.type === 'change') document.querySelector('#sound-btn').click();
     if (t.id === 'set-repeat' && e.type === 'change') this.cmd('setSetting', 'autoRepeat', t.checked);
+    if (t.id === 'set-fx' && e.type === 'change') { U.safeStorage.set('mythverse-fx', t.checked ? 'intense' : 'calm'); this.toast(t.checked ? 'Efeitos intensos ligados.' : 'Combate suave: sem tremor e com menos brilho.'); }
     if (t.id === 'set-hud' && e.type === 'change') { this.setHudFull(t.checked); this.toast(t.checked ? 'HUD completo: todos os painéis visíveis.' : 'HUD limpo: só o essencial na tela.'); }
     if (t.id === 'set-points' && e.type === 'change') { this.cmd('setSetting', 'autoPoints', t.checked); this.toast(t.checked ? 'Pontos serão distribuídos sozinhos ao subir de nível.' : 'Distribuição automática desligada: distribua na ficha do herói.'); }
     if (t.id === 'equip-target-other' && e.type === 'change' && t.value) { this.equipTarget = t.value; this.refreshPanel(); }
@@ -1083,7 +1107,7 @@
     const busy = b.tagName === 'BUTTON' ? b : null;
     const run = (op, args, then) => { if (busy) busy.disabled = true; return c(op, ...args).then(r => { then?.(r); refresh(); }).finally(() => { if (busy) busy.disabled = false; }); };
     if (d.remove) { ev.stopPropagation(); run('removeFromParty', [d.remove], () => { this.selectedSlot = s.formation.indexOf(null) >= 0 ? s.formation.indexOf(null) : this.selectedSlot; this.dockKey = ''; }); return; }
-    if (d.go) { const [p, param] = d.go.split(':'); this.openPanel(p, param); return; }
+    if (d.go) { const [p, param] = d.go.split(':'); this.openPanel(p, param); if (p === 'journey' && param) setTimeout(() => this.el.modalBody?.querySelector('.journey-card.focus')?.scrollIntoView({ block:'center', behavior:'smooth' }), 700); return; }
     if (b.hasAttribute('data-neon-save')) { const local = this.engine.save(); KT.Neon.flush().then(ok => this.toast(ok && local ? 'Progresso salvo na sua conta.' : 'Não foi possível confirmar o save agora.', ok && local ? 'gold' : 'red')); return; }
     if (b.hasAttribute('data-neon-logout')) { this.engine.save(); KT.Neon.queue(this.state); KT.Neon.signOut().then(() => location.reload()); return; }
     if (d.tabGo) { this.view.tab = d.tabGo; this.refreshPanel(true); return; }
@@ -1183,7 +1207,8 @@
     if (d.talentNode) { this.view.node = d.talentNode; this.refreshPanel(); return; }
     if (d.learn) { run('addHeroTalent', [this.view.param, d.learn], r => { if (r) this.callbacks.click?.(); }); return; }
     if (d.heroTalentReset) { this.ask('Redefinir talentos', 'Devolver todos os pontos de talento deste herói?', [{ id:'yes', label:'Redefinir', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') run('resetHeroTalents', [d.heroTalentReset], r => { if (!r) this.toast('Ouro insuficiente.'); }); }); return; }
-    if (d.job) { run('jobChange', [d.job], r => { if (r) { this.callbacks.summon?.('legendary'); this.renderer.showBanner('MUDANÇA DE CLASSE!', PR.jobs[e.template(e.record(d.job).id).cls].name, '#ffcf6b'); } else this.toast('Requisitos não atendidos.'); }); return; }
+    if (d.job) { const rec = e.record(d.job), jb = PR.jobs[e.template(rec.id).cls][d.branch === 'b' ? 'b' : 'a']; this.ask('Classe avançada', `Tornar-se <b>${esc(jb.name)}</b>? ${esc(jb.text)} A escolha é permanente.`, [{ id:'yes', label:'Escolher', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x !== 'yes') return; run('jobChange', [d.job, d.branch === 'b' ? 'b' : 'a'], r => { if (r) { this.callbacks.summon?.('legendary'); this.renderer.showBanner('CLASSE AVANÇADA', jb.name, '#d8b062'); } else this.toast('Requisitos não atendidos.'); }); }); return; }
+    if (d.transcend) { const rec = e.record(d.transcend); run('transcend', [d.transcend], r => { if (r) { this.callbacks.summon?.('legendary'); this.renderer.showBanner('TRANSCENDÊNCIA', PR.jobTitle(e.template(rec.id).cls, rec), '#d8b062'); } else this.toast('Requisitos não atendidos.'); }); return; }
     if (d.socket) { const it = s.inventory.find(x => x.uid === d.socket); if (!it) return; run('socketCard', [d.socket, it.cards.indexOf(null), d.card], r => { if (r) { this.toast('Carta encaixada!', 'gold'); this.callbacks.reward?.(); } }); return; }
     if (d.cardItem) { this.cardSel = d.cardItem; this.refreshPanel(); return; }
     if (d.houseSlot !== undefined) { this.houseSlot = Number(d.houseSlot); this.refreshPanel(); return; }

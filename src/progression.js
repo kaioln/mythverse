@@ -55,20 +55,36 @@
   };
 
   // ---------------------------------------------------------------------------
-  // CLASSES AVANÇADAS (Mudança de Classe no nível 30)
+  // ÁRVORE DE CLASSES
+  //   Classe base → nível 30: escolhe 1 de 2 caminhos (classe avançada) → nível 60: Transcendência.
+  //   Cada caminho tem bônus próprios e uma Pedra-angular exclusiva no Círculo IV da árvore de talentos.
+  //   Saves antigos com classe avançada seguem no caminho A (o mesmo nome de antes).
   // ---------------------------------------------------------------------------
   const jobs = {
-    Vanguarda:{ name:'Bastião Celeste', text:'Guardião inabalável: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Executor:{ name:'Lâmina do Eclipse', text:'Duelista implacável: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Arcanista:{ name:'Oráculo Astral', text:'Condutor dos astros: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Atirador:{ name:'Olho do Vendaval', text:'Caçador de precisão absoluta: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' },
-    Suporte:{ name:'Tecelão de Almas', text:'Protetor dos laços: +10% HP/ATK/DEF e acesso ao Círculo III da árvore.' }
+    Vanguarda:{ a:{ name:'Bastião Celeste', role:'Defesa absoluta', text:'+8% HP e +8% DEF. Segura a linha e protege a equipe.', stats:{ hp:.08, def:.08 }, trans:'Muralha dos Céus' },
+                b:{ name:'Berserker Rubro', role:'Tanque ofensivo', text:'+10% ATK e +3% roubo de vida. Aguenta batendo.', stats:{ atk:.10, lifesteal:.03 }, trans:'Rei da Carnificina' } },
+    Executor:{ a:{ name:'Lâmina do Eclipse', role:'Críticos devastadores', text:'+3% crítico e +12% dano crítico.', stats:{ crit:.03, critDmg:.12 }, trans:'Senhor do Eclipse' },
+               b:{ name:'Ronin das Sombras', role:'Esquiva e velocidade', text:'+4% esquiva e +5% velocidade de ataque.', stats:{ dodge:.04, spd:.05 }, trans:'Espectro Sem Nome' } },
+    Arcanista:{ a:{ name:'Oráculo Astral', role:'Habilidades e energia', text:'+8% dano de habilidade e +6% energia.', stats:{ skill:.08, nrg:.06 }, trans:'Arauto das Estrelas' },
+                b:{ name:'Feiticeiro da Ruína', role:'Queimaduras e elementos', text:'+15% dano contínuo e +6% dano elemental.', stats:{ dot:.15, elem:.06 }, trans:'Soberano da Ruína' } },
+    Atirador:{ a:{ name:'Olho do Vendaval', role:'Cadência de tiro', text:'+6% velocidade de ataque e +3% crítico.', stats:{ spd:.06, crit:.03 }, trans:'Tempestade Viva' },
+               b:{ name:'Caçador de Relíquias', role:'Caça a chefes', text:'+10% dano em chefes e +5% perfuração.', stats:{ boss:.10, pierce:.05 }, trans:'Arqueiro do Fim' } },
+    Suporte:{ a:{ name:'Tecelão de Almas', role:'Cura e escudos', text:'+10% cura/escudos e +5% HP.', stats:{ healPow:.10, hp:.05 }, trans:'Guardião das Almas' },
+              b:{ name:'Sacerdote da Aurora', role:'Apoio e recarga', text:'+6% dano de habilidade e +5% recarga.', stats:{ skill:.06, cdr:.05 }, trans:'Profeta da Aurora' } }
   };
+  // Compatibilidade: PR.jobs[cls].name continua sendo o caminho A.
+  Object.values(jobs).forEach(j => { j.name = j.a.name; j.text = j.a.text; });
   const JOB_LEVEL = 30;
   const JOB_CLASS_LEVEL = 10;
+  const JOB2_LEVEL = 60;
+  const JOB2_CLASS_LEVEL = 30;
   const CLASS_LEVEL_CAP = 50;
   const jobCost = { gold:60000, crystal:150 };
-  const TIER_REQ = [0, 8, 20];   // pontos gastos na árvore para liberar cada círculo
+  const job2Cost = { gold:900000, crystal:400 };   // Transcendência: um dos grandes destinos do ouro no fim do jogo
+  const TIER_REQ = [0, 8, 20, 40];   // pontos gastos na árvore para liberar cada círculo
+  const branchOf = rec => (rec?.branch === 'b' ? 'b' : 'a');
+  // Nome da classe atual do herói (base, avançada ou transcendida).
+  const jobTitle = (cls, rec) => { const j = jobs[cls]?.[branchOf(rec)]; if (!j || !rec?.job) return cls; return rec.job >= 2 ? j.trans : j.name; };
 
   // ---------------------------------------------------------------------------
   // ÁRVORES DE TALENTO POR CLASSE, cada herói tem a sua própria distribuição.
@@ -158,6 +174,40 @@
       T('sK', 2, 470, 'Milagre', 'wings', 1, { atk:-.20 }, 'PEDRA-CHAVE: ao usar a habilidade, cura 5% do HP de toda a equipe. −20% ATK.', { req:['sN'], keystone:true, hook:() => ({ onSkill:{ eff:[{ k:'heal', p:.05, to:'allies' }] } }) })
     ]
   };
+  // Círculo IV (Transcendência): nós fortes para os pontos dos níveis altos + uma pedra-angular por caminho.
+  const circle4 = {
+    Vanguarda:[
+      T('v12', 3, 150, 'Pele de Titã', 'heart', 5, { hp:.04 }, 'Vida de gigante.', { req:['v10|v9'] }),
+      T('v13', 3, 810, 'Martelo Celeste', 'fist', 5, { atk:.04, def:.02 }, 'Força e guarda.', { req:['v11'] }),
+      T('vA', 3, 370, 'Céu Inabalável', 'shield', 1, { dr:.06, hp:.10 }, 'PEDRA-ANGULAR (Muralha dos Céus): no início de cada onda, escudo de 8% do HP para toda a equipe.', { req:['v12|v13'], capstone:true, branch:'a', hook:() => ({ start:{ eff:[{ k:'shield', p:.08, to:'allies', d:10 }] } }) }),
+      T('vB', 3, 590, 'Fúria Carmesim', 'fang', 1, { atk:.15, lifesteal:.04 }, 'PEDRA-ANGULAR (Rei da Carnificina): abates curam 6% do HP.', { req:['v12|v13'], capstone:true, branch:'b', hook:() => ({ onKill:{ eff:[{ k:'heal', p:.06, to:'self' }] } }) })
+    ],
+    Executor:[
+      T('e12', 3, 150, 'Corte Fantasma', 'wind', 5, { dodge:.01, spd:.02 }, 'Mais rápido e esquivo.', { req:['e9|e10'] }),
+      T('e13', 3, 810, 'Golpe Final', 'skull', 5, { critDmg:.06, boss:.02 }, 'Críticos que derrubam chefes.', { req:['e11'] }),
+      T('eA', 3, 370, 'Eclipse Total', 'moon', 1, { crit:.06, critDmg:.30 }, 'PEDRA-ANGULAR (Senhor do Eclipse): críticos ainda mais letais.', { req:['e12|e13'], capstone:true, branch:'a' }),
+      T('eB', 3, 590, 'Sem Nome, Sem Rastro', 'wind', 1, { dodge:.08, spd:.08 }, 'PEDRA-ANGULAR (Espectro Sem Nome): ao esquivar, contra-ataca com 150% ATK.', { req:['e12|e13'], capstone:true, branch:'b', hook:() => ({ onDodge:{ eff:[{ k:'dmg', m:1.5, to:'attacker' }] } }) })
+    ],
+    Arcanista:[
+      T('a12', 3, 150, 'Torrente Arcana', 'battery', 5, { nrg:.03, skill:.02 }, 'Energia e poder mágico.', { req:['a9|a10'] }),
+      T('a13', 3, 810, 'Véu Estelar', 'star', 5, { elem:.03, pierce:.02 }, 'Magia que atravessa defesas.', { req:['a11'] }),
+      T('aA', 3, 370, 'Chuva de Estrelas', 'sparkle', 1, { ultDmg:.20, nrg:.10 }, 'PEDRA-ANGULAR (Arauto das Estrelas): ultimates mais fortes e mais frequentes.', { req:['a12|a13'], capstone:true, branch:'a' }),
+      T('aB', 3, 590, 'Cinzas do Mundo', 'flame', 1, { dot:.30, elem:.08 }, 'PEDRA-ANGULAR (Soberano da Ruína): queimaduras e venenos devastadores.', { req:['a12|a13'], capstone:true, branch:'b' })
+    ],
+    Atirador:[
+      T('t12', 3, 150, 'Gatilho Leve', 'wind', 5, { spd:.02, crit:.005 }, 'Cadência ainda maior.', { req:['t9|t10'] }),
+      T('t13', 3, 810, 'Munição Rúnica', 'spear', 5, { pierce:.02, boss:.03 }, 'Atravessa armaduras de chefes.', { req:['t11'] }),
+      T('tA', 3, 370, 'Olho da Tempestade', 'eye', 1, { spd:.10, crit:.05 }, 'PEDRA-ANGULAR (Tempestade Viva): a cada 3 ataques, um disparo extra de 90% ATK.', { req:['t12|t13'], capstone:true, branch:'a', hook:() => ({ every:{ n:3, eff:[{ k:'dmg', m:.9, to:'rand' }] } }) }),
+      T('tB', 3, 590, 'Flecha do Fim', 'target', 1, { boss:.20, pierce:.08 }, 'PEDRA-ANGULAR (Arqueiro do Fim): feita para derrubar chefes.', { req:['t12|t13'], capstone:true, branch:'b' })
+    ],
+    Suporte:[
+      T('s12', 3, 150, 'Graça Profunda', 'cross', 5, { healPow:.04, hp:.02 }, 'Curas mais fortes.', { req:['s9|s10'] }),
+      T('s13', 3, 810, 'Hino Sagrado', 'orb', 5, { skill:.03, cdr:.02 }, 'Habilidades mais frequentes.', { req:['s11'] }),
+      T('sA', 3, 370, 'Santuário de Almas', 'wings', 1, { healPow:.20, dr:.04 }, 'PEDRA-ANGULAR (Guardião das Almas): no início de cada onda, escudo de 6% do HP para a equipe.', { req:['s12|s13'], capstone:true, branch:'a', hook:() => ({ start:{ eff:[{ k:'shield', p:.06, to:'allies', d:10 }] } }) }),
+      T('sB', 3, 590, 'Alvorada', 'sparkle', 1, { skill:.12, nrg:.08 }, 'PEDRA-ANGULAR (Profeta da Aurora): a habilidade também dá 10 de energia à equipe.', { req:['s12|s13'], capstone:true, branch:'b', hook:() => ({ onSkill:{ eff:[{ k:'nrg', v:10, to:'allies' }] } }) })
+    ]
+  };
+  Object.keys(classTrees).forEach(cls => { classTrees[cls].push(...circle4[cls]); });
   Object.keys(classTrees).forEach(cls => { classTrees[cls].push(...common(cls)); classTrees[cls].forEach(n => { n.req = n.req || []; }); });
   // Árvore de um herói: a da classe + a Essência exclusiva dele (ver builds.js).
   const treeCache = new Map();
@@ -222,5 +272,5 @@
     ]
   };
 
-  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
+  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, JOB2_LEVEL, JOB2_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, job2Cost, branchOf, jobTitle, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
 })();

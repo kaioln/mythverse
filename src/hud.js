@@ -77,7 +77,7 @@
     let title = '', sub = '', btn = '';
     if (g) {
       const done = e.guideDone(g); title = g.title; sub = done ? 'Concluído! Resgate a recompensa.' : g.desc;
-      btn = done ? '<button class="action primary small" data-claim-guide type="button">✓ Resgatar</button>' : g.go ? `<button class="action small" data-go="${g.go}" type="button">Ir →</button>` : '';
+      btn = done ? '<button class="action primary small" data-claim-guide type="button">✓ Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : '';
     } else if (ch) {
       const v = e.chronicleValue(ch), done = v >= ch.target; title = ch.title; sub = `${U.fmt(v)} / ${U.fmt(ch.target)}`;
       btn = done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : '';

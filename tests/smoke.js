@@ -230,6 +230,18 @@ const atkJob = State.heroStats(state, r0).atk;
 ok(engine.jobChange(r0.uid) && r0.job === 1 && State.heroStats(state, r0).atk > atkJob, 'mudança de classe');
 ok(engine.heroTalentPoints(r0) === 29 + 5 - t1.max, 'classe avançada dá +5 pontos');
 const other = state.collection.find(h => h !== r0); ok(!Object.keys(other.talents || {}).length, 'talentos são individuais');
+{ // Árvore de classes: caminho do nível 30, transcendência no 60, pontos sem uso não acendem aviso.
+  ok(r0.branch === 'a' && PR.jobTitle(engine.template(r0.id).cls, r0) === PR.jobs[engine.template(r0.id).cls].a.name, 'caminho padrão A');
+  ok(!engine.canTranscend(r0), 'transcendência exige nível 60');
+  const t4 = PR.treeFor(r0.id).find(n => n.tier === 3); ok(!engine.talentState(r0, t4.id).ok, 'círculo IV exige transcendência');
+  const sv = { level:r0.level, classLevel:r0.classLevel, talents:{ ...r0.talents } };
+  r0.level = 60; r0.classLevel = PR.JOB2_CLASS_LEVEL; const atkT = State.heroStats(state, r0).atk;
+  ok(engine.transcend(r0.uid) && r0.job === 2 && State.heroStats(state, r0).atk > atkT, 'transcendência');
+  r0.level = 100; engine.autoTalents(r0.uid); ok(engine.usableTalentPoints(r0) === 0, 'sem pontos presos após a build');
+  const capB = PR.treeFor(r0.id).find(n => n.capstone && n.branch === 'b'); ok(!engine.talentState(r0, capB.id).ok, 'pedra-angular do outro caminho bloqueada');
+  const raw = JSON.parse(JSON.stringify(state)), rr = raw.collection.find(h => h.uid === r0.uid); rr.level = 40; rr.job = 2; rr.branch = 'z'; rr.talents = {}; const pr = State.mergeState(raw).collection.find(h => h.uid === r0.uid); ok(pr.job === 1 && pr.branch === 'a', 'save saneado: transcendência abaixo do nível 60 e caminho inválido');
+  r0.job = 1; r0.level = sv.level; r0.classLevel = sv.classLevel; r0.talents = sv.talents;
+}
 ok(engine.resetHeroTalents(r0.uid) && !Object.keys(r0.talents).length, 'redefinir talentos');
 Object.keys(PR.classTrees).forEach(c => PR.classTrees[c].forEach(n => ok(PR.icons[n.icon], `ícone do talento ${n.id}`)));
 // Cartas

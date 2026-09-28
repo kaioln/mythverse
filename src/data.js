@@ -333,6 +333,18 @@
   const LP33 = Math.pow(1.065, 32), LP_B = .062, LP_D = 0, LP_TAIL = LP_B;
   const levelPower = L => L <= 33 ? Math.pow(1.065, L - 1) : L <= 100 ? LP33 * Math.exp(LP_B * (L - 33) + LP_D * (L - 33) * (L - 33)) : levelPower(100) * Math.exp(LP_TAIL * (L - 100));
   // Inverso contínuo (nível de um inimigo a partir da força).
+  // Ameaça dos inimigos de caçada/masmorra por nível (multiplica vida e ataque). A força dos heróis cresce mais
+  // rápido que levelPower (itens, refino, talentos, cartas, laços): sem isto, uma equipe 10 níveis abaixo limpava
+  // estágios "Muito difíceis" sem perder vida. Calibrado em combate real (tools/balance.js): para cada região mediu-se
+  // o maior multiplicador que a equipe de referência do nível ainda vence 3/3 e usa-se 80% dele. Resultado: no
+  // recomendado vence com folga; ~5 níveis abaixo ainda passa, apertado; 8+ níveis abaixo perde.
+  // O Capítulo I começa suave (x1 no nível 1) para o jogador novo aprender sem muro.
+  const THREAT = { hunt:[[1, 1], [10, 1.25], [20, 1.8], [33, 2.8], [45, 3.4], [60, 3.1], [72, 3.6], [80, 3], [90, 2.3], [100, 1.7]], dungeon:[[1, 1], [20, 1.5], [36, 2.2], [56, 2.5], [78, 2.6], [98, 1.4], [100, 1.35]] };
+  const threat = (L, kind) => {
+    const t = THREAT[kind] || THREAT.hunt; let m = t[t.length - 1][1];
+    for (let i = 1; i < t.length; i++) if (L <= t[i][0]) { const [a, ma] = t[i - 1], [b, mb] = t[i]; m = ma + (mb - ma) * Math.max(0, L - a) / (b - a); break; }
+    return { hp:m, atk:m };
+  };
   const levelOfPower = P => { P = Math.max(1, P); if (P <= LP33) return 1 + Math.log(P) / Math.log(1.065); let lo = 33, hi = 400; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (levelPower(m) < P) lo = m; else hi = m; } return (lo + hi) / 2; };
   const zones = {
     village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'CAPITAL · TSUKIMORI', difficulty:'Capital', theme:'village', scene:'village-expanded',
@@ -378,7 +390,7 @@
       weakTo:['Água','Natureza'], lore:'A forja onde Ren aprendeu o ofício. Hoje os autômatos trabalham sozinhos, forjando armas para o eclipse.',
       unlock:{ stage:{ hunt_frost:5 } } },
     // --- Capítulo III ---
-    hunt_desert: { id:'hunt_desert', kind:'hunt', chapter:3, title:'Areias do Tempo', subtitle:'Chacais, esfinges e múmias reais.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 12', theme:'desert',
+    hunt_desert: { id:'hunt_desert', kind:'hunt', chapter:3, title:'Areias do Tempo', subtitle:'Chacais, esfinges e múmias reais.', kicker:'CAPÍTULO III · CAÇADA', difficulty:'Estágios 1 a 12', theme:'desert', threat:1.15,
       pool:['fox_sand','spider_sand','wisp_sand','oni_sand'], elites:['golem_sand','revenant_mummy'], stages:12, lv:[64, 80], ilvl:30,
       weakTo:['Água','Natureza','Vento'], lore:'Além do mar, um deserto onde as horas escorrem como areia. Algo enorme se move sob as dunas.',
       unlock:{ kills:{ boss_tide:1 } } },
@@ -801,5 +813,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { levelPower, levelOfPower, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { levelPower, levelOfPower, THREAT, threat, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();
