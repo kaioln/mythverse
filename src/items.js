@@ -6,10 +6,10 @@
   // ESPAÇOS DE EQUIPAMENTO
   // ---------------------------------------------------------------------------
   const slots = {
-    weapon: { name:'Arma', icon:'⚔', primary:'atk', desc:'Aumenta o ATK.' },
-    focus:  { name:'Foco', icon:'📖', primary:'skill', desc:'Aumenta o dano de habilidade e ultimate.' },
-    seal:   { name:'Selo', icon:'🔰', primary:'def', desc:'Aumenta a DEF.' },
-    charm:  { name:'Omamori', icon:'🧿', primary:'hp', desc:'Aumenta o HP.' }
+    weapon: { name:'Arma', icon:'武', primary:'atk', desc:'Aumenta o ATK.' },
+    focus:  { name:'Foco', icon:'書', primary:'skill', desc:'Aumenta o dano de habilidade e ultimate.' },
+    seal:   { name:'Selo', icon:'印', primary:'def', desc:'Aumenta a DEF.' },
+    charm:  { name:'Omamori', icon:'守', primary:'hp', desc:'Aumenta o HP.' }
   };
   // TIPOS DE ITEM: cada classe usa certos tipos em cada espaço, e cada tipo tem atributos próprios
   // (implícitos) e afixos mais prováveis. Tipos são compartilhados por 2 ou 3 classes, para dar

@@ -114,6 +114,8 @@
         summon:r => sound.summon(r), reward:() => sound.chord([784, 988, 1175], .05, 'sine', .04), click:() => sound.tone(660, .05, 'triangle', .03)
       });
       ui.session = session; ui.ask = askBox;
+      // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
+      if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) KT.dev = { ui, engine, renderer };
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => ui.onZone(z), onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),

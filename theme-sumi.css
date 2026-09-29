@@ -433,3 +433,83 @@ body .hero-portrait .lv{font-size:11px}
 .map-pin.locked .pin-name{display:block;position:static;transform:none;padding:0;background:none;font-size:11.5px;color:#9b9284}
 .map-pin.locked small{display:none}
 .map-pin.locked:hover{transform:translate(-50%,-50%) scale(1.06);opacity:1}
+
+/* Cards de herói: selo de raridade/equipe sempre à frente, com faixa própria no topo (a cabeça não cobre mais o selo) */
+.collection-card .art{height:172px;padding-top:26px;box-sizing:border-box}
+.collection-card .art img{height:140px;position:relative;z-index:1}
+.collection-card .badge,.collection-card .in-party{z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.45)}
+.collection-card .info small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.collection-grid{align-items:stretch}
+
+/* Caixas de convocação: cartões da mesma altura e botões sempre alinhados no rodapé; nota de chaves quebra linha */
+.box-grid{align-items:stretch}
+.box-card{height:100%;box-sizing:border-box}
+.box-card .box-actions{margin-top:auto;margin-bottom:0;padding-top:8px}
+.keys-note{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.45;max-width:100%}
+
+/* ===== Árvore de talentos v2 (selos de tinta) ===== */
+.talent-tree{background:var(--grain),#15131c}
+.talent-tree .band{fill:rgba(239,231,216,.025);stroke:var(--line2);stroke-width:1}
+.talent-tree .band.locked{fill:rgba(0,0,0,.22);stroke-dasharray:4 6}
+.talent-tree .band-lbl{font:800 22px var(--display);fill:var(--shu);letter-spacing:0}
+.talent-tree .band-lbl .band-sub{font:700 12.5px var(--ui);fill:var(--muted);letter-spacing:.08em}
+.talent-tree .tlink{fill:none;stroke:#3a3645;stroke-width:4;stroke-linecap:round}
+.talent-tree .tlink.avail{stroke:#8b8573;stroke-dasharray:1 8;stroke-width:4.5}
+.talent-tree .tlink.on{stroke:var(--shu);stroke-width:5.5}
+.tnode .seal{fill:#1c1a24;stroke:#4a4656;stroke-width:2.5;transition:fill .15s,stroke .15s}
+.tnode .seal-inner{fill:none;stroke:#4a4656;stroke-width:1.5}
+.tnode .glyph path{fill:none;stroke:#8d8779;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tnode .halo{fill:none;stroke:var(--washi);stroke-width:2;opacity:0}
+.tnode .lbl{font:700 13px var(--ui);fill:#cfc6b6;text-anchor:middle;paint-order:stroke;stroke:#100e16;stroke-width:5px}
+.tnode .pips circle{fill:#100e16;stroke:#5b5666;stroke-width:1.3}
+.tnode .pips circle.on{fill:var(--shu);stroke:#f0b1a4}
+/* disponível: papel à espera do carimbo */
+.tnode.avail .seal{fill:#262330;stroke:#cdbf9f}
+.tnode.avail .glyph path{stroke:#efe7d8}
+.tnode.avail .lbl{fill:var(--washi)}
+/* aprendido: carimbado em papel, tinta escura */
+.tnode.some .seal,.tnode.max .seal{fill:#e9dfc9;stroke:#2a2130}
+.tnode.some .seal-inner,.tnode.max .seal-inner{stroke:#8a2f1d}
+.tnode.some .glyph path,.tnode.max .glyph path{stroke:#1d1822;stroke-width:2.4}
+.tnode.max .lbl,.tnode.some .lbl{fill:#fff4e2}
+.tnode.locked{opacity:.55}
+.tnode.locked .lbl{fill:#8f877a}
+/* tipos */
+.tnode.k-keystone .seal{fill:#5a1c12;stroke:var(--shu);stroke-width:3}
+.tnode.k-keystone .glyph path{stroke:#f6d9cf}
+.tnode.k-keystone.some .seal,.tnode.k-keystone.max .seal{fill:var(--shu);stroke:#2a1410}
+.tnode.k-keystone.some .glyph path,.tnode.k-keystone.max .glyph path{stroke:#fff4ea}
+.tnode.k-notable .seal{stroke-width:3}
+.tnode.k-capstone .seal{stroke:var(--gold);stroke-width:3}
+.tnode.k-sig .seal{fill:#1c1a24;stroke:var(--gold);stroke-width:3}
+.tnode.k-sig .sig-art{opacity:.9}
+.tnode.k-sig .sig-ring{fill:none;stroke:rgba(0,0,0,.5);stroke-width:2}
+.tnode.k-sig.locked .sig-art{opacity:.35;filter:grayscale(1)}
+.tnode.k-sig.some .seal,.tnode.k-sig.max .seal{fill:#1c1a24;stroke:var(--shu);stroke-width:4}
+.tnode:hover .seal{stroke:var(--washi)}
+.tnode.selected .halo{opacity:1;stroke-dasharray:3 4}
+.tnode.other-branch{opacity:.3}
+/* legenda com os formatos */
+.talent-legend .lg-shape{width:13px;height:13px;border:2px solid #cdbf9f;background:#262330;border-radius:50%}
+.talent-legend .lg-shape.square{border-radius:3px}
+.talent-legend .lg-shape.octo{border-radius:0;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);background:#cdbf9f}
+.talent-legend .lg-shape.key{border-radius:3px;background:var(--shu);border-color:var(--shu)}
+.talent-legend .lg-learned{background:#e9dfc9;border-color:#2a2130}
+.talent-tree .band-tag rect{fill:#15131c;stroke:var(--line2)}
+.talent-tree .band-tag .band-num{font:800 17px var(--display);fill:var(--shu)}
+.talent-tree .band-tag .band-sub{font:600 12px var(--ui);fill:var(--muted);letter-spacing:.06em}
+.talent-tree .band-tag.locked .band-num{fill:#6d665b}
+.tnode .lbl{font:600 13px var(--ui);letter-spacing:.01em}
+
+/* Cabeçalho da árvore no celular: nada passa da largura da tela */
+.tree-top>*{min-width:0;max-width:100%}
+.class-path{min-width:0;max-width:100%;box-sizing:border-box}
+.class-path .action{white-space:normal;height:auto;min-height:40px;line-height:1.3}
+.talent-legend{min-width:0}
+@media (max-width:760px){
+  .tree-top{gap:8px}
+  .tree-top>.action{margin-left:0;flex:1 1 45%}
+  .talent-legend{gap:6px 12px}.talent-legend small{margin-left:0;flex-basis:100%}
+  .talent-tree{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .talent-tree svg{width:820px;max-width:none}
+}

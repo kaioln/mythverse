@@ -391,7 +391,7 @@
         <div class="season-faces">${featured.map(h => `<span data-tip="<b>${esc(h.name)}</b><br>${h.cls} · ${h.el}"><img src="${portrait(h.id)}" alt=""><small>${esc(h.name.split(' ')[0])}</small></span>`).join('')}</div></div>
         <div class="summon-counts"><span class="pill"><b>${keys}</b> chaves</span><button class="action small" data-go="shop:crystal" type="button">Comprar chaves</button></div></section>
       <div class="box-grid">${D.BOXES.map(boxCard).join('')}</div>
-      <small class="dim">Chaves: a cada 4 estágios novos, fim de caçadas, dungeons, chefes, Fenda (a cada 5 andares), diárias completas, login (dias 4 e 7), a cada 5 níveis de conta, conquistas e Loja. Repetidos viram fragmentos (+2/4/8/16) e podem melhorar a raridade do herói.</small>
+      <small class="dim keys-note">Chaves: a cada 4 estágios novos, fim de caçadas, dungeons, chefes, Fenda (a cada 5 andares), diárias completas, login (dias 4 e 7), a cada 5 níveis de conta, conquistas e Loja. Repetidos viram fragmentos (+2/4/8/16) e podem melhorar a raridade do herói.</small>
       <div class="section-title"><h3>Seus heróis <span>${owned.length}</span></h3><button class="action small" data-tab-go="owned" type="button">Ver todos →</button></div>
       <div class="mini-roster">${owned.slice(-12).reverse().map(r => { const t = e.template(r.id); return `<button class="mini-hero rarity-${r.rarity}" data-hero="${r.uid}" type="button"><img src="${portrait(t.id)}" alt=""><small>${esc(t.name)}</small></button>`; }).join('') || '<p class="dim">Nenhum herói ainda.</p>'}</div>`;
   };
@@ -475,7 +475,7 @@
   // ---------------------------------------------------------------------------
   // TALENTOS
   // ---------------------------------------------------------------------------
-  const TREE_Y = { 0:98, 1:272, 2:556, 3:728 }, NOTABLE_Y = 388, CAPSTONE_Y = 818;
+  const TREE_Y = { 0:112, 1:300, 2:650, 3:840 }, NOTABLE_Y = 440, CAPSTONE_Y = 950;
   const svgIcon = (key, size = 26, color = 'currentColor') => `<svg class="ticon" viewBox="0 0 24 24" width="${size}" height="${size}" style="color:${color}"><path d="${PR.icons[key] || PR.icons.star}"/></svg>`;
   P.nodeEffectText = function(n, rank, t) {
     const lines = Object.entries(n.stats || {}).map(([k, v]) => statValue(k === 'skillMastery' ? 'skillMastery' : k, v * rank));
@@ -511,25 +511,37 @@
     const e = this.engine, r = e.record(uid), t = e.template(r.id), tree = PR.treeFor(t.id), c = D.classes[t.cls];
     const pts = e.heroTalentPoints(r), spent = e.treeSpent(r), job = PR.jobs[t.cls];
     const pos = n => ({ x:n.x, y:n.notable ? NOTABLE_Y : n.capstone ? CAPSTONE_Y : TREE_Y[n.tier] });
+    // Árvore no estilo Sumi: ligações em pincelada curva; o formato do selo diz o tipo do nó (redondo = atributo,
+    // quadrado = efeito, octógono = notável, selo vermelho = pedra-chave, anel duplo = pedra-angular, retrato = do herói).
     const links = [];
-    tree.forEach(n => n.req.forEach(q => q.split('|').forEach(id => { const o = tree.find(x => x.id === id); if (!o) return; const A = pos(o), B = pos(n); const on = (r.talents[id] || 0) && (r.talents[n.id] || 0); links.push(`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" class="${on ? 'on' : (r.talents[id] || 0) ? 'avail' : ''}"/>`); })));
+    tree.forEach(n => n.req.forEach(q => q.split('|').forEach(id => { const o = tree.find(x => x.id === id); if (!o) return; const A = pos(o), B = pos(n); const on = (r.talents[id] || 0) && (r.talents[n.id] || 0);
+      const my = (A.y + B.y) / 2, bend = (B.x - A.x) * .18;
+      links.push(`<path d="M${A.x} ${A.y} C ${A.x + bend} ${my}, ${B.x - bend} ${my}, ${B.x} ${B.y}" class="tlink ${on ? 'on' : (r.talents[id] || 0) ? 'avail' : ''}"/>`); })));
     const sel = tree.find(n => n.id === this.view.node) || tree[0];
+    const octo = rr => Array.from({ length:8 }, (_, k) => { const a = Math.PI / 8 + k * Math.PI / 4; return `${(Math.cos(a) * rr).toFixed(1)},${(Math.sin(a) * rr).toFixed(1)}`; }).join(' ');
     const nodes = tree.map(n => {
       const rank = r.talents[n.id] || 0, st = e.talentState(r, n.id), P2 = pos(n);
       const state = rank >= n.max ? 'max' : rank ? 'some' : st.ok ? 'avail' : 'locked';
-      const rad = n.keystone || n.capstone ? 42 : n.notable ? 38 : 32;
-      const color = n.keystone ? '#c9472d' : n.capstone ? '#d8b062' : n.notable ? '#ffcf6b' : n.sig ? t.color : c.color;
-      return `<g class="tnode ${state} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${n.keystone || n.capstone ? 'keystone' : n.notable ? 'notable' : n.sig ? 'sig' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})" style="--nc:${color}">
-        <circle class="halo" r="${rad + 8}"/><circle class="ring" r="${rad}"/>
-        ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" opacity=".55"/>` : ''}
-        <g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>
-        <g transform="translate(0,${rad + 12})"><rect x="-24" y="-10" width="48" height="21" rx="6" class="rank-bg"/><text y="5" class="rank">${rank}/${n.max}</text></g>
-        <text y="${rad + 38}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
+      const kind = n.sig ? 'sig' : n.keystone ? 'keystone' : n.capstone ? 'capstone' : n.notable ? 'notable' : n.hook ? 'effect' : 'minor';
+      const rad = { keystone:40, capstone:40, notable:36, sig:34, effect:29, minor:26 }[kind];
+      const shape = kind === 'effect' || kind === 'keystone' ? `<rect class="seal" x="${-rad}" y="${-rad}" width="${rad * 2}" height="${rad * 2}" rx="${kind === 'keystone' ? 8 : 10}"/>`
+        : kind === 'notable' ? `<polygon class="seal" points="${octo(rad)}"/>`
+        : kind === 'capstone' ? `<circle class="seal" r="${rad}"/><circle class="seal-inner" r="${rad - 7}"/>`
+        : `<circle class="seal" r="${rad}"/>`;
+      const pips = n.max > 1 ? `<g class="pips" transform="translate(0,${rad + 10})">${Array.from({ length:n.max }, (_, k) => `<circle cx="${(k - (n.max - 1) / 2) * 11}" r="3.6" class="${k < rank ? 'on' : ''}"/>`).join('')}</g>` : '';
+      return `<g class="tnode ${state} k-${kind} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})">
+        <circle class="halo" r="${rad + 9}"/>${shape}
+        ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" class="sig-art"/><circle class="sig-ring" r="${rad - 3}"/>` : `<g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>`}
+        ${pips}
+        <text y="${rad + (n.max > 1 ? 32 : 24)}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
     }).join('');
     const jb = job[PR.branchOf(r)];
     const bandLocked = i => (i === 2 && !r.job) || (i === 3 && (r.job || 0) < 2) || spent < PR.TIER_REQ[i];
     const bandTxt = i => i === 0 ? 'livre' : i === 1 ? `${PR.TIER_REQ[1]} pontos investidos` : i === 2 ? `classe avançada + ${PR.TIER_REQ[2]} pontos` : `Transcendência (nível ${PR.JOB2_LEVEL}) + ${PR.TIER_REQ[3]} pontos`;
-    const bands = [0, 1, 2, 3].map(i => `<rect x="10" y="${[14, 188, 486, 670][i]}" width="940" height="${[162, 286, 168, 236][i]}" rx="16" class="band ${bandLocked(i) ? 'locked' : 'open'}"/><text x="28" y="${[38, 212, 510, 694][i]}" class="band-lbl">CÍRCULO ${['I', 'II', 'III', 'IV'][i]} · ${bandTxt(i)}</text>`).join('');
+    const BY = [14, 214, 572, 762], BH = [188, 346, 178, 276];
+    const bands = [0, 1, 2, 3].map(i => `<rect x="10" y="${BY[i]}" width="940" height="${BH[i]}" rx="12" class="band ${bandLocked(i) ? 'locked' : 'open'}"/>`).join('');
+    // Título da faixa por cima das ligações, com fundo próprio (as linhas não cortam o texto).
+    const bandLabels = [0, 1, 2, 3].map(i => { const txt = `CÍRCULO ${['I', 'II', 'III', 'IV'][i]} · ${bandTxt(i)}${bandLocked(i) ? ' · bloqueado' : ''}`; return `<g class="band-tag ${bandLocked(i) ? 'locked' : ''}" transform="translate(24,${BY[i] + 12})"><rect width="${58 + txt.length * 7.2}" height="30" rx="7"/><text x="14" y="21" class="band-num">${['壱', '弐', '参', '四'][i]}</text><text x="42" y="20" class="band-sub">${txt}</text></g>`; }).join('');
     const srank = r.talents[sel.id] || 0, sst = e.talentState(r, sel.id);
     const cur = srank ? this.nodeEffectText(sel, srank, t) : [], next = srank < sel.max ? this.nodeEffectText(sel, srank + 1, t) : [];
     const reqs = [];
@@ -552,8 +564,8 @@
       ${jobBox}
       <button class="action small primary" data-auto="talents" data-uid="${uid}" type="button" ${pts > 0 ? '' : 'disabled'} data-tip="Aprende os talentos na ordem da build recomendada deste herói.">Build recomendada</button>
       <button class="action small" data-hero-talent-reset="${uid}" type="button" ${spent ? '' : 'disabled'}>${this.state.freeRespec ? `Redefinir (grátis ×${this.state.freeRespec})` : `Redefinir (${compact(e.talentResetCost(r))} ouro)`}</button></div>
-      <div class="talent-legend"><span><i class="lg-available"></i>Disponível</span><span><i class="lg-learned"></i>Aprendido</span><span><i class="lg-locked"></i>Bloqueado</span><small>Toque em um talento para ver efeitos e requisitos.</small></div>
-      <div class="tree-layout"><div class="talent-tree"><svg viewBox="0 0 960 920" preserveAspectRatio="xMidYMid meet">${bands}${links.join('')}${nodes}</svg></div>${detail}</div>`;
+      <div class="talent-legend"><span><i class="lg-shape round"></i>Atributo</span><span><i class="lg-shape square"></i>Efeito</span><span><i class="lg-shape octo"></i>Notável</span><span><i class="lg-shape key"></i>Pedra-chave</span><span><i class="lg-learned"></i>Aprendido</span><span><i class="lg-available"></i>Disponível</span><small>Toque em um talento para ver efeitos e requisitos.</small></div>
+      <div class="tree-layout"><div class="talent-tree"><svg viewBox="0 0 960 1050" preserveAspectRatio="xMidYMid meet">${bands}${links.join('')}${bandLabels}${nodes}</svg></div>${detail}</div>`;
   };
 
   // ---------------------------------------------------------------------------
