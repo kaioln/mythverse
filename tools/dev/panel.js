@@ -13,7 +13,7 @@
   const ui = Object.create(KT.UIController.prototype);
   Object.assign(ui, { state, engine, view:{ panel:q.get('p') || 'talents', tab:q.get('tab') || null, param:hero.uid, node:q.get('node') || tree[6]?.id }, invFilter:{ slot:'all', sort:'rarity', usable:false }, heroFilter:{} });
   const p = q.get('p') || 'talents', out = document.querySelector('#out');
-  const html = p === 'talents' ? ui.talentTree(hero.uid) : p === 'party' ? ui.partyPanel() : p === 'collection' ? ui.collectionPanel(null, q.get('tab') || 'heroes') : p === 'city' ? ui.cityPanel(null, q.get('tab') || 'forge') : p === 'inventory' ? ui.inventoryPanel(null, q.get('tab') || 'items') : ui[`${p}Panel`]?.(null, q.get('tab'));
+  const html = p === 'talents' ? ui.talentTree(hero.uid) : p === 'party' ? ui.partyPanel() : p === 'collection' ? ui.collectionPanel(null, q.get('tab') || 'heroes') : p === 'city' ? ui.cityPanel(null, q.get('tab') || 'forge') : p === 'inventory' ? ui.inventoryPanel(null, q.get('tab') || 'items') : p === 'hero' ? ui.heroPanel(hero.uid, q.get('tab') || 'stats') : ui[`${p}Panel`]?.(null, q.get('tab'));
   out.innerHTML = html || `<p>Painel "${p}" não encontrado.</p>`;
 })();
 // ?debug=1: escreve no título as fontes calculadas (para conferir no Chrome headless com --dump-dom).

@@ -67,7 +67,7 @@
   // ---------------------------------------------------------------------------
   const PANELS = {
     journey:{ k:'JORNADA', t:'Mapa do Mundo' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
-    hero:{ k:'HERÓI', t:'Ficha do herói', tabs:[['stats','Atributos'], ['build','Build recomendada'], ['talents','Talentos'], ['kit','Habilidades'], ['gear','Equipamento']] },
+    hero:{ k:'HERÓI', t:'Ficha do herói', tabs:[['stats','Atributos'], ['build','Build recomendada'], ['talents','Talentos'], ['kit','Habilidades'], ['gear','Equipamento'], ['lore','História']] },
     collection:{ k:'HERÓIS', t:'Convocação e Coleção', tabs:[['summon','Convocar'], ['owned','Meus heróis'], ['catalog','Catálogo']] },
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
     ranking:{ k:'RANKING', t:'Ranking', tabs:[['power','Poder'], ['bosses','Chefes'], ['stage','Progresso'], ['rift','Fenda Abissal']] },
@@ -75,7 +75,7 @@
     shop:{ k:'LOJA', t:'Empório Sakura', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores']] },
     bank:{ k:'BANCO', t:'Banco Kogane', tabs:[['overview','Panorama','crown'], ['quotes','Cotações','scale'], ['wallet','Carteira','gem']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
-    wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
+    wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['lore','Lore'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
     arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
     guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
     record:{ k:'PERFIL', t:'Conta e Configurações' }, profile:{ k:'JOGADOR', t:'Perfil do jogador' }, help:{ k:'AJUDA', t:'Como jogar' }
@@ -303,6 +303,14 @@
     let body = '';
     if (tab === 'talents') return `<button class="map-back" data-go="party" type="button">← Equipe</button>${this.talentTree(uid)}`;
     if (tab === 'build') return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}${this.buildHtml(r)}`;
+    if (tab === 'lore') {
+      const L = KT.Lore?.heroes?.[KT.Data.roster.find(x => x.id === t.id)?.base || t.id] || KT.Lore?.heroes?.[t.id], wd = KT.Lore?.worlds?.[t.world];
+      const bonds = D.bonds.filter(b => b.ids.includes(t.id)).map(b => `<li><b>${esc(b.name)}</b> · ${b.ids.map(id => esc(e.template(id)?.name || id)).join(', ')}<small>${esc(b.text)}</small></li>`).join('');
+      return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}<article class="lore-card">
+        ${L ? `<blockquote>“${esc(L.quote)}”</blockquote><p>${esc(L.bio)}</p>` : '<p class="dim">A história deste herói ainda não foi contada.</p>'}
+        <h4>${esc(t.world)}</h4><p class="dim">${esc(wd?.text || '')}</p>
+        ${bonds ? `<h4>Laços</h4><ul class="lore-bonds">${bonds}</ul>` : ''}</article>`;
+    }
     if (tab === 'kit') {
       const c = D.classes[t.cls];
       body = `<div class="kit">
@@ -999,6 +1007,7 @@
     const search = `<input id="wiki-search" type="search" placeholder="Buscar nesta seção…" aria-label="Buscar" value="${esc(this.wikiQuery || '')}">`;
     let html = '';
     switch (tab) {
+      case 'lore': html = `<article class="wiki-art lore-art">${(KT.Lore?.world || []).map(sec => `<h3>${esc(sec.title)}</h3><p>${esc(sec.text)}</p>`).join('')}<h3>Os mundos da Fenda</h3><div class="wiki-grid">${Object.entries(KT.Lore?.worlds || {}).map(([n, w]) => `<div data-wiki-entry><b>${esc(n)}</b><small>${esc(w.text)}</small></div>`).join('')}</div></article>`; break;
       case 'start': html = `<article class="wiki-art"><h3>Bem-vindo à Fenda</h3><p>Mythverse é um RPG de equipe com combate automático e decisões estratégicas. Heróis de 60 mundos atravessam a Fenda para enfrentar o eclipse que ameaça Tsukimori.</p>
         <h4>Ciclo de jogo</h4><ol><li><b>Convoque</b> heróis na Caixa dos Mundos (10 grátis no início).</li><li><b>Monte a equipe</b> de 4 pensando em classes, elementos, posições e laços.</li><li><b>Cace</b> nos estágios: ganhe ouro, EXP, EXP de classe, itens e materiais.</li><li><b>Fortaleça</b>: atributos, equipamentos, Forja, Dojo, talentos e qualidade.</li><li><b>Avance</b>: vença o estágio 12 e o andar III da dungeon para desafiar o <b>chefe da região</b>, que libera o próximo capítulo.</li><li><b>Repita em dificuldades maiores</b>: chefes têm Pesadelo e Inferno com recompensas multiplicadas.</li></ol>
         <h4>Recursos</h4><ul><li><b>Ouro</b>, combate; gasto em prédios, treino, aprimoramento, loja e qualidade.</li><li><b>Cristais</b>, primeiras vitórias, níveis de conta, missões e conquistas; trocados por chaves e itens especiais.</li><li><b>Éter</b>, desmontando itens; usado em encantamentos e receitas.</li><li><b>Tamahagane</b>, desmontando itens e inimigos fortes; usado para aprimorar.</li><li><b>Chaves</b>, convocações.</li><li><b>Fragmentos</b>, heróis repetidos; usados para elevar qualidade.</li><li><b>Gemas</b>, moeda de dinheiro real (100 = R$ 1,00), guardada no servidor; usada no Mercado de Jogadores. Entra por depósito Pix e sai por saque, com taxas pequenas.</li><li><b>Cartas</b>, drops raríssimos de monstros; valem Gemas no Mercado.</li></ul>
