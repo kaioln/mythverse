@@ -600,3 +600,6 @@ body:not(.in-combat) .journey-cta{display:none!important}
 .modal-back-nav,.map-back{color:var(--washi)!important;border:1px solid var(--line2)!important}
 .job-badge.on,.tag.job{color:var(--gold)!important;border:1px solid rgba(216,176,98,.35)!important}
 .card-tile{color:var(--text)!important}
+.boss-info .innate{margin:10px 0;padding:10px 12px;border:1px solid rgba(201,71,45,.45);border-left:3px solid var(--shu);border-radius:8px;background:rgba(201,71,45,.08)}
+.boss-info .innate small{font:800 10.5px var(--ui);letter-spacing:.1em;color:#f0a894}
+.boss-info .innate p{margin:4px 0 0;color:var(--washi);line-height:1.5}

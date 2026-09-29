@@ -327,6 +327,18 @@ ok(refineUntil('rare', 9, r => r.broken), 'raro: +9 para +10 pode quebrar');
 ok(refineUntil('epic', 12, (r, it) => r.failed && it.plus === 11), 'épico: falha acima de +10 volta 1 nível');
 ok(!refineUntil('legendary', 13, (r, it) => r.failed && (it.plus < 13 || !state.inventory.includes(it))), 'lendário: nunca volta nem quebra');
 const r15 = I.makeItem({ ilvl:20, rarity:'legendary', slot:'weapon', wt:'sword' }), s0 = I.itemStats(r15).atkFlat; r15.plus = 15; { const k = I.itemStats(r15).atkFlat / s0; ok(k > 2.6 && k < 3.5, 'refino +15 multiplica o ataque da arma por ~3 (antes 4,25: poder exagerado)'); }
+// Habilidades inatas dos chefes: cada uma pede uma resposta diferente da equipe.
+{ const e5 = new CombatEngine(State.mergeState(JSON.parse(JSON.stringify(state))), {}); e5.startRunCore?.();
+  const hero = e5.party[0]; ok(hero, 'equipe montada para testar chefes');
+  const raijin = e5.makeEnemyUnit('boss_sky', 1); e5.enemies = [raijin]; raijin.hp = raijin.maxHp * .5;
+  hero.el = 'Raio'; const hp0 = raijin.hp; ok(e5.hit(hero, raijin, 3, { kind:'basic' }) === 0 && raijin.hp >= hp0, 'Raijin é imune a Raio e não perde vida');
+  hero.el = 'Terra'; ok(e5.hit(hero, raijin, 3, { kind:'basic' }) > 0, 'Raijin recebe dano de outros elementos');
+  const sh = e5.makeEnemyUnit('boss', 1); e5.enemies = [sh]; sh.hp = sh.maxHp * .5; const h1 = sh.hp; e5.kill(e5.party[1], sh); ok(sh.hp > h1, 'Shirogane se cura quando um herói cai');
+  const kit = e5.makeEnemyUnit('boss_event', 1), lamp = Object.assign(e5.makeEnemyUnit('wisp_ember', 1), { summoned:true }); hero.el = 'Água';
+  const R = globalThis.KT.Rng, run = list => R.with(R.seeded(7), () => { e5.enemies = list; const out = []; for (let i = 0; i < 30; i++) { kit.hp = kit.maxHp; out.push(e5.hit(hero, kit, 2, { kind:'basic' })); } return out; });
+  const solo = run([kit]), withLamp = run([kit, lamp]);
+  const avg = a => a.reduce((x, y) => x + Math.max(0, y), 0) / a.length; ok(avg(withLamp) < avg(solo) * .9, 'lanterna viva protege a Kitsune');
+  const miz = e5.makeEnemyUnit('boss_tide', 1); e5.enemies = [miz]; hero.hp = hero.maxHp * .8; hero.shield = 0; hero.st.lifesteal = 0; hero.hooks = {}; const hh = hero.hp; const dealt = e5.hit(hero, miz, 3, { kind:'basic' }); ok(hero.hp < hh, 'Mizuchi reflete dano de golpe direto'); }
 // Bolsa cheia: nada se perde
 const bagState = State.createState(), be = new CombatEngine(bagState, {}); bagState.invCap = 150;
 for (let i = 0; i < 160; i++) be.addItem(I.makeItem({ ilvl:5, rarity:i % 2 ? 'rare' : 'common' }));

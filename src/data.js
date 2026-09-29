@@ -274,7 +274,7 @@
 
     // Chefes, mecânicas de fase, ataques telegrafados, invocações e fúria.
     boss:         E({ name:'Shirogane, Rei do Eclipse', sprite:'eclipse', el:'Sombra', role:'Chefe', boss:true, hp:90000, atk:150, def:110, spd:.8, crit:.1, xp:1400, gold:[1500, 2000], enrage:150,
-      desc:'Senhor do eclipse. Invoca Kitsunes Espectrais, marca heróis e lança o Eclipse Total, que precisa ser absorvido com escudos e curas.',
+      innate:{ heroDeathHeal:.04, text:'Coroa de Sombras: cada herói nocauteado cura 4% da vida de Shirogane. Mantenha a equipe viva: curas e escudos valem mais que dano.' }, desc:'Senhor do eclipse. Invoca Kitsunes Espectrais, marca heróis e lança o Eclipse Total, que precisa ser absorvido com escudos e curas.',
       skill:{ name:'Lâmina Lunar', cd:6, eff:[{ k:'dmg', m:2.0, to:'tgt' }, { k:'st', s:'bleed', d:5, v:.35, ch:1, to:'tgt' }] },
       phases:[
         { at:1,  text:'Selo intacto', specials:[{ name:'Eclipse Total', cd:18, windup:2.8, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'weaken', d:6, v:.25, ch:1, to:'all' }] }] },
@@ -282,7 +282,7 @@
         { at:.35, text:'Fúria do Eclipse, ataques acelerados', buff:{ spd:.35, atk:.2 }, specials:[{ name:'Eclipse Total', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.6, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Marca da Lua Negra', cd:10, windup:1.2, eff:[{ k:'st', s:'mark', d:8, v:.4, ch:1, to:'back' }, { k:'dmg', m:3.0, to:'back' }] }] }
       ] }),
     boss_tide:    E({ name:'Mizuchi, Dragão Abissal', sprite:'dragon', el:'Água', role:'Chefe', boss:true, hp:180000, atk:175, def:130, spd:.8, crit:.1, xp:2600, gold:[2600, 3400], enrage:160,
-      desc:'O dragão das marés. Seu Tsunami atinge todos, sua Maré Curativa o regenera e, no fim, ele afoga a retaguarda.',
+      innate:{ reflect:.12, text:'Escamas da Maré: devolve 12% do dano de cada golpe direto a quem bateu. Dano contínuo (queimadura, veneno, sangramento) não é refletido.' }, desc:'O dragão das marés. Seu Tsunami atinge todos, sua Maré Curativa o regenera e, no fim, ele afoga a retaguarda.',
       skill:{ name:'Mordida Abissal', cd:6, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'armorBreak', d:6, v:.3, ch:1, to:'tgt' }] },
       phases:[
         { at:1,  text:'Maré baixa', specials:[{ name:'Tsunami', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.2, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }] },
@@ -290,7 +290,7 @@
         { at:.3, text:'Redemoinho, o abismo desperta', buff:{ spd:.3, atk:.25 }, specials:[{ name:'Tsunami', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }, { name:'Afogamento', cd:11, windup:1.4, eff:[{ k:'dmg', m:3.2, to:'back' }, { k:'st', s:'stun', d:2, ch:1, to:'back' }] }] }
       ] }),
     boss_event:   E({ name:'Kitsune das Lanternas', sprite:'lantern_kitsune', el:'Fogo', role:'Chefe', boss:true, hp:120000, atk:165, def:115, spd:.9, crit:.12, dodge:.12, xp:2000, gold:[2000, 2800], enrage:150,
-      desc:'Espírito do festival. Suas Nove Caudas incendeiam tudo; lanternas vivas explodem pelo campo.',
+      innate:{ drPerSummon:.2, text:'Luz do Festival: cada lanterna viva reduz em 20% o dano que a Kitsune recebe (até 60%). Mate as lanternas primeiro (toque nelas para focar).' }, desc:'Espírito do festival. Suas Nove Caudas incendeiam tudo; lanternas vivas explodem pelo campo.',
       skill:{ name:'Fogo de Raposa', cd:6, eff:[{ k:'dmg', m:1.2, to:'randEach', hits:2 }, { k:'st', s:'burn', d:5, v:.4, ch:1, to:'rand' }] },
       phases:[
         { at:1, text:'Dança das lanternas', summon:{ id:'wisp_ember', n:2, every:26 }, specials:[{ name:'Nove Caudas', cd:17, windup:2.6, eff:[{ k:'dmg', m:2.2, to:'all' }, { k:'st', s:'burn', d:6, v:.5, ch:1, to:'all' }] }] },
@@ -298,7 +298,7 @@
         { at:.3, text:'Chama eterna', buff:{ spd:.3, atk:.2 }, specials:[{ name:'Nove Caudas', cd:11, windup:2.2, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'burn', d:6, v:.6, ch:1, to:'all' }] }] }
       ] }),
     boss_sand:    E({ name:'Apep, Serpente do Tempo', sprite:'dragon_amber', el:'Terra', role:'Chefe', boss:true, hp:260000, atk:200, def:150, spd:.8, crit:.12, xp:4200, gold:[4200, 5400], enrage:170,
-      desc:'A serpente que devora as horas. Engole o herói mais forte, invoca guerreiros de areia e, no fim, quebra a Ampulheta.',
+      innate:{ drain:{ every:16, min:60, nrg:60, atk:.12, max:5 }, text:'Devorador de Horas: a cada 16s rouba 60 de energia do herói mais carregado e ganha +12% de ATK (até 5×). Gaste as ultimates; quebrar a postura dele apaga os acúmulos.' }, desc:'A serpente que devora as horas. Engole o herói mais forte, invoca guerreiros de areia e, no fim, quebra a Ampulheta.',
       skill:{ name:'Presas de Âmbar', cd:6, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'poison', d:6, v:.3, ch:1, to:'tgt' }] },
       phases:[
         { at:1, text:'As areias correm', specials:[{ name:'Tempestade do Deserto', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.3, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }] },
@@ -306,7 +306,7 @@
         { at:.33, text:'A Ampulheta se quebra', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Ampulheta Quebrada', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.8, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:11, windup:1.4, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.2, to:'high' }] }] }
       ] }),
     boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, hp:215000, atk:208, def:150, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
-      desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
+      innate:{ immune:'Raio', absorb:.2, text:'Condutor Divino: imune a heróis de Raio, e 20% desse dano o cura. Monte a equipe sem Raio; Terra é o elemento forte contra ele.' }, desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
       skill:{ name:'Rufar dos Tambores', cd:6, eff:[{ k:'chain', m:1.6, n:4, fall:.8 }] },
       phases:[
         { at:1, text:'Os tambores despertam', specials:[{ name:'Trovão Divino', cd:16, windup:2.8, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'stun', d:1, ch:.5, to:'all' }] }] },

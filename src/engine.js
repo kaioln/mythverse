@@ -518,7 +518,7 @@
         st:{ atk:t.atk * (t.atkMul || 1) * P * atkMod, baseAtk:t.atk * P, def:t.def * P, spd:t.spd, crit:t.crit || .05, critDmg:1.5, dodge:t.dodge || 0, lifesteal:t.lifesteal || 0, dr:0, regen:t.regen || 0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, elem:0, ultDmg:0 },
         maxHp:Math.round(t.hp * (t.hpMul || 1) * P), hp:Math.round(t.hp * (t.hpMul || 1) * P), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:t.thorns || 0, elite:!!t.elite, boss:!!t.boss, miniboss:!!t.miniboss, treasure:!!t.treasure, level:lvl, P,
-        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, ...extra };
+        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, innate:t.innate || null, ...extra };
       const zk = this.zone?.kind;
       if ((zk === 'hunt' || zk === 'dungeon') && !t.treasure && !t.boss) { const th = D.threat(lvl, zk), zm = this.zone.threat || 1; u.maxHp = u.hp = Math.round(u.maxHp * th.hp * zm); u.st.atk *= th.atk * zm; u.st.baseAtk *= th.atk * zm; }
       if (t.specials) u.specials = t.specials.map(s => ({ ...s, t:s.cd * .6 }));
@@ -739,6 +739,17 @@
       if (this.bossTimer > limit) {
         const stacks = 1 + Math.floor((this.bossTimer - limit) / 10);
         if (stacks > this.enrageStacks) { this.enrageStacks = stacks; boss.st.atk *= 1.25; this.emit('onWarn', `${boss.name.split(',')[0]} está em FÚRIA! (+25% ATK a cada 10s)`); }
+      }
+      // Inato: rouba energia de quem segura a ultimate e fica mais forte; quebrar a postura zera os acúmulos.
+      const dr = boss.innate?.drain;
+      if (dr) {
+        if (boss.broken > 0 && boss.flags.drainStacks) { boss.st.atk /= 1 + dr.atk * boss.flags.drainStacks; boss.flags.drainStacks = 0; this.emit('onLog', { text:`${boss.name.split(',')[0]} perdeu as horas roubadas!`, type:'skill' }); }
+        boss.flags.drainT = (boss.flags.drainT ?? dr.every) - dt;
+        if (boss.flags.drainT <= 0) {
+          boss.flags.drainT = dr.every;
+          const v = this.party.filter(u => u.alive).sort((a, b) => b.energy - a.energy)[0];
+          if (v && v.energy >= dr.min) { v.energy = Math.max(0, v.energy - dr.nrg); const k = boss.flags.drainStacks || 0; if (k < dr.max) { boss.st.atk = boss.st.atk / (1 + dr.atk * k) * (1 + dr.atk * (k + 1)); boss.flags.drainStacks = k + 1; } this.emit('onWarn', `${boss.name.split(',')[0]} devorou a energia de ${v.name}! Use as ultimates antes que ele roube.`); }
+        }
       }
       // Fases.
       const pct = boss.hp / boss.maxHp, phases = boss.t.phases;
@@ -1019,6 +1030,17 @@
       if (src.side === 'hero' && tg.side === 'enemy') { const rl = this.research(tg.id); if (rl) raw *= 1 + rl * D.RESEARCH.dmg; }
       if (o.exec) raw *= 1 + o.exec * (1 - tg.hp / tg.maxHp);
       if (this.has(tg, 'freeze')) raw *= 1.2;
+      // Habilidades inatas de chefes (D.enemies[id].innate): exigem uma resposta da equipe, não só mais poder.
+      const inn = tg.innate;
+      if (inn && src.side === 'hero') {
+        if (inn.immune && src.el === inn.immune) {
+          const back = Math.round(raw * (inn.absorb || 0));
+          if (back > 0) this.heal(tg, tg, back, true);
+          this.emit('onFx', { type:'text', uid:tg.uid, text:'IMUNE', color:'#8fd3ff' });
+          return 0;
+        }
+        if (inn.drPerSummon) { const n = this.enemies.filter(x => x.alive && x.summoned).length; if (n) raw *= 1 - Math.min(.6, n * inn.drPerSummon); }
+      }
       const pierce = Math.min(1, (o.pierce || 0) + (src.st.pierce || 0));
       const def = this.stat(tg, 'def') * (1 - pierce);
       raw *= 1 - def / (def + 2.2 * (src.st.baseAtk || src.st.atk));
@@ -1030,6 +1052,7 @@
       const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em, broken:tg.broken > 0 });
       this.addBreak(src, tg, final, o.kind, em);
       if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) this.applyRawDamage(src, Math.max(1, Math.round(final * tg.thorns)), tg, { kind:'thorns', color:'#d8ad6a' });
+      if (inn?.reflect && src.side === 'hero' && o.kind !== 'dot' && src.alive && final > 0) this.applyRawDamage(src, Math.max(1, Math.round(final * inn.reflect)), tg, { kind:'thorns', color:'#4fb3ff' });
       const ls = this.stat(src, 'lifesteal');
       if (ls > 0 && o.kind !== 'dot') this.heal(src, src, final * ls, true);
       if (crit) this.fire(src, 'onCrit', { target:tg });
@@ -1066,7 +1089,11 @@
       const phoenix = tg.hooks?.phoenix && !tg.flags.phoenixUsed;
       if (phoenix) { tg.flags.phoenixUsed = true; tg.hp = Math.round(tg.maxHp * Math.max(...tg.hooks.phoenix)); this.emit('onFx', { type:'revive', uid:tg.uid }); this.emit('onLog', { text:`${tg.name} renasceu das cinzas!`, type:'skill' }); return; }
       tg.alive = false; tg.hp = 0; tg.shield = 0; tg.effects = [];
-      if (tg.side === 'hero') { this.emit('onFx', { type:'heroDown', uid:tg.uid }); this.emit('onLog', { text:`${tg.name} foi nocauteado!`, type:'enemy' }); return; }
+      if (tg.side === 'hero') {
+        this.emit('onFx', { type:'heroDown', uid:tg.uid }); this.emit('onLog', { text:`${tg.name} foi nocauteado!`, type:'enemy' });
+        this.enemies.filter(b => b.alive && b.innate?.heroDeathHeal).forEach(b => { this.heal(b, b, b.maxHp * b.innate.heroDeathHeal, true); this.emit('onWarn', `${b.name.split(',')[0]} se alimenta da queda de ${tg.name}!`); });
+        return;
+      }
       this.emit('onFx', { type:'death', uid:tg.uid, boss:tg.boss });
       if (this.focusUid === tg.uid) this.focusUid = null;
       if (killer?.side === 'hero') {
