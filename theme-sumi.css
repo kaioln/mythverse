@@ -513,3 +513,71 @@ body .hero-portrait .lv{font-size:11px}
   .talent-tree{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .talent-tree svg{width:820px;max-width:none}
 }
+
+/* =====================================================================
+   CIDADE · LAYOUT v3 (consolida os ajustes anteriores; vem por último)
+   Desktop: painel compacto no canto sem cobrir distritos; Mapa dentro do painel.
+   Celular/tablet: FORÇA compacto, objetivo empilhado, distritos sem briga com selos,
+   conteúdo nunca atrás da barra inferior. Telas grandes: interface escala.
+   ===================================================================== */
+body:not(.in-combat) .journey-cta{display:none!important}
+.village-hub{top:72px;right:14px;width:clamp(280px,27%,340px);max-height:calc(58% - 20px);padding:12px 14px;overflow:auto}
+.village-hub .eyebrow{font-size:10px}
+.village-hub h3{font-size:clamp(17px,1.4vw,21px)!important;margin:2px 0 6px}
+.village-hub p{font-size:12.5px;margin:0 0 10px}
+.village-hub .hub-goal{margin-bottom:8px}
+.village-hub .hub-actions{display:grid;gap:6px}
+.village-hub .hub-actions>.action{width:100%;min-height:40px;justify-content:center;font-size:13px}
+.village-hub .hub-actions>.action{height:auto;padding:8px 10px;line-height:1.25}
+.village-hub .hub-actions>.action span{min-width:0;white-space:normal;text-align:left}
+.village-hub .hub-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.village-hub .hub-row .action{min-height:36px;font-size:12.5px;justify-content:center;padding:0 8px;white-space:nowrap}
+@media (max-width:1500px){.village-hub p{display:none}}
+/* Placas de distrito: tamanho acompanha o palco, nunca quebram linha */
+#village-actions .signpost{font-size:clamp(11px,.95vw,15px)}
+#village-actions .signpost b{white-space:nowrap}
+/* Barra de heróis: nome inteiro quando cabe; senão reticências limpas */
+.dock .hero-info header b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Telas grandes: a interface cresce junto (antes em 4K tudo ficava minúsculo) */
+@media (min-width:1900px){:root{--zf:1.18}html{zoom:1.18}}
+@media (min-width:2300px){:root{--zf:1.4}html{zoom:1.4}}
+@media (min-width:3000px){:root{--zf:1.8}html{zoom:1.8}}
+/* com zoom, 100dvh continua em pixels da tela: divide pelo zoom para caber exatamente */
+@media (min-width:901px){
+  .app{height:calc(100dvh / var(--zf,1))}
+  .stage-col{--stage-w:min(100%,calc((100dvh / var(--zf,1) - var(--top-h) - var(--dock-h) - 34px) * 16 / 9))}
+}
+
+/* Tablet e celular */
+@media (max-width:900px){
+  .app{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  .stage-controls.below-stage{justify-content:stretch}
+  .stage-controls.below-stage .ctl{height:40px}
+  body:not(.in-combat) .stage-controls.below-stage #boost-btn{flex:0 1 auto;min-width:0;padding:0 16px;margin-left:auto}
+  #goal-chip{flex-wrap:wrap;gap:8px 10px}
+  #goal-chip .goal-txt{flex:1 1 150px;min-width:0}
+  #goal-chip .goal-txt b,#goal-chip .goal-txt strong{overflow-wrap:anywhere}
+  #goal-chip .goal-txt em{-webkit-line-clamp:2!important;white-space:normal}
+  #district-grid:not([hidden]){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px}
+  #district-grid button{min-width:0;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:8px;min-height:48px;padding:8px 34px 8px 10px!important;text-align:left;grid-column:auto!important;font-size:13px}
+  #district-grid button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #district-grid em{top:50%!important;right:8px!important;transform:translateY(-50%)}
+}
+@media (min-width:600px) and (max-width:900px){#district-grid:not([hidden]){grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media (max-width:420px){
+  #goal-chip{padding:10px}
+  #goal-chip .goal-actions,#goal-chip>div:last-child{flex:1 1 100%;display:flex;gap:6px}
+  #goal-chip .goal-actions .action,#goal-chip>div:last-child .action{flex:1 1 0}
+  #district-grid button{font-size:12.5px;padding-left:8px!important;gap:6px}
+}
+#goal-chip .goal-actions{display:flex;gap:6px;flex:none}
+@media (max-width:900px){
+  #district-grid button span{white-space:normal!important;text-overflow:clip!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.15;overflow:hidden}
+}
+@media (min-width:600px) and (max-width:900px){
+  #district-grid:not([hidden]){grid-template-columns:repeat(5,minmax(0,1fr))!important}
+  #district-grid button{flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;padding:10px 6px!important;min-height:70px;gap:5px}
+  #district-grid button span{text-align:center}
+  #district-grid em{top:6px!important;right:6px!important;transform:none!important}
+}

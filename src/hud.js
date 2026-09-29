@@ -88,7 +88,7 @@
       btn = done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : '';
     } else { title = 'Jornada concluída!'; sub = 'Explore a Fenda e os chefes em Pesadelo.'; }
     const gift = ls.available ? `<button class="action pink small" data-claim-login type="button" data-tip="Presente de login do dia"><i class="ic ic-chest"></i> Presente</button>` : '';
-    const html = `<span class="goal-ic"><i class="ic ic-target"></i></span><div class="goal-txt"><small>OBJETIVO</small><b>${esc(title)}</b><em>${esc(sub)}</em></div>${btn}${gift}`;
+    const html = `<span class="goal-ic"><i class="ic ic-target"></i></span><div class="goal-txt"><small>OBJETIVO</small><b>${esc(title)}</b><em>${esc(sub)}</em></div>${btn || gift ? `<div class="goal-actions">${btn}${gift}</div>` : ''}`;
     chip.hidden = false;
     if (force || html !== this._goalHtml) { this._goalHtml = html; chip.innerHTML = html; chip.classList.toggle('done', /data-claim-(guide|chronicle)/.test(btn)); }
     // Selo do "Mais": algum atalho escondido tem novidade.

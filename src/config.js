@@ -7,6 +7,6 @@
 (() => {
   const KT = globalThis.KT = globalThis.KT || {};
   // Versão publicada: igual a version.json. O jogo aberto confere a cada 3 min e recarrega sozinho quando muda.
-  KT.VERSION = '20260930a';
+  KT.VERSION = '20260930b';
   KT.CONFIG = { server:'', neon:'https://ep-holy-math-b5qnavg7.c-7.us-east-2.aws.neon.tech/neondb' };
 })();

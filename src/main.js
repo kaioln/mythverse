@@ -103,6 +103,16 @@
       const session = await resolveState();
       bootEl.classList.remove('done');
       const state = session.state;
+      // Desenvolvimento (arquivo local ou localhost com ?devseed=1): save de teste com equipe nível 80 e tutorial visto,
+      // para conferir telas em vários tamanhos. Nunca roda no site publicado.
+      if ((location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) && new URLSearchParams(location.search).has('devseed') && !state.collection.length) {
+        const ids = (new URLSearchParams(location.search).get('devseed') || '').split(',').filter(id => KT.Data.roster.some(t => t.id === id));
+        state.collection = (ids.length ? ids : ['erik', 'akira', 'warden', 'aurelia']).map(id => Object.assign(KT.State.newHeroRecord(KT.Data.roster.find(t => t.id === id), 'epic'), { level:80 }));
+        state.formation = state.collection.slice(0, 4).map(h => h.uid);
+        Object.assign(state.player, { gold:14.6e6, crystal:993, keys:80, level:56, name:'Teste' });
+        state.story.seen.intro = state.story.seen.team = true; state.starterRolls = 0;
+        Object.keys(KT.Data.zones).forEach(z => { if (['hunt', 'dungeon', 'boss', 'hunt_swamp', 'dungeon_crypt'].includes(z)) Object.assign(state.progress[z] ||= {}, { best:12, kills:3 }); });
+      }
       const assets = new KT.AssetBank();
       const engine = new KT.CombatEngine(state, {});
       // No modo Neon o AFK só conta com a hora do banco (relógio do aparelho pode ser adiantado).
