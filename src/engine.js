@@ -124,6 +124,9 @@
     return s;
   }
   // Cartas que a conta já teve (Álbum): registradas, na bolsa, encaixadas ou expostas na Casa do Time.
+  // Ordem dos Aventureiros: letra atual (maior rank cujo nível foi alcançado) e vantagens acumuladas.
+  function guildRankOf(state) { const lv = state.guildRank?.lv || 1; let r = D.GUILD_RANKS[0]; D.GUILD_RANKS.forEach(x => { if (lv >= x.lv) r = x; }); return r; }
+  function guildPerks(state) { const lv = state.guildRank?.lv || 1; return D.GUILD_RANKS.filter(x => lv >= x.lv); }
   function albumIds(state) {
     const ids = new Set(Object.keys(state.house?.seen || {}));
     Object.entries(state.cards || {}).forEach(([id, n]) => { if (n > 0) ids.add(id); });
@@ -261,6 +264,7 @@
     });
     mergeStats(teamStats, buffStats(state, now));
     mergeStats(teamStats, houseStats(state));
+    guildPerks(state).forEach(r => mergeStats(teamStats, r.stats));
     return { teamStats, clsSyn, elSyn, bonds, elCount, clsCount };
   }
 
@@ -356,7 +360,7 @@
     getPowerRaw() { const ctx = this.ctx(); return this.heroes.reduce((s, r) => s + statPower(heroStats(this.state, r, ctx)), 0); }
     getPower() { return powerScore(this.getPowerRaw()); }
     event() { return activeEvent(this.now()); }
-    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .20 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return key === 'xp' || key === 'gold' ? Math.min(.50, v) : v; }
+    mod(key) { const ev = activeEvent(this.now()); let v = ev.mods?.[key] || 0; if (key === 'gold' || key === 'xp') { v += this.state.boostUntil > this.now() ? .20 : 0; } Object.entries(this.state.buffs || {}).forEach(([id, until]) => { const b = PR.buffs?.[id]; if (b?.mods?.[key] && until > this.now()) v += b.mods[key]; }); if (key === 'gold') v += (this.state.buildings.guild - 1) * .03; D.GUILD.perks.forEach(p => { if ((this.state.social?.guildLevel || 0) >= p.lv && p.mods[key]) v += p.mods[key]; }); guildPerks(this.state).forEach(r => { v += r.mods?.[key] || 0; }); if (key === 'xp') v += (this.state.buildings.dojo - 1) * .04; if (key === 'drop') v += (this.stageMods.drop || 0); return key === 'xp' || key === 'gold' ? Math.min(.50, v) : v; }
 
     recommendedPower(zoneId, opts = {}) { const r = this.recommendedPowerRaw(zoneId, opts); return r ? Math.max(10, Math.round(powerScore(r) / 10) * 10) : 0; }
     recommendedPowerRaw(zoneId, opts = {}) {
@@ -1405,7 +1409,7 @@
     }
 
     // ---------- Expedições (AFK de verdade: contam pelo relógio do servidor) ----------
-    expeditionSlots() { return Math.min(4, 1 + Math.floor((this.state.buildings.guild || 1) / 3)); }
+    expeditionSlots() { return Math.min(5, 1 + Math.floor((this.state.buildings.guild || 1) / 3) + guildPerks(this.state).reduce((a, r) => a + (r.expedition || 0), 0)); }
     startExpedition(zoneId, hours, uids) {
       const z = D.zones[zoneId], s = this.state;
       if (!z || z.kind !== 'hunt' || this.zoneLock(zoneId).locked || !(s.progress[zoneId]?.best > 0)) { this.lastError = 'Escolha uma caçada já vencida ao menos uma vez.'; return false; }
@@ -1532,6 +1536,7 @@
       if (r.ore) p.ore += r.ore;
       if (r.potion) this.state.consumables.potion += r.potion;
       if (r.elixir) this.state.consumables.elixir += r.elixir;
+      ['star', 'ori', 'adam'].forEach(k => { if (r[k]) s.mats[k] = (s.mats[k] || 0) + r[k]; });
       (r.items || []).forEach(it => { this.addItem(it); this.emit('onLoot', it); });
       this.emit('onState');
     }
@@ -2106,11 +2111,13 @@
     }
     ensureContracts() {
       const s = this.state; if (!s.contracts) s.contracts = [];
-      while (s.contracts.length < 3) {
+      const slots = 3 + guildPerks(s).reduce((a, r) => a + (r.slots || 0), 0), legendary = guildPerks(s).some(r => r.legendary);
+      while (s.contracts.length < slots) {
         const used = s.contracts.map(c => c.id); const pool = D.contracts.filter(c => !used.includes(c.id));
         const rank = s.guildRank?.lv || 1, tier = U.weighted([0, 1, 2], x => [5, 3 + rank * .3, 1 + rank * .4][x]);
         const c = U.pick(pool.length ? pool : D.contracts);
-        s.contracts.push({ id:c.id, tier, n:Math.round(c.n[tier] * (1 + .3 * (rank - 1))), progress:0, rank });
+        const leg = legendary && tier === 2 && U.random() < .25;
+        s.contracts.push({ id:c.id, tier, n:Math.round(c.n[tier] * (1 + .3 * (rank - 1)) * (leg ? 2 : 1)), progress:0, rank, ...(leg ? { legendary:true } : {}) });
       }
     }
     count(type) {
@@ -2120,15 +2127,30 @@
     farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, goldPow(zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) }), 1)); }
     contractReward(c) {
       const def = D.contracts.find(d => d.id === c.id), rank = c.rank || this.state.guildRank?.lv || 1, m = (1 + c.tier * .8) * (1 + .12 * (rank - 1)), P = this.farmPower();
-      const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 450 * P * m : k === 'crystal' ? v * .5 * m : v * m); }); return out;
+      const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 450 * P * m : k === 'crystal' ? v * .5 * m : v * m); });
+      if (c.legendary) { out.adam = 1; out.ori = 2; } return out;
     }
     // Rank da Guilda: sobe sem limite; contratos ficam maiores e mais valiosos a cada rank.
     guildNeed(lv = this.state.guildRank.lv) { return 3 + lv * 2; }
+    // Próxima letra da Ordem e se a prova dela já foi cumprida.
+    guildNextRank() { const lv = this.state.guildRank?.lv || 1; return D.GUILD_RANKS.find(r => r.lv > lv) || null; }
+    guildExamDone(r) { if (!r?.exam) return true; const p = this.state.progress[r.exam.zone] || {}; return r.exam.best ? (p.best || 0) >= r.exam.best : (p.kills || 0) >= (r.exam.kills || 1); }
+    guildLevelUp() {
+      const g = this.state.guildRank;
+      while (g.xp >= this.guildNeed(g.lv)) {
+        const next = D.GUILD_RANKS.find(r => r.lv === g.lv + 1);
+        if (next && !this.guildExamDone(next)) { g.xp = Math.min(g.xp, this.guildNeed(g.lv)); this.emit('onToast', `<b>Prova de Rank ${next.letter}</b>: ${esc(next.exam.text)} A Ordem espera por você.`); return; }
+        g.xp -= this.guildNeed(g.lv); g.lv++;
+        const r = D.GUILD_RANKS.find(x => x.lv === g.lv);
+        this.emit('onToast', r ? `<b>Ordem dos Aventureiros: Rank ${r.letter} · ${r.title}!</b> ${esc(r.perk)}` : `<b>Ordem dos Aventureiros: nível ${g.lv}.</b> Contratos maiores e recompensas melhores.`);
+        if (r) this.refreshPartyUnits?.();
+      }
+    }
     claimContract(i) {
       const c = this.state.contracts[i]; if (!c || c.progress < c.n) return false;
       this.grant(this.contractReward(c)); this.state.contracts.splice(i, 1);
       const g = this.state.guildRank; g.xp += 1 + c.tier;
-      while (g.xp >= this.guildNeed(g.lv)) { g.xp -= this.guildNeed(g.lv); g.lv++; this.emit('onToast', `<b>Rank da Guilda ${g.lv}!</b> Contratos maiores e recompensas melhores.`); }
+      this.guildLevelUp();
       this.ensureContracts();
       this.emit('onToast', 'Contrato concluído! Um novo contrato chegou.'); return true;
     }
@@ -2350,6 +2372,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

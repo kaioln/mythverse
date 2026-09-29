@@ -672,13 +672,23 @@
         <div class="roster-list">${list.map(r => { const t = this.engine.template(r.id), c = S().awakenCost(r.stars, b.shrine), sh = this.state.shards[r.id] || 0, ok = r.stars < 6 && sh >= c.shards && s.player.gold >= c.gold; return `<article class="roster-row rarity-${r.rarity}"><img src="${portrait(t.id)}" alt=""><div><b>${esc(t.name)} ${stars(r.stars)}</b><small>Fragmentos ${sh}/${r.stars >= 6 ? ', ' : c.shards} · ${compact(c.gold)} ouro</small></div><button class="action small ${ok ? 'pink' : ''}" data-awaken="${r.uid}" type="button" ${ok ? '' : 'disabled'}>${r.stars >= 6 ? 'Máximo' : 'Elevar qualidade'}</button></article>`; }).join('')}</div>`;
     }
     if (tab === 'guild') {
-      return `${bHead('guild')}<p class="note">Bônus atual de ouro em combate: <b>+${(b.guild - 1) * 3}%</b>. Contratos renovam ao serem resgatados.</p>${this.contractsHtml()}`;
+      return `${bHead('guild')}${this.guildRankHtml()}<p class="note">Bônus de ouro do prédio: <b>+${(b.guild - 1) * 3}%</b>. Contratos renovam ao serem resgatados; cada contrato dá experiência na Ordem.</p>${this.contractsHtml()}`;
     }
     const cityLevel = Object.values(b).reduce((sum, lv) => sum + lv, 0), ready = Object.keys(D.buildings).filter(id => b[id] < e.buildingCap() && s.player.gold >= e.buildingCost(id)).length;
     return `<section class="city-overview"><span class="eyebrow">CAPITAL EM EXPANSÃO</span><h3>Grande Tsukimori</h3><p>Escolha um distrito no mapa ou desenvolva suas construções para fortalecer toda a conta.</p><div class="city-kpis"><span><b>${cityLevel}</b>níveis urbanos</span><span><b>${ready}</b>melhorias disponíveis</span><span><b>${s.collection.length}</b>heróis residentes</span></div></section><div class="building-list">${Object.keys(D.buildings).map(id => bHead(id)).join('')}</div><p class="note">O nível máximo das construções é ${e.buildingCap()} (aumenta 1 a cada 3 níveis de conta).</p>`;
   };
+  // Ordem dos Aventureiros: letra, título, progresso, prova do próximo rank e vantagens (conquistadas e por vir).
+  P.guildRankHtml = function() {
+    const e = this.engine, g = this.state.guildRank, cur = S().guildRankOf(this.state), next = e.guildNextRank(), exam = next && e.guildExamDone(next);
+    const need = e.guildNeed(g.lv), capped = next && !exam && g.xp >= need;
+    return `<section class="order-rank"><div class="order-seal"><b>${cur.letter}</b><small>RANK</small></div>
+      <div class="order-main"><span class="eyebrow">ORDEM DOS AVENTUREIROS · NÍVEL ${g.lv}</span><h3>${esc(cur.title)}</h3>
+        <div class="meter"><span style="width:${Math.min(100, g.xp / need * 100)}%"></span></div><small class="dim">${g.xp}/${need} de experiência de contratos${capped ? ' · <b class="txt-pink">experiência cheia: cumpra a prova para subir</b>' : ''}</small>
+        ${next ? `<div class="order-exam ${exam ? 'ok' : ''}"><small>PROVA DO RANK ${next.letter} (nível ${next.lv})</small><p>${exam ? '✓ ' : ''}${esc(next.exam.text)}</p><small>Vantagem: ${esc(next.perk)}</small></div>` : '<div class="order-exam ok"><p>Você é uma Lenda de Tsukimori. Contratos Lendários chegam de vez em quando.</p></div>'}</div>
+      <ol class="order-ladder">${D.GUILD_RANKS.map(r => `<li class="${g.lv >= r.lv ? 'on' : ''} ${r === cur ? 'cur' : ''}"><b>${r.letter}</b><span>${esc(r.title)}<small>${esc(r.perk)}</small></span></li>`).join('')}</ol></section>`;
+  };
   P.contractsHtml = function() {
-    return `<div class="grid2">${this.state.contracts.map((c, i) => { const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n; return `<article class="panel ${done ? 'done' : ''}"><span class="eyebrow">${['Simples','Médio','Difícil'][c.tier]}</span><h3>${def.title}</h3><p>${def.text.replace('{n}', c.n)}</p><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div><p>${c.progress}/${c.n}</p><div class="guide-reward">${this.rewardPills(this.engine.contractReward(c))}</div><button class="action ${done ? 'primary' : ''}" data-claim-contract="${i}" type="button" ${done ? '' : 'disabled'}>${done ? 'Resgatar' : 'Em andamento'}</button></article>`; }).join('')}</div>`;
+    return `<div class="grid2">${this.state.contracts.map((c, i) => { const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n; return `<article class="panel ${done ? 'done' : ''} ${c.legendary ? 'legendary' : ''}"><span class="eyebrow">${c.legendary ? 'LENDÁRIO · Adamantina' : ['Simples','Médio','Difícil'][c.tier]}</span><h3>${def.title}</h3><p>${def.text.replace('{n}', c.n)}</p><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div><p>${c.progress}/${c.n}</p><div class="guide-reward">${this.rewardPills(this.engine.contractReward(c))}</div><button class="action ${done ? 'primary' : ''}" data-claim-contract="${i}" type="button" ${done ? '' : 'disabled'}>${done ? 'Resgatar' : 'Em andamento'}</button></article>`; }).join('')}</div>`;
   };
 
   // ---------------------------------------------------------------------------

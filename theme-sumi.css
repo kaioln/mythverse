@@ -603,3 +603,20 @@ body:not(.in-combat) .journey-cta{display:none!important}
 .boss-info .innate{margin:10px 0;padding:10px 12px;border:1px solid rgba(201,71,45,.45);border-left:3px solid var(--shu);border-radius:8px;background:rgba(201,71,45,.08)}
 .boss-info .innate small{font:800 10.5px var(--ui);letter-spacing:.1em;color:#f0a894}
 .boss-info .innate p{margin:4px 0 0;color:var(--washi);line-height:1.5}
+/* Ordem dos Aventureiros */
+.order-rank{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px 18px;padding:16px;margin:10px 0 14px;border:1px solid var(--line2);border-radius:12px;background:var(--grain),#17141f}
+.order-seal{width:84px;height:84px;border-radius:10px;display:grid;place-items:center;align-content:center;background:var(--shu);color:#fff4ea;box-shadow:inset 0 0 0 3px rgba(0,0,0,.25)}
+.order-seal b{font:800 44px/1 var(--display)}.order-seal small{font:800 9.5px var(--ui);letter-spacing:.2em;opacity:.85}
+.order-main h3{margin:2px 0 8px}
+.order-exam{margin-top:10px;padding:9px 12px;border:1px dashed rgba(216,176,98,.45);border-radius:8px}
+.order-exam.ok{border-style:solid;border-color:rgba(127,190,140,.5)}
+.order-exam small{font:700 10.5px var(--ui);letter-spacing:.06em;color:var(--muted)}
+.order-exam p{margin:3px 0;color:var(--washi)}
+.order-ladder{grid-column:1/-1;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}
+.order-ladder li{display:flex;flex-direction:column;gap:4px;padding:8px;border:1px solid var(--line);border-radius:8px;opacity:.55;min-width:0}
+.order-ladder li.on{opacity:1;border-color:rgba(216,176,98,.35)}
+.order-ladder li.cur{border-color:var(--shu);background:rgba(201,71,45,.08)}
+.order-ladder b{font:800 20px var(--display);color:var(--gold)}
+.order-ladder span{font:700 12px var(--ui);color:var(--washi)}.order-ladder small{display:block;font-weight:500;font-size:11px;color:var(--muted);margin-top:2px}
+.panel.legendary{border-color:var(--gold)!important;background:rgba(216,176,98,.06)!important}
+@media (max-width:900px){.order-ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.order-rank{grid-template-columns:1fr}.order-seal{width:64px;height:64px}.order-seal b{font-size:32px}}

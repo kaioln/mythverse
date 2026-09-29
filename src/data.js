@@ -701,6 +701,17 @@
     { id:'glad_charm', name:'Omamori do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador Carmesim (omamori). Negociável.' }
   ];
   // Guildas: bônus por nível (valem para quem está na guilda) e janelas da guerra.
+  // ORDEM DOS AVENTUREIROS (Guilda de Tsukimori): rank F→S que acompanha a campanha inteira. Subir de letra exige a
+  // prova (um marco da jornada) além da experiência de contratos. Cada letra dá uma vantagem permanente.
+  const GUILD_RANKS = [
+    { letter:'F', lv:1, title:'Recruta', perk:'Contratos simples da Ordem.', mods:{}, stats:{} },
+    { letter:'E', lv:3, title:'Aventureiro', exam:{ text:'Vença o estágio 12 do Bosque das Lanternas.', zone:'hunt', best:12 }, perk:'+5% de EXP em combate.', mods:{ xp:.05 }, stats:{} },
+    { letter:'D', lv:6, title:'Veterano', exam:{ text:'Derrote Shirogane, Rei do Eclipse.', zone:'boss', kills:1 }, perk:'+1 contrato simultâneo e +5% de ouro.', mods:{ gold:.05 }, stats:{}, slots:1 },
+    { letter:'C', lv:9, title:'Caçador de Selos', exam:{ text:'Vença o estágio 12 da Costa das Marés.', zone:'hunt_tide', best:12 }, perk:'+6% chance de itens.', mods:{ drop:.06 }, stats:{} },
+    { letter:'B', lv:13, title:'Guardião do Véu', exam:{ text:'Derrote Mizuchi, Dragão Abissal.', zone:'boss_tide', kills:1 }, perk:'+4% de ATK e HP para toda a equipe.', mods:{}, stats:{ atk:.04, hp:.04 } },
+    { letter:'A', lv:17, title:'Lâmina da Ordem', exam:{ text:'Derrote Apep, Serpente do Tempo.', zone:'boss_sand', kills:1 }, perk:'+1 vaga de Expedição e +1 contrato simultâneo.', mods:{}, stats:{}, slots:1, expedition:1 },
+    { letter:'S', lv:22, title:'Lenda de Tsukimori', exam:{ text:'Derrote Raijin, o Tambor do Trovão.', zone:'boss_sky', kills:1 }, perk:'+6% de ATK e HP e Contratos Lendários (Adamantina).', mods:{}, stats:{ atk:.06, hp:.06 }, legendary:true }
+  ];
   const GUILD = { createCost:1500000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
     war:{ days:[3, 6], from:20, to:22, attacks:3 } };
   // Profissões (coleta e criação, como ESO, GW2 e WoW). Materiais de coleta são negociáveis.
@@ -813,5 +824,5 @@
 
   const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { levelPower, levelOfPower, THREAT, threat, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { GUILD_RANKS, levelPower, levelOfPower, THREAT, threat, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();
