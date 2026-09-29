@@ -31,7 +31,10 @@ function validateSave(raw) {
   const checks = [
     num(p.level, 1, 999), num(p.gold, 0, 1e15), num(p.crystal, 0, 1e9), num(p.dust, 0, 1e12), num(p.ore, 0, 1e12), num(p.keys, 0, 1e6),
     Array.isArray(data.collection) && data.collection.length <= 600,
-    Array.isArray(data.inventory) && data.inventory.length <= 260,
+    // Bolsa (até I.MAX_BAG livres) + itens equipados (4 por herói), Armazém e Excedentes com os próprios tetos.
+    Array.isArray(data.inventory) && data.inventory.length <= KT.Items.MAX_BAG + 4 * (Array.isArray(data.collection) ? data.collection.length : 0) + 20,
+    !data.storage || (Array.isArray(data.storage) && data.storage.length <= 2000),
+    !data.overflow || (Array.isArray(data.overflow) && data.overflow.length <= KT.Items.OVERFLOW_CAP + 20),
     Array.isArray(data.formation) && data.formation.length === 4,
     num(data.totalPlaySeconds || 0, 0, 1e9)
   ];

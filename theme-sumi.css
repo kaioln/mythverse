@@ -406,3 +406,11 @@ body .hero-portrait .lv{font-size:11px}
   .stage-controls.below-stage .ctl span{display:inline-flex!important;align-items:center;gap:4px;font-size:11px}
   .stage-controls.below-stage .ctl b{font-size:13px}
 }
+
+/* Forja: escolha do material de refino (risco explícito) */
+.forge-mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}
+.mat-pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;border-radius:8px;border:1px solid var(--line2);border-left:3px solid var(--mc,var(--line2));background:rgba(236,226,208,.04);color:var(--text);text-align:left;cursor:pointer}
+.mat-pick small{color:var(--muted);font-size:11px}
+.mat-pick.active{background:rgba(236,226,208,.1);border-color:var(--mc,var(--gold))}
+.mat-pick:disabled{opacity:.4;cursor:not-allowed}
+.forge-box .note.warn{color:#f0b1a4;border-left:2px solid var(--shu);padding-left:8px}

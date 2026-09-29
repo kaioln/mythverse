@@ -110,7 +110,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 ## O que existe no jogo
 
 ### Equipe e heróis
-- **60 heróis originais** de 30 mundos da Fenda, cada um com kit próprio: **passiva**, **habilidade automática** e **ultimate** (100 de energia; Q/W/E/R ou AUTO). As descrições são geradas a partir dos efeitos reais.
+- **60 heróis originais** de 30 mundos da Fenda, mais **12 formas despertadas** da Temporada I, cada um com kit próprio: **passiva**, **habilidade automática** e **ultimate** (100 de energia; Q/W/E/R ou AUTO). As descrições são geradas a partir dos efeitos reais.
 - **5 classes**: Vanguarda, Executor, Arcanista, Atirador e Suporte. Cada uma tem traço próprio, sinergia de equipe e posição ideal.
 - **Formação**: as vagas 1 e 2 são a linha de frente, e os inimigos atacam a frente 3× mais que a retaguarda.
 - **9 elementos**, com vantagens de +30% e desvantagens de −20%, e **sinergia de elemento** (2, 3 ou 4 heróis iguais).
@@ -123,7 +123,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Raridade e qualidade**: heróis repetidos viram fragmentos, e cada ★ dá +12% nos atributos sem alterar o limite de nível 100.
 
 ### Progressão da conta
-- **Treino da equipe** no Dojo: ATK, HP, DEF e Crítico para todos os heróis. Só os heróis da equipe ganham EXP em combate; os do banco evoluem em Expedições.
+- **Treino da equipe** no Dojo: ATK, HP, DEF e Crítico para todos os heróis, com teto de 40 níveis (os 20 primeiros valem cheio, os seguintes metade) e preço que dispara depois do nível 20. Só os heróis da equipe ganham EXP em combate; os do banco evoluem em Expedições.
 - **Casa do Time**: Galeria com até 6 cartas expostas (25% dos atributos de cada carta para a equipe inteira) e **Álbum de cartas** com 7 marcos de bônus permanentes, no estilo do livro de cartas do Ragnarok.
 - **Paragão**: no nível 100, a EXP excedente vira níveis de conta, +0,4% de ATK/HP/DEF para a equipe por nível (até 300).
 - **Construções**: Forja, Dojo, Santuário, Oficina, Guilda, Mercado e Casa do Time. O nível máximo acompanha o nível da conta.
@@ -131,14 +131,15 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 ### Itens e builds
 - **4 espaços** de equipamento: Arma, Foco, Selo e Omamori.
 - **Armas por classe**: Espadas (Executor/Vanguarda), Armas pesadas e manoplas (Vanguarda), Arcos (Atirador), Cajados arcanos (Arcanista/Suporte) e Relíquias sagradas (Suporte), cada tipo com atributo implícito e afixos próprios. Armas de conjunto servem a qualquer classe e há exceções pela história (Bjorn e Dana usam arco, Alden e Yuki usam lâminas, lutadores de punho usam manoplas…).
-- **111 bases** de item, **19 afixos** e raridades Comum, Raro, Épico, Lendário, Mítico e Conjunto. Chances muito baixas de propósito: nos mapas iniciais o máximo é Épico; lendários vêm quase só de chefes, Invasões Mundiais e eventos.
+- **122 bases** de item, **23 afixos** e raridades Comum, Raro, Épico, Lendário, Mítico e Conjunto. Chances muito baixas de propósito: nos mapas iniciais o máximo é Épico; lendários vêm quase só de chefes, Invasões Mundiais e eventos.
 - **Requisitos para equipar**: nível mínimo do herói (pelo nível e raridade do item) e atributo mínimo nas armas; cada classe usa os seus tipos de arma, foco e selo.
-- **15 conjuntos** com bônus de 2 e 4 peças, cada um vindo de uma região específica.
-- **29 itens míticos únicos** com efeitos especiais.
-- **Cartas** no estilo Ragnarok: cada uma das 94 criaturas tem a sua, em 4 raridades (Comum 1 em 60.000 abates, Rara 1 em 22.000, Épica 1 em 6.000, MVP 1 em 1.500 nos chefes). Cartas são muito fortes, as épicas e MVP têm efeito especial, e valem Gemas no Mercado de Jogadores.
-- **Refino** de +1 a +15 com 4 materiais: Tamahagane (até +10; de +5 a +8 a falha tira 1 nível, depois disso quebra), Aço Estelar (até +8 sem perder nível, +9 e +10 podem quebrar), Oricalco (até +15; de +11 em diante a falha tira 1 nível) e Adamantina (+10 a +15 sem regredir, mas pode falhar). Em +15 o atributo principal fica ×4,25.
+- **18 conjuntos** com bônus de 2 e 4 peças, cada um vindo de uma região específica.
+- **41 itens únicos** com efeitos especiais.
+- **Cartas** no estilo Ragnarok: cada uma das 115 criaturas tem a sua, em 4 raridades (Comum 1 em 60.000 abates, Rara 1 em 22.000, Épica 1 em 6.000, MVP 1 em 1.500 nos chefes). Cartas são muito fortes, as épicas e MVP têm efeito especial, e valem Gemas no Mercado de Jogadores.
+- **Refino** de +1 a +15 com 4 materiais: Tamahagane (até +10; de +5 a +8 a falha tira 1 nível, depois disso quebra), Aço Estelar (até +8 sem perder nível, +9 e +10 podem quebrar), Oricalco (até +15; de +11 em diante a falha tira 1 nível) e Adamantina (+10 a +15 sem regredir, mas pode falhar). Em +15 o atributo principal fica ×4,25. Na Forja você escolhe o material e vê o risco antes de refinar. Refino é caro de propósito: acima de +4 o preço cresce rápido, e um +10 custa dezenas de horas de ouro.
 - **Oficina**: encantamentos que re-sorteiam afixos, culinária (buffs de ouro, EXP e sorte) e transmutação de materiais, com limite diário.
 - **Bolsa** com 150 espaços (até 400 pela Loja), barra de heróis para equipar qualquer um sem sair da tela, filtros, comparação, trava, abas de Cartas, Materiais e Consumíveis. Com a bolsa cheia nada some: os itens vão para o **Excedente**.
+- **Armazém do Tanuki** (300 espaços + enfeites): funciona como a bolsa (equipar, refinar, encantar, encaixar cartas, trancar), mas protege os itens. Com a bolsa cheia, drops valiosos (épicos ou melhores, refinados, com carta ou melhores que os da equipe) vão direto para o Armazém; o que não couber vai para os Excedentes, onde épicos ou melhores nunca são desmontados.
 
 ### Mundo
 - **Capítulo I**: Bosque das Lanternas → Templo do Véu → **Shirogane**, com rotas secundárias: **Pântano dos Vaga-lumes** (caçada) e **Cripta de Jade** (dungeon).

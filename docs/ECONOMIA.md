@@ -150,3 +150,32 @@ Medido com `node tools/balance.js [lutas] [níveis extras]`: uma equipe de refer
 - **Poder exibido** = força^0,77: equipe inicial ~700, fim do Cap. I ~5–6 mil, Cap. II ~35–45 mil, Cap. III ~110–160 mil, Cap. IV ~340–380 mil. Recomendado calibrado pela curva medida da equipe.
 - **Ranking no banco**: `neon_setup.js` recalcula o poder de todas as contas com o motor (`tools/neon_recompute.js`); o guarda do save converte jogos antigos em cache; o jogo recarrega sozinho quando sai versão nova (`version.json`).
 - **Sprites**: `src/sprite-meta.js` (gerado) iguala o tamanho aparente dos heróis (Vegeta e outros de arte estreita) e põe as formas despertadas com o pé no chão.
+
+## Economia v3 (2026-09-29): ouro escasso, refino caro, Dojo com teto
+
+Problema medido com `node tools/goldrate.js` (equipe de referência farmando o estágio do próprio nível): o ouro por abate
+crescia ~5% por nível do inimigo, mas o custo do refino crescia quase linear. No nível 98 o farm rendia **5,4 milhões/h** e
+um +10 se pagava em ~40 min. O Dojo ia até 180 níveis por treino (+360% ATK para a equipe inteira).
+
+Mudanças:
+
+- **Curva de ouro** (`goldPow` em `src/engine.js`): igual até o nível 33; depois o expoente cai para 0,47 do anterior.
+  Vale para abates, estágios, andares, chefes, Fenda, expedições, AFK, contratos, missões diárias, crônicas, recompensas e Invasão.
+- **Refino** (`upgradeCost` em `src/items.js`): até +4 igual; acima disso cresce mais rápido (+10 ≈ 2,3× o antigo, +15 ≈ 3,1×).
+- **Forja**: agora dá para escolher o material (Tamahagane, Aço Estelar, Oricalco, Adamantina) e o risco aparece antes
+  (sem risco / volta 1 nível / quebra). Refino que pode quebrar pede confirmação. Antes a tela só usava Tamahagane e dizia
+  que o item "nunca é perdido", o que não era verdade.
+- **Dojo v2** (`src/progression.js`): teto de 40 níveis por treino (5 + 3 por nível do Dojo); os 20 primeiros valem cheio, os
+  seguintes metade (máx. +60% ATK/DEF, +75% HP, +12% crítico); preço antigo até o nível 20 e +15% a mais por nível depois. Níveis acima do teto em saves antigos
+  devolvem metade do ouro gasto (uma vez, marcado por `dojoV:2`).
+
+Resultado (`node tools/goldrate.js 6`, ouro por hora de farm ativo):
+
+| Nível | Antes | Depois | +10 (Tamahagane, custo esperado) |
+|---|---|---|---|
+| 33 | ~59 mil | ~60–110 mil | ~4 mi |
+| 60 | ~658 mil | ~150 mil | ~6,8 mi |
+| 80 | 1–2,4 mi | ~190–350 mil | ~8,9 mi |
+| 98 | 3–5,4 mi | ~180–440 mil | ~11,4 mi |
+
+Um +10 passa a custar dezenas de horas de ouro, e cada nível de Dojo acima do 30 custa horas de farm.

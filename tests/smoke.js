@@ -10,7 +10,9 @@ const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };
 
 // ---------- conteúdo ----------
 ok(D.roster.length === 60 + D.SEASON.heroes.length && new Set(D.roster.map(h => h.id)).size === D.roster.length && D.SEASON.heroes.every(id => D.roster.some(h => h.id === id)), '60 heróis + temporada, todos únicos');
-ok(D.roster.find(h => h.id === 'solen').name === 'Goku' && D.roster.find(h => h.id === 'sienna').name === 'Erza Scarlet', 'nomes originais dos personagens de anime');
+{ const IP = /\b(goku|vegeta|naruto|sasuke|luffy|zoro|ichigo|tanjiro|gojo|levi|mikasa|eren|saitama|sailor|kratos|jinx|ahri|mercy|geralt|dante|kamehameha|bankai|susanoo|kurama|saiyajin|rinnegan|overwatch|zaun)\b/i;
+  const txt = D.roster.map(h => [h.name, h.world, h.passive?.name, h.skill?.name, h.ult?.name].join(' ')).join(' ') + D.bonds.map(b => b.name).join(' ');
+  ok(D.roster.find(h => h.id === 'solen').name === 'Solen Kairos' && !IP.test(txt), 'elenco só com nomes originais (sem personagens ou termos de outras obras)'); }
 ok(new Set(D.roster.map(h => h.skill.name)).size === D.roster.length && new Set(D.roster.map(h => h.ult.name)).size === D.roster.length, 'habilidades e ultimates únicas');
 D.roster.forEach(h => { ok(h.passiveText && h.skillText && h.ultText, `kit descrito: ${h.id}`); ok(fs.existsSync(path.join(root, 'assets/sprites', `${h.sprite}.png`)) && fs.existsSync(path.join(root, 'assets/portraits', `${h.id}.png`)), `arte: ${h.id}`); });
 ok(Object.keys(D.classes).every(c => D.roster.filter(h => h.cls === c).length >= 8), 'todas as classes têm heróis');
@@ -95,7 +97,12 @@ ok(engine.heroes.every(r => r.classLevel > 1 || r.classXp > 0), 'equipe ganha EX
 { const st = State.mergeState(JSON.parse(JSON.stringify(state))), e3 = new CombatEngine(st, {});
   st.inventory = []; st.overflow = []; while (st.inventory.length < st.invCap) st.inventory.push(I.makeItem({ ilvl:5, rarity:'common' }));
   const leg = I.makeItem({ ilvl:20, rarity:'legendary' }); e3.addItem(leg);
-  ok(st.inventory.includes(leg) && !leg.inOverflow && st.overflow.length === 1 && st.inventory.length === st.invCap, 'lendário com bolsa cheia fica na bolsa e o comum mais fraco vai para os Excedentes');
+  ok(st.storage.includes(leg) && !leg.inOverflow && st.overflow.length === 0 && st.inventory.length === st.invCap, 'lendário com bolsa cheia vai direto para o Armazém (protegido)');
+  st.storage = []; while (st.storage.length < e3.storageCap()) st.storage.push(I.makeItem({ ilvl:5, rarity:'common' }));
+  const legB = I.makeItem({ ilvl:20, rarity:"legendary" }); e3.addItem(legB);
+  ok(st.inventory.includes(legB) && !legB.inOverflow && st.overflow.length === 1 && st.inventory.length === st.invCap, 'Armazém cheio: o lendário entra na bolsa e o comum mais fraco vai para os Excedentes');
+  const sw = I.makeItem({ ilvl:20, rarity:'epic', slot:'seal' }); st.storage.push(sw); const p0 = sw.plus || 0; st.player.gold = 1e9; st.player.ore = 1e6;
+  ok(e3.upgradeItem(sw.uid, 'common').ok && sw.plus === p0 + 1, 'item no Armazém pode ser refinado sem sair de lá');
   st.overflow = Array.from({ length:I.OVERFLOW_CAP }, () => I.makeItem({ ilvl:20, rarity:'epic' })); st.inventory.forEach(x => { x.locked = true; });
   const leg2 = I.makeItem({ ilvl:20, rarity:'legendary' }); e3.addItem(leg2); ok(st.overflow.includes(leg2), 'épico ou melhor nunca é destruído, mesmo com tudo cheio');
   const common = I.makeItem({ ilvl:20, rarity:'common' }); const n0 = st.overflow.length; e3.addItem(common); ok(common.autoSalvaged && st.overflow.length === n0, 'baú cheio só de itens bons desmonta o comum novo');

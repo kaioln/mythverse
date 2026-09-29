@@ -223,15 +223,22 @@
   // ---------------------------------------------------------------------------
   // TREINO DA EQUIPE (Dojo), melhorias permanentes pagas com ouro.
   // ---------------------------------------------------------------------------
+  // Dojo v2: antes o teto chegava a 180 níveis por treino (+360% ATK para a equipe inteira) com preço que a renda do
+  // fim de jogo pagava em minutos, e o time ficava invencível. Agora: teto de 40 níveis, os 20 primeiros valem cheio e os
+  // seguintes metade (máximo +60% ATK/DEF, +75% HP, +12% crítico), o preço segue o antigo até o nível 20 e cresce 15% a mais por nível depois disso.
+  const TRAIN_MAX = 40, TRAIN_FULL = 20;
   const training = {
-    atk: { name:'Treino de Força', per:.02, stat:'atk', text:'+2% ATK para todos os heróis por nível.' },
-    hp:  { name:'Treino de Resistência', per:.025, stat:'hp', text:'+2,5% HP para todos os heróis por nível.' },
-    def: { name:'Treino de Guarda', per:.02, stat:'def', text:'+2% DEF para todos os heróis por nível.' },
-    crit:{ name:'Treino de Precisão', per:.005, stat:'crit', text:'+0,5% crítico para todos os heróis por nível.' }
+    atk: { name:'Treino de Força', per:.02, stat:'atk', text:'+2% ATK para todos os heróis por nível (metade após o nível 20).' },
+    hp:  { name:'Treino de Resistência', per:.025, stat:'hp', text:'+2,5% HP para todos os heróis por nível (metade após o nível 20).' },
+    def: { name:'Treino de Guarda', per:.02, stat:'def', text:'+2% DEF para todos os heróis por nível (metade após o nível 20).' },
+    crit:{ name:'Treino de Precisão', per:.004, stat:'crit', text:'+0,4% crítico para todos os heróis por nível (metade após o nível 20).' }
   };
-  // Custo acompanha a renda dos capítulos (antes ×1,32 por nível: o nível 40 custava 26 milhões).
-  const trainingCost = lvl => Math.round(450 * Math.pow(1.24, lvl));
-  const trainingCap = dojoLevel => 5 + dojoLevel * 5;
+  const trainingBonus = (key, lv) => { const tr = training[key]; if (!tr) return 0; lv = Math.max(0, Math.min(TRAIN_MAX, lv || 0)); return tr.per * (Math.min(lv, TRAIN_FULL) + Math.max(0, lv - TRAIN_FULL) * .5); };
+  // Preço antigo até o nível 20 (o começo do jogo não muda); depois, +15% a mais por nível: o nível 30 custa ~4 h de farm
+  // no fim de jogo e o 39 ~90 h. Os últimos níveis são uma meta longa, não um atalho.
+  const trainingCost = lvl => Math.round(450 * Math.pow(1.24, lvl) * Math.pow(1.15, Math.max(0, lvl - 20)));
+  const trainingCostV1 = lvl => Math.round(450 * Math.pow(1.24, lvl));
+  const trainingCap = dojoLevel => Math.min(TRAIN_MAX, 5 + dojoLevel * 3);
 
   // ---------------------------------------------------------------------------
   // LOJA
@@ -272,5 +279,5 @@
     ]
   };
 
-  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, JOB2_LEVEL, JOB2_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, job2Cost, branchOf, jobTitle, TIER_REQ, classTrees, treeFor, training, trainingCost, trainingCap, shop };
+  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, JOB2_LEVEL, JOB2_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, job2Cost, branchOf, jobTitle, TIER_REQ, classTrees, treeFor, training, trainingBonus, trainingCost, trainingCostV1, trainingCap, TRAIN_MAX, shop };
 })();

@@ -4,7 +4,7 @@
     {
       "name": "mythverse-local",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["C:/Users/Kaio/AppData/Local/Temp/claude/E--kizuna-KIZUNA-TRAILS-COMPLETE-KIZUNA-TRAILS-COMPLETE/c261ee04-caeb-4581-8ebb-3bb2e30f399d/scratchpad/preview-server.js"],
+      "runtimeArgs": ["C:/Users/Kaio/AppData/Local/Temp/claude/E--kizuna-KIZUNA-TRAILS-COMPLETE-KIZUNA-TRAILS-COMPLETE/aa71ff05-12e6-4fe8-a2f2-f51a6ede9b7d/scratchpad/preview-server.js"],
       "port": 8799
     }
   ]

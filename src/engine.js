@@ -43,7 +43,7 @@
       settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:true, speed:1, sound:false, autoSalvage:'none' }, afkTrain:0,
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
-      buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 },
+      buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 }, dojoV:2,
       guide:{ claimed:{}, flags:{} }, contracts:[], achievements:{}, contractCounters:{},
       market:{ offers:[], refreshedAt:0 }, boostUntil:0, freeRespec:1,
       story:{ seen:{} }, codex:{ enemies:[] }, bestiary:{},
@@ -107,6 +107,13 @@
       }
     });
     const tcap = PR.trainingCap(s.buildings.dojo || 1);
+    // Dojo v2 (teto de 40 e retorno decrescente): níveis de treino acima do novo teto devolvem metade do ouro gasto.
+    if (raw.dojoV !== 2) {
+      let refund = 0;
+      Object.keys(s.training).forEach(k => { const lv = Math.floor(Number(s.training[k]) || 0); for (let l = tcap; l < lv; l++) refund += PR.trainingCostV1(l) / 2; });
+      if (refund > 0) { s.player.gold = (Number(s.player.gold) || 0) + Math.floor(refund); s.dojoRefund = Math.floor(refund); }
+      s.dojoV = 2;
+    }
     Object.keys(s.training).forEach(k => { s.training[k] = U.clamp(Math.floor(Number(s.training[k]) || 0), 0, tcap); });
     s.paragon.lv = U.clamp(Math.floor(Number(s.paragon.lv) || 0), 0, D.PARAGON.cap); s.paragon.xp = Math.max(0, Number(s.paragon.xp) || 0);
     s.house.display = s.house.display.map((id, i, a) => (id && a.indexOf(id) === i ? id : null));
@@ -166,6 +173,10 @@
   const enemyLevel = P => Math.max(1, Math.round(D.levelOfPower(P)));
   // Recompensas (ouro, EXP) seguem o NÍVEL do inimigo, não a força: a renda cresce como no Capítulo I (1,065 por nível).
   const rewardPower = P => P <= Math.pow(1.065, 32) ? Math.max(1, P) : Math.pow(1.065, D.levelOfPower(P) - 1);
+  // Ouro por força do inimigo. Até o nível 33 cresce como antes; depois, bem mais devagar (expoente ×0,47): antes o ouro
+  // subia ~5% por nível e no fim do Capítulo IV um +10 se pagava em 40 min de farm. Ouro tem que ser escasso.
+  const GOLD_TAIL = .47, RP33 = Math.pow(1.065, 32);
+  const goldPow = (P, e = .85) => { const rp = rewardPower(P); return rp <= RP33 ? Math.pow(rp, e) : Math.pow(RP33, e) * Math.pow(rp / RP33, e * GOLD_TAIL); };
   // Travas de EXP: herói muito abaixo do inimigo (carregado por uma equipe forte) ou muito acima (farm de mapa fácil)
   // ganha menos, e um único abate nunca rende mais que 5% de um nível. O nível do inimigo conta até o teto dos heróis.
   const XP_RULES = { under:15, underSlope:.04, over:8, overSlope:.1, floor:.1, perKill:.05 };
@@ -279,7 +290,7 @@
     Object.entries(rec.talents || {}).forEach(([id, rank]) => { const n = tree.find(x => x.id === id); if (!n || !rank || (n.branch && n.branch !== PR.branchOf(rec))) return; add(n.stats, rank); if (n.hook) talentHooks.push(n.hook(rank)); });
     // Árvore de classes: +10% HP/ATK/DEF por grau (avançada, transcendida) e o bônus do caminho escolhido.
     if (rec.job) { const g = .10 * Math.min(2, rec.job); pctAdd.hp += g; pctAdd.atk += g; pctAdd.def += g; add(PR.jobs[t.cls]?.[PR.branchOf(rec)]?.stats, Math.min(2, rec.job)); }
-    Object.entries(state.training || {}).forEach(([k, lv]) => { const tr = PR.training[k]; if (tr && lv) add({ [tr.stat]:tr.per * lv }); });
+    Object.entries(state.training || {}).forEach(([k, lv]) => { const tr = PR.training[k]; if (tr && lv) add({ [tr.stat]:PR.trainingBonus(k, lv) }); });
     // Equipamentos e conjuntos.
     const setCount = {}; const hooks = [...talentHooks];
     Object.values(rec.equipped || {}).forEach(uid => {
@@ -1128,7 +1139,7 @@
       const first = floor > (p.best || 0);
       const items = U.random() < .5 + Math.min(.4, floor * .01) ? [this.drop('chest', z, ilvl, this.mod('drop'))] : [];
       const mutGold = 1 + (this.riftMutation(floor).reward?.gold || 0);
-      const rewards = { gold:Math.round(260 * Math.pow(rewardPower(P), .85) * mutGold), ore:2 + Math.floor(floor / 4), crystal:first ? 1 + Math.floor(floor / 5) : 0, keys:first && floor % 5 === 0 ? (floor % 10 === 0 ? 2 : 1) : 0, items };
+      const rewards = { gold:Math.round(260 * goldPow(P) * mutGold), ore:2 + Math.floor(floor / 4), crystal:first ? 1 + Math.floor(floor / 5) : 0, keys:first && floor % 5 === 0 ? (floor % 10 === 0 ? 2 : 1) : 0, items };
       if (first) p.best = floor;
       this.grant(rewards); this.dropMats('rift');
       this.state.stats.floors++; this.count('floors');
@@ -1147,7 +1158,7 @@
       if (first) {
         p.best = stage;
         rewards.crystal = 2 + stage + (z.chapter - 1) * 6;
-        rewards.gold = Math.round(120 * rewardPower(zonePower(z, { stage })));
+        rewards.gold = Math.round(120 * goldPow(zonePower(z, { stage }), 1));
         if (stage === z.stages && !z.side) rewards.keys = 1;
         else if (stage % 4 === 0) rewards.keys = 1;
         if (stage === z.stages) rewards.items.push(this.drop('guardian', z, itemLevelFor(z, { stage }) + 1, .5));
@@ -1169,7 +1180,7 @@
       const items = [this.drop('chest', z, ilvl, this.mod('drop'))];
       if (this.state.routeChoice === 'risk') items.push(this.drop('chest', z, ilvl, this.mod('drop')));
       this.dropMats('chest');
-      const rewards = { gold:Math.round(320 * rewardPower(zonePower(z, { floor }))), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .01 ? 1 : 0), items };
+      const rewards = { gold:Math.round(320 * goldPow(zonePower(z, { floor }), 1)), crystal:first ? 12 + floor * 8 : 0, keys:first && floor === z.floors ? 1 : (U.random() < .01 ? 1 : 0), items };
       if (first) p.best = floor;
       this.grant(rewards);
       this.state.stats.floors++; this.count('floors');
@@ -1194,7 +1205,7 @@
       if (loot && tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
       if (loot) this.dropMats('boss');
       else this.emit('onToast', `<b>Espólio de hoje esgotado</b> contra ${esc(D.enemies[z.enemy].name.split(',')[0])}: a vitória rende só ouro e EXP até a meia-noite (Brasília).`);
-      const rewards = { gold:Math.round(2000 * rewardPower(zonePower(z, this.opts)) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
+      const rewards = { gold:Math.round(2000 * goldPow(zonePower(z, this.opts), 1) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
       this.grant(rewards);
       if (firstKill && D.story.bossWin[z.id]) this.emit('onDialog', D.story.bossWin[z.id]);
       this.showResult({ kind:'boss', zone:z, tier, first:firstKill, lootLocked:!loot, lootLeft:this.bossLootLeft(z.id, tier), rewards, boss:D.enemies[z.enemy].name, loot:this.runLoot.slice(), gold:this.runGold, xp:this.runXp });
@@ -1272,7 +1283,7 @@
       } else if (pe.enc.id === 'chest' && id === 'open') {
         if (U.random() < .3) { this.enemies = [this.makeEnemyUnit('mimic', zonePower(this.zone, this.opts))]; this.phase = 'fight'; this.emit('onWave', { label:'Era um Mímico!', detail:'O baú tinha dentes...', special:true }); this.emit('onWarn', 'Era um Mímico!'); return; }
         const it = this.drop('chest', this.zone, itemLevelFor(this.zone, this.opts) + 1, 1); this.addItem(it); this.emit('onLoot', it);
-        const g = this.goldIn(200 * rewardPower(zonePower(this.zone, this.opts))); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
+        const g = this.goldIn(200 * goldPow(zonePower(this.zone, this.opts), 1)); this.state.player.gold += g; this.emit('onToast', `O baú tinha ${it.name} e ${g.toLocaleString('pt-BR')} ouro!`);
       }
       this.phase = 'between'; this.timer = .8;
     }
@@ -1289,7 +1300,7 @@
       if (s.bounty?.active && s.bounty.active.enemy === e.id) s.bounty.active.progress = Math.min(s.bounty.active.n, s.bounty.active.progress + 1);
       const research = this.research(e.id); s.bestiary[e.id] = (s.bestiary[e.id] || 0) + 1;
       if (this.research(e.id) > research) this.emit('onToast', `<b>Bestiário:</b> ${esc(t.name)}, pesquisa nível ${this.research(e.id)} (+${Math.round(this.research(e.id) * D.RESEARCH.dmg * 100)}% de dano contra ela).`);
-      const gold = this.goldIn(U.randInt(t.gold[0], t.gold[1]) * Math.pow(rewardPower(e.P), .85) * (1 + this.mod('gold')) * mult * .8);
+      const gold = this.goldIn(U.randInt(t.gold[0], t.gold[1]) * goldPow(e.P) * (1 + this.mod('gold')) * mult * .8);
       const xp = Math.round(t.xp * Math.pow(rewardPower(e.P), .92) * (1 + this.mod('xp')) * mult * (lootOk ? 1 : .3));
       s.player.gold += gold; s.stats.goldEarned += gold; this.runGold += gold; this.runXp += xp;
       if (activeEvent(this.now()).mods?.dust) s.player.dust += U.random() < .3 ? 1 : 0;
@@ -1383,7 +1394,7 @@
       const s = this.state, i = s.expeditions.findIndex(x => x.id === id); if (i < 0) return false;
       const x = s.expeditions[i]; if (this.now() < x.start + x.hours * 3600000) { this.lastError = 'A expedição ainda não voltou.'; return false; }
       const z = D.zones[x.zone], P = zonePower(z, { stage:Math.max(1, s.progress[x.zone]?.best || 1) }), n = x.uids.length;
-      const r = { gold:Math.round(700 * x.hours * Math.pow(rewardPower(P), .8) * n / 3), ore:x.hours * 2 * n, dust:x.hours * 3 * n, items:[] };
+      const r = { gold:Math.round(700 * x.hours * goldPow(P, .8) * n / 3), ore:x.hours * 2 * n, dust:x.hours * 3 * n, items:[] };
       // EXP de expedição: equivale a caçar a região em ritmo lento e nunca leva o herói além do nível dela.
       const zl = Math.min(HERO_LEVEL_CAP, enemyLevel(P));
       x.uids.forEach(uid => { const h = this.record(uid); if (!h || h.level >= zl) return; const amt = Math.round(x.hours * 540 * 14 * Math.pow(rewardPower(P), .92) * .15 * xpFactor(h.level, zl));
@@ -1506,10 +1517,17 @@
       if (['legendary','mythic'].includes(item.rarity)) s.stats.legendaries++;
       const auto = s.settings.autoSalvage;
       const order = ['common','rare','epic'];
-      if (auto !== 'none' && order.indexOf(item.rarity) >= 0 && order.indexOf(item.rarity) <= order.indexOf(auto)) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; s.player.gold += v.gold; s.stats.salvage++; this.count('salvage'); item.autoSalvaged = true; this.runLoot.push(item); return; }
+      const valuable = this.isValuable(item);
+      if (auto !== 'none' && !valuable && order.indexOf(item.rarity) >= 0 && order.indexOf(item.rarity) <= order.indexOf(auto)) { const v = I.salvageValue(item); s.player.ore += v.ore; s.player.dust += v.dust; s.player.gold += v.gold; s.stats.salvage++; this.count('salvage'); item.autoSalvaged = true; this.runLoot.push(item); return; }
       // Bolsa cheia: nada se perde. O item vai para o Baú de Excedentes; se o baú também lotar,
       // só o item COMUM de menor valor é desmontado para abrir espaço.
-      if (this.bagFull() && (RARITY_RANK[item.rarity] || 0) >= 2) {
+      // Bolsa cheia e item valioso: vai direto para o Armazém (protegido), se houver espaço.
+      if (this.bagFull() && valuable && (s.storage || []).length < this.storageCap()) {
+        s.storage.unshift(item); this.runLoot.push(item);
+        if (!this.storageWarned) { this.storageWarned = true; this.emit('onToast', 'Bolsa cheia! Itens valiosos estão indo direto para o <b>Armazém</b>, onde ficam protegidos.'); }
+        return;
+      }
+      if (this.bagFull() && valuable) {
         // Item valioso com a bolsa cheia: o item comum/raro mais fraco (livre e destrancado) cede a vaga e vai para os Excedentes.
         const weak = s.inventory.filter(x => (RARITY_RANK[x.rarity] || 0) <= 1 && !x.locked && !this.ownerOf(x.uid)).sort((a, b) => (RARITY_RANK[a.rarity] - RARITY_RANK[b.rarity]) || I.itemScore(a) - I.itemScore(b))[0];
         if (weak) { s.inventory.splice(s.inventory.indexOf(weak), 1); s.overflow = s.overflow || []; s.overflow.unshift(weak); weak.inOverflow = true; }
@@ -1837,12 +1855,12 @@
 
     // ---------- cartas ----------
     socketCard(itemUid, idx, cardId) {
-      const it = this.state.inventory.find(x => x.uid === itemUid); if (!it || !it.cards || idx >= it.cards.length || it.cards[idx]) return false;
+      const it = this.findItem(itemUid); if (!it || !it.cards || idx >= it.cards.length || it.cards[idx]) return false;
       if ((this.state.cards[cardId] || 0) < 1 || !I.cardById(cardId)) return false;
       this.state.cards[cardId]--; it.cards[idx] = cardId; this.refreshPartyUnits(); this.emit('onState'); return true;
     }
     unsocketCard(itemUid, idx) {
-      const it = this.state.inventory.find(x => x.uid === itemUid); if (!it?.cards?.[idx] || this.state.player.crystal < 30) return false;
+      const it = this.findItem(itemUid); if (!it?.cards?.[idx] || this.state.player.crystal < 30) return false;
       this.state.player.crystal -= 30; this.state.cards[it.cards[idx]] = (this.state.cards[it.cards[idx]] || 0) + 1; it.cards[idx] = null; this.refreshPartyUnits(); this.emit('onState'); return true;
     }
 
@@ -1899,6 +1917,15 @@
       s.player.crystal -= d.price.crystal; s.decor[id] = 1; this.emit('onToast', `<b>${esc(d.name)}</b> enfeita o Armazém: +${d.slots} espaços.`); this.emit('onState'); return true;
     }
     ownerOf(itemUid) { return this.state.collection.find(h => Object.values(h.equipped).includes(itemUid)); }
+    // O Armazém funciona como a bolsa (refinar, encantar, encaixar cartas, trancar, equipar); a diferença é o espaço e a proteção.
+    findItem(itemUid) { const s = this.state; return s.inventory.find(x => x.uid === itemUid) || (s.storage || []).find(x => x.uid === itemUid) || null; }
+    listOf(it) { const s = this.state; return s.inventory.includes(it) ? s.inventory : (s.storage || []).includes(it) ? s.storage : null; }
+    // Item que vale guardar: épico ou melhor, refinado, com carta, trancado, ou melhor que o que alguém da equipe usa no espaço.
+    isValuable(it) {
+      if ((RARITY_RANK[it.rarity] || 0) >= 2 || (it.plus || 0) > 0 || it.locked || (it.cards || []).some(Boolean)) return true;
+      const sc = I.itemScore(it);
+      return this.state.formation.some(uid => { const r = uid && this.record(uid); if (!r || !I.canEquip(it, r.id)) return false; const cur = r.equipped[it.slot] && this.state.inventory.find(x => x.uid === r.equipped[it.slot]); return !cur || sc > I.itemScore(cur) * 1.05; });
+    }
     salvage(itemUid) {
       const i = this.state.inventory.findIndex(x => x.uid === itemUid); if (i < 0) return null;
       const it = this.state.inventory[i]; if (it.locked || this.ownerOf(itemUid)) return null;
@@ -1913,7 +1940,7 @@
     }
     // REFINO com materiais: Tamahagane (comum), Aço Estelar (raro), Oricalco (épico), Adamantina (lendário).
     upgradeItem(itemUid, matId = 'common') {
-      const s = this.state, it = s.inventory.find(x => x.uid === itemUid); if (!it) return { ok:false, reason:'Item não encontrado.' };
+      const s = this.state, it = this.findItem(itemUid); if (!it) return { ok:false, reason:'Item não encontrado.' };
       if ((it.plus || 0) >= 15) return { ok:false, reason:'O item já está no refino máximo (+15).' };
       if ((it.plus || 0) >= I.maxPlus(s.buildings.forge)) return { ok:false, reason:`Limite +${I.maxPlus(s.buildings.forge)}. Melhore a Forja.` };
       const c = I.upgradeCost(it, s.buildings.forge, matId);
@@ -1925,7 +1952,7 @@
       if (U.random() > c.chance) {
         if (c.onFail === 'break') {
           const owner = this.ownerOf(it.uid); if (owner) Object.keys(owner.equipped).forEach(k => { if (owner.equipped[k] === it.uid) owner.equipped[k] = null; });
-          s.inventory.splice(s.inventory.indexOf(it), 1); s.stats.broken = (s.stats.broken || 0) + 1;
+          const from = this.listOf(it); if (from) from.splice(from.indexOf(it), 1); s.stats.broken = (s.stats.broken || 0) + 1;
           this.refreshPartyUnits(); this.emit('onState');
           return { ok:false, failed:true, broken:true, reason:`O refino falhou e ${it.name} QUEBROU.` };
         }
@@ -1937,14 +1964,14 @@
       this.refreshPartyUnits(); this.emit('onState'); return { ok:true, plus:it.plus };
     }
     enchantItem(itemUid, idx) {
-      const it = this.state.inventory.find(x => x.uid === itemUid); if (!it || !it.affixes?.[idx]) return false;
+      const it = this.findItem(itemUid); if (!it || !it.affixes?.[idx]) return false;
       const c = I.enchantCost(it, this.state.buildings.workshop);
       if (this.state.player.dust < c.dust || this.state.player.gold < c.gold) return false;
       this.state.player.dust -= c.dust; this.state.player.gold -= c.gold;
       const others = it.affixes.filter((_, i) => i !== idx).map(a => a.id);
       it.affixes[idx] = I.rollAffix(it.ilvl, others); this.emit('onState'); return true;
     }
-    toggleLock(itemUid) { const it = this.state.inventory.find(x => x.uid === itemUid); if (it) { it.locked = !it.locked; this.emit('onState'); } }
+    toggleLock(itemUid) { const it = this.findItem(itemUid); if (it) { it.locked = !it.locked; this.emit('onState'); } }
 
     // ---------- cidade ----------
     // Multiplicador de preços de NPC e obras definido pelo Tesouro Imperial (inflação alta = mais caro).
@@ -2063,7 +2090,7 @@
       (this.state.contracts || []).forEach(c => { const def = D.contracts.find(d => d.id === c.id); if (def?.type === type) c.progress = Math.min(c.n, c.progress + 1); });
       (this.state.daily?.list || []).forEach(d => { const def = D.dailies.find(x => x.id === d.id); if (def?.type === type && !d.claimed) d.progress = Math.min(d.n, d.progress + 1); });
     }
-    farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, rewardPower(zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) }))); }
+    farmPower() { const z = D.zones[this.state.lastHunt || 'hunt'] || D.zones.hunt; return Math.max(1, goldPow(zonePower(z, { stage:Math.max(1, this.state.progress[z.id]?.best || 1) }), 1)); }
     contractReward(c) {
       const def = D.contracts.find(d => d.id === c.id), rank = c.rank || this.state.guildRank?.lv || 1, m = (1 + c.tier * .8) * (1 + .12 * (rank - 1)), P = this.farmPower();
       const out = {}; Object.entries(def.reward).forEach(([k, v]) => { out[k] = Math.round(k === 'gold' ? v * 450 * P * m : k === 'crystal' ? v * .5 * m : v * m); }); return out;
@@ -2280,7 +2307,7 @@
       const zid = D.zones[s.lastHunt]?.kind === 'hunt' ? s.lastHunt : 'hunt', z = D.zones[zid], stage = Math.max(1, s.progress[zid]?.best || 1), P = zonePower(z, { stage });
       const killsPerSec = .16; // AFK rende bem menos que jogar (ativo: ~0,5 a 1 abate/s)
       const kills = Math.floor(capped * killsPerSec);
-      const gold = this.goldIn(kills * 11 * Math.pow(rewardPower(P), .85) * .35 * (1 + this.mod('gold')));
+      const gold = this.goldIn(kills * 11 * goldPow(P) * .35 * (1 + this.mod('gold')));
       const xp = Math.round(kills * 14 * Math.pow(rewardPower(P), .92) * .3 * (1 + this.mod('xp')));
       s.player.gold += gold; s.stats.goldEarned += gold;
       this.giveXp(xp, enemyLevel(P), kills);
@@ -2296,6 +2323,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();
