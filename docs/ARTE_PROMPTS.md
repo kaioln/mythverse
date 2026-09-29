@@ -1,5 +1,11 @@
 # Arte nova dos heróis: pedidos prontos
 
+> **Estilo atual (com animação):** cada herói é gerado sozinho numa folha de 8 poses pelo `python tools/hero_art.py`
+> (usa o gerador de imagens do Codex, na conta do ChatGPT; pula quem já tem folha) e montado por
+> `python tools/build_anim.py && python tools/build_sprites_web.py`. O design de cada herói (rosto, corpo, roupa, arma)
+> está em `tools/hero_art.py`. As seções abaixo são o primeiro formato (10 heróis por folha, sem animação), que ainda
+> cobre os heróis sem folha de poses.
+
 Os sprites atuais foram gerados a partir de personagens reais (Goku, Tanjiro, Mercy…) e continuam reconhecíveis. Trocar
 cor ou detalhe não resolve: a lei protege o personagem, e silhueta, roupa e acessórios icônicos seguem lá. O caminho seguro
 é **desenhar personagens novos no mesmo estilo**. Este arquivo tem tudo para isso: seis pedidos, um por folha de 10 heróis,
@@ -31,7 +37,8 @@ no mesmo formato das folhas atuais. O script do projeto recorta, contorna, gera 
 > right, top to bottom, one character alone in each cell. Match the attached image's art style only: chibi proportions
 > (about 2.5 heads tall), clean dark outline, soft cel shading with painted highlights, rich but calm colors, full body,
 > dynamic combat pose facing three-quarters to the right, feet visible. Transparent background, no text, no frame, no
-> scenery, no logos, no emblems. Every character must be an original design that does not resemble any existing anime,
+> scenery, no logos, no emblems. NO aura, glow, smoke, particles or magic effects around or behind the character (a
+> weapon may glow faintly); nothing touches the cell edges; generous empty space between characters. Every character must be an original design that does not resemble any existing anime,
 > manga, comic, film or video game character. Characters, in order:
 
 ## Folha 1 · `assets/original/heroes-1.png`

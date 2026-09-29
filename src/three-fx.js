@@ -107,7 +107,7 @@
       this.mat.uniforms.uTime.value = t / 1000; this.lanterns.material.uniforms.uTime.value = t / 1000;
       this.r.render(this.scene, this.cam);
       const w = this.host.clientWidth, h = this.host.clientHeight, v = new this.T.Vector3();
-      this.pins.forEach(p => { v.copy(p.v).project(this.cam); const on = v.z < 1 && v.x > -1.05 && v.x < 1.05 && v.y > -1.08 && v.y < 1.08; p.el.style.left = `${(v.x * .5 + .5) * w}px`; p.el.style.top = `${(-v.y * .5 + .5) * h}px`; p.el.style.visibility = on ? '' : 'hidden'; });
+      this.pins.forEach(p => { v.copy(p.v).project(this.cam); const on = v.z < 1 && v.x > -1.05 && v.x < 1.05 && v.y > -1.08 && v.y < 1.08; const hw = p.el.offsetWidth / 2 + 6, hh = p.el.offsetHeight / 2 + 6; p.el.style.left = `${U.clamp((v.x * .5 + .5) * w, hw, w - hw)}px`; p.el.style.top = `${U.clamp((-v.y * .5 + .5) * h, hh, h - hh)}px`; p.el.style.visibility = on ? '' : 'hidden'; });
       this.raf = requestAnimationFrame(x => this.frame(x));
     }
   };

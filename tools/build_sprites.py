@@ -36,6 +36,11 @@ def cells():
             new = f'assets/original/heroes-{i // 10 + 1 + (3 if origin == "game" else 0)}.png'
             if os.path.exists(os.path.join(ROOT, new)):
                 path = new
+            # Um herói refeito sozinho (assets/original/hero-<id>.png) tem prioridade sobre a folha.
+            single = f'assets/original/hero-{hid}.png'
+            if os.path.exists(os.path.join(ROOT, single)):
+                yield hid, single, 1, 1, 0, 0, 'hero'
+                continue
             local = i % 10
             yield hid, path, 5, 2, local % 5, local // 5, 'hero'
     for i, eid in enumerate(['fox', 'oni', 'golem', 'spider', 'wisp', 'revenant']):
@@ -425,6 +430,47 @@ def build_sprite_meta():
     return meta
 
 
+_BLOBS = {}
+
+
+def sheet_blobs(path, n=10, rows=2):
+    """Recorta os n personagens de uma folha pela forma (não pela grade): as artes novas passam dos limites das
+    células. Componentes próximos (arma solta, cauda) são unidos; ordem de leitura: linha a linha, da esquerda."""
+    if path in _BLOBS:
+        return _BLOBS[path]
+    img = Image.open(os.path.join(ROOT, path)).convert('RGBA')
+    k = 4
+    a = np.array(img.getchannel('A').resize((img.width // k, img.height // k), Image.BILINEAR))
+    labels, sizes = components(a > 128)
+    main = sorted(range(1, len(sizes)), key=lambda i: -sizes[i])[:n]
+    cen = {}
+    for i in range(1, len(sizes)):
+        ys, xs = np.where(labels == i)
+        cen[i] = (xs.mean(), ys.mean(), xs.min(), ys.min(), xs.max(), ys.max())
+    groups = {m: [m] for m in main}
+    for i in range(1, len(sizes)):
+        if i in groups or sizes[i] < 30:
+            continue
+        cx, cy = cen[i][:2]
+        near = min(main, key=lambda m: (cen[m][0] - cx) ** 2 + (cen[m][1] - cy) ** 2)
+        groups[near].append(i)
+    mid = img.height / k / rows
+    main.sort(key=lambda m: (int(cen[m][1] // mid), cen[m][0]))
+    out = []
+    for m in main:
+        ids = groups[m]
+        sel = np.isin(labels, ids)
+        ys, xs = np.where(sel)
+        grow = Image.fromarray((sel * 255).astype('uint8')).filter(ImageFilter.MaxFilter(3))
+        mask = grow.resize((img.width, img.height), Image.NEAREST)
+        box = (max(0, xs.min() * k - 2 * k), max(0, ys.min() * k - 2 * k), min(img.width, (xs.max() + 1) * k + 2 * k), min(img.height, (ys.max() + 1) * k + 2 * k))
+        piece = img.copy()
+        piece.putalpha(Image.composite(img.getchannel('A'), Image.new('L', img.size, 0), mask))
+        out.append(piece.crop(box))
+    _BLOBS[path] = out
+    return out
+
+
 def build_heroes():
     """Só os heróis: recorta as folhas (novas quando existirem), refaz formas despertadas e escalas. Mantém inimigos."""
     sizes_path = os.path.join(OUT_SPRITES, 'sizes.json')
@@ -433,9 +479,12 @@ def build_heroes():
     for sid, path, cols, rows, cx, cy, kind in cells():
         if kind != 'hero':
             continue
-        atlas = atlases.setdefault(path, Image.open(os.path.join(ROOT, path)).convert('RGBA'))
-        cw, ch = atlas.width / cols, atlas.height / rows
-        sprite = clean_cell(atlas.crop((round(cx * cw), round(cy * ch), round((cx + 1) * cw), round((cy + 1) * ch))))
+        if path.startswith('assets/original/heroes-'):
+            sprite = clean_cell(sheet_blobs(path)[cy * cols + cx])
+        else:
+            atlas = atlases.setdefault(path, Image.open(os.path.join(ROOT, path)).convert('RGBA'))
+            cw, ch = atlas.width / cols, atlas.height / rows
+            sprite = clean_cell(atlas.crop((round(cx * cw), round(cy * ch), round((cx + 1) * cw), round((cy + 1) * ch))))
         if sprite.height > 300:
             sprite = sprite.resize((max(1, round(sprite.width * 300 / sprite.height)), 300), Image.LANCZOS)
         final = outline(sprite, 3)

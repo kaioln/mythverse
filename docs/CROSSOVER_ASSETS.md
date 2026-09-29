@@ -1,4 +1,10 @@
-# Sprites do crossover
+# Sprites do crossover (removidos)
+
+> **2026-09-29:** as folhas `assets/crossover/*.png` (personagens de outras obras) foram apagadas. Os 60 heróis agora usam
+> arte original: folhas `assets/original/heroes-1..6.png` e, no estilo novo com animação, `assets/original/poses/<id>.png`
+> (ver [ARTE_PROMPTS.md](ARTE_PROMPTS.md)). As imagens antigas ainda existem no histórico do git; antes de lançar com
+> dinheiro real, publique a partir de um repositório novo sem esse histórico.
+
 
 Gerados com o ImageGen integrado em 24/09/2026, como atlas PNG RGBA de 5 colunas × 2 linhas com dez personagens em cada arquivo. Produção: ilustrações 2D estáticas em estilo sprite chibi, personagem inteiro, fundo transparente, uma pose por célula, sem texto. O Canvas recorta a célula no carregamento e aplica movimento no combate; não são spritesheets de animação quadro a quadro.
 

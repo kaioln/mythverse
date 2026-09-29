@@ -523,8 +523,8 @@
         <circle class="halo" r="${rad + 8}"/><circle class="ring" r="${rad}"/>
         ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" opacity=".55"/>` : ''}
         <g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>
-        <g transform="translate(0,${rad + 6})"><rect x="-20" y="-8" width="40" height="17" rx="8.5" class="rank-bg"/><text y="4.5" class="rank">${rank}/${n.max}</text></g>
-        <text y="${rad + 30}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
+        <g transform="translate(0,${rad + 12})"><rect x="-24" y="-10" width="48" height="21" rx="6" class="rank-bg"/><text y="5" class="rank">${rank}/${n.max}</text></g>
+        <text y="${rad + 38}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
     }).join('');
     const jb = job[PR.branchOf(r)];
     const bandLocked = i => (i === 2 && !r.job) || (i === 3 && (r.job || 0) < 2) || spent < PR.TIER_REQ[i];

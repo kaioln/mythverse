@@ -570,15 +570,17 @@
       const C = an.meta.clips; let clip = s.clip, t = this.worldTime - s.clipAt;
       if (!u.alive) { if (clip !== 'death') { clip = 'death'; s.clip = 'death'; s.clipAt = this.worldTime; t = 0; } }
       else if (clip === 'death') { s.clip = null; clip = null; }
+      // seq: índices das poses na linha (folhas de 8 poses de tools/build_anim.py); sem seq, quadros seguidos.
+      const at = (m, i) => [m.row, m.seq ? m.seq[i] : i];
       if (clip && C[clip]) {
         const m = C[clip], i = Math.floor(t * m.fps);
-        if (m.loop) return [m.row, i % m.frames];
-        if (i < m.frames) return [m.row, i];
-        if (clip === 'death') return [m.row, m.frames - 1];
+        if (m.loop) return at(m, i % m.frames);
+        if (i < m.frames) return at(m, i);
+        if (clip === 'death') return at(m, m.frames - 1);
         s.clip = null;
       }
       const b = C[this.baseClip(u)] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
-      return [b.row, Math.floor(it * b.fps) % b.frames];
+      return at(b, Math.floor(it * b.fps) % b.frames);
     }
     drawAnim(an, s, u, x, y, height, o = {}) {
       const c = this.ctx, M = an.meta, [row, col] = this.animFrame(an, s, u);
@@ -739,7 +741,7 @@
       const ci = this.cutin; if (!ci || !ci.unit) return;
       if (!this.intense) {
         const c = this.ctx, k = ci.t / ci.dur, inK = easeOut(Math.min(1, ci.t / .2)), outK = k > .8 ? (k - .8) / .2 : 0;
-        const w = 460, h = 64, x = 24 - (1 - inK) * 40, y = 118;
+        const w = 460, h = 64, x = 24 - (1 - inK) * 40, y = this.banner ? 196 : 118; // abaixo da faixa de estágio quando as duas aparecem juntas
         c.save(); c.globalAlpha = inK * (1 - outK);
         c.fillStyle = 'rgba(14,12,20,.86)'; c.fillRect(x, y, w, h); c.fillStyle = ci.color; c.fillRect(x, y, 3, h);
         const img = this.portrait(ci.unit.sprite); if (img) { c.save(); c.beginPath(); c.rect(x + 3, y, 64, h); c.clip(); c.drawImage(img, x + 3, y - 4, 72, 72); c.restore(); }

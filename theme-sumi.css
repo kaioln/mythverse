@@ -414,3 +414,22 @@ body .hero-portrait .lv{font-size:11px}
 .mat-pick.active{background:rgba(236,226,208,.1);border-color:var(--mc,var(--gold))}
 .mat-pick:disabled{opacity:.4;cursor:not-allowed}
 .forge-box .note.warn{color:#f0b1a4;border-left:2px solid var(--shu);padding-left:8px}
+
+/* Painel da cidade abaixo dos controles do palco (antes cobria o botão FORÇA no canto superior direito) */
+.village-hub{top:74px;max-height:calc(100% - 92px);overflow:auto}
+
+/* Árvore de talentos legível: selo de rank maior, tinta escura com número claro; títulos dos círculos na serifa */
+.talent-tree .band-lbl{font:800 15px var(--display);letter-spacing:.06em;fill:var(--muted)}
+.tnode .rank-bg{fill:var(--ink);stroke:var(--line2);stroke-width:1.5}
+.tnode .rank{font:800 13.5px var(--ui);fill:var(--text)}
+.tnode.some .rank-bg,.tnode.max .rank-bg{fill:var(--ink);stroke:var(--gold);stroke-width:2}
+.tnode.some .rank,.tnode.max .rank{fill:var(--gold)}
+.tnode.avail .rank-bg{stroke:#b7c4d4}
+.tnode .lbl{font:700 13.5px var(--ui);stroke-width:6px}
+.tnode.some .ring{fill:#3a311d}.tnode.max .ring{fill:#4a3c1f}
+
+/* Mapa: destino bloqueado mostra o nome (apagado, borda tracejada) em vez de uma bolinha sem explicação */
+.map-pin.locked,.illustrated-map .map-pin.locked{width:auto;height:auto;min-width:0;padding:3px 8px;border-radius:7px;font-size:inherit;background:rgba(14,12,20,.78);border:1px dashed rgba(239,230,212,.28);box-shadow:none;opacity:.8}
+.map-pin.locked .pin-name{display:block;position:static;transform:none;padding:0;background:none;font-size:11.5px;color:#9b9284}
+.map-pin.locked small{display:none}
+.map-pin.locked:hover{transform:translate(-50%,-50%) scale(1.06);opacity:1}
