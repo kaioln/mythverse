@@ -1,5 +1,7 @@
 # Arte original dos heróis
 
+> **Pedidos prontos, com um design próprio por herói:** [ARTE_PROMPTS.md](ARTE_PROMPTS.md). Este arquivo guarda as regras e o formato.
+
 Os nomes, mundos e kits dos 60 heróis já são originais. Falta trocar os **retratos** e **sprites**, que ainda são os do protótipo e lembram personagens de outras obras. Este documento é o briefing para desenhar (ou gerar e revisar) cada herói do zero.
 
 ## Regras para evitar problemas de direito autoral

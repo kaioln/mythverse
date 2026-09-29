@@ -10,6 +10,7 @@ Uso: python tools/build_sprites.py   (requer Pillow + numpy)
 import json
 import re
 import os
+import sys
 from collections import deque
 
 import numpy as np
@@ -31,6 +32,10 @@ def cells():
     for origin, ids in (('anime', ANIME), ('game', GAMES)):
         for i, hid in enumerate(ids):
             path = f'assets/crossover/{origin}-{i // 10 + 1}.png'
+            # Arte original (docs/ARTE_PROMPTS.md): heroes-1..3 = elenco "anime", heroes-4..6 = elenco "game".
+            new = f'assets/original/heroes-{i // 10 + 1 + (3 if origin == "game" else 0)}.png'
+            if os.path.exists(os.path.join(ROOT, new)):
+                path = new
             local = i % 10
             yield hid, path, 5, 2, local % 5, local // 5, 'hero'
     for i, eid in enumerate(['fox', 'oni', 'golem', 'spider', 'wisp', 'revenant']):
@@ -141,7 +146,7 @@ def main():
         json.dump(meta, fh)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--heroes' not in sys.argv:
     main()
 
 
@@ -163,7 +168,7 @@ def build_icons():
         final.save(os.path.join(out, f'{name}.png'), optimize=True)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--heroes' not in sys.argv:
     build_icons()
 
 
@@ -206,7 +211,7 @@ def build_variants():
             shift(img, h, 1.1, 1.0).save(os.path.join(icons, f.replace('.png', f'_h{h}.png')), optimize=True)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--heroes' not in sys.argv:
     build_variants()
 
 
@@ -256,7 +261,7 @@ def build_world():
             shift(img, h, 1.1, 1.0).save(os.path.join(icons, f.replace('.png', f'_h{h}.png')), optimize=True)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--heroes' not in sys.argv:
     build_world()
 
 
@@ -301,7 +306,7 @@ def build_unique():
         aura(img, col).save(os.path.join(sp, f'{vid}.png'), optimize=True)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__' and '--heroes' not in sys.argv:
     build_unique()
 
 
@@ -418,3 +423,30 @@ def build_sprite_meta():
         fh.write('// Gerado por tools/build_sprites.py (build_sprite_meta): [escala, deslocamento do pé] por sprite de herói.\n')
         fh.write('(() => { const KT = globalThis.KT = globalThis.KT || {}; KT.SPRITE_META = ' + json.dumps(meta, separators=(',', ':')) + '; })();\n')
     return meta
+
+
+def build_heroes():
+    """Só os heróis: recorta as folhas (novas quando existirem), refaz formas despertadas e escalas. Mantém inimigos."""
+    sizes_path = os.path.join(OUT_SPRITES, 'sizes.json')
+    meta = json.load(open(sizes_path, encoding='utf-8')) if os.path.exists(sizes_path) else {}
+    atlases = {}
+    for sid, path, cols, rows, cx, cy, kind in cells():
+        if kind != 'hero':
+            continue
+        atlas = atlases.setdefault(path, Image.open(os.path.join(ROOT, path)).convert('RGBA'))
+        cw, ch = atlas.width / cols, atlas.height / rows
+        sprite = clean_cell(atlas.crop((round(cx * cw), round(cy * ch), round((cx + 1) * cw), round((cy + 1) * ch))))
+        if sprite.height > 300:
+            sprite = sprite.resize((max(1, round(sprite.width * 300 / sprite.height)), 300), Image.LANCZOS)
+        final = outline(sprite, 3)
+        final.save(os.path.join(OUT_SPRITES, f'{sid}.png'), optimize=True)
+        portrait(sprite).save(os.path.join(OUT_PORTRAITS, f'{sid}.png'), optimize=True)
+        meta[sid] = [final.width, final.height]
+        print(f'{sid:16s} {final.width}x{final.height}  <- {path}')
+    json.dump(meta, open(sizes_path, 'w', encoding='utf-8'))
+    build_season()
+    build_sprite_meta()
+
+
+if __name__ == '__main__' and '--heroes' in sys.argv:
+    build_heroes()
