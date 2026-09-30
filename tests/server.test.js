@@ -42,7 +42,7 @@ async function suite(name, opts) {
   const fakeProvider = { name:'fake', enabled:true, async createPix({ depositId, amount }) { const ref = `pay-${depositId}`; webhookPays.set(ref, { ref, approved:true, amount, depositId }); return { ref, pixCopyPaste:'000201-FAKE' }; },
     verifyWebhook(req, url) { return req.headers['x-test-sig'] === 'ok' ? url.searchParams.get('data.id') : null; }, async fetchPayment(id) { return webhookPays.get(id) || null; } };
   server = await createServer({ dataDir:dir, quiet:true, noBackups:true, secureCookie:false, paymentProvider:fakeProvider,
-    economy:economyConfig({ RMT_ENABLED:'1', ADMIN_TOKEN:'admin-secret-token', MARKET_MIN_ITEM_AGE_HOURS:'0', GOLD_MARKET_MIN_ITEM_AGE_HOURS:'0', MARKET_MIN_ACCOUNT_DAYS:'0' }), ...opts });
+    economy:economyConfig({ RMT_ENABLED:'1', ADMIN_TOKEN:'admin-secret-token', MARKET_MIN_ITEM_AGE_HOURS:'0', GOLD_MARKET_MIN_ITEM_AGE_HOURS:'0', MARKET_MIN_ACCOUNT_DAYS:'0', WITHDRAW_EARNED_ONLY:'0', WITHDRAW_MIN_ACCOUNT_DAYS:'0', WITHDRAW_MIN_LEVEL:'0', WITHDRAW_MIN_PLAY_HOURS:'0', PIX_REQUIRE_CPF:'0', MARKET_NEW_BUYER_ACCOUNT_DAYS:'0', MARKET_RESALE_LOCK_DAYS:'0', ...(opts.econ || {}) }), ...opts });
   await new Promise(r => server.listen(0, '127.0.0.1', r));
   base = `http://127.0.0.1:${server.address().port}`;
   const a = new Client(), b = new Client(), anon = new Client();

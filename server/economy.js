@@ -20,6 +20,13 @@ function economyConfig(env = process.env, production = false) {
     goldMinPrice:num(env.GOLD_MARKET_MIN_PRICE, 100), goldMaxPrice:num(env.GOLD_MARKET_MAX_PRICE, 1e13), goldMinItemAgeHours:num(env.GOLD_MARKET_MIN_ITEM_AGE_HOURS, 1),
     // Controles do dinheiro real: retenção das vendas antes do saque, bloqueio de compra na mesma rede e alertas.
     holdHours:num(env.MARKET_HOLD_HOURS, 72), blockSameNetwork:env.MARKET_BLOCK_SAME_NETWORK !== '0', outlierX:num(env.MARKET_OUTLIER_X, 10), pairLimit:num(env.MARKET_PAIR_TRADES_WEEK, 3),
+    // Defesas do dinheiro real (o que destruiu economias de MMO: lavagem, estorno, bots sacando, mulas e preço combinado).
+    earnedOnly:env.WITHDRAW_EARNED_ONLY !== '0',                 // só saca Gemas ganhas vendendo; Gemas depositadas só compram (sem lavagem)
+    wdMinAccountDays:num(env.WITHDRAW_MIN_ACCOUNT_DAYS, 30), wdMinLevel:num(env.WITHDRAW_MIN_LEVEL, 30), wdMinPlayHours:num(env.WITHDRAW_MIN_PLAY_HOURS, 20),
+    pixRequireCpf:env.PIX_REQUIRE_CPF !== '0',                     // saque só para chave CPF válida, e um CPF por conta
+    priceBandX:num(env.MARKET_PRICE_BAND_X, 5), priceFloorX:num(env.MARKET_PRICE_FLOOR_X, .25), // faixa dura contra preço combinado
+    resaleLockDays:num(env.MARKET_RESALE_LOCK_DAYS, 7),           // item comprado com Gemas só volta ao mercado depois disso (sem corrente de mulas)
+    newBuyerHoldDays:num(env.MARKET_NEW_BUYER_HOLD_DAYS, 7), newBuyerAccountDays:num(env.MARKET_NEW_BUYER_ACCOUNT_DAYS, 30), // estorno de Pix: segura mais a venda feita a conta nova
     paymentKind:env.PAYMENT_PROVIDER || '', mpAccessToken:env.MP_ACCESS_TOKEN || '', mpWebhookSecret:env.MP_WEBHOOK_SECRET || '', production
   };
 }
@@ -33,7 +40,16 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
   const feeOf = price => Math.ceil(price * E.feeBps / 10000);
   const goldTaxOf = price => Math.ceil(price * E.goldTaxBps / 10000);
   const goldListFee = price => Math.max(E.goldListFeeMin, Math.ceil(price * E.goldListFeeBps / 10000));
-  const withdrawable = async uid => { const w = await store.wallet(uid); const recent = E.holdHours > 0 ? await store.recentCredits(uid, 'market_sale', Date.now() - E.holdHours * HOUR) : 0; return Math.max(0, Number(w.balance) - recent); };
+  const withdrawable = async uid => {
+    const w = await store.wallet(uid), now = Date.now(), bal = Number(w.balance);
+    const recent = (E.holdHours > 0 ? await store.recentCredits(uid, 'market_sale', now - E.holdHours * HOUR) : 0) + await store.recentCredits(uid, 'market_sale_slow', now - E.newBuyerHoldDays * DAY);
+    if (!E.earnedOnly) return Math.max(0, bal - recent);
+    const earned = await store.recentCredits(uid, 'market_sale', 0) + await store.recentCredits(uid, 'market_sale_slow', 0) - recent;
+    const out = -(await store.recentCredits(uid, 'withdraw_hold', 0)) - await store.recentCredits(uid, 'withdraw_refund', 0) + await store.recentCredits(uid, 'chargeback', 0);
+    return Math.max(0, Math.min(bal - recent, earned - out));
+  };
+  // CPF com dígitos verificadores (chave Pix de saque).
+  const validCpf = v => { const d = String(v).replace(/\D/g, ''); if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false; const dv = n => { let s = 0; for (let i = 0; i < n; i++) s += Number(d[i]) * (n + 1 - i); const r = (s * 10) % 11; return r === 10 ? 0 : r; }; return dv(9) === Number(d[9]) && dv(10) === Number(d[10]); };
   // Só IPs públicos contam (atrás de um proxy sem TRUST_PROXY todos teriam o IP interno do proxy).
   const publicIp = ip => { const v = String(ip || '').replace(/^::ffff:/, ''); return !!v && v !== '?' && !/^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|::1$|f[cd][0-9a-f]{2}:|fe80:)/i.test(v); };
   const median = arr => { const a = arr.slice().sort((x, y) => x - y); return a.length ? a[Math.floor(a.length / 2)] : 0; };
@@ -91,6 +107,21 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
       if (!payId) { audit(null, 'webhook_rejected', req, provider.name); return fail(res, 401, 'Assinatura inválida.'); }
       let pay;
       try { pay = await provider.fetchPayment(payId); } catch (err) { log('webhook', err.message); return fail(res, 502, 'Falha ao consultar o provedor.'); }
+      if (pay && pay.reversed) {
+        const now2 = Date.now();
+        const rev = await store.transaction(async t => {
+          const dep = await t.depositByRef(provider.name, pay.ref, true);
+          if (!dep || dep.status !== 'paid' || !await t.markDepositReversed(dep.id, now2)) return null;
+          const uid = Number(dep.user_id), amount = Number(dep.amount);
+          await t.walletLock(uid); await t.walletForce(uid, -amount, now2);
+          await t.ledger(uid, -amount, 'chargeback', `dep:${dep.id}`, 'Depósito estornado pelo banco', now2);
+          await t.flag('chargeback', uid, null, `depósito ${dep.id}: ${amount}`, now2);
+          for (let i = 0; i < 3; i++) await t.flagSuspicious(uid);
+          return dep;
+        });
+        if (rev) audit(Number(rev.user_id), 'deposit_reversed', req, `${rev.id}:${rev.amount}`);
+        return send(res, 200, { ok:true, reversed:!!rev });
+      }
       if (!pay || !pay.approved) return send(res, 200, { ok:true, ignored:true });
       const now = Date.now();
       const done = await store.transaction(async t => {
@@ -114,6 +145,15 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
       if (!sec.verifySecret(String(b.password || ''), u.pass_hash)) return fail(res, 401, 'Senha incorreta.');
       if (!intIn(amount, E.minWithdraw, 1e10)) return fail(res, 400, `Saque mínimo de R$ ${(E.minWithdraw / 100).toFixed(2)}.`);
       if (pixKey.length < 5) return fail(res, 400, 'Informe uma chave Pix válida.');
+      const prof = await store.publicProfile(s.user_id);
+      if (Date.now() - Number(u.created_at) < E.wdMinAccountDays * DAY) return fail(res, 403, `Saques liberam com ${E.wdMinAccountDays} dias de conta (proteção contra bots e contas roubadas).`);
+      if (Number(prof?.account_level || 0) < E.wdMinLevel) return fail(res, 403, `Saques liberam no nível ${E.wdMinLevel} da conta.`);
+      if (Number(prof?.play_seconds || 0) < E.wdMinPlayHours * 3600) return fail(res, 403, `Saques liberam com ${E.wdMinPlayHours} horas de jogo.`);
+      if (E.pixRequireCpf) {
+        if (!validCpf(pixKey)) return fail(res, 400, 'Saques vão só para chave Pix CPF do titular da conta (CPF válido).');
+        const others = (await store.pixKeyOwners(pixKey.replace(/\D/g, ''))).filter(id => id !== s.user_id);
+        if (others.length) { await store.flag('pix_shared', s.user_id, others[0], 'mesmo CPF em outra conta', Date.now()); return fail(res, 403, 'Este CPF já recebe saques de outra conta. Uma conta por CPF.'); }
+      }
       if (await store.withdrawalsToday(s.user_id, Date.now() - DAY) + amount > E.maxWithdrawDay) return fail(res, 400, 'Limite diário de saque atingido.');
       const fee = withdrawFee(amount), now = Date.now();
       if (fee >= amount) return fail(res, 400, 'Valor menor que a taxa de saque.');
@@ -121,7 +161,7 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
       const r = await store.transaction(async t => {
         await t.walletLock(s.user_id);
         if (!await t.walletMove(s.user_id, -amount, amount, now)) return { error:'Saldo insuficiente.' };
-        const id = await t.insertWithdrawal(s.user_id, amount, fee, pixKey, now);
+        const id = await t.insertWithdrawal(s.user_id, amount, fee, E.pixRequireCpf ? pixKey.replace(/\D/g, '') : pixKey, now);
         await t.ledger(s.user_id, -amount, 'withdraw_hold', `wd:${id}`, `Saque solicitado (taxa ${(fee / 100).toFixed(2).replace('.', ',')})`, now);
         return { id };
       });
@@ -218,15 +258,22 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
         }
         // Alertas para revisão: preço muito acima da mediana e pares que negociam demais entre si.
         const hist = (await t.priceHistory(l.item_key, 'gems')).map(x => Number(x.price));
+        if (hist.length >= 3 && (price > E.priceBandX * median(hist) || price < E.priceFloorX * median(hist))) {
+          await t.flag('price_band', s.user_id, seller, `${l.name}: ${price} Gemas (mediana ${median(hist)})`, now);
+          return { error:[400, `Preço fora da faixa de mercado (mediana ${median(hist)} Gemas). Compra bloqueada para evitar negociação combinada.`] };
+        }
         if (hist.length >= 5 && price > E.outlierX * median(hist)) await t.flag('price_outlier', s.user_id, seller, `${l.name}: ${price} Gemas (mediana ${median(hist)})`, now);
         if (seller && await t.pairTrades(s.user_id, seller, now - 7 * DAY) >= E.pairLimit) await t.flag('pair_trading', s.user_id, seller, `${l.name}: ${price} Gemas`, now);
         await t.walletLock(s.user_id);
         if (!await t.walletMove(s.user_id, -price, 0, now)) return { error:[400, 'Saldo de Gemas insuficiente.'] };
         await t.ledger(s.user_id, -price, 'market_buy', `l:${id}`, `Compra: ${l.name}`, now);
-        if (seller) await credit(t, seller, price - fee, 'market_sale', `l:${id}`, `Venda: ${l.name} (taxa ${fee})`, now);
+        const buyerNew = now - Number(u.created_at) < E.newBuyerAccountDays * DAY;
+        if (seller) await credit(t, seller, price - fee, buyerNew ? 'market_sale_slow' : 'market_sale', `l:${id}`, `Venda: ${l.name} (taxa ${fee})${buyerNew ? ` · liberada para saque em ${E.newBuyerHoldDays} dias (comprador novo)` : ''}`, now);
         await t.ledger(null, fee, 'fee_market', `l:${id}`, 'Taxa do mercado', now);
         if (!await t.closeListing(id, 'sold', s.user_id, now)) throw new Error('listing_race');
-        await t.insertMail(s.user_id, l.kind, l.payload, 'Compra no Mercado', now);
+        let payload = l.payload;
+        if (l.kind === 'item' && E.resaleLockDays > 0) { const it = JSON.parse(l.payload); it.tradeLockUntil = now + E.resaleLockDays * DAY; payload = JSON.stringify(it); }
+        await t.insertMail(s.user_id, l.kind, payload, 'Compra no Mercado', now);
         return { ok:true, price, fee };
       });
       if (r.error) return fail(res, r.error[0], r.error[1]);
@@ -266,6 +313,11 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
     if (await t.countOpenOf(s.user_id) >= E.maxOpen) return { error:`Limite de ${E.maxOpen} anúncios abertos.` };
     if (await t.countListedSince(s.user_id, now - DAY) >= E.maxListDay) return { error:'Limite diário de anúncios atingido.' };
     const minAge = (currency === 'gold' ? E.goldMinItemAgeHours : E.minItemAgeHours) * HOUR, ageH = currency === 'gold' ? E.goldMinItemAgeHours : E.minItemAgeHours;
+    const band = async key => {
+      if (currency !== 'gems') return null;
+      const hist = (await t.priceHistory(key, 'gems')).map(x => Number(x.price)); if (hist.length < 3) return null;
+      const m = median(hist); return price > E.priceBandX * m || price < E.priceFloorX * m ? `Preço fora da faixa de mercado: entre ${Math.ceil(E.priceFloorX * m)} e ${Math.floor(E.priceBandX * m)} Gemas.` : null;
+    };
     const post = async (payload, key, name) => { if (listFee) data.player.gold -= listFee; return { result:{ id:await t.insertListing({ sellerId:s.user_id, sellerName:u.username, kind, payload, key, name, price, now, currency }), listFee } }; };
     if (kind === 'item') {
       const idx = (data.inventory || []).findIndex(x => x && x.uid === b.itemUid);
@@ -273,9 +325,11 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
       const it = data.inventory[idx];
       if (it.locked) return { error:'Destranque o item antes de anunciar.' };
       if (it.bound) return { error:'Este item está vinculado à sua conta e não pode ser vendido.' };
+      if (currency === 'gems' && Number(it.tradeLockUntil || 0) > now) return { error:`Item comprado com Gemas só volta ao mercado em ${new Date(Number(it.tradeLockUntil)).toLocaleDateString('pt-BR')} (sem revenda em cadeia).` };
       if (game.equippedUids(data).has(it.uid)) return { error:'Desequipe o item antes de anunciar.' };
       const seen = await t.seenAt(s.user_id, `i:${it.uid}`);
       if (minAge > 0 && (!seen || now - Number(seen) < minAge)) return { error:`Itens recém-obtidos só podem ser vendidos após ${ageH}h.` };
+      { const why = await band(game.itemKey(it)); if (why) return { error:why }; } // antes de tirar o item da bolsa
       data.inventory.splice(idx, 1);
       await t.forgetSeen(s.user_id, `i:${it.uid}`);
       const clean = { ...it, locked:false, isNew:true };
@@ -284,6 +338,7 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
     if (kind === 'mat') {
       const mat = game.KT.Items.materials?.[b.matId], n = Math.floor(Number(b.qty));
       if (!mat || !mat.tradeable || !(n >= 1 && n <= 9999) || Number(data.mats?.[mat.key] || 0) < n) return { error:'Material ou quantidade inválida.' };
+      { const why = await band(`m:${b.matId}`); if (why) return { error:why }; }
       data.mats[mat.key] -= n;
       return post(JSON.stringify({ id:b.matId, qty:n }), `m:${b.matId}`, `${mat.name} ×${n}`);
     }
@@ -291,6 +346,7 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
     if (!card || n < 1) return { error:'Você não tem essa carta.' };
     const seen = await t.seenAt(s.user_id, `c:${card.id}:${n}`);
     if (minAge > 0 && (!seen || now - Number(seen) < minAge)) return { error:`Cartas recém-obtidas só podem ser vendidas após ${ageH}h.` };
+    { const why = await band(`c:${card.id}`); if (why) return { error:why }; }
     data.cards[card.id] = n - 1;
     await t.forgetSeen(s.user_id, `c:${card.id}:${n}`);
     return post(JSON.stringify({ id:card.id, mvp:card.mvp }), `c:${card.id}`, card.name);

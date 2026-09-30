@@ -14,6 +14,7 @@ const fs = require('fs'), path = require('path'), pg = require('pg');
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_economy.sql'), 'utf8'));
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_admin.sql'), 'utf8'));
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_community.sql'), 'utf8'));
+  await c.query(fs.readFileSync(path.join(__dirname, 'neon_antirmt.sql'), 'utf8'));
   await c.query("NOTIFY pgrst, 'reload schema'");
   // Poder do ranking recalculado com as regras atuais do jogo (exato para todas as contas).
   const changed = await require('./neon_recompute').recomputeAll(c);

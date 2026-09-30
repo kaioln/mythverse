@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env server/index.js",
     "dev": "node --watch --env-file-if-exists=.env server/index.js",
-    "test": "node tests/smoke.js && node tests/inventory.test.js && node tests/persistence.test.js && node tests/neon_market.test.js && node tests/neon_social.test.js && node tests/neon_economy.test.js && node tests/neon_admin.test.js && node tests/neon_community.test.js && node tests/neon_migrate.test.js && node tests/determinism.test.js && node tests/server.test.js",
+    "test": "node tests/smoke.js && node tests/inventory.test.js && node tests/persistence.test.js && node tests/neon_market.test.js && node tests/neon_social.test.js && node tests/neon_economy.test.js && node tests/neon_admin.test.js && node tests/neon_community.test.js && node tests/neon_migrate.test.js && node tests/neon_antirmt.test.js && node tests/determinism.test.js && node tests/server.test.js && node tests/rmt.test.js",
     "sim": "node tools/sim.js 6 7",
     "backup": "node -e \"(async()=>{const path=require('node:path'),{openStore}=require('./server/db'),dataDir=path.resolve(process.env.DATA_DIR||'data'),s=await openStore({dataDir});console.log(s.backup());await s.close()})().catch(e=>{console.error(e);process.exit(1)})\"",
     "build:three": "npx --yes esbuild@0.25.10 tools/vendor/three-entry.js --bundle --format=esm --minify --legal-comments=eof --outfile=vendor/three.min.js"

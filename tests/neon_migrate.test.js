@@ -20,7 +20,7 @@ const { migrate } = require('../tools/neon_migrate');
   };
   let checks = 0; const ok = (c, m) => { assert.ok(c, m); checks++; };
   const src = await neonProject(), dst = await neonProject();
-  for (const f of ['neon_setup.sql', 'neon_social.sql', 'neon_economy.sql', 'neon_admin.sql', 'neon_community.sql']) await src.exec(fs.readFileSync(path.join(__dirname, '..', 'tools', f), 'utf8'));
+  for (const f of ['neon_setup.sql', 'neon_social.sql', 'neon_economy.sql', 'neon_admin.sql', 'neon_community.sql', 'neon_antirmt.sql']) await src.exec(fs.readFileSync(path.join(__dirname, '..', 'tools', f), 'utf8'));
   await src.exec(`INSERT INTO neon_auth."user" (id, name, email) VALUES ('u-ana', 'ana', 'ana@x.test'), ('u-bia', 'bia', 'bia@x.test');
     INSERT INTO neon_auth.account (id, "accountId", "providerId", "userId", password) VALUES ('a1', 'u-ana', 'credential', 'u-ana', 'salt:hashA'), ('a2', 'u-bia', 'credential', 'u-bia', 'salt:hashB');
     INSERT INTO public.mv_saves (user_id, data, display_name, power, account_level) VALUES ('u-ana', '{"powerScale":3,"player":{"gold":5}}', 'Ana', 79700, 56), ('u-bia', '{"powerScale":3}', 'Bia', 3000, 8);

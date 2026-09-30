@@ -295,6 +295,10 @@ function repo(d) {
     setDepositRef: (id, ref) => d.run(`UPDATE ${T}deposits SET provider_ref = ? WHERE id = ?`, [ref, id]),
     markDepositPaid: (id, now) => d.run(`UPDATE ${T}deposits SET status = 'paid', paid_at = ? WHERE id = ? AND status = 'pending'`, [now, id]),
     insertWithdrawal: async (uid, amount, fee, key, now) => Number((await one(`INSERT INTO ${T}withdrawals (user_id, amount, fee, pix_key, status, created_at) VALUES (?, ?, ?, ?, 'pending', ?) RETURNING id`, [uid, amount, fee, key, now])).id),
+    pixKeyOwners: async key => (await d.all(`SELECT DISTINCT user_id FROM ${T}withdrawals WHERE pix_key = ? AND status <> 'rejected'`, [key])).map(r => Number(r.user_id)),
+    // Estorno: tira o valor até zerar (o que faltar fica registrado no alerta; a conta já fica bloqueada para negociar).
+    walletForce: (uid, delta, now) => d.run(`UPDATE ${T}wallets SET balance = CASE WHEN balance + ? < 0 THEN 0 ELSE balance + ? END, updated_at = ? WHERE user_id = ?`, [delta, delta, now, uid]),
+    markDepositReversed: (id, now) => d.run(`UPDATE ${T}deposits SET status = 'reversed', paid_at = ? WHERE id = ? AND status = 'paid'`, [now, id]),
     withdrawalsOf: uid => d.all(`SELECT id, amount, fee, status, created_at, decided_at FROM ${T}withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10`, [uid]),
     withdrawalsToday: async (uid, since) => Number((await one(`SELECT COALESCE(SUM(amount), 0) AS t FROM ${T}withdrawals WHERE user_id = ? AND created_at >= ? AND status <> 'rejected'`, [uid, since])).t),
     pendingWithdrawals: () => d.all(`SELECT w.*, u.username FROM ${T}withdrawals w LEFT JOIN ${T}users u ON u.id = w.user_id WHERE w.status = 'pending' ORDER BY w.id`),

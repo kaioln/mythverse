@@ -16,7 +16,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const SQL_FILES = ['neon_setup.sql', 'neon_social.sql', 'neon_economy.sql', 'neon_admin.sql', 'neon_community.sql'];
+const SQL_FILES = ['neon_setup.sql', 'neon_social.sql', 'neon_economy.sql', 'neon_admin.sql', 'neon_community.sql', 'neon_antirmt.sql'];
 const AUTH_TABLES = ['user', 'account'];
 
 const q = (db, sql, params) => db.query(sql, params).then(r => r.rows);

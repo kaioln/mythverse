@@ -179,3 +179,25 @@ Resultado (`node tools/goldrate.js 6`, ouro por hora de farm ativo):
 | 98 | 3–5,4 mi | ~180–440 mil | ~11,4 mi |
 
 Um +10 passa a custar dezenas de horas de ouro, e cada nível de Dojo acima do 30 custa horas de farm.
+
+
+## Dinheiro real sem as falhas do RMT (2026-09-30)
+
+O Mythverse tem comércio oficial com dinheiro real (Gemas, Pix) no servidor Node. O RMT destruiu economias de MMO por
+cinco falhas conhecidas; cada uma tem uma defesa, ligada por padrão (`server/economy.js`, variáveis em `.env.example`):
+
+| Falha (Albion, Lost Ark, FFXI) | Defesa no Mythverse |
+|---|---|
+| **Lavagem de dinheiro e cartão roubado**: deposita dinheiro sujo e saca limpo | Gemas depositadas só compram; **só se saca o que foi ganho vendendo** (`WITHDRAW_EARNED_ONLY`). Sem cartão: só Pix |
+| **Estorno** (Pix MED) depois que o item já foi entregue | Estorno tira as Gemas da conta, registra alerta e **bloqueia a conta para negociar**; vendas feitas a contas com menos de 30 dias ficam **7 dias** retidas antes do saque (as demais, 72 h) |
+| **Exércitos de bots sacando** | Saque só com **30 dias de conta, nível 30 e 20 h de jogo**, para **chave Pix CPF válida, um CPF por conta**; revisão manual de cada saque |
+| **Mulas e revenda em cadeia** | Item comprado com Gemas fica **7 dias travado** para revenda; bloqueio de compra na mesma rede; alerta de pares que negociam demais |
+| **Preço combinado** (entregar dinheiro comprando lixo caro) | **Faixa dura**: entre 1/4 e 5× a mediana das vendas daquela peça, no anúncio e na compra; acima de 10× gera alerta |
+| **Pay-to-win e inflação** | Gemas não compram ouro nem nada da loja; só itens que outros jogadores **dropam jogando**, com nível mínimo para equipar; taxa de 5% sai da economia |
+
+No modo Neon (site estático) não há dinheiro real: o save é do navegador e não teria como proteger saques. Lá o mercado
+em ouro tem as mesmas defesas contra RMT feito por fora (`tools/neon_antirmt.sql`): conta nível 12 e 48 h para negociar,
+faixa de preço, revenda só após 72 h, 3 compras por semana do mesmo vendedor, vendas acima de 2 milhões retidas 12 h e
+alerta de volume anormal.
+
+Testes: `node tests/rmt.test.js` (dinheiro real com as defesas) e `node tests/neon_antirmt.test.js` (mercado em ouro).

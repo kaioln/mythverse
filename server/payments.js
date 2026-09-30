@@ -36,7 +36,7 @@ function mercadoPago({ accessToken, webhookSecret, publicOrigin, fetchImpl = glo
     },
     async fetchPayment(id) {
       const p = await api('GET', `/v1/payments/${encodeURIComponent(id)}`);
-      return { ref:String(p.id), approved:p.status === 'approved', amount:Math.round(Number(p.transaction_amount) * 100), depositId:Number(p.external_reference) };
+      return { ref:String(p.id), approved:p.status === 'approved', reversed:['refunded', 'charged_back'].includes(p.status) || p.status_detail === 'refunded', amount:Math.round(Number(p.transaction_amount) * 100), depositId:Number(p.external_reference) };
     }
   };
 }
