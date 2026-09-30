@@ -560,4 +560,12 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   const r2 = e2.heroes[0]; e2.giveXp(9e9, 0); ok(r2.level > 1 && e2.freeAttr(r2) > 0 && !st2.settings.autoPoints, 'ao subir de nível, a decisão de distribuir pontos continua com o jogador');
 }
 
+{ // Marcadores da cidade: todos abrem um destino, sem caracteres de controle no HTML; ícones desenhados cobrem os kanji dos dados.
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8'), posts = html.match(/<button class="signpost[^>]*>/g) || [];
+  ok(posts.length >= 10 && posts.every(b => /data-open="[^"]+"/.test(b)), 'todo marcador da cidade tem data-open');
+  ok(!/[ --]/.test(html), 'index.html sem caracteres de controle');
+  const D2 = KT.Data, glyphs = [...Object.values(D2.statusInfo), ...Object.values(D2.elements), ...Object.values(D2.classes)].map(x => x.icon);
+  ok(glyphs.every(g => KT.Icons.name(g)), 'efeitos, elementos e classes têm ícone desenhado');
+}
+
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

@@ -202,7 +202,7 @@
       const cap = PRG.trainingCap(s.buildings.dojo), dojo = Object.keys(PRG.training).filter(k => (s.training[k] || 0) < cap && s.player.gold >= PRG.trainingCost(s.training[k] || 0)).length;
       const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
-      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); });
+      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = lv ? `Nv ${lv}` : ''; });
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';

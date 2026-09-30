@@ -2,6 +2,7 @@
   const KT = globalThis.KT = globalThis.KT || {};
   const U = KT.Utils, D = KT.Data;
   const W = 1280, H = 720;
+  const VIEW_L = { x:0, w:W }, VIEW_P = { x:180, w:920 };
   const DISPLAY_FONT = '"Shippori Mincho B1", "Shippori Mincho", serif'; // mesma serifa da marca (faixas, ultimates, Elo)
   const DISPLAY_FONT_W = DISPLAY_FONT;
   const UI_FONT = 'Outfit, "Segoe UI", system-ui, sans-serif';
@@ -13,7 +14,8 @@
   const BOSS_POS = {x:1000,y:672};
   const BOSS_ADDS = [{x:760,y:598},{x:790,y:694},{x:1200,y:596},{x:1195,y:694}];
   // Na cidade os heróis ficam na escala das construções, em volta do medalhão da praça (linha de frente adiante).
-  const VILLAGE_POS = [{x:596,y:404},{x:676,y:404},{x:552,y:370},{x:720,y:370}], VILLAGE_H = 66;
+  // Na praça: a equipe em arco na frente do medalhão central, grande o bastante para ver cada herói (placas longe dela).
+  const VILLAGE_POS = [{x:488,y:462},{x:562,y:478},{x:636,y:478},{x:710,y:462}], VILLAGE_H = 100;
   const HERO_H = 206, HERO_H0 = HERO_H, ENEMY_H = 184, ELITE_H = 232;
   const RANGED = new Set(['Arcanista','Suporte','Atirador']);
   // Projéteis: forma por classe/elemento; duração, arco e rastro dão o peso (pedra pesada e lenta, raio quase instantâneo).
@@ -80,22 +82,28 @@
     resize() {
       const rect = this.canvas.getBoundingClientRect(); if (!rect.width) return;
       const dpr = Math.min(2, globalThis.devicePixelRatio || 1);
-      const w = Math.round(rect.width * dpr), h = Math.round(rect.width * dpr * H / W);
+      // Celular em pé: janela mais estreita da cena (VIEW_P), então o palco fica mais alto e os personagens ~40% maiores.
+      const portrait = globalThis.innerWidth <= 700 && globalThis.innerHeight > globalThis.innerWidth * 1.2;
+      document.body?.classList.toggle('stage-portrait', portrait);
+      this.view = portrait ? VIEW_P : VIEW_L;
+      const w = Math.round(rect.width * dpr), h = Math.round(rect.width * dpr * H / this.view.w);
       if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
-      this.scale = w / W;
+      this.scale = w / this.view.w;
     }
-    toLogical(cx, cy) { const r = this.canvas.getBoundingClientRect(); return { x:(cx - r.left) / r.width * W, y:(cy - r.top) / r.height * H }; }
+    toLogical(cx, cy) { const r = this.canvas.getBoundingClientRect(), v = this.view || VIEW_L; return { x:v.x + (cx - r.left) / r.width * v.w, y:(cy - r.top) / r.height * H }; }
+    // No enquadramento em pé a formação se aproxima do centro para caber na janela.
+    squeeze(p) { return this.view?.x ? { ...p, x:640 + (p.x - 640) * .8 } : p; }
 
     // ---------- atores ----------
     v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0, clip:null, clipAt:0, combo:0 }; this.vis.set(uid, s); } return s; }
     unit(uid) { return this.engine.party.find(u => u.uid === uid) || this.engine.enemies.find(u => u.uid === uid); }
-    heroPos(u) { return HERO_POS[u.slot] || HERO_POS[0]; }
+    heroPos(u) { return this.squeeze(HERO_POS[u.slot] || HERO_POS[0]); }
     enemyPos(u) {
       const list = this.engine.enemies, i = list.indexOf(u);
       const boss = list.find(e => e.boss);
-      if (u.boss) return BOSS_POS;
-      if (boss) { const adds = list.filter(e => !e.boss); return BOSS_ADDS[adds.indexOf(u) % BOSS_ADDS.length]; }
-      return ENEMY_POS[i] || ENEMY_POS[i % ENEMY_POS.length];
+      if (u.boss) return this.squeeze(BOSS_POS);
+      if (boss) { const adds = list.filter(e => !e.boss); return this.squeeze(BOSS_ADDS[adds.indexOf(u) % BOSS_ADDS.length]); }
+      return this.squeeze(ENEMY_POS[i] || ENEMY_POS[i % ENEMY_POS.length]);
     }
     enemyHeight(e) { return e.boss ? (e.sprite === 'lantern_kitsune' ? 370 : 430) : e.miniboss ? 280 : e.elite ? ELITE_H : e.treasure ? 120 : ENEMY_H; }
     posOf(uid) {
@@ -483,7 +491,7 @@
     // ---------- desenho ----------
     render() {
       const c = this.ctx;
-      c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.canvas.width, this.canvas.height); c.setTransform(this.scale, 0, 0, this.scale, 0, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.canvas.width, this.canvas.height); c.setTransform(this.scale, 0, 0, this.scale, -(this.view?.x || 0) * this.scale, 0);
       c.save();
       if (this.shake > 0 && this.intense) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
       this.hotspots = [];
@@ -560,9 +568,11 @@
         this.engine.state.formation.forEach((uid, i) => { const r = uid && this.engine.record(uid); if (r) list.push({ r, t:this.engine.template(r.id), pos:VILLAGE_POS[i] }); });
         list.sort((a, b) => a.pos.y - b.pos.y).forEach(o => {
           const c = this.ctx, bob = Math.sin(this.worldTime * 2 + o.pos.x) * 1;
-          c.save(); c.fillStyle = 'rgba(20,10,4,.38)'; c.beginPath(); c.ellipse(o.pos.x, o.pos.y + 2, 17, 5, 0, 0, Math.PI * 2); c.fill(); c.restore();
-          const vm = KT.SPRITE_META?.[o.t.sprite] || [1, 0];
-          this.drawSprite(o.t.sprite, o.pos.x, o.pos.y + bob + vm[1] * VILLAGE_H * vm[0], VILLAGE_H * vm[0], { sy:1 + Math.sin(this.worldTime * 2.4 + o.pos.x) * .015 });
+          c.save(); c.fillStyle = 'rgba(20,10,4,.42)'; c.beginPath(); c.ellipse(o.pos.x, o.pos.y + 2, 26, 7, 0, 0, Math.PI * 2); c.fill(); c.restore();
+          const vm = KT.SPRITE_META?.[o.t.sprite] || [1, 0], an = this.assets.anim?.(o.t.sprite), i = list.indexOf(o);
+          // Heróis animados (respiração da folha de poses) também na cidade; sem folha, o sprite parado com leve respiração.
+          if (an) this.drawAnim(an, this.v(`village_${i}`), { alive:true, slot:i, side:'hero' }, o.pos.x, o.pos.y, VILLAGE_H * 1.12, {});
+          else this.drawSprite(o.t.sprite, o.pos.x, o.pos.y + bob + vm[1] * VILLAGE_H * vm[0], VILLAGE_H * vm[0], { sy:1 + Math.sin(this.worldTime * 2.4 + o.pos.x) * .015 });
           const short = o.t.name.replace(/^(Coronel|Mestre|Comandante|Unidade|O|A)\s+/, '').split(/[ ,]/)[0];
           c.save(); c.font = `700 10px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; const tw = c.measureText(short).width + 12;
           this.roundRect(o.pos.x - tw / 2, o.pos.y + 6, tw, 14, 7); c.fillStyle = 'rgba(12,10,30,.72)'; c.fill(); c.fillStyle = '#f3f1ff'; c.fillText(short, o.pos.x, o.pos.y + 13.5); c.restore();
