@@ -625,3 +625,10 @@ body:not(.in-combat) .journey-cta{display:none!important}
 .map-pin.locked,.illustrated-map .map-pin.locked{background:rgba(12,10,18,.88);opacity:1;border-color:rgba(239,230,212,.35)}
 .map-pin.locked .pin-name{color:#c9bfae}
 .illustrated-map>img{filter:saturate(.82) brightness(1.02)}
+/* Combate essencial: AFK/AUTO/AVANÇO só com "Mais" aberto; objetivo some durante a luta */
+body.in-combat .stage-controls:not(.adv-open) :is(#auto-btn,#advance-btn,#afk-btn){display:none!important}
+body.in-combat .stage-controls.adv-open :is(#auto-btn,#advance-btn,#afk-btn){display:flex!important}
+body:not(.in-combat) #adv-ctl-btn{display:none!important}
+body.in-combat #adv-ctl-btn{display:flex!important}
+body.in-combat #goal-chip{display:none!important}
+.stage-controls.adv-open #adv-ctl-btn{background:rgba(236,226,208,.12)}

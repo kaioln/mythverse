@@ -42,6 +42,14 @@
       const ctl = this._ctl ||= document.querySelector('.stage-controls'), top = this._ctlHome ||= ctl?.parentElement;
       if (ctl) { if (mob) vp?.after(ctl); else if (ctl.parentElement !== top) top?.appendChild(ctl); ctl.classList.toggle('below-stage', mob); } };
     placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
+    // Combate só com o essencial: FORÇA, VEL e CIDADE à vista; AFK, AUTO e AVANÇO no botão "Mais".
+    const ctl = document.querySelector('.stage-controls');
+    if (ctl && !document.querySelector('#adv-ctl-btn')) {
+      const more = document.createElement('button'); more.id = 'adv-ctl-btn'; more.className = 'ctl'; more.type = 'button';
+      more.innerHTML = '<span>MAIS</span><b>···</b>'; more.dataset.tip = 'AFK, ultimates automáticas e avanço automático.';
+      more.addEventListener('click', () => ctl.classList.toggle('adv-open'));
+      ctl.insertBefore(more, document.querySelector('#retreat-btn'));
+    }
     this.applyHud();
     setInterval(() => { this.renderGoalChip(); this.renderDistricts(); }, 1000);
   };
