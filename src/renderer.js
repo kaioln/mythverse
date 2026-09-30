@@ -633,15 +633,49 @@
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
         else if (!a.moving && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name);
       }
+      this.dimSignposts();
+    }
+    // Placa da cidade na frente de alguém fica translúcida (não esconde personagem); volta ao passar o mouse.
+    dimSignposts() {
+      if ((this._dimAt || 0) > this.worldTime) return; this._dimAt = this.worldTime + .15;
+      const r = this.canvas.getBoundingClientRect(), v = this.view || { x:0, w:W }; if (!r.width) return;
+      const sx = r.width / v.w, sy = r.height / H;
+      const boxes = (this.townHits || []).map(o => ({ l:r.left + (o.x - o.h * .4 - v.x) * sx, rr:r.left + (o.x + o.h * .4 - v.x) * sx, t:r.top + (o.y - o.h * 1.25) * sy, b:r.top + (o.y + 12) * sy }));
+      document.querySelectorAll('#village-actions .signpost').forEach(el => {
+        const q = el.getBoundingClientRect();
+        el.classList.toggle('over-actor', boxes.some(o => o.l < q.right && o.rr > q.left && o.t < q.bottom && o.b > q.top));
+      });
+    }
+    // Caminhada fluida com a arte do próprio personagem (pose parada): tronco sobe e desce duas vezes por passada e
+    // balança de leve; as pernas (abaixo do quadril) são desenhadas em duas metades que oscilam em oposição, como
+    // pêndulos presos no quadril. Tudo interpolado a cada quadro de tela, sem troca brusca de desenho.
+    // Caminhada fluida sem cortar a arte: o desenho inteiro, com o tronco subindo e descendo duas vezes por passada e a
+    // parte de baixo balançando em faixas finas (pêndulo a partir do quadril, deslocamento contínuo de faixa em faixa).
+    // Os dois desenhos do personagem (parado e em passada) se alternam quando as pernas passam sob o corpo.
+    // cols: [coluna parado, coluna passada] na folha; row: linha da folha.
+    drawWalker(img, M, cols, row, a, h, hipK) {
+      const c = this.ctx, k = h / M.bodyH, fw = M.frameW * k, fh = M.frameH * k, dx = -M.cx * k, dy = -M.footY * k;
+      const ph = a.walkT * 6.4, moving = a.moving, sy = row * M.frameH;
+      c.save(); c.translate(a.x, a.y); if (a.face < 0) c.scale(-1, 1);
+      if (!moving) { c.translate(0, Math.sin(a.animT * 2.2) * h * .008); c.drawImage(img, cols[0] * M.frameW, sy, M.frameW, M.frameH, dx, dy, fw, fh); c.restore(); return; }
+      const s = Math.sin(ph), bob = -Math.abs(s) * h * .05, swing = Math.cos(ph) * h * .13;
+      const col = cols[Math.abs(s) > .38 ? 1 : 0];          // passada aberta: desenho em passada; pernas juntas: parado
+      const sx = col * M.frameW, hipS = M.frameH * hipK, hipD = fh * hipK;
+      c.translate(0, bob); c.rotate(.035);
+      c.drawImage(img, sx, sy, M.frameW, hipS + 1, dx, dy, fw, hipD + 1);    // tronco e cabeça, inteiros
+      const N = 10, legS = M.frameH - hipS, legD = fh - hipD;
+      for (let i = 0; i < N; i++) {                                           // de baixo do quadril até os pés
+        const t0 = i / N, t = (i + .5) / N, off = swing * t * t;
+        c.drawImage(img, sx, sy + hipS + legS * t0, M.frameW, legS / N + .6, dx + off, dy + hipD + legD * t0, fw, legD / N + .6);
+      }
+      c.restore();
     }
     drawTownHero(an, a, h) {
-      const seq=an.meta.clips?.run?.seq||[2,0],col=a.moving?seq[Math.floor(a.walkT*5)%seq.length]:0;
-      this.drawFrame(an.img,an.meta,col,a.x,a.y,h*1.08,a.face<0);
+      const M = an.meta, run = M.clips?.run?.seq || [2, 0];
+      this.drawWalker(an.img, M, [0, run[0]], 0, a, h * 1.08, (M.footY - M.bodyH * .34) / M.frameH);
     }
     drawTownFolk(a, h, F) {
-      const c=this.ctx,step=a.moving?Math.floor(a.walkT*5)%2:0,k=h/F.bodyH;
-      c.save();c.translate(a.x,a.y);if(a.face<0)c.scale(-1,1);
-      c.drawImage(this.folk.img, step * F.frameW, a.f * F.frameH, F.frameW, F.frameH, -F.frameW / 2 * k, -F.footY * k, F.frameW * k, F.frameH * k); c.restore();
+      this.drawWalker(this.folk.img, { ...F, cx:F.frameW / 2 }, [0, 1], a.f, a, h, (F.footY - F.bodyH * .34) / F.frameH);
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     // Um quadro da folha de poses do herói, com os pés em (x, y).

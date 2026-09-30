@@ -834,3 +834,8 @@ body .village-hub .hub-row .action{min-height:32px}
 .talent-tree .band-tag.locked .band-gem{fill:#4a4656;stroke:#6d665b}
 .talent-tree .band-tag text{stroke:none!important;paint-order:normal}
 .talent-tree .band-tag .band-sub{font:700 12px var(--ui)!important;fill:#cfc6b6!important;letter-spacing:.06em}
+
+/* Placa sobre personagem da cidade: translúcida (src/renderer.js dimSignposts); volta ao passar o mouse. */
+#village-actions .signpost{transition:opacity .25s}
+#village-actions .signpost.over-actor{opacity:.22}
+#village-actions .signpost.over-actor:hover,#village-actions .signpost.over-actor:focus-visible{opacity:1}

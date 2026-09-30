@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Walk test</title>
+<base href="../../">
+<body style="margin:0;background:#d9cfb8">
+<canvas id="c" width="900" height="270"></canvas>
+<script src="src/config.js"></script>
+<script src="src/data.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/assets.js"></script>
+<script src="src/renderer.js"></script>
+<script>
+// Ferramenta de desenvolvimento: 8 fases da caminhada (herói em cima, morador embaixo). ?hero=<id>&folk=<n>
+(async () => {
+  const q = new URLSearchParams(location.search), hero = q.get('hero') || 'akira', folk = Number(q.get('folk') || 4);
+  const meta = await (await fetch(`assets/anim/${hero}.json`)).json(), img = new Image(); img.src = `assets/anim/${hero}.webp`; await img.decode();
+  const fm = await (await fetch('assets/folk/folk.json')).json(), fi = new Image(); fi.src = 'assets/folk/folk.webp'; await fi.decode();
+  const c = document.getElementById('c').getContext('2d'), P = KT.GameRenderer.prototype, R = Object.create(P); R.ctx = c; R.folk = { meta:fm, img:fi };
+  for (let i = 0; i < 8; i++) {
+    const a = { x:60 + i * 108, y:125, face:1, moving:true, walkT:i / 8 * (Math.PI * 2 / 6.2), animT:0, f:folk };
+    R.drawTownHero({ img, meta }, a, 95); R.drawTownFolk({ ...a, y:255 }, 95, fm);
+  }
+  document.title = 'ready';
+})().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="font:14px monospace">' + e.stack + '</pre>'); });
+</script>

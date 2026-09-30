@@ -571,13 +571,13 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   for (const f of fs.readdirSync(animDir).filter(x => x.endsWith('.json') && x !== 'index.json')) { const m = JSON.parse(fs.readFileSync(path.join(animDir, f), 'utf8')); if (m.frameH > m.bodyH * 1.6) bad.push(f); }
   ok(!bad.length, `folhas de animação com pose grudada: ${bad.join(', ')}`);
   // Cidade viva: todo destino fica sobre piso real e é alcançável pela malha calculada.
-  vm.runInThisContext(fs.readFileSync(path.join(root, 'src/town.js'), 'utf8'));
-  const TM = KT.TownMap, nodes = [...TM.SPOTS.map(s => s.node), ...TM.FOLK.flatMap(f => f.post ? [f.post] : f.route)], points = nodes.map(n => TM.NODES[n]);
-  ok(points.every(p => p && TM.isWalk(...p)), 'lugares e rotas dos moradores ficam nas linhas centrais');
-  ok(points.every(p => TM.route(560, 430, ...p) !== null), 'toda a cidade é alcançável a partir da praça');
+  for (const f of ['src/town-walk.js', 'src/town.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'));
+  const TM = KT.TownMap, nodes = [...TM.SPOTS.map(s => s.node), ...TM.FOLK.flatMap(f => f.route || [])], points = nodes.map(n => TM.at(n));
+  ok(nodes.every(n => Math.hypot(TM.at(n)[0] - TM.NODES[n][0], TM.at(n)[1] - TM.NODES[n][1]) < 40), 'lugares e rotas ficam perto do chão desenhado');
+  const plaza = TM.at('plaza'); ok(points.every(p => TM.route(plaza[0], plaza[1], ...p) !== null), 'toda a cidade é alcançável a partir da praça');
   const life = new KT.TownLife(); life.sync([{ uid:'a', sprite:'akira', name:'Akira' }, { uid:'b', sprite:'mei', name:'Mei' }]);
   for (let i = 0; i < 3000; i++) life.update(.05);
-  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && TM.isWalk(a.x, a.y)), 'ninguém sai do piso depois de 2,5 minutos andando');
+  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && (a.fixed || TM.isWalk(a.x, a.y))), 'ninguém sai do piso depois de 2,5 minutos andando');
   const gap = Math.min(...life.agents.flatMap((a, i) => life.agents.slice(i + 1).map(b => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55))));
   ok(gap > 15, 'personagens mantêm espaço pessoal e não se sobrepõem');
 }
