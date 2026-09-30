@@ -83,6 +83,13 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .res.bump{animation:bump .45s}
 @keyframes bump{30%{transform:scale(1.1);box-shadow:0 0 18px rgba(255,207,107,.5)}}
 .top-actions{display:flex;align-items:center;gap:6px}
+.stage-wallet{position:absolute;z-index:4;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;pointer-events:none}
+.stage-res{display:flex;align-items:center;gap:7px;height:31px;padding:0 10px 0 6px;border-radius:18px;background:rgba(12,10,18,.78);border:1px solid rgba(255,255,255,.13);box-shadow:0 5px 16px rgba(0,0,0,.28);backdrop-filter:blur(6px);font-variant-numeric:tabular-nums}
+.stage-res i{width:19px;height:19px;flex:none}
+.stage-res.gold i{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3c4 0 18%,#ffcf6b 19% 55%,#d98a1f 56%)}
+.stage-res.crystal i{background:linear-gradient(135deg,#d9fbff,#61c9ee 55%,#2b79b9);clip-path:polygon(50% 0,100% 40%,50% 100%,0 40%)}
+.stage-res b{font-size:12px;color:#f3eadb}
+@media(max-width:700px){.stage-wallet{top:7px}.stage-res{height:27px;padding:0 7px 0 5px;gap:5px}.stage-res i{width:16px;height:16px}.stage-res b{font-size:11px}}
 .save-status{display:flex;align-items:center;gap:6px;min-width:76px;height:36px;padding:0 10px;border-radius:12px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:11px;font-weight:800;transition:all .2s}
 .save-status i{width:9px;height:9px;border-radius:50%;background:#6f6a98;box-shadow:0 0 0 3px rgba(111,106,152,.12)}
 .save-status:hover{color:var(--text);background:rgba(255,255,255,.09)}

@@ -21,7 +21,7 @@
     cache() {
       const $ = s => document.querySelector(s);
       this.el = {
-        app:$('#app'), gold:$('#gold-value'), crystal:$('#crystal-value'), dust:$('#dust-value'), ore:$('#ore-value'), keys:$('#key-value'), keyCaption:$('#key-caption'), gems:$('#gem-value'), saveStatus:$('#save-status'),
+        app:$('#app'), gold:$('#gold-value'), stageGold:$('#stage-gold-value'), crystal:$('#crystal-value'), stageCrystal:$('#stage-crystal-value'), dust:$('#dust-value'), ore:$('#ore-value'), keys:$('#key-value'), keyCaption:$('#key-caption'), gems:$('#gem-value'), saveStatus:$('#save-status'),
         playerName:$('#player-name'), power:$('#power-label'), level:$('#player-level'), xpFill:$('#player-xp-fill'), avatar:$('#player-avatar-img'),
         zoneTitle:$('#zone-title'), zoneKick:$('#zone-kicker'), difficulty:$('#zone-difficulty'), wave:$('#wave-label'), powerCheck:$('#power-check'),
         locations:$('#village-actions'), viewport:$('#viewport'), canvas:$('#game-canvas'), hint:$('#stage-hint'), warn:$('#warn-banner'), result:$('#result-overlay'), dialog:$('#dialog-box'), choice:$('#choice-modal'),
@@ -124,7 +124,7 @@
     renderResources() {
       const p = this.state.player, set = (el, v) => { const t = String(v); if (el.textContent !== t) { if (el.textContent && el.textContent !== ', ') { const box = el.parentElement; box.classList.remove('bump'); void box.offsetWidth; box.classList.add('bump'); } el.textContent = t; } };
       this.el.playerName.textContent = p.name;
-      set(this.el.gold, compact(p.gold)); set(this.el.crystal, compact(p.crystal)); set(this.el.dust, compact(p.dust)); set(this.el.ore, compact(p.ore)); { const hasWallet = this.session?.mode === 'cloud' && this.wallet && !this.wallet.error; set(this.el.gems, hasWallet ? compact(this.wallet.balance || 0) : ''); this.el.gems.closest('.res').hidden = !hasWallet; }
+      set(this.el.gold, compact(p.gold)); set(this.el.stageGold, compact(p.gold)); set(this.el.crystal, compact(p.crystal)); set(this.el.stageCrystal, compact(p.crystal)); set(this.el.dust, compact(p.dust)); set(this.el.ore, compact(p.ore)); { const hasWallet = this.session?.mode === 'cloud' && this.wallet && !this.wallet.error; set(this.el.gems, hasWallet ? compact(this.wallet.balance || 0) : ''); this.el.gems.closest('.res').hidden = !hasWallet; }
       const free = this.state.starterRolls > 0; set(this.el.keys, free ? this.state.starterRolls : p.keys); this.el.keyCaption.textContent = free ? 'Grátis' : 'Chaves';
       this.el.power.textContent = `Poder ${compact(this.engine.getPower())}`;
       this.el.level.textContent = `Conta Nv. ${p.level}`;
@@ -210,8 +210,7 @@
         <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
         ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
         <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> <span class="hub-go"><small>Continuar</small><b>${esc(hz.title)}</b></span><em class="hub-stage">${stage}</em></button>
-        <div class="hub-row"><button class="action map-action" data-open="journey" type="button"><i class="ic ic-compass"></i> Explorar mapa</button>
-        <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-target"></i> O que fazer'}</button></div></div>`;
+        <div class="hub-row"><button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-target"></i> O que fazer'}</button></div></div>`;
     }
 
     renderParty() {

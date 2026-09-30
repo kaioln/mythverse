@@ -520,24 +520,13 @@ body .hero-portrait .lv{font-size:11px}
    Celular/tablet: FORÇA compacto, objetivo empilhado, distritos sem briga com selos,
    conteúdo nunca atrás da barra inferior. Telas grandes: interface escala.
    ===================================================================== */
-body .journey-cta{display:flex!important}
-.journey-cta[hidden]{display:none!important}
-.journey-cta{left:14px!important;right:auto!important;bottom:14px!important;min-width:210px;background:rgba(18,16,24,.94)!important;border:1px solid rgba(216,176,98,.55)!important;border-left:4px solid var(--gold)!important}
-.journey-cta .cta-text b{color:var(--gold)!important;letter-spacing:.12em}
-.journey-cta .cta-text small{color:#d5cdbf!important}
-.village-hub .map-action{border-color:rgba(216,176,98,.55);color:var(--gold)}
-body.in-combat .journey-cta{min-width:0;padding:7px 10px!important;bottom:10px!important}
-body.in-combat .journey-cta .cta-text small,body.in-combat .journey-cta .cta-arrow{display:none}
-body.in-combat .journey-cta .cta-emblem{width:28px;height:28px}
-body.in-combat .resources .res:not(.gold):not(.gem){display:none!important}
-body.in-combat .resources{justify-content:flex-start;flex:0 1 auto}
-body.in-combat .res.gold,body.in-combat .res.gem{height:30px;min-width:72px;padding-right:9px;opacity:.92}
+body .stage-controls .journey-cta{position:static!important;display:flex!important;min-width:58px!important;height:48px!important;padding:0 9px!important;gap:1px!important;overflow:visible;background:rgba(13,12,18,.92)!important;border:1px solid rgba(216,176,98,.65)!important;border-radius:8px!important;box-shadow:none!important;transform:none!important}
+.stage-controls .journey-cta[hidden]{display:none!important}
+.stage-controls .journey-cta span{display:block!important;color:var(--gold)!important;line-height:1}
+.stage-controls .journey-cta b{font:800 13px/1 var(--ui)!important;color:var(--gold)!important;letter-spacing:.08em}
+.hud-top .resources .res.gold,.hud-top .resources .res.crystal{display:none!important}
 @media (max-width:900px){
-  body .journey-cta{display:flex!important;left:7px!important;right:auto!important;bottom:7px!important;min-width:0;min-height:42px;padding:5px 8px!important}
-  .journey-cta[hidden]{display:none!important}
-  .journey-cta .cta-text small,.journey-cta .cta-arrow{display:none}
-  .journey-cta .cta-emblem{width:28px;height:28px}
-  body.in-combat .resources .res.gold{display:flex!important}
+  body .stage-controls .journey-cta{min-width:42px!important;height:40px!important;padding:0 5px!important}
 }
 .village-hub{top:72px;right:14px;width:clamp(280px,27%,340px);max-height:calc(58% - 20px);padding:12px 14px;overflow:auto}
 .village-hub .eyebrow{font-size:10px}
@@ -642,6 +631,8 @@ body.in-combat .res.gold,body.in-combat .res.gem{height:30px;min-width:72px;padd
 /* Mapa novo é mais detalhado: nomes bloqueados com fundo sólido e texto legível */
 .map-pin.locked,.illustrated-map .map-pin.locked{background:rgba(12,10,18,.88);opacity:1;border-color:rgba(239,230,212,.35)}
 .map-pin.locked .pin-name{color:#c9bfae}
+.map-pin.locked small,.illustrated-map .map-pin.locked small{display:block!important;color:#a99f90!important}
+.map-pin.locked,.illustrated-map .map-pin.locked{width:auto;height:auto;padding:4px 8px}
 .illustrated-map>img{filter:saturate(.82) brightness(1.02)}
 /* Combate essencial: AFK/AUTO/AVANÇO só com "Mais" aberto; objetivo some durante a luta */
 body.in-combat .stage-controls:not(.adv-open) :is(#auto-btn,#advance-btn,#afk-btn){display:none!important}
@@ -700,3 +691,11 @@ body.in-combat #goal-chip{display:none!important}
 @media (min-width:1101px){.app:not(.panel-hidden) .village-hub .hub-goal{display:none}}
 .res[hidden]{display:none!important}
 @media (max-width:1400px){#village-actions .signpost small{display:none}}
+/* Mostrador de ouro/cristais no palco: some na luta contra chefe (a barra do chefe ocupa o topo) e no celular fica sob o título */
+body.boss-combat .stage-wallet{display:none}
+body.in-combat .stage-wallet{opacity:.9}
+@media (max-width:900px){.stage-wallet{left:auto;right:8px;transform:none}}
+/* Cartão da cidade: a linha de ações ocupa a largura toda quando sobra um botão só */
+.village-hub .hub-row{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+/* Marcadores do mapa com nível e poder: texto menor para não se sobreporem */
+.illustrated-map .map-pin small{white-space:nowrap;font-size:10px}
