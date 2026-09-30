@@ -621,3 +621,6 @@ body:not(.in-combat) .journey-cta{display:none!important}
 .panel.legendary{border-color:var(--gold)!important;background:rgba(216,176,98,.06)!important}
 @media (max-width:900px){.order-ladder{grid-template-columns:repeat(2,minmax(0,1fr))}.order-rank{grid-template-columns:1fr}.order-seal{width:64px;height:64px}.order-seal b{font-size:32px}}
 .pw-toggle{font:700 11px var(--ui);width:auto;min-width:34px;padding:0 6px}
+/* Mapa novo é mais detalhado: nomes bloqueados com fundo sólido e texto legível */
+.map-pin.locked,.illustrated-map .map-pin.locked{background:rgba(12,10,18,.88);opacity:1;border-color:rgba(239,230,212,.35)}
+.map-pin.locked .pin-name{color:#c9bfae}
