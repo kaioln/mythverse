@@ -374,10 +374,20 @@
     }
 
     // ---------- desbloqueios ----------
+    serviceStatus(id) {
+      const s = PR.services[id];
+      return s ? { ...s, locked:this.state.player.level < s.level } : { locked:false };
+    }
+    requireService(id) {
+      const s = this.serviceStatus(id); if (!s.locked) return true;
+      this.lastError = `${s.name}: requer conta nível ${s.level}.`;
+      this.emit('onToast', this.lastError); return false;
+    }
     zoneLock(zoneId) {
       const z = D.zones[zoneId], s = this.state, reasons = [];
       if (!z) return { locked:true, reasons:['Região desconhecida'] };
       if (z.kind === 'village') return { locked:false, reasons };
+      if (z.kind === 'arena') { const a = this.serviceStatus('arena'); reasons.push({ text:`Conta nível ${a.level}`, met:!a.locked }); }
       if (this.heroes.length < 4) reasons.push({ text:'Equipe com 4 heróis', met:false });
       Object.entries(z.unlock?.stage || {}).forEach(([id, n]) => reasons.push({ text:`Vencer ${D.zones[id].title}, estágio ${n}`, met:(s.progress[id]?.best || 0) >= n }));
       Object.entries(z.unlock?.floor || {}).forEach(([id, n]) => reasons.push({ text:`Conquistar ${D.zones[id].title}, andar ${['I','II','III'][n - 1] || n}`, met:(s.progress[id]?.best || 0) >= n }));
@@ -1413,6 +1423,7 @@
     // ---------- Expedições (AFK de verdade: contam pelo relógio do servidor) ----------
     expeditionSlots() { return Math.min(5, 1 + Math.floor((this.state.buildings.guild || 1) / 3) + guildPerks(this.state).reduce((a, r) => a + (r.expedition || 0), 0)); }
     startExpedition(zoneId, hours, uids) {
+      if (!this.requireService('expeditions')) return false;
       const z = D.zones[zoneId], s = this.state;
       if (!z || z.kind !== 'hunt' || this.zoneLock(zoneId).locked || !(s.progress[zoneId]?.best > 0)) { this.lastError = 'Escolha uma caçada já vencida ao menos uma vez.'; return false; }
       if (!D.expeditions.durations.includes(hours)) { this.lastError = 'Duração inválida.'; return false; }
@@ -1673,6 +1684,7 @@
     }
     // Receitas da Oficina (antes calculadas na interface).
     craft(id) {
+      if (!this.requireService('workshop')) return false;
       const r = this.recipes().find(x => x.id === id); if (!r) return false;
       if (r.limit && this.craftedToday(id) >= r.limit) { this.lastError = `Limite diário de ${r.limit} atingido.`; return false; }
       if (Object.entries(r.cost).some(([k, v]) => this.have(k) < v)) { this.lastError = 'Recursos insuficientes.'; return false; }
@@ -1692,6 +1704,7 @@
     }
     markSeen(key) { if (!['intro', 'intro2', 'team', 'formation'].includes(key)) return false; this.state.story.seen[key] = true; return true; }
     awaken(uid) {
+      if (!this.requireService('shrine')) return false;
       const r = this.record(uid); if (!r || r.stars >= HERO_MAX_STARS) return false;
       const c = awakenCost(r.stars, this.state.buildings.shrine), have = this.state.shards[r.id] || 0;
       if (have < c.shards || this.state.player.gold < c.gold) return false;
@@ -1838,6 +1851,7 @@
     profHave(k) { return k === 'gold' ? this.state.player.gold : this.state.prof.mats[k] || 0; }
     // Criação: consome materiais e ouro. Artesania gera equipamento negociável com raridade pela habilidade.
     craftProf(recipeId, slot) {
+      if (!this.requireService('prof')) return false;
       const r = D.PROF_RECIPES.find(x => x.id === recipeId), s = this.state; if (!r) return false;
       if ((s.prof.lv[r.prof] || 1) < r.lv) { this.lastError = `Requer ${D.PROF.craft[r.prof].name} nível ${r.lv}.`; return false; }
       const cost = { ...r.cost, gold:Math.round((r.cost.gold || 0) * this.priceMult()) };
@@ -1872,6 +1886,7 @@
     houseSlots() { return D.HOUSE.slots(this.state.buildings.house || 1); }
     albumCount() { return albumIds(this.state).length; }
     displayCard(cardId, slot) {
+      if (!this.requireService('house')) return false;
       const h = this.state.house, n = this.houseSlots();
       if (!Number.isInteger(slot) || slot < 0 || slot >= n) { this.lastError = 'Espaço da Galeria bloqueado (melhore a Casa do Time).'; return false; }
       if (!I.cardById(cardId) || (this.state.cards[cardId] || 0) < 1) { this.lastError = 'Você não tem essa carta livre.'; return false; }
@@ -1899,6 +1914,7 @@
     }
 
     train(key) {
+      if (!this.requireService('dojo')) return false;
       const lv = this.state.training[key] || 0, cap = PR.trainingCap(this.state.buildings.dojo), cost = PR.trainingCost(lv);
       if (lv >= cap || this.state.player.gold < cost) return false;
       this.state.player.gold -= cost; this.state.training[key] = lv + 1; this.emit('onState'); return true;
@@ -1974,6 +1990,7 @@
     }
     // REFINO com materiais: Tamahagane (comum), Aço Estelar (raro), Oricalco (épico), Adamantina (lendário).
     upgradeItem(itemUid, matId = 'common') {
+      if (!this.requireService('forge')) return { ok:false, reason:this.lastError };
       const s = this.state, it = this.findItem(itemUid); if (!it) return { ok:false, reason:'Item não encontrado.' };
       if ((it.plus || 0) >= 15) return { ok:false, reason:'O item já está no refino máximo (+15).' };
       if ((it.plus || 0) >= I.maxPlus(s.buildings.forge)) return { ok:false, reason:`Limite +${I.maxPlus(s.buildings.forge)}. Melhore a Forja.` };
@@ -1998,6 +2015,7 @@
       this.refreshPartyUnits(); this.emit('onState'); return { ok:true, plus:it.plus };
     }
     enchantItem(itemUid, idx) {
+      if (!this.requireService('workshop')) return false;
       const it = this.findItem(itemUid); if (!it || !it.affixes?.[idx]) return false;
       const c = I.enchantCost(it, this.state.buildings.workshop);
       if (this.state.player.dust < c.dust || this.state.player.gold < c.gold) return false;
@@ -2013,6 +2031,7 @@
     buildingCost(id) { const b = D.buildings[id], lv = this.state.buildings[id] || 1; return Math.round(b.baseCost * Math.pow(b.growth, lv - 1) * this.priceMult()); }
     buildingCap() { return 2 + Math.floor(this.state.player.level / 3); }
     upgradeBuilding(id) {
+      if (!D.buildings[id] || !this.requireService(id)) return false;
       const lv = this.state.buildings[id] || 1; if (lv >= this.buildingCap()) { this.emit('onToast', `Limite de nível ${this.buildingCap()}, suba o nível da conta.`); return false; }
       const cost = this.buildingCost(id); if (this.state.player.gold < cost) return false;
       this.state.player.gold -= cost; this.state.buildings[id] = lv + 1;
@@ -2077,6 +2096,7 @@
       m.offers = offers; m.slot = slot; m.refreshedAt = now; return offers;
     }
     buyMarket(i) {
+      if (!this.requireService('market')) return false;
       const o = this.state.market.offers[i]; if (!o || o.sold || this.state.player.gold < o.price) return false;
       this.state.player.gold -= o.price; o.sold = true;
       if (o.type === 'item') { const it = { ...o.item, uid:U.uid('it'), bound:true }; this.addItem(it); this.emit('onLoot', it); }

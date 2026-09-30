@@ -6,20 +6,67 @@
   const hhmm = ms => new Date(ms).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
 
   const Community = {
-    msgs:[], last:0, timer:null, err:null, profiles:{}, mine:null,
+    msgs:[], last:0, timer:null, err:null, guildErr:null, profiles:{}, mine:null, sending:false, sentAt:0,
     get enabled() { return !!KT.Neon?.enabled && !!KT.Neon.user; },
     async rpc(fn, args = {}) { const r = await KT.Neon.api('POST', `/rpc/${fn}`, args); if (!r.ok) throw new Error(r.error || 'Falha de conexão.'); return r.data; },
     async poll() {
       if (!this.enabled) return;
-      try { const rows = await this.rpc('mv_chat_recent', { p_after:this.last }); if (rows?.length) { this.msgs = this.msgs.concat(rows).slice(-120); this.last = rows[rows.length - 1].id; this.ui?.onChat?.(); } this.err = null; }
-      catch (e) { this.err = e.message; }
+      if (this.pending) return this.pending;
+      const owner = KT.Neon.user.id;
+      this.pending = (async () => {
+        try {
+          const rows = await this.rpc('mv_chat_recent', { p_after:this.last });
+          if (KT.Neon.user?.id !== owner) return;
+          const unique = new Map(this.msgs.map(m => [String(m.id), m]));
+          (Array.isArray(rows) ? rows : []).forEach(m => { if (/^\d+$/.test(String(m.id))) unique.set(String(m.id), m); });
+          this.msgs = [...unique.values()].sort((a, b) => BigInt(a.id) < BigInt(b.id) ? -1 : BigInt(a.id) > BigInt(b.id) ? 1 : 0).slice(-120);
+          if (this.msgs.length && BigInt(this.msgs.at(-1).id) > BigInt(this.last)) this.last = this.msgs.at(-1).id;
+          this.err = null;
+        } catch (e) { if (KT.Neon.user?.id === owner) this.err = e.message; }
+        finally { this.ui?.onChat?.(); }
+      })();
+      try { await this.pending; } finally { this.pending = null; }
     },
-    start(ui) { this.ui = ui; if (this.timer || !this.enabled) return; this.poll(); this.timer = setInterval(() => { if (!document.hidden && ui.view.panel === 'chat') this.poll(); }, 4000); },
+    async pollGuild() {
+      if (!this.enabled || this.guildPending) return;
+      this.guildPending = true;
+      try { KT.Social.guild = await this.rpc('mv_guild_mine'); this.guildErr = null; }
+      catch (e) { this.guildErr = e.message; }
+      finally { this.guildPending = false; this.ui?.onChat?.(); }
+    },
+    start(ui) {
+      this.ui = ui; if (!this.enabled) return;
+      if (this.owner !== KT.Neon.user.id) { this.owner = KT.Neon.user.id; this.msgs = []; this.last = 0; this.profiles = {}; this.err = null; this.guildErr = null; }
+      if (this.timer) return;
+      this.poll();
+      this.timer = setInterval(() => {
+        if (document.hidden) return;
+        if (ui.view.panel === 'guild' && ui.view.tab === 'home' || ui.view.panel === 'chat' && ui.view.tab === 'guild') this.pollGuild();
+        else if (ui.view.panel === 'chat' && ui.view.tab !== 'profile') this.poll();
+      }, 4000);
+    },
     async send(text) {
+      text = String(text).trim();
+      if (!text || text.length > 200) throw new Error('Escreva entre 1 e 200 caracteres.');
+      if (this.sending) throw new Error('A mensagem anterior ainda está sendo enviada.');
+      if (Date.now() - this.sentAt < 3000) throw new Error('Espere 3 segundos entre mensagens.');
+      this.sending = true;
+      try {
       const id = await this.rpc('mv_chat_send', { p_text:text });
       if (id === -1) throw new Error('Mensagem bloqueada: racismo e discurso de ódio são proibidos no Mythverse.');
       if (id === -2) throw new Error('Mensagem bloqueada. Por insistir em discurso de ódio, você foi silenciado no chat por 24 horas.');
-      await this.poll(); return id;
+      this.sentAt = Date.now();
+      await this.poll(); if (!this.msgs.some(m => String(m.id) === String(id))) await this.poll(); return id;
+      } finally { this.sending = false; }
+    },
+    async sendGuild(text) {
+      text = String(text).trim();
+      if (!text || text.length > 200) throw new Error('Escreva entre 1 e 200 caracteres.');
+      if (this.sending) throw new Error('A mensagem anterior ainda está sendo enviada.');
+      if (Date.now() - this.sentAt < 10000) throw new Error('Espere 10 segundos entre mensagens da guilda.');
+      this.sending = true;
+      try { await this.rpc('mv_guild_post', { p_text:text }); this.sentAt = Date.now(); await this.pollGuild(); }
+      finally { this.sending = false; }
     },
     async profile(ref = '') { const p = await this.rpc('mv_profile_get', { p_ref:ref }); this.profiles[ref || 'me'] = { at:Date.now(), data:p }; return p; },
     async saveProfile(f) { await this.rpc('mv_profile_set', { p_avatar:f.avatar, p_title:f.title, p_bio:f.bio, p_show_team:f.team, p_show_stats:f.stats, p_show_guild:f.guild }); return this.profile(''); }
@@ -28,9 +75,20 @@
 
   const avatar = (id, cls = '') => id ? `<img class="av ${cls}" src="${KT.portraitUrl(id)}" alt="" loading="lazy">` : `<span class="av av-empty ${cls}">旅</span>`;
 
-  P.onChat = function() { if (this.view.panel === 'chat' && this.view.tab !== 'profile') { const box = this.el.modalBody.querySelector('.chat-log'); if (box) { const near = box.scrollHeight - box.scrollTop - box.clientHeight < 80; box.innerHTML = this.chatLines(); if (near) box.scrollTop = box.scrollHeight; } } };
-  P.chatLines = function() {
+  P.onChat = function() {
+    const guild = this.view.panel === 'guild' || this.view.tab === 'guild';
+    if (!['chat', 'guild'].includes(this.view.panel) || this.view.tab === 'profile') return;
+    const box = this.el.modalBody.querySelector('.chat-log,.guild-feed');
+    if (box) {
+      const html = this.chatLines(guild), near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+      if (box.innerHTML !== html) { box.innerHTML = html; if (near) box.scrollTop = box.scrollHeight; else { const more = this.el.modalBody.querySelector('[data-chat-latest]'); if (more) more.hidden = false; } }
+    }
+    const status = this.el.modalBody.querySelector('.chat-status');
+    if (status) { const err = guild ? Community.guildErr : Community.err; status.textContent = err ? `Conexão interrompida · tentando reconectar. ${err}` : 'Conectado · atualizado automaticamente'; status.classList.toggle('txt-pink', !!err); }
+  };
+  P.chatLines = function(guild = false) {
     const C = Community;
+    if (guild) return (KT.Social?.guild?.feed || []).slice().reverse().map(m => `<div class="chat-line ${m.kind === 'event' ? 'chat-event' : ''}"><b>${esc(m.kind === 'event' ? 'Registro da guilda' : m.author)}</b><small>${hhmm(m.at)}</small><p>${esc(m.text)}</p></div>`).join('') || '<p class="empty-note">Combine uma caçada com sua guilda.</p>';
     return C.msgs.map(m => `<div class="chat-line ${m.me ? 'me' : ''}"><button class="chat-who" data-player="${esc(m.ref)}" type="button">${avatar(m.avatar)}<b>${esc(m.name)}</b></button><small>${hhmm(m.at)}</small><p>${esc(m.text)}</p></div>`).join('')
       || '<p class="empty-note">Ninguém falou ainda. Diga olá para Tsukimori!</p>';
   };
@@ -39,11 +97,15 @@
     if (!C.enabled) return '<p class="empty-note">O chat global funciona com conta online.</p>';
     C.start(this);
     if (tab === 'profile') return this.myProfileHtml();
+    const guild = tab === 'guild';
+    if (guild && this.engine.serviceStatus('clans').locked) return this.serviceLockedHtml(this.engine.serviceStatus('clans'));
+    if (guild && !KT.Social?.guild?.guild) return '<div class="empty-state"><h3>Uma mesa para seus aliados</h3><p>Este canal é reservado aos membros da sua guilda.</p><button class="action primary" data-go="guild:list" type="button">Encontrar uma guilda</button></div>';
+    if (guild) C.pollGuild();
     setTimeout(() => { const box = this.el.modalBody.querySelector('.chat-log'); if (box) box.scrollTop = box.scrollHeight; }, 30);
-    return `<section class="chat">
-      <div class="chat-log" aria-live="polite">${this.chatLines()}</div>
-      <form class="chat-form" data-chat-form><input id="chat-input" maxlength="200" autocomplete="off" placeholder="Mensagem para todo o servidor (Enter envia)"><button class="action primary" type="submit">Enviar</button></form>
-      <small class="dim chat-rules">Respeito acima de tudo. Racismo, injúria e discurso de ódio são bloqueados automaticamente e silenciam a conta. ${C.err ? `<b class="txt-pink">${esc(C.err)}</b>` : ''}</small></section>`;
+    return `<section class="chat"><header class="chat-channel"><div><span class="eyebrow">${guild ? 'SOMENTE SUA GUILDA' : 'PRAÇA DE TSUKIMORI · PÚBLICO'}</span><h3>${guild ? esc(KT.Social.guild.guild.name) : 'Viajantes de todos os mundos'}</h3></div><small class="chat-status">${esc((guild ? C.guildErr : C.err) || 'Conectado · atualizado automaticamente')}</small></header>
+      <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="${guild ? 'Chat da guilda' : 'Chat global'}">${this.chatLines(guild)}</div><button class="action small" data-chat-latest type="button" hidden>Novas mensagens ↓</button>
+      <form class="chat-form" data-chat-form data-channel="${guild ? 'guild' : 'global'}"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" maxlength="200" autocomplete="off" placeholder="${guild ? 'Combine estratégias com seus aliados…' : 'Converse com os viajantes…'}"><button class="action primary" type="submit">Enviar</button></form>
+      <small class="dim chat-rules">Até 200 caracteres · Enter envia. ${guild ? 'Canal reservado aos membros. ' : 'Canal público: não compartilhe dados pessoais. '}Respeite os demais jogadores.</small></section>`;
   };
   P.myProfileHtml = function() {
     const C = Community, p = C.profiles.me?.data;
@@ -80,7 +142,9 @@
     const ui = Community.ui; if (!ui) return;
     if (ev.target.matches('[data-chat-form]')) {
       ev.preventDefault(); const inp = ev.target.querySelector('#chat-input'), text = inp.value.trim(); if (!text) return;
-      try { inp.disabled = true; await Community.send(text); inp.value = ''; ui.onChat(); } catch (e) { ui.toast(esc(e.message)); } finally { inp.disabled = false; inp.focus(); }
+      if (Community.sending) return;
+      const button = ev.target.querySelector('[type="submit"]');
+      try { inp.disabled = true; button.disabled = true; button.textContent = 'Enviando…'; await (ev.target.dataset.channel === 'guild' ? Community.sendGuild(text) : Community.send(text)); inp.value = ''; ui.onChat(); } catch (e) { ui.toast(esc(e.message)); } finally { inp.disabled = false; button.disabled = false; button.textContent = 'Enviar'; inp.focus(); }
     }
     if (ev.target.matches('[data-profile-form]')) {
       ev.preventDefault(); const f = new FormData(ev.target);
@@ -89,4 +153,5 @@
     }
   });
   document.addEventListener('click', ev => { const b = ev.target.closest('[data-player]'); if (b && Community.ui) { ev.preventDefault(); Community.ui.openPanel('player', b.dataset.player); } });
+  document.addEventListener('click', ev => { const b = ev.target.closest('[data-chat-latest]'); if (!b) return; const box = Community.ui?.el.modalBody.querySelector('.chat-log,.guild-feed'); if (box) box.scrollTop = box.scrollHeight; b.hidden = true; });
 })();

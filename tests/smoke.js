@@ -45,7 +45,7 @@ ok(evAt('2026-09-26T12:10:00-03:00').ends === Date.parse('2026-09-26T14:00:00-03
 ok(State.upcomingEvents(Date.parse('2026-09-26T12:00:00-03:00')).length >= 20, 'agenda da semana');
 
 // ---------- início ----------
-const state = State.createState(); state.settings.autoPoints = false; // os testes abaixo distribuem pontos à mão
+const state = State.createState(); state.player.level = 25; state.settings.autoPoints = false; // fixture com os serviços da cidade desbloqueados
 const events = { loot:0, results:[], dialogs:0 };
 const engine = new CombatEngine(state, { onLoot(){ events.loot++; }, onResult(r){ events.results.push(r); }, onDialog(){ events.dialogs++; } });
 ok(state.starterRolls === 10 && !state.collection.length && state.player.gold === 0, 'jornada começa vazia');

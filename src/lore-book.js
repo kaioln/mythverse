@@ -42,6 +42,18 @@
       ]
     },
     {
+      id:'cerejeiras', part:'Interlúdio', title:'Os nomes nas cerejeiras',
+      epigraph:{ text:'Uma flor não dura a estação inteira. A árvore, sim. É por isso que voltamos.', from:'Inscrição no pavilhão da Praça da Lua' },
+      pages:[
+        'Na primeira primavera depois do Eclipse, as cerejeiras de Tsukimori floresceram na data de sempre. Os moradores desconfiaram das pétalas. Tinham passado um inverno inteiro aprendendo a desconfiar até da luz, e parecia uma crueldade que as árvores continuassem belas enquanto doze Guardiãs não voltavam para casa. Foi uma criança do Mercado quem trouxe a primeira fita de papel. Escreveu nela o nome da mãe, amarrou-a a um ramo baixo e perguntou à árvore se podia guardá-lo até o ano seguinte.',
+        'De manhã havia fitas em todos os distritos. Uma trazia o nome de um pescador que o mar não devolvera. Outra, o de uma aprendiz da forja que saíra para procurar lenha. Havia nomes de gente viva, desaparecida do outro lado da Fenda, e nomes de quem continuava ali mas perdera a coragem de sair à rua. Sayo quis retirar as fitas: temia que o Véu ferido confundisse lembrança com convocação. Ren, com as mãos negras de fuligem, disse que ninguém estava pedindo aos mortos que voltassem. Estavam prometendo que a cidade não os esqueceria. Sayo deixou as fitas onde estavam.',
+        'Desde então o festival dura oito dias, um para cada distrito. No Mercado se reparte pão doce entre desconhecidos. O Dojo abre o pátio a quem nunca segurou uma espada. Na Forja, Ren grava nomes em pequenas chapas de cobre para quem já não sabe escrevê-los. Os viajantes recém-chegados recebem uma fita em branco: ninguém lhes pede a história, mas a fita pode levá-la quando estiverem prontos. À tarde os músicos atravessam as pontes sem parar de tocar, porque uma canção interrompida diante da Fenda, diz-se, volta com outra voz.',
+        'Kira chegou ao primeiro desfile com uma lanterna na boca e todas as caudas sujas de pétalas. Passou entre as bancas cheirando cada fita, como se procurasse alguém. Quando encontrou um nome escrito numa língua de outro mundo, sentou-se debaixo do ramo e ficou ali até anoitecer. A dona da fita, uma viajante que não sorria desde a travessia, sentou-se ao lado dela. Não disseram nada. No fim, a viajante contou à raposa quem era aquele nome. Assim nasceu a vigília: ao cair da noite, as pessoas levam lanternas ao lago e contam em voz alta uma lembrança de quem escreveram nas fitas.',
+        'A vigília tem um risco que Sayo nunca esconde. Algumas lanternas voltam contra a corrente, e entre elas às vezes desperta uma raposa de nove caudas que já não distingue saudade de fome. Por isso a Guilda mantém guardas junto à água, e por isso o festival não termina quando as luzes sobem: termina quando todos voltam juntos para a praça. Não se festeja uma vitória sobre o Eclipse. Festeja-se o trabalho menor e mais difícil de continuar vivendo sob ele.',
+        { verse:['O ramo segura o que o vento levaria,', 'a fita diz o nome que a boca calou;', 'se eu não souber voltar quando acabar o dia,', 'acende a tua lanterna onde a nossa começou.'], by:'Refrão cantado nas pontes de Tsukimori' }
+      ]
+    },
+    {
       id:'shirogane', part:'Capítulo Terceiro', title:'O Rei de Prata sob a Coroa Negra', unlock:{ zone:'hunt' },
       epigraph:{ text:'Há reis que tomam a coroa pela glória, e reis que a aceitam por amor. Destes últimos deves ter mais medo, pois não sabem parar.', from:'Provérbio da dinastia de Jade' },
       pages:[
@@ -105,9 +117,9 @@
     },
     {
       id:'kitsune', part:'Interlúdio', title:'A raposa das nove lanternas', unlock:{ zone:'boss_event' },
-      epigraph:{ text:'Acende uma lanterna para quem se foi, e ela iluminará teu caminho de volta. Esquece de acendê-la, e ela virá acender-se sozinha.', from:'Costume do Festival das Lanternas' },
+      epigraph:{ text:'Acende uma lanterna para quem se foi, e ela iluminará teu caminho de volta. Esquece de acendê-la, e ela virá acender-se sozinha.', from:'Costume da vigília das lanternas' },
       pages:[
-        'Uma vez a cada ciclo, quando as ameixeiras florescem fora de época, Tsukimori celebra o Festival das Lanternas. As famílias descem ao lago com lanternas de papel, cada uma com o nome de alguém que partiu escrito em tinta vermelha, e as soltam na água para que atravessem o Véu. Por treze séculos as lanternas partiram. Desde o Eclipse, algumas voltam.',
+        'Na noite final do Festival das Cerejeiras, a música termina na Praça da Lua e todos descem ao lago para a vigília que as crianças chamam de Festival das Lanternas. Cada família leva uma lanterna de papel e lê o nome escrito na fita presa ao ramo durante o dia. Contam uma lembrança antes de soltar a luz na água, para que atravesse o Véu com algo mais do que um nome. Por treze séculos as lanternas partiram. Desde o Eclipse, algumas voltam.',
         'Voltam acesas, navegando contra a corrente, e se juntam na margem sul, onde a névoa é mais densa. Ali, entre elas, desperta a Kitsune das Lanternas, uma raposa de nove caudas feita de fogo e papel, que por séculos guiou as almas pelo Véu e agora não sabe mais para onde levá-las. O Eclipse transformou sua saudade em fome. Ela quer manter acesas as lanternas dos mortos até que alguém se lembre deles, e queima tudo o que se aproxima para que ninguém esqueça.',
         'Os viajantes que a enfrentam aprendem cedo que não se vence a Kitsune com raiva. É preciso lembrar. Durante a luta, os nomes escritos nas lanternas começam a brilhar, e quem os lê em voz alta enfraquece o fogo mais do que qualquer espada. Quando a raposa enfim se aquieta, deita-se no meio das lanternas e adormece, e na manhã seguinte as famílias de Tsukimori encontram na margem nomes que haviam esquecido, avós que ninguém mais visitava, irmãos que partiram tão cedo que nem chegaram a ter rosto na memória de ninguém.',
         'Dizem que a chave que a Kitsune deixa cair ao ser vencida não abre nenhuma porta da cidade. Os mais velhos acham que ela abre a porta de volta, a mesma que Tsukiko encontrou no fundo do lago, e que um dia alguém terá coragem de usá-la.'

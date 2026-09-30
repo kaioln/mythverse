@@ -604,7 +604,7 @@
     // ---------- cidade viva (src/town.js) ----------
     // Só com a arte nova da cidade (ruas caminháveis) e a folha de moradores carregadas; senão, a praça antiga.
     townReady() {
-      if (!this.folk) { this.folk = { meta:null, img:null }; fetch('assets/folk/folk.json').then(r => r.ok ? r.json() : null).then(m => { if (!m) return; const img = new Image(); img.onload = () => Object.assign(this.folk, { meta:m, img }); img.src = 'assets/folk/folk.webp'; }).catch(() => {}); }
+      if (!this.folk) { this.folk = { meta:null, img:null, walk:null }; fetch('assets/folk/folk.json').then(r => r.ok ? r.json() : null).then(m => { if (!m) return; const img = new Image(); img.onload = () => Object.assign(this.folk, { meta:m, img }); img.src = 'assets/folk/folk.webp'; const walk = new Image(); walk.onload = () => { this.folk.walk = walk; }; walk.src = 'assets/town-walk/folk.webp'; }).catch(() => {}); }
       return !!this.folk.img;
     }
     drawTown() {
@@ -631,51 +631,41 @@
       // Balões ficam acima de todos os corpos; moradores falam só quando parados para não poluir a cidade.
       for (const { a, h } of drawn) {
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
-        else if (!a.moving && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name);
+        else if (!a.moving && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name, a.y);
       }
-      this.dimSignposts();
     }
-    // Placa da cidade na frente de alguém fica translúcida (não esconde personagem); volta ao passar o mouse.
-    dimSignposts() {
-      if ((this._dimAt || 0) > this.worldTime) return; this._dimAt = this.worldTime + .15;
-      const r = this.canvas.getBoundingClientRect(), v = this.view || { x:0, w:W }; if (!r.width) return;
-      const sx = r.width / v.w, sy = r.height / H;
-      const boxes = (this.townHits || []).map(o => ({ l:r.left + (o.x - o.h * .4 - v.x) * sx, rr:r.left + (o.x + o.h * .4 - v.x) * sx, t:r.top + (o.y - o.h * 1.25) * sy, b:r.top + (o.y + 12) * sy }));
-      document.querySelectorAll('#village-actions .signpost').forEach(el => {
-        const q = el.getBoundingClientRect();
-        el.classList.toggle('over-actor', boxes.some(o => o.l < q.right && o.rr > q.left && o.t < q.bottom && o.b > q.top));
-      });
+    townWalkHero(id) {
+      this.townWalks ||= new Map();
+      if (!this.townWalks.has(id)) {
+        const img = new Image(); this.townWalks.set(id, img);
+        img.onerror = () => { img.failed = true; };
+        img.src = `assets/town-walk/${id}.webp`;
+      }
+      const img = this.townWalks.get(id);
+      return img.complete && img.naturalWidth ? img : null;
     }
-    // Caminhada fluida com a arte do próprio personagem (pose parada): tronco sobe e desce duas vezes por passada e
-    // balança de leve; as pernas (abaixo do quadril) são desenhadas em duas metades que oscilam em oposição, como
-    // pêndulos presos no quadril. Tudo interpolado a cada quadro de tela, sem troca brusca de desenho.
-    // Caminhada fluida sem cortar a arte: o desenho inteiro, com o tronco subindo e descendo duas vezes por passada e a
-    // parte de baixo balançando em faixas finas (pêndulo a partir do quadril, deslocamento contínuo de faixa em faixa).
-    // Os dois desenhos do personagem (parado e em passada) se alternam quando as pernas passam sob o corpo.
-    // cols: [coluna parado, coluna passada] na folha; row: linha da folha.
-    drawWalker(img, M, cols, row, a, h, hipK) {
-      const c = this.ctx, k = h / M.bodyH, fw = M.frameW * k, fh = M.frameH * k, dx = -M.cx * k, dy = -M.footY * k;
-      const ph = a.walkT * 6.4, moving = a.moving, sy = row * M.frameH;
+    // Quadros completos, com pés alinhados ao chão. A fase acompanha a distância percorrida.
+    drawWalker(idle, walk, M, row, a, h, idleCol = 0) {
+      const c = this.ctx, k = h / M.bodyH;
+      const distance = Number.isFinite(a.walkD) ? a.walkD : a.walkT * (a.speed || 24);
+      const frame = a.moving ? Math.floor(distance / 2) % 8 : 0;
+      const img = a.moving && walk ? walk : idle;
+      const col = a.moving && walk ? frame : idleCol;
       c.save(); c.translate(a.x, a.y); if (a.face < 0) c.scale(-1, 1);
-      if (!moving) { c.translate(0, Math.sin(a.animT * 2.2) * h * .008); c.drawImage(img, cols[0] * M.frameW, sy, M.frameW, M.frameH, dx, dy, fw, fh); c.restore(); return; }
-      const s = Math.sin(ph), bob = -Math.abs(s) * h * .05, swing = Math.cos(ph) * h * .13;
-      const col = cols[Math.abs(s) > .38 ? 1 : 0];          // passada aberta: desenho em passada; pernas juntas: parado
-      const sx = col * M.frameW, hipS = M.frameH * hipK, hipD = fh * hipK;
-      c.translate(0, bob); c.rotate(.035);
-      c.drawImage(img, sx, sy, M.frameW, hipS + 1, dx, dy, fw, hipD + 1);    // tronco e cabeça, inteiros
-      const N = 10, legS = M.frameH - hipS, legD = fh - hipD;
-      for (let i = 0; i < N; i++) {                                           // de baixo do quadril até os pés
-        const t0 = i / N, t = (i + .5) / N, off = swing * t * t;
-        c.drawImage(img, sx, sy + hipS + legS * t0, M.frameW, legS / N + .6, dx + off, dy + hipD + legD * t0, fw, legD / N + .6);
-      }
+      // Respiração ancorada no chão: não desloca a sola, a sombra ou o personagem.
+      if (!a.moving) c.scale(1, 1 + Math.sin(a.animT * 2.1 + a.x) * .003);
+      c.drawImage(img, col * M.frameW, row * M.frameH, M.frameW, M.frameH,
+        -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k);
       c.restore();
     }
     drawTownHero(an, a, h) {
       const M = an.meta, run = M.clips?.run?.seq || [2, 0];
-      this.drawWalker(an.img, M, [0, run[0]], 0, a, h * 1.08, (M.footY - M.bodyH * .34) / M.frameH);
+      const walk = this.townWalkHero(a.sprite);
+      const idleCol = a.moving ? run[0] : 0;
+      this.drawWalker(an.img, walk, M, 0, a, h * 1.08, idleCol);
     }
     drawTownFolk(a, h, F) {
-      this.drawWalker(this.folk.img, { ...F, cx:F.frameW / 2 }, [0, 1], a.f, a, h, (F.footY - F.bodyH * .34) / F.frameH);
+      this.drawWalker(this.folk.img, this.folk.walk, { ...F, cx:F.frameW / 2 }, a.f, a, h, a.moving ? 1 : 0);
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     // Um quadro da folha de poses do herói, com os pés em (x, y).
@@ -684,17 +674,45 @@
       c.save(); c.translate(x, y); if (flip) c.scale(-1, 1);
       c.drawImage(img, col * M.frameW, 0, M.frameW, M.frameH, -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k); c.restore();
     }
-    townBubble(x, y, verb, name) {
-      const c = this.ctx; c.save(); c.font = `700 8px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-      const text = verb || '', words = text.split(/\s+/), lines = []; let line = '';
-      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 96) { lines.push(line); line = word; } else line = next; }
-      if (line) lines.push(line); if (!lines.length) lines.push('');
-      const w = Math.max(c.measureText(name).width, ...lines.map(t => c.measureText(t).width)) + 14, hh = 16 + lines.length * 10; let top = y - hh / 2;
-      const blocked = yy => (this.townHits || []).some(o => Math.abs(o.x-x)<w/2+o.h*.3 && yy<o.y && yy+hh>o.y-o.h*1.12);
-      for(let n=0;n<4&&blocked(top);n++) top-=hh+4;
-      this.roundRect(x - w / 2, top, w, hh, 7); c.fillStyle = 'rgba(20,15,25,.68)'; c.fill(); c.strokeStyle='rgba(255,216,137,.34)'; c.lineWidth=.8; c.stroke();
-      c.beginPath(); c.moveTo(x - 4, top + hh); c.lineTo(x + 4, top + hh); c.lineTo(x, top + hh + 5); c.closePath(); c.fill();
-      c.fillStyle = '#ffd889'; c.fillText(name, x, top + 7); c.font = `600 7.6px ${UI_FONT}`; c.fillStyle = '#fff8ee'; lines.forEach((t, i) => c.fillText(t, x, top + 16 + i * 10));
+    townBubble(x, y, verb, name, feetY) {
+      const c = this.ctx; c.save(); c.font = `600 12px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const words = (verb || '').split(/\s+/), lines = []; let line = '';
+      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 145) { lines.push(line); line = word; } else line = next; }
+      if (line) lines.push(line);
+      c.font = `700 13px ${UI_FONT}`;
+      const w = Math.min(172, Math.max(60, c.measureText(name).width + 16, ...lines.map(t => { c.font = `600 12px ${UI_FONT}`; return c.measureText(t).width + 16; })));
+      const hh = 23 + lines.length * 14, v = this.view || { x:0, w:W };
+      const blockers = (this.townHits || []).filter(o => Math.abs(o.x - x) > 1 || Math.abs(o.y - feetY) > 1)
+        .map(o => ({ l:o.x - o.h * .38 - 3, r:o.x + o.h * .38 + 3, t:o.y - o.h * 1.15 - 3, b:o.y + 5 }));
+      if (!this._bubbleRects || this.worldTime >= this._bubbleRectsAt) {
+        const rect = this.canvas.getBoundingClientRect(); this._bubbleRects = [];
+        if (rect.width && rect.height) document.querySelectorAll('#village-actions .signpost, #village-hub').forEach(el => {
+          if (!el.getClientRects().length) return;
+          const r = el.getBoundingClientRect();
+          this._bubbleRects.push({ l:v.x + (r.left - rect.left) / rect.width * v.w - 4,
+            r:v.x + (r.right - rect.left) / rect.width * v.w + 4,
+            t:(r.top - rect.top) / rect.height * H - 4,
+            b:(r.bottom - rect.top) / rect.height * H + 4, sign:true });
+        });
+        this._bubbleRectsAt = this.worldTime + .25;
+      }
+      blockers.push(...this._bubbleRects);
+      const offsets = [0, -w * .65, w * .65, -w * 1.15, w * 1.15];
+      let best = null;
+      for (const top of [y - hh - 5, y - hh - 24, feetY + 9]) for (const off of offsets) {
+        const cx = Math.max(v.x + w / 2 + 4, Math.min(v.x + v.w - w / 2 - 4, x + off));
+        const box = { l:cx - w / 2, r:cx + w / 2, t:top, b:top + hh };
+        if (box.t < 4 || box.b > H - 4) continue;
+        const overlap = blockers.reduce((sum, q) => sum + Math.max(0, Math.min(box.r, q.r) - Math.max(box.l, q.l)) *
+          Math.max(0, Math.min(box.b, q.b) - Math.max(box.t, q.t)) * (q.sign ? 5 : 1), 0);
+        const score = overlap + Math.abs(cx - x) * .15 + Math.abs(top - (y - hh - 5)) * .1;
+        if (!best || score < best.score) best = { cx, top, score };
+      }
+      if (!best) { c.restore(); return; }
+      const { cx, top } = best;
+      this.roundRect(cx - w / 2, top, w, hh, 5); c.fillStyle = 'rgba(22,17,26,.74)'; c.fill(); c.strokeStyle='rgba(255,216,137,.42)'; c.lineWidth=.8; c.stroke();
+      c.font = `700 13px ${UI_FONT}`; c.fillStyle = '#ffd889'; c.fillText(name, cx, top + 10);
+      c.font = `600 12px ${UI_FONT}`; c.fillStyle = '#fff8ee'; lines.forEach((t, i) => c.fillText(t, cx, top + 23 + i * 14));
       c.restore();
     }
     townNameTag(x,y,name){const c=this.ctx;c.save();c.font=`700 8px ${UI_FONT}`;c.textAlign='center';c.lineWidth=2.5;c.strokeStyle='rgba(10,8,18,.82)';c.strokeText(name,x,y);c.fillStyle='#fff1d4';c.fillText(name,x,y);c.restore();}

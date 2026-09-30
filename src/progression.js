@@ -1,6 +1,31 @@
 (() => {
   const KT = globalThis.KT;
 
+  // Nível da conta, não do herói: introduz um sistema por vez, sem custo de desbloqueio.
+  const services = {
+    guild:{ level:2, name:'Contratos da Ordem', text:'Conheça as necessidades dos moradores e escolha suas caçadas.' },
+    forge:{ level:3, name:'Forja de Ren', text:'Aprimore o equipamento que encontrou na jornada.' },
+    dojo:{ level:4, name:'Dojo do Eco', text:'Treine a equipe sem substituir suas escolhas de build.' },
+    workshop:{ level:5, name:'Oficina de Aoi', text:'Prepare consumíveis e retrabalhe afixos.' },
+    house:{ level:6, name:'Casa do Time', text:'Exponha cartas e registre as descobertas da equipe.' },
+    shrine:{ level:7, name:'Santuário da Lua', text:'Use fragmentos para elevar a qualidade dos heróis.' },
+    expeditions:{ level:8, name:'Expedições', text:'Envie os heróis da reserva em missões.' },
+    prof:{ level:10, name:'Profissões', text:'Especialize-se em coleta e criação de equipamentos.' },
+    market:{ level:12, name:'Mercado do Porto', text:'Acompanhe as ofertas rotativas dos comerciantes.' },
+    trade:{ level:15, name:'Mercado de Jogadores', text:'Negocie espólios; confira preço, quantidade e taxas.' },
+    clans:{ level:18, name:'Guildas de jogadores', text:'Encontre aliados e participe de uma comunidade.' },
+    arena:{ level:20, name:'Coliseu Carmesim', text:'Teste suas decisões contra as defesas de outros jogadores.' }
+  };
+  const serviceFor = (panel, tab) => panel === 'city' ? (services[tab] ? tab : null)
+    : panel === 'shop' ? ({ market:'market', p2p:'trade', gems:'trade' }[tab] || null)
+    : panel === 'adventure' && tab === 'expeditions' ? 'expeditions'
+    : panel === 'quests' && tab === 'contracts' ? 'guild'
+    : panel === 'guild' ? 'clans' : panel === 'arena' ? 'arena'
+    : panel === 'bank' && tab === 'wallet' ? 'trade' : null;
+  const serviceActions = { train:'dojo', craft:'workshop', enchantItem:'workshop', awaken:'shrine',
+    upgradeItem:'forge', displayCard:'house', startExpedition:'expeditions', craftProf:'prof',
+    buyMarket:'market', marketList:'trade', marketBuyGold:'trade' };
+
   // ---------------------------------------------------------------------------
   // ATRIBUTOS DO HERÓI (estilo clássico), 3 pontos por nível.
   // ---------------------------------------------------------------------------
@@ -279,5 +304,5 @@
     ]
   };
 
-  KT.Progression = { buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, JOB2_LEVEL, JOB2_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, job2Cost, branchOf, jobTitle, TIER_REQ, classTrees, treeFor, training, trainingBonus, trainingCost, trainingCostV1, trainingCap, TRAIN_MAX, shop };
+  KT.Progression = { services, serviceFor, serviceActions, buffs, attributes, ATTR_PER_LEVEL, classAttrHint, icons, jobs, JOB_LEVEL, JOB_CLASS_LEVEL, JOB2_LEVEL, JOB2_CLASS_LEVEL, CLASS_LEVEL_CAP, jobCost, job2Cost, branchOf, jobTitle, TIER_REQ, classTrees, treeFor, training, trainingBonus, trainingCost, trainingCostV1, trainingCap, TRAIN_MAX, shop };
 })();

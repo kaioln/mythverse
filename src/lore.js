@@ -102,8 +102,8 @@
     wade:{ bio:'Patrulheiro do Planalto dos Coiotes, Watari já foi fora-da-lei, xerife e fora-da-lei de novo. Hoje só quer uma boa história para contar na fogueira.', quote:'Palavra dada é bala gasta. Não desperdiço nenhuma.' },
     garrick:{ bio:'Ferreiro-mago do Vale das Runas, Gantetsu acende o metal com palavras e o humor com palavrões. Ensinou Shiina a abrir portais, e se arrepende só quando ela aparece atrás dele.', quote:'Metal é que nem gente: aquece antes de dobrar.' },
     zira:{ bio:'Aprendiz de Gantetsu, Shiina descobriu sozinha como abrir portais do tamanho de uma porta. Usa isso para chegar atrasada e atacar pelas costas, as duas coisas de propósito.', quote:'Não estava ali. Agora estou aqui.' },
-    n9:{ bio:'A Unidade Ômega acordou na Cidadela Autômata com um drone flutuando ao lado e nenhuma ordem. Decidiu que a primeira ordem seria proteger quem não tem ninguém.', quote:'Alvo marcado. Drone pronto. Protocolo: gentileza.' },
-    unit7:{ bio:'A Unidade Sigma foi feita para a guerra e odeia isso. Luta com uma espada-serra enorme e pede desculpas a cada inimigo que derruba.', quote:'Desculpa. Desculpa. Ah, desculpa.' },
+    n9:{ bio:'A Unidade Kū acordou na Cidadela Autômata com um drone flutuando ao lado e nenhuma ordem. Decidiu que a primeira ordem seria proteger quem não tem ninguém.', quote:'Alvo marcado. Drone pronto. Protocolo: gentileza.' },
+    unit7:{ bio:'A Unidade Tetsu foi feita para a guerra e odeia isso. Luta com uma espada-serra enorme e pede desculpas a cada inimigo que derruba.', quote:'Desculpa. Desculpa. Ah, desculpa.' },
     rex:{ bio:'Herdeiro de um pacto demoníaco na Cidade do Pacto Carmesim, Raizō decidiu usar o poder para caçar os demônios que o fizeram. Exibido, provocador e irresponsável, mas nunca com a vida dos outros.', quote:'Pacto é pacto. Mas o contrato tem letra miúda.' },
     virel:{ bio:'Irmão gêmeo de Raizō, Yūgen aceitou o pacto por inteiro e se tornou frio como ele. Os dois se odeiam na mesma medida em que não conseguem se abandonar.', quote:'Meu irmão fala. Eu termino.' },
     selene:{ bio:'Bruxa do relógio na Cidade do Pacto Carmesim, Tokiko para o tempo por alguns segundos, sempre no momento mais dramático possível. Considera o próprio estilo uma arma.', quote:'Um segundo, querido. É tudo que eu preciso.' },
@@ -127,11 +127,168 @@
     boss_sky:{ desire:'Sustentar as ilhas e provar que seu trovão ainda governa o céu.', tragedy:'Parar o tambor derruba as ilhas; deixá-lo tocar destrói o Véu.', link:'A vitória fecha os quatro selos e abre a verdadeira Crônica da Fenda.' },
     boss_event:{ desire:'Manter acesas as lanternas dos mortos até que alguém se lembre deles.', tragedy:'O Eclipse transforma saudade em fogo faminto.', link:'Ao libertá-la, Tsukimori recupera nomes apagados de suas famílias.' }
   };
+  // Páginas recolhidas durante a jornada. A segunda anotação aparece apenas
+  // depois de avançar na região; o estado já existe no progresso do jogador.
+  const fieldNotes = {
+    village:[
+      { by:'Sayo · Praça da Lua', text:'Amarramos nomes às cerejeiras para que ninguém desapareça duas vezes. A fita em branco é para quem acabou de chegar. Não é preciso preenchê-la hoje.' }
+    ],
+    hunt:[
+      { by:'Sayo · entrada do Bosque', text:'As lanternas eram acesas para guiar os perdidos de volta à cidade. Agora brilham quando alguém se afasta da trilha. Caminhem juntos e não respondam à voz que os chamar entre as árvores.' },
+      { at:5, by:'Kira · sob a nona lanterna', text:'Esta raposa conhece o cheiro da Coroa. Não é o Bosque que chama os guardiões: alguém no Templo está usando suas lanternas como sinos.' }
+    ],
+    dungeon:[
+      { by:'Sayo · soleira do Templo', text:'As pedras desta escada guardam o primeiro selo. O fogo do vazio entrou pelas juntas; a luz do Véu ainda corre por baixo delas.' },
+      { at:2, by:'Inscrição no segundo andar', text:'O nome Yuzuki foi raspado da parede muitas vezes. Sempre reaparece antes da manhã. Quem o apagou queria que Shirogane esquecesse por quem veio até aqui.' }
+    ],
+    boss:[
+      { by:'Sayo · antes do Altar', text:'A Coroa oferece a cada pessoa a voz que mais deseja ouvir. Se Shirogane chamar por Yuzuki, lembrem-se: o que responde não é ela.' },
+      { at:1, by:'Sayo · após o primeiro selo', text:'A prata que voltou ao céu não iluminou o lago. Iluminou o mar. O segundo selo já sabe que estamos a caminho.' }
+    ],
+    hunt_swamp:[
+      { by:'Yuki · margem do Pântano', text:'Os vaga-lumes se movem contra o vento. Marco as trilhas com sinos pequenos, porque a luz pode mentir, mas o som volta de onde veio.' },
+      { at:4, by:'Pote da Bruxa do Brejo', text:'Dentro do barro alguém canta o nome do rei de Jade. A bruxa não roubou esta voz; encontrou-a chamando debaixo da lama.' }
+    ],
+    dungeon_crypt:[
+      { by:'Sora · porta da Cripta', text:'O jade nos túmulos não serve de ornamento. Cada pedra guarda uma memória do morto; o Eclipse fez os sacerdotes se lembrarem apenas do juramento de servir.' },
+      { at:2, by:'Rolo da dinastia de Jade', text:'O último rei mandou esconder o verdadeiro nome da Coroa. Deixou a primeira sílaba no Templo e levou a segunda para o túmulo.' }
+    ],
+    hunt_tide:[
+      { by:'Tobimaru · cais da Costa', text:'A maré devolveu um barco perdido há quarenta anos. Sua tripulação ainda espera a ordem de atracar. Não lhes prometam porto antes de saber quem lhes deu a ordem.' },
+      { at:5, by:'Sayo · registro da maré', text:'Os afogados trazem nomes nos bolsos, não armas. Mizuchi está abrindo o Arquivo à procura de uma palavra que perdeu.' }
+    ],
+    dungeon_tide:[
+      { by:'Sora · porta do Arquivo', text:'A tinta escreve sozinha o que teme que aconteça. Não leia em voz alta uma frase sobre seu futuro; procure o nome de quem a escreveu.' },
+      { at:2, by:'Escriba sem rosto', text:'Uma escama antiga diz proteger. Todas as cópias recentes dizem afogar. A diferença cabe num único risco de tinta do Eclipse.' }
+    ],
+    boss_tide:[
+      { by:'Sayo · beira do Abismo', text:'Mizuchi recebeu uma ordem boa e a obedeceu até esquecer seu sentido. A água doce de suas lágrimas é a parte dele que ainda se lembra.' },
+      { at:1, by:'Ren · após a maré', text:'O mar devolveu os nomes. Entre eles estava um que nunca deveria ter sido escrito numa lista de afogados: Apep.' }
+    ],
+    hunt_frost:[
+      { by:'Yuki · caminho do Planalto', text:'A neve cai para cima quando o sino da Rainha toca. Quem seguir apenas as próprias pegadas terminará no mesmo lugar; sigo o som das pontes abaixo do gelo.' },
+      { at:4, by:'Carta presa num galho', text:'A Rainha fecha a passagem para a Forja, mas deixa comida para os viajantes perdidos. Não sei se nos protege dela ou do que trabalha lá dentro.' }
+    ],
+    dungeon_forge:[
+      { by:'Ren · entrada da Forja', text:'Fui aprendiz aqui. A última arma que fizemos não aceitou bainha nem nome. Se a encontrarem nas mãos de um autômato, não a chamem de volta.' },
+      { at:2, by:'Marca sob a bigorna', text:'Os autômatos ainda fazem uma pausa ao pôr do sol, embora já não haja janelas. Alguém lhes ensinou a descansar antes de lhes ensinar a lutar.' }
+    ],
+    hunt_desert:[
+      { by:'Nanami · primeira duna', text:'O mapa envelhece mais depressa que eu. Amarrei um fio vermelho em cada marco; se ele aparecer à frente quando deveria estar atrás, a hora foi comida.' },
+      { at:5, by:'Diário de uma caravana', text:'Apep não persegue viajantes: persegue a data gravada na placa do oráculo. Nós estamos entre ela e o próximo dia.' }
+    ],
+    hunt_ghost:[
+      { by:'Jin · salão do baile', text:'A mesma valsa começa antes que termine. Ninguém ali parece triste; talvez esquecer a última nota seja mais cruel do que nunca ouvi-la.' },
+      { at:4, by:'Convite encontrado no chão', text:'A festa começava ao anoitecer. A criança que derrubou a taça ainda pode segurá-la se a música parar um instante.' }
+    ],
+    dungeon_clock:[
+      { by:'Sora · base da Torre', text:'As engrenagens não contam minutos, contam decisões. Quando uma gira para trás, um caminho que percorremos tenta deixar de ter acontecido.' },
+      { at:2, by:'Inscrição atrás do mostrador', text:'Quatro selos, quatro fechaduras. O desenho sob elas não representa um quinto senhor; representa a porta que todos mantinham fechada.' }
+    ],
+    boss_sand:[
+      { by:'Nanami · última ampulheta', text:'O medo de Apep tem uma data. Cada segundo roubado de nós apenas a deixa mais tempo sozinha com essa certeza.' },
+      { at:1, by:'Sayo · depois da queda', text:'A areia voltou a correr, mas o céu se abriu. O quarto selo estava acima de nós o tempo todo.' }
+    ],
+    hunt_sky:[
+      { by:'Haru · ponte das nuvens', text:'O vento corre entre as ilhas como se tentasse costurá-las. A cada trovão uma ponte treme, e a cidade aparece menor lá embaixo.' },
+      { at:5, by:'Sayo · carta para os viajantes', text:'Não prometo que as ilhas resistirão à queda do tambor. Prometo que ninguém na cidade ficará sem saber por que vocês subiram.' }
+    ],
+    hunt_sakura:[
+      { by:'Kira · Vale suspenso', text:'Estas flores cheiram como as de Tsukimori, mas não caem quando chega a hora. Uma primavera que nunca acaba também pode ser uma prisão.' },
+      { at:4, by:'Fita presa num ramo', text:'O nome escrito aqui pertence a alguém que voltou para casa. A flor o guardou mesmo assim. Talvez as árvores ainda estejam aprendendo a diferença.' }
+    ],
+    dungeon_sky:[
+      { by:'Monge do Santuário', text:'Fujin desapareceu antes de romperem os sacos de vento. Continuamos tocando os sinos para que, onde estiver, saiba que ainda estamos aqui.' },
+      { at:2, by:'Haru · corredor dos sinos', text:'A badalada empurra, mas o intervalo deixa caminhar. Ouçam antes de correr. O céu não exige pressa de quem o sustenta.' }
+    ],
+    boss_sky:[
+      { by:'Sayo · diante do Trono', text:'Raijin sustenta as ilhas com o mesmo golpe que fere o Véu. É preciso encontrar quem as segure enquanto ele descansa, ainda que seja por uma única batida.' },
+      { at:1, by:'Sayo · margem do lago', text:'A lua voltou. No reflexo, ouvi minha voz me chamar do fundo da Fenda. Os quatro selos não eram o fim da história.' }
+    ],
+    rift:[
+      { by:'Aviso na primeira pedra', text:'Se reconhecer sua casa num andar abaixo, não entre pela porta. A Fenda se lembra dos futuros que perdemos melhor do que nós.' },
+      { at:5, by:'Sayo · caderno da descida', text:'A cidade em ruínas tinha o mesmo cheiro de pão da nossa. Não era uma lembrança do passado: era um amanhã que não deixaremos acontecer.' }
+    ],
+    world_boss:[
+      { by:'Quadro da Guilda', text:'Quando a Fenda se abre sobre os telhados, os sinos chamam todos os distritos. Cada equipe segura uma parte da muralha; ninguém precisa carregar a criatura inteira sozinho.' }
+    ],
+    boss_event:[
+      { by:'Sayo · vigília das lanternas', text:'À noite, leiam um nome antes de lançar cada lanterna. A Kitsune não distingue uma chama esquecida de uma chama faminta.' },
+      { at:1, by:'Kira · depois da vigília', text:'A raposa dormiu. Uma lanterna voltou com o nome escrito do lado de dentro; alguém no outro lado do Véu também se lembrou.' }
+    ]
+  };
   const heroPurpose = (id, roster = KT.Data?.roster || []) => {
     const h = roster.find(x => x.id === id), same = h ? roster.filter(x => x.id !== id && x.world === h.world).slice(0, 2).map(x => x.name) : [], bonds = (KT.Data?.bonds || []).filter(b => b.ids.includes(id)).map(b => b.name).slice(0, 2);
     const role = { Vanguarda:'manter o grupo unido quando o Véu tentar separar suas memórias', Executor:'encarar a verdade que os grandes inimigos escondem', Arcanista:'decifrar por que mundos diferentes compartilham o mesmo Eclipse', Atirador:'encontrar o caminho que os mapas da Fenda apagam', Suporte:'lembrar aos viajantes quem eram antes da guerra' }[h?.cls] || 'encontrar seu lugar em Tsukimori';
     return { role:`Em Tsukimori, sua promessa é ${role}.`, ties:[same.length ? `Veio do mesmo mundo que ${same.join(' e ')}.` : '', bonds.length ? `Seus laços ativos contam a história de ${bonds.join(' e ')}.` : ''].filter(Boolean) };
   };
 
-  KT.Lore = { world, worlds, heroes, chapters, bosses, heroPurpose };
+  const history = [
+    { title:'A Era do Lago Sem Nome', text:'Antes dos reinos, as aldeias mediam o inverno pela espessura do gelo. Os pastores que chegaram ao lago ainda não sabiam das outras margens: foi Tsukiko quem tocou a água e encontrou o fio de prata. Suas primeiras discípulas aprenderam a fechar as portas sem deixar de ouvir quem batia. Os barqueiros conservaram uma luz à margem para os viajantes da terra; as Guardiãs conservaram os nomes dos viajantes de além do Véu.' },
+    { title:'O Pacto das Quatro Margens', text:'Prata, Maré, Hora e Trovão deram quatro testemunhas ao pacto. Nenhuma governaria sozinha. O selo de Prata guardava os nomes; o da Maré, as lembranças; o da Hora, a possibilidade de mudar; o do Trovão, a distância entre os mundos. Os reis posteriores chamaram os selos de armas. Os registros mais antigos chamam-nos de deveres.' },
+    { title:'A Dinastia de Jade', zone:'dungeon_crypt', text:'Os reis de Jade queriam que nada se perdesse, nem mesmo uma ordem. Prenderam memórias nas pedras dos túmulos e deram aos sacerdotes a tarefa de repeti-las. Quando uma ordem errada atravessou os séculos, ninguém tinha permissão de esquecê-la. O Rei Sem Túmulo é o último soberano dessa lei: seus servos continuam defendendo uma cidade que já não existe.' },
+    { title:'O Século dos Nomes Afogados', zone:'dungeon_tide', text:'Ao mar se entregavam os nomes dos que não voltavam, para que a costa não os reclamasse dos vivos. Os escribas do Arquivo transformaram o rito em registro: cada desaparecido teria uma linha, cada família receberia uma cópia. Mizuchi guardava essas páginas. O Eclipse não lhe retirou o amor por elas; retirou a diferença entre conservar alguém e impedir sua volta.' },
+    { title:'Os Três Invernos do Eclipse', zone:'boss', text:'A Coroa não conquistou Tsukimori com um exército. Ofereceu a Shirogane uma única pessoa. Depois pediu um nome, uma estação, a lua. As aldeias discordam sobre qual foi o primeiro sacrifício, mas todas conservam uma fita em branco para Yuzuki. O Festival das Cerejeiras é a resposta dos moradores: lembrar sem negociar os vivos pelos mortos.' },
+    { title:'O Ano das Travessias', zone:'boss_sky', kill:true, text:'Restaurar os selos não desfaz o que foi vivido. A costa ainda enterra seus mortos; as famílias de Jade ainda procuram nomes; há crianças que nunca viram uma lua inteira. Os viajantes não receberam um mundo terminado. Receberam a tarefa mais lenta de todos os heróis: ensinar uma cidade a confiar novamente em suas próprias portas.' }
+  ];
+  const customs = [
+    { title:'As fitas de cerejeira', text:'Uma fita recebe um nome, não um pedido. Quem retorna desata a própria fita e planta uma semente. As fitas em branco acolhem quem ainda não encontrou as palavras. Kira proíbe que o preço de qualquer prêmio do festival inclua uma delas.' },
+    { title:'Os sinos das travessias', text:'Um toque anuncia quem chega; dois, quem parte; três chamam auxílio. Os tambores da praça deixam um compasso vazio para que os sinos de uma ponte possam ser ouvidos. Mesmo durante o festival, a música existe para acompanhar os caminhos, nunca para encobri-los.' },
+    { title:'A Ordem e as guildas', text:'A Ordem responde às necessidades da cidade e registra contratos. As guildas são juramentos entre viajantes, livres para escolher suas próprias missões. Uma mantém as portas abertas; as outras decidem quem caminhará junto. Nem o conselho nem Sayo podem obrigar um herói a prometer o que não cumprirá.' },
+    { title:'O acordo de Kogane', text:'O ouro remunera trabalho, não mede uma pessoa. Os comerciantes do porto registram lote, origem e taxa diante do comprador. Ren assina suas peças porque quer responder por elas; Aoi recusa chamar uma cópia de relíquia. A cidade nasceu da confiança entre desconhecidos e pode morrer se transformar tudo em promessa sem testemunha.' },
+    { title:'O Coliseu Carmesim', text:'Sua primeira arena era um pátio onde sobreviventes ensinavam os mais novos a recuar sem vergonha. Hoje há ligas e Honra, mas o juramento permanece: revelar a própria defesa, aceitar as mesmas regras e não tomar a derrota de alguém como medida de seu valor. Kaji e Kori guardam lados opostos do portão, não para se evitar, mas para que ninguém atravesse sozinho.' }
+  ];
+  // Os registros entram nas cenas já existentes: não há migração nem novo formato de save.
+  const chapterBook = { hunt:'shirogane', hunt_tide:'mizuchi', hunt_desert:'apep', hunt_sky:'raijin', rift:'fenda', boss_event:'kitsune' };
+  Object.entries(fieldNotes).forEach(([id, notes]) => {
+    if (id === 'village' || !KT.Data.story.zone[id]) return;
+    KT.Data.story.zone[id] = [{ who:'Crônica', by:notes[0].by, text:notes[0].text, book:chapterBook[id] }, ...KT.Data.story.zone[id]];
+  });
+  const endings = {
+    boss:{ who:'Shirogane', text:'Eu dei o nome dela à Coroa. Não me peçam que esqueça Yuzuki para provar que fui libertado. Peçam que eu não sacrifique outro nome ao meu luto.', book:'shirogane' },
+    boss_tide:{ who:'Mizuchi', text:'Guardei os nomes tão fundo que ninguém pôde voltar por eles. Levem os registros à costa. Uma memória não precisa de grades para permanecer.', book:'mizuchi' },
+    boss_sand:{ who:'Apep', text:'Temi tanto a última hora que roubei todas as anteriores. Ouçam o que volta a correr: não é minha morte. É o amanhã daqueles que eu aprisionei.', book:'apep' },
+    boss_sky:{ who:'Sayo', text:'Os viajantes seguraram as pontes por uma batida, e Raijin enfim pôde baixar as mãos. A lua voltou; as perdas não desapareceram. Agora teremos de construir uma paz que não precise de outro sacrifício.', book:'raijin' },
+    boss_event:{ who:'Kitsune', text:'Não queria roubar ninguém do festival. Só temia que a última lanterna apagasse antes de alguém ler os nomes. Levem as fitas de volta às cerejeiras; eu cuidarei do fogo.', book:'kitsune' }
+  };
+  Object.entries(endings).forEach(([id, line]) => KT.Data.story.bossWin[id].push(line));
+  Object.entries(endings).forEach(([id]) => KT.Data.story.bossWin[id].push(...fieldNotes[id].filter(n => n.at === 1).map(n => ({ who:'Crônica', by:n.by, text:n.text }))));
+  const companionArcs = {
+    erik:[
+      'Iwao mantém o escudo entre Shirogane e a equipe. Reconhece o gesto de um homem que se oferece à morte por alguém, mas recusa chamar de proteção um sacrifício escolhido pelos outros. Ao voltar, fica de guarda enquanto Sayo escreve a primeira fita para Yuzuki.',
+      'Na costa, Iwao vê portas lacradas por dentro. Nenhuma muralha de Eldria parecia tão alta. Ajuda a abri-las sem perguntar quais moradores merecem voltar; depois conta a Akira que um escudo também precisa saber sair da frente.',
+      'Quando o tempo retorna, Iwao percebe uma marca nova na pedra do escudo. Não se lembra do golpe que a fez. Guarda a marca: esquecer a própria dor não lhe dá o direito de esquecer quem caminhou ao seu lado.',
+      'Com a lua inteira, Iwao deixa o escudo encostado à parede do Dojo pela primeira vez. Ensina aos novatos onde apoiar os pés, não como imitá-lo. À noite ainda vigia a ponte, mas agora permite que alguém o substitua.'
+    ],
+    akira:[
+      'Akira amarra uma fita pelo vale do Rio Cinzento. Não pede que o vulcão devolva sua casa. Depois de Shirogane, entende o preço de confundir saudade com uma ordem dirigida ao mundo.',
+      'Nos registros devolvidos por Mizuchi, Akira procura uma aldeia que nunca pertenceu àquela costa. Não a encontra. Copia uma página em branco e nela desenha o curso do rio: uma casa pode ganhar testemunhas sem fingir que voltou.',
+      'Apep lhe oferece um instante antes da lava. Akira ouve a proposta até o fim, pois negá-la sem desejo seria mentir. Recusa-a quando percebe que o instante roubado teria de ser tirado do amanhã de outra família.',
+      'Akira ensina às crianças da praça como reconhecer uma correnteza. Conta sobre a antiga aldeia sem transformar seu desaparecimento na última frase. No festival seguinte, traz a primeira canoa feita em Tsukimori.'
+    ],
+    yuki:[
+      'Yuki não corta a fita de Shirogane. No Mosteiro aprendeu que silêncio e perdão não são a mesma coisa. Espera que ele diga o nome de Yuzuki sem a voz da Coroa respondendo.',
+      'O Arquivo registra o nome de uma monja da Lua Minguante que Yuki nunca conheceu. A anotação é mais antiga que o mosteiro. Copia-a para os anciãos: nem toda tradição chegou ao presente sem perder alguém pelo caminho.',
+      'Nas Areias, Yuki deixa um sino pequeno junto à ampulheta quebrada. Seu som existe apenas enquanto o ar se move. É uma oração que não pode ser aprisionada num único instante.',
+      'Yuki decide ficar até que os novos guardiões aprendam os sinos das pontes. Não é abandonar o Mosteiro. É levar sua disciplina a um lugar onde ouvir corretamente ainda pode salvar uma vida.'
+    ],
+    sora:[
+      'Sora compara as inscrições do primeiro selo com os manuais da Academia. A palavra que os professores traduziam como domínio também pode significar responsabilidade. Anota a diferença à margem, mesmo sabendo quem vai contestá-la.',
+      'Mizuchi deixa que Sora copie um registro molhado; a tinta só aparece quando a página sai da água. Para compreender o Véu, a Academia terá de admitir que não basta possuir um documento: é preciso entender como alguém o preservou.',
+      'Na Torre, Sora encontra cálculos perfeitos que não deixam lugar para uma escolha humana. Não os destrói. Acrescenta uma pergunta ao fim de cada demonstração: quem perde a própria hora para que esta resposta seja verdadeira?',
+      'Sob o céu costurado, Sora funda uma pequena sala de leitura na Casa do Time. Ren leva diagramas; Aoi leva receitas falhadas. As primeiras aulas começam pelas coisas que cada um ainda não sabe explicar.'
+    ],
+    haru:[
+      'Haru corre até a ponte assim que a prata retorna ao céu. Pela primeira vez vê sua sombra inteira. Volta devagar à praça, para que quem caminha atrás também possa vê-la.',
+      'O vento sobre a costa traz uma canção diferente das Estepes. Haru aprende seu refrão com uma família que acaba de receber um nome do Arquivo. Não pergunta se a canção é alegre: pergunta em que noites eles a cantam.',
+      'Apep afirma que toda estrada termina. Haru concorda; por isso insiste que cada pessoa possa escolher a direção antes do fim. Amarra sua fita num marco da estrada e a deixa apontando para a cidade.',
+      'Haru segura a corda de uma ponte enquanto Raijin para o tambor. Mais tarde, ninguém consegue dizer qual herói sustentou a primeira ilha. Haru não corrige a história: prefere que a cidade se lembre das mãos juntas.'
+    ]
+  };
+  const heroJourney = (id, state) => {
+    const base = KT.Data.roster.find(h => h.id === id)?.base || id;
+    return (companionArcs[base] || []).map((text, i) => ({ text, zone:['boss','boss_tide','boss_sand','boss_sky'][i], title:['A prata devolvida','Os nomes da costa','O direito ao amanhã','Uma ponte para o futuro'][i], revealed:(state.progress?.[['boss','boss_tide','boss_sand','boss_sky'][i]]?.kills || 0) > 0 }));
+  };
+  KT.Data.speakers.Crônica = { color:'#d8b062', title:'Caderno de campo' };
+  KT.Lore = { world, worlds, heroes, chapters, bosses, fieldNotes, heroPurpose, history, customs, heroJourney };
 })();

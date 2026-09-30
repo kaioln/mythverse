@@ -14,6 +14,10 @@
 
   // Textura redonda e macia para partículas (gerada uma vez).
   const SOFT_FS = `uniform vec3 uColor; varying float vA; void main(){ vec2 p = gl_PointCoord - .5; float d = length(p); if (d > .5) discard; float a = smoothstep(.5, .0, d); gl_FragColor = vec4(uColor, a * a * vA); }`;
+  const PETAL_FS = `uniform vec3 uColor; varying float vA, vSeed; void main(){ vec2 p = gl_PointCoord * 2. - 1.;
+    float a = vSeed * 6.28318; vec2 q = vec2(p.x * cos(a) - p.y * sin(a), p.x * sin(a) + p.y * cos(a));
+    float d = length(vec2(q.x * 1.45, q.y)); if (d > 1.) discard;
+    gl_FragColor = vec4(mix(uColor, vec3(1., .93, .94), .25 + .3 * (1. - d)), smoothstep(1., .65, d) * vA); }`;
 
   // ---------------------------------------------------------------------------
   // MAPA 3D
@@ -118,7 +122,7 @@
   // ---------------------------------------------------------------------------
   // Cada tema: cor, quantidade, tamanho, velocidade (x, y), oscilação e mistura aditiva (brilho) ou normal.
   const THEMES = {
-    village:{ color:'#f1b7c4', n:70, size:[10, 18], v:[.10, -.16], sway:.6, add:false, a:.55 },
+    village:{ color:'#f1b7c4', n:82, size:[8, 14], v:[.10, -.16], sway:.6, add:false, a:.55 },
     forest:{ color:'#d7f59a', n:60, size:[6, 12], v:[0, .04], sway:1.2, add:true, a:.7, blink:true },
     swamp:{ color:'#9ef0b0', n:60, size:[6, 12], v:[0, .03], sway:1.0, add:true, a:.65, blink:true },
     coast:{ color:'#cfe8f2', n:80, size:[4, 9], v:[-.12, .02], sway:.4, add:false, a:.45 },
@@ -179,6 +183,25 @@
             vA = pow(.5 + .5 * sin(uTime * (1. + seed * 1.8) + seed * 60.), 4.); gl_PointSize = (5. + seed * 4.) * uScale; gl_Position = toClip(p); }`,
         fragmentShader:`varying float vA; void main(){ float d = length(gl_PointCoord - .5) * 2.; if (d > 1.) discard; gl_FragColor = vec4(.88, 1., .6, exp(-d * d * 4.) * vA); }` }));
       scene.add(flies);
+      // Na vigília do Festival, pequenas lanternas sobem do mercado, da praça e do cais.
+      const anchors = [[220, 560], [635, 520], [1060, 500]], LN = 12;
+      const lg = new T.BufferGeometry(), lp = new Float32Array(LN * 3), ls = new Float32Array(LN);
+      for (let i = 0; i < LN; i++) {
+        const [x, y] = anchors[i % anchors.length];
+        lp.set([x + (Math.random() - .5) * 90, y, 0], i * 3);
+        ls[i] = (i + Math.random() * .6) / LN;
+      }
+      lg.setAttribute('position', new T.BufferAttribute(lp, 3));
+      lg.setAttribute('seed', new T.BufferAttribute(ls, 1));
+      scene.add(new T.Points(lg, new T.ShaderMaterial({ transparent:true, depthWrite:false, blending:T.NormalBlending, uniforms:uni,
+        vertexShader:CLIP + `attribute float seed; uniform float uTime, uScale; varying float vA;
+          void main(){ float rise = fract(seed + uTime * .014); vec3 p = position;
+            p.x += sin(uTime * .47 + seed * 37.) * 16. + rise * 12.; p.y -= rise * 340.;
+            vA = smoothstep(0., .08, rise) * (1. - smoothstep(.78, 1., rise)) * .78;
+            gl_PointSize = (11. + fract(seed * 41.) * 5.) * uScale; gl_Position = toClip(p); }`,
+        fragmentShader:`varying float vA; void main(){ vec2 q = gl_PointCoord * 2. - 1.; float d = length(vec2(q.x * 1.1, q.y * .82));
+          if (d > 1.) discard; float core = exp(-d * d * 4.);
+          gl_FragColor = vec4(mix(vec3(.72, .25, .17), vec3(1., .81, .43), core), smoothstep(1., .62, d) * vA); }` })));
       return { scene, cam, uni };
     },
     render(T, r, L, t, view) {
@@ -216,18 +239,18 @@
       g.setAttribute('position', new T.BufferAttribute(p, 3)); g.setAttribute('seed', new T.BufferAttribute(s, 1));
       this.pts = new T.Points(g, new T.ShaderMaterial({ transparent:true, depthWrite:false, blending:th.add ? T.AdditiveBlending : T.NormalBlending,
         uniforms:{ uColor:{ value:new T.Color(th.color) }, uTime:{ value:0 }, uPx:{ value:this.r.getPixelRatio() }, uVel:{ value:new T.Vector2(th.v[0], th.v[1]) }, uSize:{ value:new T.Vector2(th.size[0], th.size[1]) }, uSway:{ value:th.sway }, uA:{ value:th.a }, uBlink:{ value:th.blink ? 1 : 0 } },
-        vertexShader:`attribute float seed; uniform float uTime, uPx, uSway, uA, uBlink; uniform vec2 uVel, uSize; varying float vA;
+        vertexShader:`attribute float seed; uniform float uTime, uPx, uSway, uA, uBlink; uniform vec2 uVel, uSize; varying float vA, vSeed;
           void main(){
             vec3 p = position; float depth = (p.z + 6.) / 10.; float sp = .5 + depth;
             p.x = mod(p.x + uVel.x * uTime * sp * 6. + sin(uTime * .7 + seed * 40.) * uSway * .4 + 11., 22.) - 11.;
             p.y = mod(p.y + uVel.y * uTime * sp * 6. + cos(uTime * .5 + seed * 30.) * uSway * .25 + 6., 12.) - 6.;
             float blink = uBlink > .5 ? .35 + .65 * pow(.5 + .5 * sin(uTime * (1.2 + seed * 2.) + seed * 50.), 3.) : 1.;
-            vA = uA * blink * (.35 + .65 * depth);
+            vA = uA * blink * (.35 + .65 * depth); vSeed = seed;
             vec4 mv = modelViewMatrix * vec4(p, 1.);
             gl_PointSize = mix(uSize.x, uSize.y, seed) * (.6 + depth * .9) * uPx * 10. / -mv.z;
             gl_Position = projectionMatrix * mv;
           }`,
-        fragmentShader:SOFT_FS }));
+        fragmentShader:id === 'village' || id === 'sakura' ? PETAL_FS : SOFT_FS }));
       this.scene.add(this.pts);
     },
     frame(t) {

@@ -142,6 +142,134 @@
       'Nas Ilhas da Bruma, onde a névoa apaga lembranças, os espadachins aprendem a lutar como se cada golpe fosse o primeiro, porque talvez amanhã não se lembrem de ter aprendido. Jin saca a espada uma vez por luta. Raramente precisa de uma segunda. Depois embainha a lâmina, senta-se na primeira pedra que encontra e escreve um poema curto, sempre ruim, sempre de propósito.',
       'Diz que escreve mal para que ninguém o leve a sério, e que ninguém deve levar a sério um homem que mata tão bem. Os poemas são sobre peixes, chuva, sandálias perdidas. Nunca sobre as lutas. Kiba, o lobo sem nome que ele encontrou na névoa, é o único que sabe que Jin guarda num bolso interno um caderno com poemas bons, que nunca mostrou a ninguém.',
       'A Fenda o puxou numa manhã de névoa espessa, e ele teria ido sozinho se Kiba não o segurasse pelo braço. Em Tsukimori, recitou na primeira noite um poema tão ruim sobre o Eclipse que a taverna do Porto inteira riu até chorar. Foi a primeira vez em três anos que alguém ria daquele disco negro. Sayo diz que aquele poema fez mais pela cidade do que muita espada.'
+    ],
+    alden:[
+      'Na Cidade dos Alambiques, Kōji Ibara marcava a altura dos pacientes na porta do laboratório porque nunca conseguia encontrá-los sob a fumaça. Tratava queimaduras com as mãos ainda queimadas do experimento anterior. Quando um frasco rachou e abriu no ar um círculo de prata, ele teve tempo de salvar o assistente, empurrar os remédios para longe do fogo e fazer uma pergunta absolutamente inadequada: se a abertura levaria a algum lugar onde houvesse um laboratório melhor.',
+      'Do outro lado encontrou Tsukimori e uma enfermaria cheia. Pediu um pano limpo, água fervida e permissão para errar apenas nos próprios dedos. Na manhã seguinte ninguém sabia de onde viera o alquimista de avental chamuscado; os feridos sabiam que ele voltaria depois de dormir. Na fita do Festival das Cerejeiras Kōji escreveu o nome do assistente. Não sabia se o rapaz também atravessara a Fenda.'
+    ],
+    ignis:[
+      'O Coronel Homura Kaga guardava uma carta de cada soldado que perdera. Não as lia antes de uma batalha: temia ouvir a voz dos mortos em vez das ordens dos vivos. Na noite em que a Fenda apareceu sobre a Cidade dos Alambiques, seus recrutas se dispersaram entre vidro quebrado e fogo. Homura os reuniu em formação, contou cada um duas vezes e foi o último a atravessar.',
+      'Em Tsukimori ouviu os sinos da muralha antes de saber o nome da cidade. Organizou desconhecidos em filas de água e de cobertores com a mesma firmeza com que comandava uma guarda. Sayo esperou até a última ordem para lhe oferecer chá. No festival ele não leu as cartas; amarrou uma fita para cada remetente numa cerejeira, deixando espaço nos galhos para os recrutas que ainda podiam voltar.'
+    ],
+    drake:[
+      'Tatsuya Hibana recebera de Valmar três contratos de guilda e duas ordens de expulsão. Enquanto discutia com um escrivão quem pagaria a taxa de um incêndio que ainda nem começara, a marca em seu braço se acendeu. Ele chamou aquilo de dragão. O escrivão chamou de infração. A Fenda abriu-se entre os dois, e Tatsuya atravessou com o formulário ainda na mão.',
+      'A primeira chama que lançou em Tsukimori foi para afastar a névoa de uma criança perdida no Mercado. A segunda queimou uma banca, de modo que Kaede teve motivos para alcançá-lo poucos minutos depois. Tatsuya ri quando dizem que o dragão não existe. No festival, porém, acende as lanternas com uma faísca pequena, cuidadosa, para que nenhuma fita com um nome se perca no fogo.'
+    ],
+    sienna:[
+      'Kaede Tetsuyama percebeu que Tatsuya desaparecera quando chegou à linha do relatório destinada aos danos materiais. Deixou o espaço em branco, seguiu as marcas de fuligem pelo corredor da guilda e encontrou uma porta de luz onde a parede devia estar. Levou consigo a alabarda, o livro de registros e a convicção de que alguém precisava manter a situação sob controle.',
+      'Encontrou-o em Tsukimori diante de uma banca chamuscada, explicando ao vendedor que um dragão tinha ficado nervoso. Kaede pagou a banca, anotou a dívida e depois ajudou a Guilda a registrar os nomes de viajantes que chegavam sem documento algum. À noite, guarda os formulários. Durante o festival, entrega fitas em branco a quem ainda não consegue dizer de onde veio.'
+    ],
+    daigo:[
+      'Daigo Arashi conhecia a Estrada dos Dojos pela parte de baixo: tantas vezes caíra na terra que sabia distinguir uma escola pelo cheiro do pátio. No último dojo que visitou, o mestre recusou seu desafio. Apontou para um brilho entre os portões e disse que havia gente, do outro lado, que precisava mais de um adversário do que ele. Daigo atravessou antes de terminar o aquecimento.',
+      'O Dojo de Tsukimori tinha espaço para ele e para todos os que chegavam da Fenda sem saber lutar. Daigo ensina o primeiro golpe, depois como cair, depois como ajudar o outro a levantar. No Festival das Cerejeiras abre o pátio gratuitamente. Pendura os amuletos das escolas em que perdeu acima da porta, porque são as únicas vitórias que ainda considera suas.'
+    ],
+    mei:[
+      'Mei Lan colecionava um amuleto de cada dojo que vencia na estrada, e mais alguns de onde não vencia, porque dizia que ninguém deveria voltar de mãos vazias. Encontrou Daigo no portão de uma escola sem nome, cercado pela luz da Fenda. Pensou que fosse mais um desafio elaborado pelo mestre. Pulou atrás dele antes que a porta se fechasse.',
+      'Em Tsukimori a primeira disputa foi sobre quem alcançaria a Praça da Lua correndo pela escadaria. Daigo parou para ajudar um velho a subir e Mei ganhou, mas passou a tarde convencida de que tinha perdido. No festival ela amarra seus amuletos ao redor do pátio para que os novatos escolham um. Conta a história de cada derrota com mais entusiasmo do que a de qualquer vitória.'
+    ],
+    kael:[
+      'Kaito Arata atravessara uma guerra da Coroa Esmeralda lutando sob bandeiras de todas as cores. Já não lembrava por que começara. Quando Rina disse que uma cidade desconhecida precisava de gente capaz de ficar, ele perguntou quanto pagavam. Ela respondeu que havia crianças lá. Kaito guardou a tabela de preços e foi atrás dela pela Fenda.',
+      'Em Tsukimori aceitou o turno mais difícil da muralha e voltou ao bar de Rina à hora de fechar, como fazia em seu mundo. Nunca fala da guerra diante dos aprendizes. Na noite do festival, olha as fitas presas às árvores antes de escrever uma. A dela tem só uma palavra: casa. Pela primeira vez não sabe se está lembrando de um lugar ou prometendo construí-lo.'
+    ],
+    sael:[
+      'Karasu servira à Coroa Esmeralda até o dia em que ela caiu. Naquela noite perdeu uma asa e algo que se recusava a nomear. Durante anos vasculhou os salões vazios do palácio. Uma manhã encontrou na parede uma fenda de luz com o mesmo desenho da rachadura na velha coroa. Não contou a ninguém que partiria. Quem o viu entrar disse que parecia mais um retorno.',
+      'Em Tsukimori reconheceu na prata do Véu uma pergunta que já ouvira antes da ruína de seu reino. Ajudou Sayo a copiar inscrições do Arquivo sem se oferecer como amigo. No festival, passou pela árvore de fitas três vezes antes de deixar a sua. Ninguém leu o nome. Rina viu que a mão dele tremia e, por uma vez, não perguntou.'
+    ],
+    rina:[
+      'Rina Akemi mantinha um bar entre as ruínas da Coroa Esmeralda. Havia ataduras sob o balcão, sopa sempre quente e um lugar onde os mercenários podiam dizer que estavam cansados sem serem chamados de covardes. Na noite em que a Fenda abriu-se atrás da cozinha, Kaito apareceu ferido. Rina terminou o curativo antes de olhar para a luz. Depois trancou o bar e levou a chave consigo.',
+      'Em Tsukimori encontrou outra cidade de portas abertas para quem não sabia voltar. Ofereceu ajuda na enfermaria, depois uma mesa no Porto. Kaito chega lá depois da ronda e paga a conta dos que esqueceram dinheiro. Rina finge não ver. Na festa das cerejeiras, deixa pão à porta para os recém-chegados: ninguém precisa contar a própria história antes de comer.'
+    ],
+    nadia:[
+      'Nanami Sunaga desenhava mapas de um deserto que mudava de lugar toda noite. Aprendeu a traçar primeiro as pessoas: uma fogueira, uma caravana, uma velha que vendia água. As dunas se moviam; quem a esperava ao fim do caminho era um ponto mais seguro. Num mapa herdado encontrou, desenhada onde não deveria haver nada, uma cidade de oito distritos sob uma lua falsa. Caminhou até que a areia se tornasse uma porta de prata.',
+      'Em Tsukimori reconheceu as pontes sem nunca tê-las visto. Entregou a Sayo o mapa e pediu que não o guardasse numa gaveta, pois precisava descobrir quem desenhara a cidade antes de ela nascer. Passa os dias medindo rotas que levam à Fenda. Na sua fita do festival escreveu um endereço, não um nome: para que quem procura casa possa achá-la.'
+    ],
+    thorn:[
+      'Gorō Shimotsuki sobrevivera a quarenta invernos do Gelo Longo, e cada inverno ganhara uma história um pouco maior. Ensinava Botan a ler as nuvens, a ouvir gelo fino e a reclamar apenas depois de acender a fogueira. Quando a luz surgiu no meio da nevasca, o neto perguntou se aquilo era uma aurora. Gorō disse que não sabia, o que assustou os dois mais do que a própria Fenda.',
+      'Entraram juntos. Em Tsukimori o velho reclamou do calor, da altura das escadas e da falta de neve, mas aceitou imediatamente o banco mais próximo da Forja. Conta histórias a quem espera o metal esfriar. Botan corrige metade dos detalhes; Gorō aumenta a outra metade. No festival, grava na fita o nome da mulher que lhes ensinou a voltar para casa seguindo estrelas.'
+    ],
+    bjorn:[
+      'Botan Shimotsuki lia runas melhor que o avô e falava com passarinhos que o avô fingia não ouvir. Na última nevasca, as aves voaram para o mesmo ponto no céu, onde um risco branco se abria sobre o gelo. Gorō disse que haveria um caminho. Botan escolheu qual; era o que deixava pegadas em ambas as direções.',
+      'Do outro lado, enquanto o avô reclamava de Tsukimori, Botan reparou nos pardais pousados no medalhão da praça. Eles não temiam o Eclipse, mas fugiam sempre que a Fenda tremia. Passou a avisar Sayo antes de cada mudança do céu. No Festival das Cerejeiras, os pássaros levam pedaços de fita de um distrito a outro. Botan os segue para devolver cada nome ao ramo certo.'
+    ],
+    rook:[
+      'Rokurō comandava uma nave-cidade da Frota de Órion, cheia de gente que perdera o próprio planeta e não aceitava perder mais ninguém. Numa patrulha, encontrou no vazio uma abertura onde as estrelas se refletiam como numa superfície de água. A travessia admitia apenas uma pessoa. Ordenou à tripulação que permanecesse a salvo e entrou para procurar um lugar onde todos pudessem pousar.',
+      'Tsukimori tinha chão, jardins e uma lua ferida. Rokurō contou as pontes, mediu os pátios e perguntou a Sayo quantas famílias ainda cabiam ali. Ela perguntou se ele viera para a guerra. Ele respondeu que primeiro precisava encontrar casa para os seus. Durante o festival escreve numa fita o nome da nave, não como homenagem, mas como endereço a ser encontrado.'
+    ],
+    zara:[
+      'Suzu Hanabi montou o primeiro lançador nas Galerias de Sucata com canos emprestados sem pedir licença. Testava tudo num túnel vazio; os vizinhos insistiam que túnel vazio ainda tem teto. No dia em que a Fenda apareceu entre duas pilhas de engrenagens, uma das suas experiências soltou faíscas demais. Suzu entrou na luz perseguindo uma peça que saíra voando, e caiu numa cidade de telhados que pareciam precisar de remendos.',
+      'A Oficina de Tsukimori deu-lhe espaço longe das casas, um avental de couro e regras que ela acha exageradas. Consertou três lanternas antes de explodir a quarta. Ren guardou a quarta para mostrar que até fogo pode ser útil quando controlado. No festival, Suzu faz pequenas estrelas mecânicas girarem entre as cerejeiras; nenhuma precisa de pólvora.'
+    ],
+    kira:[
+      'No Bosque das Nove Lanternas, Kira guiava perdidos havia séculos. Nem sempre para casa: algumas pessoas só conseguiam encontrar o próprio caminho depois de perceberem que seguiam a luz errada. Quando uma lanterna se acendeu sem que ela a tocasse, Kira farejou nela o cheiro de um lago distante e de uma cidade que precisava de guia. Atravessou a Fenda levando-a na boca.',
+      'Tsukimori recebeu a raposa com desconfiança. Sayo, que conhecia o preço de abrir portas, foi a primeira a lhe oferecer água. Kira mostrou quais lanternas da praça ainda apontavam para casa e quais haviam aprendido a mentir. Durante o Festival das Cerejeiras cheira cada fita antes da vigília. Fica de guarda junto ao lago quando a raposa de nove caudas desperta, como quem protege uma irmã que esqueceu seu nome.'
+    ],
+    haru:[
+      'Haru Kaze viajava pelas Estepes do Vento Solto desafiando quem carregasse espada e, às vezes, perdendo para quem precisava mais do prêmio. Gostava da parte em que os adversários, depois do duelo, sentavam para dividir água. Num entardecer, o vento trouxe uma conversa de muito longe: uma cidade perguntava quem ainda a defenderia. Haru seguiu a voz até uma abertura entre duas colinas.',
+      'A primeira luta em Tsukimori foi contra a própria vontade de partir no dia seguinte. Sayo pediu que ensinasse aos guardas a escutar o vento antes do trovão; ele ficou por uma semana, depois por outra. No festival duela com Mei no pátio do Dojo, sem prêmio e sem derrota combinada. O público gosta da risada dos dois tanto quanto dos golpes.'
+    ],
+    ivy:[
+      'Itsuki Tokiwa corria mensagens para o Esquadrão Aurora entre mundos em crise. O medidor preso ao peito contava os segundos em que podia saltar sobre uma distância, e ela gastava cada segundo antes de lembrar que precisava descansar. Quando uma transmissão chegou do espaço onde nenhum posto da Aurora existia, Itsuki partiu sozinha para verificar. O sinal terminava numa fenda prateada suspensa sobre a estrada.',
+      'Chegou a Tsukimori antes da própria mensagem e teve de esperar o aparelho parar de chiar para entender que alguém pedia socorro ali. Levou avisos da Guilda à muralha, da muralha ao Porto, do Porto aos viajantes recém-chegados. No festival corre mais devagar de propósito, para que as crianças que levam fitas de um distrito a outro consigam acompanhá-la.'
+    ],
+    nari:[
+      'Nari Kōkaku pilotava o menor andador de combate do Esquadrão Aurora. Os adultos o chamavam de improvisado. Ela preferia dizer que cada placa soldada era uma razão a mais para continuar andando. Viu o sinal de Itsuki desaparecer dos monitores e abriu caminho pelo mesmo corredor de luz antes que alguém autorizasse a missão.',
+      'Na Praça da Lua o andador era grande demais para as vielas. Nari estacionou junto à Oficina, passou a ajudar no reparo das pontes e descobriu que proteger uma cidade também podia significar tornar suas escadas seguras. As crianças do festival lhe pedem que carregue as lanternas mais altas. Ela aceita, séria como numa missão, e depois lhes mostra como pintou flores de cerejeira nas placas do andador.'
+    ],
+    dario:[
+      'Daisuke Yane protegera por anos uma cidade que jamais soubera seu nome. Corria pelos telhados para chegar primeiro onde alguém gritava e saía antes de receber agradecimentos. A cicatriz sobre o olho era de uma noite em que chegara tarde. Quando viu na parede de um beco uma abertura mostrando telhados desconhecidos sob um céu ferido, atravessou para não cometer o mesmo erro duas vezes.',
+      'Em Tsukimori continuou a escolher as alturas, até perceber que as pontes e escadas pediam vigias que as pessoas pudessem ver. Desceu de um telhado para ajudar um garoto a encontrar a família durante o festival. O menino agradeceu olhando diretamente para ele. Daisuke demorou a responder; não estava acostumado a ser encontrado.'
+    ],
+    cole:[
+      'Kōta Harada vestiu o uniforme da guarda da Cidade da Névoa Verde na manhã em que a névoa tomou as ruas. Era seu primeiro dia. Tentou guiar vizinhos até a saída enquanto os oficiais mais velhos discutiam ordens que já não chegavam. Nagi lhe entregou um pano úmido e mandou que respirasse por ele. Quando acharam uma luz dentro da névoa, Kōta deixou os outros atravessarem primeiro.',
+      'Em Tsukimori pediu um posto na muralha e foi informado de que precisava descansar. Não descansou bem. Nagi trouxe ervas e permaneceu perto sem explicar por quê. No Festival das Cerejeiras Kōta oferece água aos guardas de serviço, inclusive aos veteranos que dizem não precisar. Ainda acredita que dá para salvar todos; agora sabe pedir ajuda antes de tentar.'
+    ],
+    dana:[
+      'Nagi Kusano fazia remédios com o que a Cidade da Névoa Verde ainda podia oferecer. Aprendeu a medir febre pelo toque e a distinguir coragem de falta de ar nos rostos que chegavam à sua porta. Encontrou Kōta no primeiro dia dele como guarda, tentando levantar sozinho um portão caído. Ajudou-o a passar e depois seguiu com ele pela Fenda, carregando as poucas ervas que couberam no bolso.',
+      'Na enfermaria de Tsukimori reconheceu o cheiro de doença em algumas criaturas trazidas da Fenda e se recusou a tratá-las como monstros sem examiná-las. Kōta a ajuda a buscar água. Ela confia nele antes de confiar nos outros porque lhe lembra alguém que perdeu, mas nunca o obriga a ocupar o lugar daquela pessoa. No festival, escreve esse nome numa fita e conta sua história inteira pela primeira vez.'
+    ],
+    wade:[
+      'Watari Kōya fora fora-da-lei, xerife e fora-da-lei outra vez no Planalto dos Coiotes. Aprendeu que um distintivo pode mudar de dono, mas uma palavra dada continua com quem a deu. Prometeu a um menino perdido que o levaria até o trem. Seguiu as pegadas pela poeira e encontrou a Fenda no lugar dos trilhos. Atravessou porque a promessa não acabava numa fronteira que ele não entendia.',
+      'O menino já estava em Tsukimori, comendo sob a proteção de Sayo. Watari ficou para escoltar outros viajantes até a praça e ganhou fama de contar histórias demais ao redor das fogueiras. No festival, substitui a história da própria vida pela de quem lhe pede companhia. Escuta até o fim, um talento mais raro que acertar um tiro.'
+    ],
+    garrick:[
+      'Gantetsu acendia metal com palavras no Vale das Runas. Cada aprendiz recebia uma peça fria e precisava aprender a pedir fogo sem gritar. Shiina era a única que preferia abrir um portal atrás da bigorna para chegar ao forno antes dos outros. Quando um portal cresceu demais e mostrou a Forja de Tsukimori do outro lado, o mestre entrou depois dela, resmungando que nenhum aluno seu quebraria uma ferramenta em mundo alheio.',
+      'Ren reconheceu o ofício nas mãos dele antes de entender as runas. Os dois discutiram durante uma tarde inteira como acender uma lâmina sem apagar seu nome, e terminaram dividindo chá. Gantetsu escreveu na fita do festival os nomes de antigos aprendizes do Vale. Shiina acrescentou o dele de brincadeira. Ele fingiu não notar e guardou aquela fita até o fim da noite.'
+    ],
+    zira:[
+      'Shiina Kagemi descobrira como abrir portais do tamanho de uma porta e usava a descoberta para chegar atrasada às aulas com absoluto controle da própria entrada. Gantetsu dizia que um dia abriria caminho para um lugar do qual não pudesse sair. Ela encontrou a Fenda procurando o forno da oficina e, pela primeira vez, teve de admitir que ele poderia estar certo.',
+      'Na nova cidade, ajudou a mapear as passagens entre distritos antes de usar um portal para encurtar qualquer uma delas. Algumas portas pareciam próximas no ar, mas levavam a muros, água ou vazio. Shiina passou a marcá-las como caminhos proibidos para os novatos. Durante o festival surge atrás de Gantetsu só para lhe devolver uma fita que o vento levara. Desta vez avisa antes de aparecer.'
+    ],
+    n9:[
+      'A Unidade Kū acordou na Cidadela Autômata com um drone flutuando ao lado e uma lista vazia de ordens. Outros autômatos procuravam os engenheiros que os construíram. Kū encontrou um pequeno robô preso entre engrenagens, soltou-o e decidiu que proteger quem não tinha ajuda seria uma primeira ordem suficiente. O drone registrou a escolha como erro de protocolo. Kū não a apagou.',
+      'Na Fenda, o drone passou primeiro e voltou para mostrar que havia gente na outra margem. Em Tsukimori, Kū marcou ameaças nos telhados e depois aprendeu a marcar lugares onde crianças podiam brincar em segurança. No festival, o drone distribui fitas sem pedir que ninguém revele o nome escrito. A primeira ordem continua a mesma, agora escrita no próprio peito.'
+    ],
+    unit7:[
+      'A Unidade Tetsu fora construída para a guerra numa cidade de máquinas que mal lembravam seus criadores. A espada-serra funcionava perfeitamente; era isso que Tetsu detestava. Cada vez que a usava, pedia desculpas a quem derrubava, até que um dia guardou a lâmina e ficou entre um grupo de civis e o combate. Uma abertura de prata surgiu atrás deles. Tetsu a manteve livre enquanto todos passavam.',
+      'Foi a última a atravessar e a primeira a pedir desculpas ao chegar, por ocupar tanto espaço na praça. Kū lhe mostrou a Oficina e as lanternas que precisavam de conserto. Tetsu descobriu que as mesmas mãos feitas para segurar uma espada podiam sustentar uma escada. No Festival das Cerejeiras fica na passagem mais estreita para orientar o tráfego, com a serra desligada.'
+    ],
+    rex:[
+      'Raizō Kurenai herdou um pacto demoníaco antes de aprender a escrever o próprio nome. Cresceu lendo as cláusulas e procurando nelas uma forma de ferir os demônios que as haviam ditado. Quando a Fenda se abriu no salão da família, reconheceu no silêncio além dela uma brecha que nenhum contrato previra. Saltou sorrindo, como se já tivesse vencido uma discussão.',
+      'Em Tsukimori procurou primeiro uma testemunha para sua chegada, depois o irmão gêmeo. Yūgen apareceu sem pedir ajuda. Discutiram diante de Sayo até que os sinos da muralha tocaram; ambos correram na mesma direção. No festival, Raizō escreve duas fitas com o mesmo sobrenome e finge que a segunda é um erro. Ninguém a retira do galho.'
+    ],
+    virel:[
+      'Yūgen Kurenai aceitou o pacto que o irmão tentava desfazer. Não por devoção aos demônios, como Raizō supunha, mas porque queria conhecer todas as obrigações antes de escolher quais quebrar. Viu o gêmeo desaparecer pela Fenda no salão da família e esperou exatamente o tempo de fechar as portas, avisar os criados e levar o registro do pacto. Depois atravessou.',
+      'Em Tsukimori deixou o registro com Sora e evitou explicar por que confiava nele. No combate Raizō fala antes de golpear, Yūgen termina o movimento. Fora dele trocam palavras suficientes para parecerem inimigos e olhares suficientes para desmentir isso. Na vigília das lanternas Yūgen fica próximo à fita de sobrenome duplicado, guardando-a do vento sem que o irmão perceba.'
+    ],
+    selene:[
+      'Tokiko Yoru conseguia suspender alguns segundos e escolhia sempre os momentos de maior efeito. Na Cidade do Pacto Carmesim, isso lhe dera fama de bruxa teatral. Um dia parou o tempo para impedir que uma criança caísse da ponte e encontrou, naquele silêncio impossível, uma abertura de prata que continuava se movendo. A Fenda não obedecia ao relógio dela. Tokiko seguiu-a por curiosidade e chegou antes de os segundos roubados terminarem.',
+      'Em Tsukimori as engrenagens da Torre do Relógio lhe pareciam familiares e erradas. Ofereceu a Sayo o que sabia sobre intervalos, sem prometer controlar Apep. Durante o festival usa seus poucos segundos para segurar uma lanterna prestes a cair, não para receber aplausos. A criança que a alcança acha que foi sorte; Tokiko deixa que ache.'
+    ],
+    tessa:[
+      'Tsubaki Morie caçava na Selva de Engrenagens, onde bichos e máquinas haviam aprendido a crescer juntos. A coruja mecânica em seu ombro fora a primeira presa que decidira não abater. Numa manhã a coruja voou para uma clareira sem árvores e voltou com uma pétala de cerejeira que não existia naquela selva. Tsubaki seguiu o voo até a Fenda.',
+      'Em Tsukimori a coruja escolheu a Guilda como poleiro e Tsubaki pediu que ninguém a desmontasse para descobrir como funcionava. Saíram juntas para mapear os caminhos seguros ao redor do Bosque. No festival, a ave leva fitas caídas de volta às mãos dos donos. Tsubaki aprende os nomes devagar, respeitando cada pessoa como respeita a criatura que pousa em seu ombro.'
+    ],
+    kaji:[
+      'Na Arena das Cinzas, Kaji lutava por um nome que perdera no primeiro torneio. Depois de tantas finais contra Kori já não sabia se queria vencer ou apenas ouvir alguém chamá-lo de volta. Na última luta, fogo e gelo encontraram uma abertura de prata no centro do ringue. Kaji poderia ter terminado o golpe. Baixou a corrente para ver se o rival também percebera a porta.',
+      'Atravessaram separados e chegaram ao mesmo coliseu reaberto em Tsukimori. Ninguém ali conhecia os nomes que tinham sido antes da Arena, o que lhes deu por uma noite a liberdade de não precisar recuperá-los. Kaji assiste às disputas de novos viajantes e intervém quando alguém esquece que o adversário voltará para casa depois. No festival, aceita que uma criança escreva apenas Kaji em sua fita.'
+    ],
+    kori:[
+      'Kori aprendera a esperar tanto tempo na Arena das Cinzas que os torneios pareciam estações de um único ano. O fogo de Kaji sempre chegava primeiro; o gelo permanecia depois. No combate que os trouxe à Fenda, viu o rival abaixar a corrente diante da luz. Poderia ter vencido. Guardou a lâmina de gelo e entrou por outra borda da abertura, sem lhe dever a travessia.',
+      'Encontrou Kaji novamente no Coliseu Carmesim. Não se falaram, como não se falavam havia séculos, mas passaram a corrigir juntos os novatos que confundiam vitória com humilhação. Na noite do Festival das Cerejeiras, Kori deixa água fresca junto às lanternas para que o fogo não alcance as fitas. Kaji agradece sem olhar para ele. É a conversa mais longa que tiveram em muito tempo.'
     ]
   };
   (KT.Lore ||= {}).tales = tales;

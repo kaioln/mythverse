@@ -17,8 +17,9 @@
   // ---------------------------------------------------------------------------
   P.arenaPanel = function(_, tab) {
     const so = S(); if (!so?.enabled) return needNeon('Arena PvP');
-    if (!so.status && !so.loadingArena) { so.loadingArena = true; so.refreshArena().finally(() => { so.loadingArena = false; }); return '<div class="empty-state"><p>Abrindo os portões da Arena…</p></div>'; }
-    const st = so.status || {}, t = tierOf(st.tier);
+    if (!so.status && !so.arenaLoaded && !so.loadingArena) { so.loadingArena = true; so.refreshArena().finally(() => { so.loadingArena = false; }); return '<div class="empty-state"><p>Abrindo os portões da Arena…</p></div>'; }
+    if (!so.status) return `<div class="empty-state"><h3>Os portões não responderam</h3><p>${esc(so.err || 'Aguardando conexão com a Arena.')}</p><button class="action" data-pvp-refresh type="button">Tentar novamente</button></div>`;
+    const st = so.status || {}, t = tierOf(st.tier), ready = this.engine.heroes.length === 4, power = this.engine.getPower();
     const head = `<section class="arena-hero" style="--tc:${t[2]}"><div class="arena-crest"><b>${t[1]}</b><small>${U.fmt(st.mmr || 1000)} MMR</small></div>
       <div class="arena-copy"><span class="eyebrow">COLISEU CARMESIM · #${st.rank || '–'}</span><h3>${U.fmt(st.honor || 0)} de Honra</h3>
       <p>${st.wins || 0} vitórias · ${st.losses || 0} derrotas${st.streak > 1 ? ` · <b>${st.streak} seguidas</b>` : ''}. Ingressos hoje: <b>${(st.attacksMax || 10) - (st.attacks || 0)}/${st.attacksMax || 10}</b>. Você luta no <b>manual</b> contra a defesa salva de outro jogador.</p></div>
@@ -28,10 +29,13 @@
     if (tab === 'history') { if (!so.history) so.loadHistory(); return head + this.pvpHistoryHtml(); }
     const week = `<div class="panel arena-week"><div><b>Liga da semana ${esc(st.week || '')}</b><small>Lute ao menos 5 vezes (${Math.min(5, st.weekMatches || 0)}/5) e resgate Honra pela sua liga: Bronze 70 · Prata 120 · Ouro 200 · Platina 300 · Diamante 420 · Lenda 600.</small></div>
       <button class="action ${st.weekMatches >= 5 && !st.weekClaimed ? 'pink' : ''}" data-pvp-week type="button" ${st.weekMatches >= 5 && !st.weekClaimed ? '' : 'disabled'}>${st.weekClaimed ? 'Resgatado ✓' : 'Resgatar'}</button></div>`;
-    const foes = (so.foes || []).map(f => `<article class="foe-card" style="--tc:${tierOf(f.tier)[2]}"><header>${tierTag(f.tier)}<b>${esc(f.name)}</b><small>${U.fmt(f.mmr)} MMR · poder ${compact(f.power)} · ${f.wins}V/${f.losses}D</small></header>
-      <div class="foe-faces">${faces(f.team)}</div><button class="action primary" data-pvp-attack="${esc(f.ref)}" type="button" ${st.attacks >= st.attacksMax ? 'disabled' : ''}>Desafiar</button></article>`).join('');
+    const foes = (so.foes || []).slice().sort((a, b) => Math.abs(Math.log(Math.max(1, a.power) / Math.max(1, power))) - Math.abs(Math.log(Math.max(1, b.power) / Math.max(1, power)))).map(f => {
+      const ratio = f.power / Math.max(1, power), danger = ratio > 1.35, team = (f.team || []).map(h => D.roster.find(t => t.id === h.id)).filter(Boolean);
+      const roles = [...new Set(team.map(h => h.cls))], elements = [...new Set(team.map(h => h.el))];
+      return `<article class="foe-card" style="--tc:${tierOf(f.tier)[2]}"><header>${tierTag(f.tier)}<b>${esc(f.name)}</b><small>${U.fmt(f.mmr)} MMR · poder ${compact(f.power)} · ${f.wins}V/${f.losses}D</small></header><div class="foe-faces">${faces(f.team)}</div><p class="matchup ${danger ? 'txt-pink' : ''}">${ratio > 1.35 ? 'Desafio elevado' : ratio < .75 ? 'Vantagem de poder' : 'Poder próximo'} · ${Math.round(ratio * 100)}% do seu poder</p><small class="dim">${esc(roles.join(' · '))}<br>${esc(elements.join(' · '))}</small><button class="action primary" data-pvp-attack="${esc(f.ref)}" type="button" ${!ready || so.busy || so.match || st.attacks >= st.attacksMax ? 'disabled' : ''}>Analisar e desafiar</button></article>`;
+    }).join('');
     return `${head}${!st.hasDefense ? '<p class="note warn-note">Salve sua equipe de defesa para aparecer no matchmaking e ganhar Honra quando defender.</p>' : ''}
-      <h4 class="sub-title">Oponentes do seu nível</h4><div class="foe-grid">${foes || '<p class="empty-note">Ainda não há outros jogadores com defesa salva. Chame seus amigos: cada um salva a defesa aqui.</p>'}</div>
+      ${!ready ? '<p class="note warn-note">Complete sua formação com 4 heróis para desafiar. Frente protege; retaguarda precisa de espaço para agir.</p>' : `<p class="note">Sua equipe: <b>${compact(power)} de poder</b>. Poder não decide sozinho: observe classes, elementos, cura e controle antes de gastar um ingresso. A defesa salva só muda quando você a registra novamente.</p>`}${so.err ? `<p class="note warn-note">${esc(so.err)}</p>` : ''}<h4 class="sub-title">Defesas disponíveis · mais próximas primeiro</h4><div class="foe-grid">${foes || '<p class="empty-note">Ainda não há outros jogadores com defesa salva. Chame seus amigos: cada um salva a defesa aqui.</p>'}</div>
       ${week}
       <div class="panel arena-rules"><b>Regras</b><ul><li>Você controla ultimates (Q/W/E/R), poções e o foco; a defesa rival usa IA e <b>telegrafa</b> as ultimates.</li><li>90 segundos: se o tempo acabar, vence quem tiver mais vida proporcional (empate: defensor).</li><li>Vitória: MMR (Elo) e 20 a 40 de Honra (sequência aumenta). Derrota: perde MMR e ganha 4 de Honra. Defender bem rende 6.</li><li><b>Fechar a aba ou abandonar conta como derrota.</b> Resultado impossível para o tempo real também.</li></ul></div>`;
   };
@@ -56,10 +60,12 @@
   P.guildPanel = function(_, tab) {
     const so = S(); if (!so?.enabled) return needNeon('Guildas');
     if (tab === 'list') { if (!so.guildList) so.listGuilds(); return this.guildListHtml(); }
-    if (!so.guild && !so.loadingGuild) { so.loadingGuild = true; so.refreshGuild().finally(() => { so.loadingGuild = false; }); return '<div class="empty-state"><p>Carregando guilda…</p></div>'; }
+    if (!so.guild && !so.guildLoaded && !so.loadingGuild) { so.loadingGuild = true; so.refreshGuild().finally(() => { so.loadingGuild = false; }); return '<div class="empty-state"><p>Carregando guilda…</p></div>'; }
+    if (!so.guild && so.guildLoaded) return `<div class="empty-state"><h3>Não foi possível consultar a guilda</h3><p>${esc(so.err || 'Verifique a conexão e tente novamente.')}</p><button class="action" data-guild-refresh type="button">Tentar novamente</button></div>`;
     const g = so.guild?.guild;
     if (!g) return this.guildCreateHtml();
     if (tab === 'war') { if (!so.board) so.refreshWar(); so.watchWar(true); return this.guildWarHtml(); }
+    KT.Community?.start(this);
     const me = so.guild.me, officer = me.role !== 'member', perks = D.GUILD.perks;
     const need = lv => Math.round(1000 * Math.pow(1.6, lv - 1)); let rest = g.xp, lv = 1; while (lv < g.level) { rest -= need(lv); lv++; }
     const members = so.guild.members.map(m => `<div class="gm-row"><span class="gm-role r-${m.role}">${ROLE[m.role]}</span><b>${esc(m.name)}</b><small>poder ${compact(m.power)}${m.mmr ? ` · ${U.fmt(m.mmr)} MMR` : ''} · doou ${compact(m.contributed)} · visto há ${since(m.seen)}</small>
@@ -75,8 +81,7 @@
         ${officer ? `<h4 class="sub-title">Configurações</h4><div class="card-sell"><input id="guild-motto" maxlength="120" value="${esc(g.motto)}" placeholder="Lema"><input id="guild-emblem" maxlength="4" value="${esc(g.emblem)}" style="max-width:70px"><label class="check"><input type="checkbox" id="guild-open" ${g.open ? 'checked' : ''}> Aberta</label><button class="action" data-guild-settings type="button">Salvar</button></div>` : ''}
         <div class="box-actions"><button class="action red" data-guild-leave type="button">${me.role === 'leader' && so.guild.members.length === 1 ? 'Desfazer guilda' : 'Sair da guilda'}</button></div>
       </div><div>
-        <h4 class="sub-title">Mural</h4><div class="card-sell"><input id="guild-msg" maxlength="200" placeholder="Escreva para a guilda…"><button class="action primary" data-guild-post type="button">Enviar</button></div>
-        <div class="guild-feed">${feed || '<p class="dim">Nenhuma mensagem.</p>'}</div>
+        <h4 class="sub-title">Conversa e registros da guilda</h4><small class="chat-status">Canal reservado aos membros · atualização automática</small><div class="guild-feed" role="log" aria-live="polite">${this.chatLines?.(true) || feed || '<p class="dim">Nenhuma mensagem.</p>'}</div><button class="action small" data-chat-latest type="button" hidden>Novas mensagens ↓</button><form class="chat-form" data-chat-form data-channel="guild"><label class="sr-only" for="chat-input">Mensagem para a guilda</label><input id="chat-input" maxlength="200" autocomplete="off" placeholder="Combine a próxima caçada…"><button class="action primary" type="submit">Enviar</button></form>
       </div></div>`;
   };
   P.guildCreateHtml = function() {
@@ -120,12 +125,17 @@
     if (!so) return false;
     if (b.hasAttribute('data-pvp-refresh')) { so.status = null; so.ranking = null; so.history = null; so.refreshArena(); return true; }
     if (b.hasAttribute('data-pvp-save-def')) { so.saveDefense(); return true; }
-    if (d.pvpAttack) { so.attack(d.pvpAttack, 'arena'); return true; }
+    if (d.pvpAttack) {
+      const f = (so.foes || []).find(x => x.ref === d.pvpAttack); if (!f || so.busy || so.match) return true;
+      const p = this.engine.getPower(), ratio = f.power / Math.max(1, p);
+      this.ask('Antes do desafio', `<b>${esc(f.name)}</b> · ${compact(f.power)} de poder (${Math.round(ratio * 100)}% do seu).<br>${faces(f.team)}<p>${ratio > 1.35 ? 'A defesa é bem mais forte. Revise sua formação e seus contra-ataques.' : 'Compare os elementos e planeje a ordem das ultimates.'}</p><small>Consome um ingresso ao iniciar. Abandonar conta como derrota.</small>`, [{ id:'yes', label:'Desafiar', primary:true }, { id:'no', label:'Preparar equipe' }]).then(x => { if (x === 'yes') so.attack(f.ref, 'arena'); else if (x === 'no') this.openPanel('party'); }); return true;
+    }
     if (b.hasAttribute('data-pvp-week')) { so.claimWeek(); return true; }
     if (d.pvpBuy) { const o = D.PVP_SHOP.find(x => x.id === d.pvpBuy); this.ask('Loja de Honra', `Comprar <b>${esc(o.name)}</b> por <b>${U.fmt(o.price)} de Honra</b>?`, [{ id:'yes', label:'Comprar', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') so.buy(o.id); }); return true; }
     if (b.hasAttribute('data-guild-create')) { so.createGuild({ name:val('#gc-name')?.value, tag:val('#gc-tag')?.value, emblem:val('#gc-emblem')?.value, motto:val('#gc-motto')?.value, open:val('#gc-open')?.checked }); return true; }
     if (d.guildJoin) { so.join(Number(d.guildJoin)); return true; }
     if (b.hasAttribute('data-guild-list-refresh')) { so.guildList = null; so.listGuilds(); return true; }
+    if (b.hasAttribute('data-guild-refresh')) { so.refreshGuild(); return true; }
     if (d.guildAct) { const go = () => so.manage(d.guildAct, d.ref); if (['kick', 'transfer'].includes(d.guildAct)) this.ask('Confirmar', d.guildAct === 'kick' ? 'Expulsar este membro da guilda?' : 'Passar a liderança para este membro? Você vira oficial.', [{ id:'yes', label:'Confirmar', danger:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') go(); }); else go(); return true; }
     if (b.hasAttribute('data-guild-leave')) { this.ask('Sair da guilda', 'Tem certeza? Sua contribuição fica com a guilda.', [{ id:'yes', label:'Sair', danger:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') so.leave(); }); return true; }
     if (b.hasAttribute('data-guild-donate')) { so.donate(val('#guild-donate')?.value); return true; }

@@ -11,6 +11,15 @@
   const elTag = el => `<span class="el-tag" style="--ec:${D.elements[el].color}"><i class="kj">${KT.glyph(D.elements[el].icon)}</i> ${el}</span>`;
   const clsTag = cls => `<span class="cls-tag" style="--cc:${D.classes[cls].color}"><i class="kj">${KT.glyph(D.classes[cls].icon)}</i> ${cls}</span>`;
   const sceneUrl = id => KT.sceneUrl(D.zones[id]?.scene || id, 'thumb');
+  const foundNotes = (state, id) => {
+    if (!visitedLoreZone(state, id)) return [];
+    const p = state.progress?.[id] || {}, reached = Math.max(p.best || 0, p.kills || 0);
+    return (KT.Lore?.fieldNotes?.[id] || []).filter(n => (n.at || 0) <= reached);
+  };
+  const visitedLoreZone = (state, id) => {
+    const p = state.progress?.[id] || {};
+    return id === 'village' || !!(p.best || p.kills || state.story?.seen?.[`zone_${id}`] || state.guide?.flags?.[`entered_${id}`] || (id === 'world_boss' && state.worldBoss?.day));
+  };
   const wtTag = wt => wt ? `<span class="wt-tag wt-${wt}">${KT.glyph(I.weaponTypes[wt].icon)} ${I.weaponTypes[wt].name}</span>` : '';
   const brt = (ms, opts = { weekday:'short', hour:'2-digit', minute:'2-digit' }) => new Date(ms).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', ...opts });
   const kindLabel = k => ({ hunt:'CAÇADA', dungeon:'DUNGEON', boss:'CHEFE', rift:'SEM FIM', village:'REFÚGIO' }[k] || '');
@@ -78,7 +87,7 @@
     wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['lore','Lore'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
     arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
     guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
-    chat:{ k:'COMUNIDADE', t:'Chat e perfil', tabs:[['chat','Chat global','scroll'], ['profile','Meu perfil','star']] }, player:{ k:'JOGADOR', t:'Perfil do jogador' },
+    chat:{ k:'COMUNIDADE', t:'Chat e perfil', tabs:[['chat','Global','scroll'], ['guild','Guilda','shield'], ['profile','Meu perfil','star']] }, player:{ k:'JOGADOR', t:'Perfil do jogador' },
     record:{ k:'PERFIL', t:'Conta e Configurações' }, profile:{ k:'JOGADOR', t:'Perfil do jogador' }, help:{ k:'AJUDA', t:'Como jogar' }
   };
   P.openPanel = function(name, param = null) {
@@ -109,16 +118,21 @@
     if (v.panel === 'hero' || v.panel === 'talents') { const r = this.engine.record(v.param); title = r ? `${v.panel === 'talents' ? 'Talentos · ' : ''}${this.engine.template(r.id).name}` : title; }
     this.el.modalTitle.textContent = title;
     this.el.modalBackNav.hidden = v.panel !== 'destination';
-    this.el.modalTabs.innerHTML = def.tabs && v.panel !== 'wiki' ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
+    this.el.modalTabs.innerHTML = def.tabs && v.panel !== 'wiki' ? def.tabs.map(([id, n, icon]) => { const gate = this.engine.serviceStatus(KT.Progression.serviceFor(v.panel, id)); return `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button" ${gate.locked ? `title="Conta nível ${gate.level}"` : ''}>${icon ? ic(icon) : ''}<span>${n}${gate.locked ? ` · ${gate.level}` : ''}</span></button>`; }).join('') : '';
     const top = this.el.modalBody.scrollTop;
     const fn = { chat:'chatPanel', player:'playerPanel', adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', bank:'bankPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
-    this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
+    const gate = this.engine.serviceStatus(KT.Progression.serviceFor(v.panel, v.tab));
+    this.el.modalBody.innerHTML = gate.locked ? this.serviceLockedHtml(gate) : this[fn](v.param, v.tab);
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
     // Mapa plano (a versão 3D curvava e escurecia a ilustração): o destino do "Ir" é destacado e centralizado na tela.
     if (v.panel === 'journey') requestAnimationFrame(() => this.el.modalBody.querySelector('.map-pin.focus')?.scrollIntoView({ block:'center', behavior:'smooth' }));
   };
   P.closeModal = function() { this.el.modal.hidden = true; this.view.panel = null; this.hideTip(); document.querySelectorAll('.nav').forEach(x => x.classList.remove('active')); };
+  P.serviceLockedHtml = function(gate) {
+    const lv = this.state.player.level;
+    return `<section class="service-lock"><span class="eyebrow">SEU LUGAR EM TSUKIMORI</span><h3>${esc(gate.name)}</h3><p>${esc(gate.text)}</p><b>Disponível no nível ${gate.level} da conta · você está no ${lv}</b><p class="dim">Ganhe experiência nas caçadas e masmorras. O desbloqueio é automático e não custa recursos.</p><button class="action primary" data-go="journey" type="button">Continuar a jornada</button><ol class="service-roadmap">${Object.values(KT.Progression.services).map(s => `<li class="${lv >= s.level ? 'unlocked' : ''}"><span>${lv >= s.level ? '✓' : s.level}</span><b>${esc(s.name)}</b><small>${esc(s.text)}</small></li>`).join('')}</ol></section>`;
+  };
   P.drawSprite = function(cv, id) { const img = this.assets.spriteImage(id); if (!img) return; const ctx = cv.getContext('2d'), r = img.width / img.height, h = Math.min(cv.height - 4, (cv.width - 4) / r), w = h * r; ctx.clearRect(0, 0, cv.width, cv.height); ctx.drawImage(img, (cv.width - w) / 2, cv.height - h - 2, w, h); };
 
   // ---------------------------------------------------------------------------
@@ -161,7 +175,7 @@
 
   P.destinationPanel = function(id) {
     const z = D.zones[id]; if (!z) return this.journeyPanel();
-    if (z.kind === 'village') return `<div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('${KT.sceneUrl('village-expanded', 'thumb')}')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Entrar na capital</button></div>`;
+    if (z.kind === 'village') return `<div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('${KT.sceneUrl('village-expanded', 'thumb')}')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${z.lore}</p><small class="story-stake">${esc(KT.Lore?.fieldNotes?.village?.[0]?.text || '')}</small></div></div><div class="destination-actions"><button class="action primary big" data-enter="village" type="button">Entrar na capital</button><button class="action" data-go="wiki:lore" type="button">Ler o Livro do Véu</button></div>`;
     const e = this.engine, p = this.state.progress[id], lock = e.zoneLock(id), pow = e.getPower();
     let selector = '', opts = {}, recNote = '';
     if (z.kind === 'hunt') {
@@ -200,7 +214,9 @@
     const drops = { hunt:'Itens comuns a épicos (lendários são raros); guardiões garantem um item; variantes Alfa garantem loot melhor', dungeon:'Baú no fim de cada andar e itens do chefe do andar', boss:'2 a 3 itens épicos/lendários, conjunto e únicos exclusivos', rift:'Tamahagane e ouro em todo andar, baú com chance crescente; conjunto Herança do Abismo a partir do andar 15' }[z.kind];
     const firstClear = z.kind === 'hunt' ? `Primeira vitória em cada estágio: poucos cristais${z.side ? '' : '; estágio final: 1 chave'}.` : z.kind === 'dungeon' ? 'Primeira conquista de cada andar: cristais; andar final: 1 chave.' : z.kind === 'rift' ? 'Primeira vez em cada andar: cristais; a cada 10 andares: 1 chave.' : 'Primeira vitória: 80 cristais + 1 chave.';
     const arc = KT.Lore?.chapters?.[z.chapter], bossLore = KT.Lore?.bosses?.[z.enemy];
+    const notes = lock.locked && !visitedLoreZone(this.state, id) ? [] : foundNotes(this.state, id), latestNote = notes[notes.length - 1];
     return `<div class="destination-banner" style="background-image:linear-gradient(0deg,rgba(9,8,22,.96),rgba(9,8,22,.1) 70%),url('${sceneUrl(id)}')"><div><span class="eyebrow">${z.kicker}</span><h3>${z.title}</h3><p>${esc(z.lore)}</p>${arc ? `<small class="story-stake"><b>${esc(arc.oath)}:</b> ${esc(arc.stake)}</small>` : ''}</div></div>
+      ${latestNote ? `<article class="boss-motive"><span class="eyebrow">CADERNO DE CAMPO · ${notes.length}/${KT.Lore.fieldNotes[id].length}</span><p><b>${esc(latestNote.by)}</b> — ${esc(latestNote.text)}</p><button class="action small ghost" data-go="wiki:lore" type="button">Ler a crônica no Livro do Véu</button></article>` : ''}
       ${lock.reasons.length ? `<div class="zone-requirements">${lock.reasons.map(r => `<span class="${r.met ? 'met' : 'missing'}">${r.met ? '✓' : '✕'} ${esc(r.text)}</span>`).join('')}</div>` : ''}
       <div class="dest-grid"><div>
         <h4 class="sub-title">${z.kind === 'hunt' ? 'Escolha o estágio' : z.kind === 'dungeon' || z.kind === 'rift' ? 'Escolha o andar' : 'Escolha a dificuldade'}</h4>${selector}
@@ -316,6 +332,7 @@
     if (tab === 'build') return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}${this.buildHtml(r)}`;
     if (tab === 'lore') {
       const L = KT.Lore?.heroes?.[KT.Data.roster.find(x => x.id === t.id)?.base || t.id] || KT.Lore?.heroes?.[t.id], wd = KT.Lore?.worlds?.[t.world];
+      const journey = KT.Lore?.heroJourney?.(t.id, s) || [];
       const bonds = D.bonds.filter(b => b.ids.includes(t.id)).map(b => `<li><b>${esc(b.name)}</b> · ${b.ids.map(id => esc(e.template(id)?.name || id)).join(', ')}<small>${esc(b.text)}</small></li>`).join('');
       const purpose = KT.Lore?.heroPurpose?.(t.id), baseId = KT.Data.roster.find(x => x.id === t.id)?.base || t.id, tale = KT.Lore?.tales?.[baseId] || KT.Lore?.tales?.[t.id];
       // Conto da travessia em tipografia de livro; a biografia curta vira o retrato logo abaixo.
@@ -323,7 +340,7 @@
       return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}${taleHtml}<article class="lore-card">
         ${L ? `<blockquote>“${esc(L.quote)}”</blockquote><p>${esc(L.bio)}</p>` : '<p class="dim">A história deste herói ainda não foi contada.</p>'}
         ${purpose ? `<h4>Papel na Crônica</h4><p>${esc(purpose.role)}</p>${purpose.ties.map(x => `<p class="dim">${esc(x)}</p>`).join('')}` : ''}
-        <h4>${esc(t.world)}</h4><p class="dim">${esc(wd?.text || '')}</p>
+        ${journey.length ? `<h4>Memórias vividas em Tsukimori</h4>${journey.map(p => p.revealed ? `<section class="companion-memory"><b>${esc(p.title)}</b><p>${esc(p.text)}</p></section>` : `<p class="dim">Uma memória se revela após vencer ${esc(D.zones[p.zone].title)}.</p>`).join('')}` : ''}<h4>${esc(t.world)}</h4><p class="dim">${esc(wd?.text || '')}</p>
         ${bonds ? `<h4>Laços</h4><ul class="lore-bonds">${bonds}</ul>` : ''}</article>`;
     }
     if (tab === 'kit') {
@@ -643,7 +660,7 @@
 
   P.cityPanel = function(_, tab) {
     const e = this.engine, s = this.state, b = s.buildings;
-    const bHead = id => { const bd = D.buildings[id], lv = b[id], cost = e.buildingCost(id), cap = e.buildingCap(); return `<div class="building-head"><span class="b-icon">${KT.glyph(bd.icon)}</span><div><b>${bd.name} · Nível ${lv}</b><small>${bd.desc}</small></div><button class="action ${s.player.gold >= cost && lv < cap ? 'primary' : ''}" data-build="${id}" type="button" ${lv >= cap ? 'disabled' : ''}>${lv >= cap ? `Máx. (conta nv ${(lv - 1) * 3 + 3} libera)` : `Melhorar · ${compact(cost)} ouro`}</button></div>`; };
+    const bHead = id => { const bd = D.buildings[id], lv = b[id], cost = e.buildingCost(id), cap = e.buildingCap(), gate = e.serviceStatus(id); return `<div class="building-head"><span class="b-icon">${KT.glyph(bd.icon)}</span><div><b>${bd.name} · Nível ${lv}</b><small>${bd.desc}</small></div><button class="action ${!gate.locked && s.player.gold >= cost && lv < cap ? 'primary' : ''}" data-build="${id}" type="button" ${gate.locked || lv >= cap || s.player.gold < cost ? 'disabled' : ''}>${gate.locked ? `Conta nv ${gate.level}` : lv >= cap ? `Máx. (conta nv ${(lv - 1) * 3 + 3} libera)` : `Melhorar · ${compact(cost)} ouro`}</button></div>`; };
     if (tab === 'forge') {
       const sel = e.findItem(this.forgeSel);
       const inStore = it => (s.storage || []).includes(it);
@@ -695,7 +712,7 @@
     if (tab === 'guild') {
       return `${bHead('guild')}${this.guildRankHtml()}<p class="note">Bônus de ouro do prédio: <b>+${(b.guild - 1) * 3}%</b>. Contratos renovam ao serem resgatados; cada contrato dá experiência na Ordem.</p>${this.contractsHtml()}`;
     }
-    const cityLevel = Object.values(b).reduce((sum, lv) => sum + lv, 0), ready = Object.keys(D.buildings).filter(id => b[id] < e.buildingCap() && s.player.gold >= e.buildingCost(id)).length;
+    const cityLevel = Object.values(b).reduce((sum, lv) => sum + lv, 0), ready = Object.keys(D.buildings).filter(id => !e.serviceStatus(id).locked && b[id] < e.buildingCap() && s.player.gold >= e.buildingCost(id)).length;
     return `<section class="city-overview"><span class="eyebrow">CAPITAL EM EXPANSÃO</span><h3>Grande Tsukimori</h3><p>Escolha um distrito no mapa ou desenvolva suas construções para fortalecer toda a conta.</p><div class="city-kpis"><span><b>${cityLevel}</b>níveis urbanos</span><span><b>${ready}</b>melhorias disponíveis</span><span><b>${s.collection.length}</b>heróis residentes</span></div></section><div class="building-list">${Object.keys(D.buildings).map(id => bHead(id)).join('')}</div><p class="note">O nível máximo das construções é ${e.buildingCap()} (aumenta 1 a cada 3 níveis de conta).</p>`;
   };
   // Ordem dos Aventureiros: letra, título, progresso, prova do próximo rank e vantagens (conquistadas e por vir).
@@ -780,12 +797,15 @@
   P.loadMarket = function(force = false) {
     const now = Date.now();
     if (!force && this.mktAt && now - this.mktAt < 15000) return;
-    this.mktAt = now;
-    Promise.all([MKT(this).wallet(), MKT(this).market(this.mktFilter || {}), MKT(this).myMarket()]).then(([w, m, mine]) => {
+    this.mktAt = now; const request = this.mktRequest = (this.mktRequest || 0) + 1;
+    return Promise.all([MKT(this).wallet(), MKT(this).market({ ...(this.mktFilter || {}) }), MKT(this).myMarket()]).then(([w, m, mine]) => {
+      if (request !== this.mktRequest) return;
       this.wallet = w.ok ? w : { error:w.error }; this.marketCfg = w.config || m.config || this.marketCfg;
-      this.mktList = m.ok ? m.listings : []; this.mktErr = m.ok ? null : m.error; this.myMkt = mine.ok ? mine : null;
+      if (m.ok) this.mktList = m.listings;
+      this.mktErr = !m.ok ? m.error : !mine.ok ? mine.error : null;
+      if (mine.ok) this.myMkt = mine;
       this.renderResources(); if ((this.view.panel === 'shop' && this.view.tab === 'p2p') || (this.view.panel === 'bank' && this.view.tab === 'wallet')) this.refreshPanel();
-    });
+    }).catch(err => { if (request !== this.mktRequest) return; this.mktErr = err.message || 'O mercado não respondeu. Tente atualizar.'; if (this.view.panel === 'shop' && this.view.tab === 'p2p') this.refreshPanel(); });
   };
   // Preço na moeda do anúncio: ouro (economia do jogo) ou Gemas (dinheiro real).
   const priceTxt = (v, cur) => cur === 'gold' ? `<span class="coin-ic" aria-hidden="true"></span> ${U.fmt(v || 0)} <small class="dim">ouro</small>` : gemTxt(v);
@@ -798,6 +818,7 @@
     if (cfg.enabled === false && cfg.goldMarket === false) return `<div class="empty-state"><h3>Mercado fechado</h3><p>${esc(cfg.reason || 'O Mercado de Jogadores está desativado neste servidor.')}</p></div>`;
     const cur = this.mktCurrency(), gold = cur === 'gold';
     const me = this.session.user?.id, bal = gold ? this.state.player.gold : (this.wallet?.balance || 0);
+    const isMine = l => l.mine || l.sellerId === 'me' || l.sellerId === me;
     const sel = this.state.inventory.find(x => x.uid === this.sellSel);
     const ownCards = I.cards.filter(c => (this.state.cards[c.id] || 0) > 0);
     const ownMats = [...Object.keys(I.materials), ...D.PROF_MATS.map(m => m.id)].map(id => I.matInfo(id)).filter(m => m && m.have(this.state) > 0);
@@ -808,7 +829,7 @@
       ${ownMats.length ? `<div class="card-sell"><select id="sell-mat">${ownMats.map(m => `<option value="${m.id}">${esc(m.name)} (×${U.fmt(m.have(this.state))})</option>`).join('')}</select><input id="sell-mat-qty" type="number" min="1" max="9999" step="1" placeholder="Quantidade"><input id="sell-mat-price" type="number" min="${minP}" step="1" placeholder="Preço do lote em ${unit}"><button class="action" data-list-mat type="button">Anunciar material</button></div>` : ''}
       ${ownCards.length ? `<div class="card-sell"><select id="sell-card">${ownCards.map(c => `<option value="${c.id}">${esc(c.name)} (×${this.state.cards[c.id]})</option>`).join('')}</select><input id="sell-card-price" type="number" min="${minP}" step="1" placeholder="Preço em ${unit}"><button class="action" data-list-card type="button">Anunciar carta</button></div>` : ''}
       <p class="dim small-note">${feeLine}</p></section>`;
-    const listing = l => { const own = l.sellerId === me, lc = l.currency || 'gems'; const body = l.kind === 'item' ? this.itemCard(l.payload, { compare:`<span class="compare">Vendedor: ${sellerBtn(l)}</span>` }) : l.kind === 'mat' ? `<article class="item mat-listing"><div class="item-head"><span class="mat-dot" style="--c:${I.matInfo(l.payload.id)?.color || '#aaa'}"></span><div><b>${esc(I.matInfo(l.payload.id)?.name || l.payload.id)} ×${U.fmt(l.payload.qty)}</b><small>Material · Vendedor: ${sellerBtn(l)}</small></div></div><p class="dim">${esc(I.matInfo(l.payload.id)?.text || '')}</p><p class="dim">≈ ${priceTxt(Math.ceil(l.price / Math.max(1, l.payload.qty)), lc)} por unidade</p></article>` : `<article class="item card-listing ${l.payload.mvp ? 'mvp' : ''}"><div class="item-head"><span class="card-art"><img src="${KT.spriteUrl(I.cardById(l.payload.id)?.sprite)}" alt=""></span><div><b>${esc(I.cardById(l.payload.id)?.name || l.payload.id)}</b><small>${l.payload.mvp ? 'Carta MVP' : 'Carta'} · Vendedor: ${sellerBtn(l)}</small></div></div><ul class="item-stats">${Object.entries(I.cardById(l.payload.id)?.stats || {}).map(([k, v]) => `<li>${statValue(k, v)}</li>`).join('')}</ul></article>`;
+    const listing = l => { const own = isMine(l), lc = l.currency || 'gems'; const body = l.kind === 'item' ? this.itemCard(l.payload, { compare:`<span class="compare">Vendedor: ${sellerBtn(l)}</span>` }) : l.kind === 'mat' ? `<article class="item mat-listing"><div class="item-head"><span class="mat-dot" style="--c:${I.matInfo(l.payload.id)?.color || '#aaa'}"></span><div><b>${esc(I.matInfo(l.payload.id)?.name || l.payload.id)} ×${U.fmt(l.payload.qty)}</b><small>Material · Vendedor: ${sellerBtn(l)}</small></div></div><p class="dim">${esc(I.matInfo(l.payload.id)?.text || '')}</p><p class="dim">${(l.price / Math.max(1, l.payload.qty)).toLocaleString('pt-BR', { maximumFractionDigits:2 })} ${lc === 'gold' ? 'ouro' : 'Gemas'} por unidade · compra do lote inteiro</p></article>` : `<article class="item card-listing ${l.payload.mvp ? 'mvp' : ''}"><div class="item-head"><span class="card-art"><img src="${KT.spriteUrl(I.cardById(l.payload.id)?.sprite)}" alt=""></span><div><b>${esc(I.cardById(l.payload.id)?.name || l.payload.id)}</b><small>${l.payload.mvp ? 'Carta MVP' : 'Carta'} · Vendedor: ${sellerBtn(l)}</small></div></div><ul class="item-stats">${Object.entries(I.cardById(l.payload.id)?.stats || {}).map(([k, v]) => `<li>${statValue(k, v)}</li>`).join('')}</ul></article>`;
       const can = (lc === 'gold' ? this.state.player.gold : (this.wallet?.balance || 0)) >= l.price;
       return `<div class="listing">${body}<footer><b class="price">${priceTxt(l.price, lc)}</b>${own ? `<button class="action small" data-cancel-listing="${l.id}" type="button">Cancelar</button>` : `<button class="action small primary" ${lc === 'gold' ? 'data-buy-gold' : 'data-buy-listing'}="${l.id}" data-price="${l.price}" data-name="${esc(l.name || l.payload?.name || '')}" type="button" ${can ? '' : 'disabled'}>Comprar</button>`}</footer></div>`; };
     const mail = this.myMkt?.mailbox || [];
@@ -820,7 +841,7 @@
       <div class="inv-top"><div class="filter-tabs">${[['all','Tudo'], ['item','Itens'], ['card','Cartas'], ['mat','Materiais']].map(([id, n]) => `<button class="${f.type === id ? 'active' : ''}" data-mkt-type="${id}" type="button">${n}</button>`).join('')}</div>${f.type === 'item' ? `<select id="mkt-slot" aria-label="Espaço"><option value="all">Todo espaço</option>${Object.entries(I.slots).map(([id, sl]) => `<option value="${id}" ${f.slot === id ? 'selected' : ''}>${esc(sl.name)}</option>`).join('')}</select><select id="mkt-rarity" aria-label="Raridade"><option value="all">Toda raridade</option>${D.rarities.map(r => `<option value="${r.id}" ${f.rarity === r.id ? 'selected' : ''}>${esc(r.label)}</option>`).join('')}</select>` : ''}<div class="filter-tabs">${[['recent','Recentes'], ['price','Menor preço'], ['-price','Maior preço']].map(([id, n]) => `<button class="${f.sort === id ? 'active' : ''}" data-mkt-sort="${id}" type="button">${n}</button>`).join('')}</div><input id="mkt-search" type="search" placeholder="Buscar pelo nome…" value="${esc(f.q)}"></div>
       ${this.mktErr ? `<p class="note warn-note">${esc(this.mktErr)}</p>` : ''}
       ${this.session?.mode === 'neon' ? this.ordersHtml() : ''}
-      <div class="listing-grid">${(this.mktList || []).filter(l => l.sellerId !== me && (l.currency || 'gems') === cur).map(listing).join('') || '<p class="empty-note">Nenhum anúncio de outros jogadores encontrado.</p>'}</div>
+      <div class="listing-grid">${(this.mktList || []).filter(l => !isMine(l) && (l.currency || 'gems') === cur).map(listing).join('') || '<p class="empty-note">Nenhum anúncio de outros jogadores encontrado.</p>'}</div>
       ${this.myMkt?.listings?.length ? `<h4 class="sub-title">Meus anúncios</h4><div class="listing-grid">${this.myMkt.listings.map(listing).join('')}</div>` : ''}
       <p class="note">Itens anunciados saem da sua bolsa e voltam pelo Correio se você cancelar ou se o anúncio expirar. Compras em ouro chegam direto na bolsa; o ouro das suas vendas chega pelo Correio.</p>`;
   };
@@ -1037,7 +1058,7 @@
   // O Livro do Véu (src/lore-book.js): índice à esquerda, capítulo em prosa à direita; capítulos se revelam com o avanço.
   P.loreBookHtml = function() {
     const book = KT.Lore?.book || [], s = this.state;
-    const open = ch => { const u = ch.unlock; if (!u) return true; const p = s.progress?.[u.zone] || {}; return u.kill ? (p.kills || 0) > 0 : (p.best || 0) > 0 || (p.kills || 0) > 0; };
+    const open = ch => { const u = ch.unlock; if (!u) return true; const p = s.progress?.[u.zone] || {}; return u.kill ? (p.kills || 0) > 0 : (p.best || 0) > 0 || (p.kills || 0) > 0 || !!s.story?.seen?.[`zone_${u.zone}`]; };
     const opened = book.map(open), last = opened.lastIndexOf(true);
     let i = Number.isInteger(this.bookCh) ? this.bookCh : 0; if (!opened[i]) i = Math.max(0, last);
     const ch = book[i]; if (!ch) return '<p class="dim">O livro ainda não foi escrito.</p>';
@@ -1054,9 +1075,18 @@
     const prev = i > 0 && opened[i - 1] ? `<button class="action small ghost" data-book-ch="${i - 1}" type="button">‹ ${esc(book[i - 1].title)}</button>` : '<span></span>';
     const next = i < book.length - 1 && opened[i + 1] ? `<button class="action small" data-book-ch="${i + 1}" type="button">${esc(book[i + 1].title)} ›</button>` : i < book.length - 1 ? '<small class="dim">O próximo capítulo ainda está selado.</small>' : '<span></span>';
     const worlds = Object.entries(KT.Lore?.worlds || {}).map(([n, w]) => `<div data-wiki-entry><b>${esc(n)}</b><small>${esc(w.text)}</small></div>`).join('');
+    const allNotes = KT.Lore?.fieldNotes || {}, totalNotes = Object.values(allNotes).reduce((n, pages) => n + pages.length, 0);
+    let found = 0;
+    const fieldPages = Object.entries(allNotes).map(([id]) => {
+      const z = D.zones[id]; if (!z || (this.engine.zoneLock(id).locked && !visitedLoreZone(s, id))) return '';
+      const notes = foundNotes(s, id); found += notes.length;
+      return notes.map(n => `<div data-wiki-entry><b>${esc(z.title)}</b><small>${esc(n.by)}</small><small>${esc(n.text)}</small><button class="action small ghost" data-preview-zone="${id}" type="button">Ver região</button></div>`).join('');
+    }).join('');
     return `<div class="lore-book"><nav class="book-toc" aria-label="Capítulos"><header><small>CRÔNICA DE TSUKIMORI</small><h3>O Livro do Véu</h3></header>${toc}</nav>
       <article class="book-page"><header><small>${esc(ch.part)}</small><h2>${esc(ch.title)}</h2>${ch.epigraph ? `<p class="epigraph">${esc(ch.epigraph.text)}<cite>${esc(ch.epigraph.from)}</cite></p>` : ''}</header>${body}<footer class="book-nav">${prev}${next}</footer></article></div>
-      <details class="book-appendix"><summary>Apêndice · Os mundos de onde vêm os viajantes</summary><div class="wiki-grid">${worlds}</div></details>`;
+      <details class="book-appendix"><summary>Caderno de campo · ${found}/${totalNotes} páginas encontradas</summary><div class="wiki-grid">${fieldPages}</div></details>
+      <details class="book-appendix"><summary>Apêndice · Os mundos de onde vêm os viajantes</summary><div class="wiki-grid">${worlds}</div></details>
+      <details class="book-appendix"><summary>As eras, os pactos e os costumes</summary><div class="wiki-grid">${[...(KT.Lore?.history || []).filter(h => !h.zone || (h.kill ? (s.progress[h.zone]?.kills || 0) > 0 : visitedLoreZone(s, h.zone))), ...(KT.Lore?.customs || [])].map(h => `<div data-wiki-entry><b>${esc(h.title)}</b><small>${esc(h.text)}</small></div>`).join('')}</div></details>`;
   };
   const WIKI_GROUPS = [['Começar', ['start', 'progress']], ['História', ['lore', 'world', 'events']], ['Combate', ['combat', 'classes', 'elements', 'synergy']],
     ['Heróis', ['heroes', 'builds', 'trees']], ['Equipamento', ['items', 'weapons', 'refine', 'cards']], ['Mundo', ['monsters', 'systems']], ['Economia', ['economy', 'market']]];
@@ -1195,7 +1225,13 @@
   // Toda ação que muda o estado passa por this.cmd: no servidor oficial ela é validada e executada lá;
   // no modo offline roda direto no motor.
   P.cmd = function(op, ...args) {
-    if (this.session?.mode === 'neon' && ['marketList', 'marketBuyGold', 'marketClaim'].includes(op)) return KT.NeonMarket.act(this.engine, op, args).then(r => { if (!r.ok && r.error) this.toast(esc(r.error)); this.renderResources(); return r.ok ? r.result : false; });
+    const service = op === 'upgradeBuilding' ? args[0] : KT.Progression.serviceActions[op];
+    if (service && !this.engine.requireService(service)) return Promise.resolve(false);
+    if (this.session?.mode === 'neon' && ['marketList', 'marketBuyGold', 'marketClaim'].includes(op)) {
+      if (this.marketBusy) { this.toast('Aguarde a confirmação da operação anterior.'); return Promise.resolve(false); }
+      this.marketBusy = true;
+      return KT.NeonMarket.act(this.engine, op, args).then(r => { if (!r.ok && r.error) this.toast(esc(r.error)); this.renderResources(); return r.ok ? r.result : false; }).catch(err => { this.toast(esc(err.message || 'Não foi possível confirmar a operação. Atualize antes de tentar novamente.')); return false; }).finally(() => { this.marketBusy = false; });
+    }
     if (KT.Server?.enabled) return KT.Server.act(op, args).then(r => { if (!r.ok && r.error) this.toast(esc(r.error)); return r.ok ? r.result : false; });
     try { return Promise.resolve(this.engine[op](...args)); } catch (err) { console.warn(err); return Promise.resolve(false); }
   };
@@ -1266,7 +1302,7 @@
     if (b.hasAttribute('data-sell-clear')) { this.sellSel = null; refresh(); return; }
     if (b.hasAttribute('data-mkt-refresh')) { this.loadMarket(true); return; }
     if (d.mktType) { this.mktFilter.type = d.mktType; this.loadMarket(true); return; }
-    if (d.mktCur) { this.mktFilter.currency = d.mktCur; this.priceHistory = {}; this.refreshPanel(); return; }
+    if (d.mktCur) { this.mktFilter.currency = d.mktCur; this.priceHistory = {}; this.loadMarket(true); return; }
     if (d.buyGold) {
       const price = Number(d.price), id = Number(d.buyGold);
       this.ask('Comprar com ouro', `Comprar <b>${esc(d.name || 'este anúncio')}</b> por <b>${U.fmt(price)} de ouro</b>? A compra é definitiva e o item vai direto para a sua bolsa.`, [{ id:'yes', label:'Comprar', primary:true }, { id:'no', label:'Cancelar' }])
@@ -1276,22 +1312,23 @@
     if (d.mktSort) { this.mktFilter.sort = d.mktSort; this.loadMarket(true); return; }
     if (d.listItem) {
       const price = Math.floor(Number(this.el.modalBody.querySelector('#sell-price')?.value)); const it = s.inventory.find(x => x.uid === d.listItem);
-      if (!it || !(price > 0)) { this.toast('Informe um preço válido.'); return; }
+      if (!it || !Number.isSafeInteger(price) || price < (this.mktCurrency() === 'gold' ? this.marketCfg?.goldMinPrice ?? 100 : this.marketCfg?.minPrice ?? 10)) { this.toast('Informe um preço inteiro acima do mínimo do mercado.'); return; }
       this.ask('Anunciar no Mercado', `Anunciar <b>${esc(it.name)}</b> por <b>${this.priceLabel(price)}</b>?${this.listFeeNote(price)} O item sai da sua bolsa até vender ou você cancelar.`, [{ id:'yes', label:'Anunciar', primary:true }, { id:'no', label:'Cancelar' }])
         .then(x => { if (x === 'yes') c('marketList', { kind:'item', itemUid:it.uid, price, currency:this.mktCurrency() }).then(r => { if (r) { this.sellSel = null; this.toast('Anunciado!', 'gold'); this.loadMarket(true); } refresh(); }); });
       return;
     }
     if (b.hasAttribute('data-list-card')) {
       const cardId = this.el.modalBody.querySelector('#sell-card')?.value, price = Math.floor(Number(this.el.modalBody.querySelector('#sell-card-price')?.value));
-      if (!cardId || !(price > 0)) { this.toast('Escolha a carta e um preço válido.'); return; }
+      if (!cardId || !Number.isSafeInteger(price) || price < (this.mktCurrency() === 'gold' ? this.marketCfg?.goldMinPrice ?? 100 : this.marketCfg?.minPrice ?? 10)) { this.toast('Escolha a carta e um preço inteiro acima do mínimo.'); return; }
       this.ask('Anunciar carta', `Anunciar <b>${esc(I.cardById(cardId).name)}</b> por <b>${this.priceLabel(price)}</b>?${this.listFeeNote(price)}`, [{ id:'yes', label:'Anunciar', primary:true }, { id:'no', label:'Cancelar' }])
         .then(x => { if (x === 'yes') c('marketList', { kind:'card', cardId, price, currency:this.mktCurrency() }).then(r => { if (r) { this.toast('Carta anunciada!', 'gold'); this.loadMarket(true); } refresh(); }); });
       return;
     }
     if (b.hasAttribute('data-list-mat')) {
       const matId = this.el.modalBody.querySelector('#sell-mat')?.value, qty = Math.floor(Number(this.el.modalBody.querySelector('#sell-mat-qty')?.value)), price = Math.floor(Number(this.el.modalBody.querySelector('#sell-mat-price')?.value));
-      if (!matId || !(qty > 0) || !(price > 0)) { this.toast('Escolha o material, a quantidade e o preço.'); return; }
-      c('marketList', { kind:'mat', matId, qty, price, currency:this.mktCurrency() }).then(r => { if (r) { this.toast('Material anunciado!', 'gold'); this.loadMarket(true); } refresh(); });
+      const mat = I.matInfo(matId), min = this.mktCurrency() === 'gold' ? this.marketCfg?.goldMinPrice ?? 100 : this.marketCfg?.minPrice ?? 10;
+      if (!mat || !Number.isSafeInteger(qty) || qty < 1 || qty > Math.min(9999, mat.have(s)) || !Number.isSafeInteger(price) || price < min) { this.toast('Confira seu estoque, a quantidade (1–9.999) e o preço mínimo do lote.'); return; }
+      this.ask('Confirmar lote', `<b>${esc(mat.name)} ×${U.fmt(qty)}</b><br>Preço do lote inteiro: <b>${this.priceLabel(price)}</b><br>Por unidade: ${(price / qty).toLocaleString('pt-BR', { maximumFractionDigits:2 })}.${this.listFeeNote(price)}<p>O estoque sai da bolsa e fica reservado até vender ou cancelar.</p>`, [{ id:'yes', label:'Anunciar lote', primary:true }, { id:'no', label:'Revisar' }]).then(x => { if (x === 'yes') run('marketList', [{ kind:'mat', matId, qty, price, currency:this.mktCurrency() }], r => { if (r) { this.toast('Material anunciado!', 'gold'); this.loadMarket(true); } }); });
       return;
     }
     if (d.buyListing) { const price = Number(d.price); this.ask('Comprar', `Comprar este anúncio por <b>${U.fmt(price)} gemas</b> (${gemFmt(price)})? A compra é definitiva.`, [{ id:'yes', label:'Comprar', primary:true }, { id:'no', label:'Cancelar' }]).then(x => { if (x === 'yes') KT.Net.buyListing(Number(d.buyListing)).then(r => { this.toast(r.ok ? 'Comprado! Resgate no Correio.' : esc(r.error), r.ok ? 'gold' : ''); this.loadMarket(true); }); }); return; }

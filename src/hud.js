@@ -77,7 +77,7 @@
   P.renderDistricts = function() {
     const grid = this.el.districts; if (!grid) return;
     const show = this.engine.zone?.kind === 'village'; grid.hidden = !show; if (!show) return;
-    const html = [...document.querySelectorAll('#village-actions .signpost')].map((sp, i) => { const badge = sp.querySelector('.sp-badge'); return `<button type="button" data-district="${i}">${sp.querySelector('.sp-icon')?.innerHTML || ''}<span>${sp.querySelector('b')?.textContent || ''}</span>${badge && !badge.hidden ? `<em>${badge.textContent}</em>` : ''}</button>`; }).join('');
+    const html = [...document.querySelectorAll('#village-actions .signpost')].map((sp, i) => { const badge = sp.querySelector('.sp-badge'), [panel, tab] = sp.dataset.open.split(':'), gate = this.engine.serviceStatus(KT.Progression.serviceFor(panel, tab)); return `<button type="button" data-district="${i}" class="${gate.locked ? 'service-locked' : ''}">${sp.querySelector('.sp-icon')?.innerHTML || ''}<span>${sp.querySelector('b')?.textContent || ''}${gate.locked ? `<small>Conta nv ${gate.level}</small>` : ''}</span>${badge && !badge.hidden && !gate.locked ? `<em>${badge.textContent}</em>` : ''}</button>`; }).join('');
     if (html !== this._distHtml) { this._distHtml = html; grid.innerHTML = html; }
   };
   // Cartão de objetivo na arena: um só "o que fazer agora", com o botão certo.

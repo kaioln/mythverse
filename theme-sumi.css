@@ -724,7 +724,7 @@ body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:t
 #village-actions .signpost::after,#village-actions .signpost::before{display:none!important}
 #village-actions .signpost .sp-icon{width:clamp(34px,3vw,46px);height:clamp(34px,3vw,46px);border-radius:50%;background:rgba(14,12,18,.9)!important;border:2px solid rgba(239,230,210,.82)!important;box-shadow:0 4px 12px rgba(0,0,0,.55)!important;font-size:clamp(16px,1.35vw,21px)}
 #village-actions .signpost .sp-icon .ic{--icc:var(--washi)}
-#village-actions .signpost .sp-plate{display:flex;flex-direction:column;align-items:center;padding:3px 9px 4px;border-radius:5px;background:rgba(14,12,18,.88);border:1px solid rgba(239,230,210,.16);box-shadow:0 4px 10px rgba(0,0,0,.4)}
+#village-actions .signpost .sp-plate{display:flex;flex-direction:column;align-items:center;padding:2px 7px 3px;border-radius:5px;background:rgba(14,12,18,.78);border:1px solid rgba(239,230,210,.24);box-shadow:0 3px 8px rgba(0,0,0,.34)}
 #village-actions .signpost b{font:700 clamp(11px,.9vw,14px)/1.1 var(--display);color:var(--washi);white-space:nowrap}
 #village-actions .signpost .sp-lv{display:block!important;font:700 9.5px/1.1 var(--ui);color:var(--gold);letter-spacing:.04em}
 #village-actions .signpost .sp-lv:empty{display:none!important}
@@ -732,9 +732,13 @@ body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:t
 #village-actions .signpost .sp-badge{position:absolute;top:-4px;left:calc(50% + 10px);right:auto;z-index:2}
 #village-actions .signpost:hover{transform:translate(-50%,-50%) translateY(-2px)}
 #village-actions .signpost:hover .sp-icon{border-color:var(--gold)!important}
+#village-actions .signpost:focus-visible .sp-icon{outline:2px solid var(--gold);outline-offset:3px}
 @media (max-width:700px){#village-actions .signpost .sp-plate{padding:2px 6px}#village-actions .signpost .sp-lv{display:none!important}}
 #village-actions .signpost{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 #village-actions .signpost{opacity:1!important;visibility:visible!important}
+@media (min-width:1350px) and (min-height:800px){
+  #village-actions .signpost[data-badge="shrine"]{left:83%!important;top:58%!important}
+}
 body:not(.in-combat) .zone-chip{max-width:340px;padding:6px 10px 7px}
 body:not(.in-combat) .zone-chip .zone-kicker{font-size:8px}
 body:not(.in-combat) .zone-chip h1{margin:1px 0 3px;font-size:clamp(15px,1.35vw,19px)}
@@ -794,11 +798,12 @@ body .stage-controls .ctl,body .stage-controls .journey-cta{min-height:0!importa
 
 /* Cidade viva: o painel de boas-vindas vira um cartão compacto no céu do canto de cima à direita (a arte deixa essa área
    livre), para a cidade e os moradores ocuparem o palco. */
-body .village-hub{top:74px!important;bottom:auto!important;right:14px!important;width:clamp(240px,24%,300px)!important;max-height:none!important;padding:10px 12px!important;overflow:visible!important}
-body .village-hub .eyebrow{display:block;margin-bottom:6px;font-size:10px}
-body .village-hub .hub-goal{margin-bottom:6px}
-body .village-hub .hub-actions>.action.primary{min-height:46px}
-body .village-hub .hub-row .action{min-height:32px}
+body .village-hub{top:72px!important;bottom:auto!important;right:14px!important;width:clamp(240px,24%,300px)!important;max-height:none!important;padding:8px 11px!important;overflow:visible!important}
+body .village-hub .eyebrow{display:block;margin-bottom:3px;font-size:10px}
+body .village-hub .hub-goal{margin-bottom:4px;padding:7px 9px}
+body .village-hub .hub-actions{gap:4px}
+body .village-hub .hub-actions>.action.primary{min-height:42px}
+body .village-hub .hub-row .action{min-height:30px}
 
 .hero-tale{max-width:760px;margin:0 0 14px}
 .hero-tale h2{font-size:clamp(20px,2vw,26px)}
@@ -835,7 +840,19 @@ body .village-hub .hub-row .action{min-height:32px}
 .talent-tree .band-tag text{stroke:none!important;paint-order:normal}
 .talent-tree .band-tag .band-sub{font:700 12px var(--ui)!important;fill:#cfc6b6!important;letter-spacing:.06em}
 
-/* Placa sobre personagem da cidade: translúcida (src/renderer.js dimSignposts); volta ao passar o mouse. */
-#village-actions .signpost{transition:opacity .25s}
-#village-actions .signpost.over-actor{opacity:.22}
-#village-actions .signpost.over-actor:hover,#village-actions .signpost.over-actor:focus-visible{opacity:1}
+/* O selo do Festival identifica a cidade sem disputar atenção com a arte. */
+body:not(.in-combat) .zone-chip{border-color:rgba(236,184,164,.36)}
+body:not(.in-combat) .zone-kicker::before{content:'✿';margin-right:5px;color:#f0a7b2}
+
+.service-lock{max-width:850px;margin:auto;padding:18px}.service-lock h3{font:700 30px var(--display);margin:10px 0}.service-lock>p{line-height:1.65}
+.service-roadmap{list-style:none;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:22px 0}
+.service-roadmap li{display:grid;grid-template-columns:32px 1fr;gap:4px 10px;padding:12px;border:1px solid var(--line2);border-radius:10px;background:rgba(21,18,25,.7)}
+.service-roadmap li>span{grid-row:span 2;align-self:center;text-align:center;color:var(--gold)}.service-roadmap small{line-height:1.5;color:var(--dim)}.service-roadmap .unlocked{border-color:rgba(143,174,141,.4)}
+.signpost.service-locked .sp-lv{color:#d1c8b5}.signpost.service-locked .sp-icon{border-color:#968873;background:#242128}.signpost.service-locked .sp-plate{border:1px solid rgba(180,164,143,.4)}
+.chat-channel{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.chat-channel h3{font:700 24px var(--display);margin:6px 0}.chat-status{font-size:11px;color:#b4ae9f;line-height:1.6}
+.chat-log,.guild-feed{overflow-wrap:anywhere;scrollbar-gutter:stable}.chat-event{border-left:2px solid #8b7757;padding-left:10px;color:#b9b09f}.chat-line p{white-space:pre-wrap;line-height:1.6}.chat-line .chat-who{max-width:100%;min-width:0}.chat-line .chat-who b{overflow:hidden;text-overflow:ellipsis}
+.chat-form input{min-width:0;flex:1}.guild-feed{max-height:360px;display:flex;flex-direction:column;gap:10px;padding:12px}.foe-card .matchup{font-size:12px;margin:8px 0}.foe-card>small{display:block;min-height:36px;line-height:1.5}.companion-memory{padding:16px 0;border-top:1px solid var(--line2)}
+.dlg-body [data-story-book]{margin:5px 0 8px}.dlg-body .dlg-next{display:block}
+#district-grid .service-locked{border-color:rgba(180,164,143,.4)}#district-grid .service-locked small{display:block;font:600 10px/1.5 var(--ui);color:#c9baa4}
+@media(max-width:600px){.service-roadmap{grid-template-columns:1fr}.service-lock{padding:8px}.chat-channel h3{font-size:20px}.chat-form{display:flex;gap:6px}.chat-form .action{padding:10px}.guild-feed{max-height:300px}.chat-log{min-height:230px}.chat-channel .chat-status{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.dlg-body p.typing{animation:none}}

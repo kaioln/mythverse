@@ -81,7 +81,11 @@
       this.el.modalBody.addEventListener('input', e => this.handleInput(e));
       this.el.modalBody.addEventListener('change', e => this.handleInput(e));
       [this.el.villageHub, this.el.result, this.el.hint, this.el.guide, this.el.choice, this.el.rightObjectives, this.el.event].forEach(n => n.addEventListener('click', e => this.handleAction(e)));
-      this.el.dialog.addEventListener('click', () => this.advanceDialog());
+      this.el.dialog.addEventListener('click', ev => {
+        const b = ev.target.closest('[data-story-book]');
+        if (b) { const i = KT.Lore?.book?.findIndex(c => c.id === b.dataset.storyBook); if (i >= 0) { this.bookCh = i; this.openPanel('wiki', 'lore'); } return; }
+        this.advanceDialog();
+      });
       this.el.reveal.addEventListener('click', () => this.closeReveal());
       // Foco em inimigos.
       const cv = this.el.canvas;
@@ -202,7 +206,7 @@
       const cap = PRG.trainingCap(s.buildings.dojo), dojo = Object.keys(PRG.training).filter(k => (s.training[k] || 0) < cap && s.player.gold >= PRG.trainingCost(s.training[k] || 0)).length;
       const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
-      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = lv ? `Nv ${lv}` : ''; });
+      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = b.dataset.open.split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta nv ${gate.level}` : lv ? `Nv ${lv}` : ''; });
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
@@ -356,6 +360,7 @@
     onPhase(p) { this.renderer.showBanner(`FASE ${p.idx + 1}`, p.text, '#ff6b7a'); this.callbacks.warn?.(); }
     onStageClear(r) {
       const z = r.zone;
+      if (r.first) this.revealFieldLore(z.id, r.stage);
       if (r.rift) { this.renderer.showBanner(r.first ? `NOVO RECORDE: ANDAR ${r.stage}!` : `ANDAR ${r.stage} VENCIDO`, r.first && r.rewards.crystal ? `+${r.rewards.crystal} cristais${r.rewards.keys ? ' · 1 chave' : ''}` : z.title, '#ff5d8f'); this.callbacks.victory?.(); return; }
       this.renderer.showBanner(r.first ? 'ESTÁGIO CONQUISTADO!' : 'ESTÁGIO VENCIDO', r.first ? `Recompensa de primeira vitória: ${[r.rewards.crystal && `${r.rewards.crystal} cristais`, r.rewards.keys && `${r.rewards.keys} chave`].filter(Boolean).join(' · ')}` : `${z.title} · ${r.stage}`, '#ffd76a');
       if (r.first && r.stage === z.stages) this.toast(`<b>${z.title} concluído!</b> O chefe da região pode ser desafiado no Mapa.`, 'gold');
@@ -377,7 +382,11 @@
     }
     onLog(p) { const e = typeof p === 'string' ? { text:p, type:'system' } : p; this.logs.unshift(e); this.logs = this.logs.slice(0, 80); if (!this.logTimer) this.logTimer = setTimeout(() => { this.logTimer = null; this.renderCombat(); }, 300); }
     onWarn(text) { this.el.warn.textContent = `危 ${text}`; this.el.warn.hidden = false; this.el.warn.style.animation = 'none'; void this.el.warn.offsetWidth; this.el.warn.style.animation = ''; clearTimeout(this.warnTimer); this.warnTimer = setTimeout(() => this.el.warn.hidden = true, 2200); this.callbacks.warn?.(); }
-    onAccountLevel() { this.renderResources(); }
+    onAccountLevel(level) {
+      this.renderResources();
+      Object.values(KT.Progression.services).filter(s => s.level === level).forEach(s => this.toast(`<b>${esc(s.name)}</b> disponível! ${esc(s.text)}`, 'gold'));
+      if (this.view.panel) this.refreshPanel();
+    }
     onCard(c) {
       const card = c.card;
       if (c.mvp) this.renderer.showBanner('CARTA MVP!', card.name, '#ffb938');
@@ -419,16 +428,27 @@
       this.toast('A equipe caiu duas vezes no mesmo desafio. <b>Sayo preparou um plano.</b>', 'gold');
     }
     onDialog(lines) { this.dialogQueue.push(...lines); if (this.el.dialog.hidden) this.advanceDialog(); }
+    revealFieldLore(zoneId, stage) {
+      const notes = (KT.Lore?.fieldNotes?.[zoneId] || []).filter(n => n.at === stage);
+      if (!notes.length) return;
+      this.onDialog(notes.map(n => ({ who:'Crônica', by:n.by, text:n.text })));
+      this.onLog({ text:`Uma página do Caderno de Campo foi recuperada em ${D.zones[zoneId].title}.`, type:'system' });
+    }
     advanceDialog() {
       const line = this.dialogQueue.shift();
       if (!line) { this.el.dialog.hidden = true; this.engine.paused = false; return; }
       const sp = D.speakers[line.who] || { color:'#fff', title:'' };
       this.engine.paused = true;
-      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(sp.title)}</small></span><p>${esc(line.text)}</p><small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
+      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(line.by || sp.title)}</small></span><p>${esc(line.text)}</p>${line.book ? `<button class="action small ghost" data-story-book="${esc(line.book)}" type="button">Ler o capítulo completo</button>` : ''}<small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
       this.el.dialog.hidden = false;
       const p = this.el.dialog.querySelector('p'); p.classList.remove('typing'); void p.offsetWidth; p.classList.add('typing');
     }
     onResult(r) {
+      if (r.first && r.kind === 'dungeon') this.revealFieldLore(r.zone.id, r.floor);
+      if (r.first && r.kind === 'boss') {
+        const companion = this.engine.heroes.map(h => ({ h, page:KT.Lore?.heroJourney?.(h.id, this.state).find(p => p.zone === r.zone.id) })).find(x => x.page?.revealed);
+        if (companion) this.onDialog([{ who:this.engine.template(companion.h.id).name, by:'Memórias da jornada', text:companion.page.text }]);
+      }
       const lootHtml = (r.loot || []).filter(it => !it.autoSalvaged).slice(0, 8).map(it => `<div class="result-item rarity-${it.rarity}">${KT.itemIcon(it)}<b>${esc(it.name)}</b><small>${D.rarities.find(x => x.id === it.rarity).label}</small></div>`).join('');
       const rw = r.rewards ? this.rewardPills({ gold:r.rewards.gold, crystal:r.rewards.crystal, keys:r.rewards.keys }) : '';
       if (r.kind === 'worldboss') {
