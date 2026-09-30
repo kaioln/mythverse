@@ -124,7 +124,7 @@
     renderResources() {
       const p = this.state.player, set = (el, v) => { const t = String(v); if (el.textContent !== t) { if (el.textContent && el.textContent !== ', ') { const box = el.parentElement; box.classList.remove('bump'); void box.offsetWidth; box.classList.add('bump'); } el.textContent = t; } };
       this.el.playerName.textContent = p.name;
-      set(this.el.gold, compact(p.gold)); set(this.el.crystal, compact(p.crystal)); set(this.el.dust, compact(p.dust)); set(this.el.ore, compact(p.ore)); set(this.el.gems, this.session?.mode === 'cloud' && this.wallet && !this.wallet.error ? compact(this.wallet.balance || 0) : ', ');
+      set(this.el.gold, compact(p.gold)); set(this.el.crystal, compact(p.crystal)); set(this.el.dust, compact(p.dust)); set(this.el.ore, compact(p.ore)); { const hasWallet = this.session?.mode === 'cloud' && this.wallet && !this.wallet.error; set(this.el.gems, hasWallet ? compact(this.wallet.balance || 0) : ''); this.el.gems.closest('.res').hidden = !hasWallet; }
       const free = this.state.starterRolls > 0; set(this.el.keys, free ? this.state.starterRolls : p.keys); this.el.keyCaption.textContent = free ? 'Grátis' : 'Chaves';
       this.el.power.textContent = `Poder ${compact(this.engine.getPower())}`;
       this.el.level.textContent = `Conta Nv. ${p.level}`;
@@ -287,13 +287,21 @@
 
     // ======================= PAINEL LATERAL =======================
     renderSide() { this.renderGuide(); this.renderEvent(); this.renderContracts(); }
+    // Painel lateral no padrão de rastreador de missão: seções com cabeçalho, 1 linha de texto, 1 botão.
     renderGuide() {
       const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
+      const head = (t, meta = '') => `<header class="sec-h"><span>${t}</span>${meta ? `<small>${meta}</small>` : ''}</header>`;
       let main;
-      if (g) main = `<span class="eyebrow">PRÓXIMO PASSO · ${D.guide.indexOf(g) + 1}/${D.guide.length}</span><strong>${esc(g.title)}</strong><small>${esc(g.desc)}</small><div class="guide-reward">${this.rewardPills(g.reward)}</div>${e.guideDone(g) ? `<button class="action primary small" data-claim-guide type="button">✓ Resgatar recompensa</button>` : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : ''}`;
-      else if (ch) { const v = e.chronicleValue(ch), done = v >= ch.target; main = `<span class="eyebrow">CRÔNICA ${ch.k} · SEM FIM</span><strong>${esc(ch.title)}</strong><small>${esc(ch.text)}</small><div class="meter"><span style="width:${Math.min(1, (v - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div><small class="dim">${U.fmt(v)} / ${U.fmt(ch.target)}</small>${done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : ''}`; }
-      else main = `<span class="eyebrow">GUIA DO VIAJANTE</span><strong>Jornada concluída!</strong>`;
-      const extra = `<div class="guide-extra">${ls.available ? `<button class="action pink small" data-claim-login type="button"><i class="ic ic-chest"></i> Login do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte."><i class="ic ic-compass"></i> Travado? Conselheiro</button></div>`;
+      if (g) {
+        const done = e.guideDone(g);
+        main = `${head('Missão', `${D.guide.indexOf(g) + 1}/${D.guide.length}`)}<strong>${esc(g.title)}</strong><small class="clamp1" data-tip="${esc(g.desc)}">${esc(g.desc)}</small>
+          <div class="sec-row"><div class="guide-reward">${this.rewardPills(g.reward)}</div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`;
+      } else if (ch) {
+        const v = e.chronicleValue(ch), done = v >= ch.target;
+        main = `${head('Crônica', `nº ${ch.k}`)}<strong>${esc(ch.title)}</strong><div class="meter"><span style="width:${Math.min(1, (v - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div>
+          <div class="sec-row"><small class="dim">${U.fmt(v)} / ${U.fmt(ch.target)}</small>${done ? '<button class="action primary small" data-claim-chronicle type="button">Resgatar</button>' : ''}</div>`;
+      } else main = `${head('Missão')}<strong>Jornada concluída!</strong>`;
+      const extra = `<div class="sec-foot">${ls.available ? `<button class="action pink small" data-claim-login type="button"><i class="ic ic-chest"></i> Presente do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte."><i class="ic ic-compass"></i> Conselheiro</button></div>`;
       const html = main + extra, done = (g && e.guideDone(g)) || (ch && e.chronicleValue(ch) >= ch.target);
       if (html !== this.guideHtml) { this.guideHtml = html; this.el.guide.innerHTML = html; this.el.guide.classList.toggle('done', !!done); }
     }
@@ -301,8 +309,11 @@
       const ev = this.engine.event(), now = KT.Clock.now(), left = (ev.ends - now) / 1000;
       const hm = ms => new Date(ms).toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', weekday:'short', hour:'2-digit', minute:'2-digit' });
       const nexts = KT.State.upcomingEvents(now, 3).filter(x => x.start > now).slice(0, 3);
-      const html = `<span class="eyebrow" style="color:${ev.color}">${ev.id === 'calm' ? `SEM EVENTO · próximo em ${fmtTime(left)}` : `EVENTO MUNDIAL · termina em ${fmtTime(left)}`}</span><strong>${ev.icon} ${ev.name}</strong><small>${ev.text}</small><ul class="ev-next">${nexts.map(x => `<li><span style="color:${x.color}">${x.icon} ${x.name}</span><em>${hm(x.start)}</em></li>`).join('')}</ul><small class="dim">Horário de Brasília · <button class="link-btn" data-go="wiki:events" type="button">ver calendário</button></small>${ev.id === 'festival' ? `<button class="action pink small" data-go="destination:boss_event" type="button">Enfrentar a Kitsune</button>` : ''}`;
-      if (html !== this.eventHtml) { this.eventHtml = html; this.el.event.innerHTML = html; this.el.event.style.setProperty('--ec', ev.color); }
+      const open = this.eventOpen ? 'open' : '';
+      const html = `<header class="sec-h"><span>Evento</span><small>${ev.id === 'calm' ? `próximo em ${fmtTime(left)}` : `termina em ${fmtTime(left)}`}</small></header>
+        <strong data-tip="${esc(ev.text)}"><i class="kj" style="color:${ev.color}">${ev.icon}</i> ${ev.name}</strong>
+        <details class="ev-cal" ${open}><summary>Próximos</summary><ul class="ev-next">${nexts.map(x => `<li><span style="color:${x.color}">${x.icon} ${x.name}</span><em>${hm(x.start)}</em></li>`).join('')}</ul></details>`;
+      if (html !== this.eventHtml) { this.eventHtml = html; this.el.event.innerHTML = html; this.el.event.style.setProperty('--ec', ev.color); this.el.event.querySelector('details')?.addEventListener('toggle', e2 => { this.eventOpen = e2.target.open; }); }
     }
     rewardPills(r) {
       const names = { gold:['ouro','gold'], crystal:['cristais','crystal'], dust:['Éter','dust'], ore:['Tamahagane','ore'], keys:['chave(s)','key'], key:['chave(s)','key'], potion:['poção(ões)','potion'], elixir:['elixir(es)','potion'], item:['item','item'] };
@@ -311,10 +322,10 @@
     renderContracts() {
       const key = JSON.stringify(this.state.contracts);
       if (key === this.contractKey) return; this.contractKey = key;
-      this.el.rightObjectives.innerHTML = `<p class="pane-note">Contratos da Guilda: conclua para ganhar recompensas. Um novo chega a cada resgate.</p>` + this.state.contracts.map((c, i) => {
-        const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n;
-        return `<article class="objective ${done ? 'done' : ''}"><header><b>${def.title}</b><span>${c.progress}/${c.n}</span></header><p>${def.text.replace('{n}', c.n)}</p><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div><div class="guide-reward">${this.rewardPills(this.engine.contractReward(c))}</div>${done ? `<button class="action primary small" data-claim-contract="${i}" type="button">Resgatar</button>` : ''}</article>`;
-      }).join('');
+      this.el.rightObjectives.innerHTML = this.state.contracts.map((c, i) => {
+        const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n, tip = `${def.text.replace('{n}', c.n)}<br>${this.rewardPills(this.engine.contractReward(c))}`;
+        return `<article class="objective ${done ? 'done' : ''} ${c.legendary ? 'legendary' : ''}" data-tip="${esc(tip)}"><header><b>${def.title}</b><span>${c.progress}/${c.n}</span></header><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div>${done ? `<button class="action primary small" data-claim-contract="${i}" type="button">Resgatar</button>` : ''}</article>`;
+      }).join('') + '<button class="action small ghost pane-more" data-go="quests:contracts" type="button">Ver contratos e recompensas</button>';
     }
     renderLoot() {
       const items = this.lootHistory.slice(0, 18);

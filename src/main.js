@@ -111,6 +111,7 @@
         state.formation = state.collection.slice(0, 4).map(h => h.uid);
         Object.assign(state.player, { gold:14.6e6, crystal:993, keys:80, level:56, name:'Teste' });
         state.story.seen.intro = state.story.seen.team = true; state.starterRolls = 0;
+        if (new URLSearchParams(location.search).get('devhud')) KT.Utils.safeStorage.set('mythverse-hud', new URLSearchParams(location.search).get('devhud'));
         Object.keys(KT.Data.zones).forEach(z => { if (['hunt', 'dungeon', 'boss', 'hunt_swamp', 'dungeon_crypt'].includes(z)) Object.assign(state.progress[z] ||= {}, { best:12, kills:3 }); });
       }
       const assets = new KT.AssetBank();

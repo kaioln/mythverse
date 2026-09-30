@@ -656,3 +656,29 @@ body.in-combat #goal-chip{display:none!important}
 .avatar-pick input{position:absolute;opacity:0}.avatar-pick .av{width:44px;height:44px;cursor:pointer}.avatar-pick input:checked+.av{outline:2px solid var(--shu);outline-offset:2px}
 @media (max-width:900px){.profile-edit{grid-template-columns:1fr}.chat{height:min(70vh,560px)}}
 .pc-stats b{text-transform:capitalize}
+
+/* ===== HUB · painel lateral como rastreador de missão (seções, 1 linha, 1 botão) ===== */
+.side-panel{gap:10px}
+.guide-card,.event-card{gap:4px;padding:12px 14px;border-radius:10px;background:#16141e!important;border:1px solid var(--line2)!important;box-shadow:none!important;animation:none!important}
+.guide-card.done{border-color:var(--gold)!important}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px}
+.sec-h span{font:800 10.5px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--shu)}
+.sec-h small{font:600 11px var(--ui);color:var(--dim)}
+.guide-card strong,.event-card strong{font:800 16px/1.25 var(--display);color:var(--washi)}
+.clamp1{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--muted)}
+.sec-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;min-width:0}
+.sec-row .guide-reward{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.sec-row .action{margin:0!important;flex:none}
+.sec-foot{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.sec-foot .action{margin:0!important}
+.ev-cal summary{cursor:pointer;font:600 11.5px var(--ui);color:var(--muted);list-style:none;margin-top:4px}
+.ev-cal summary::before{content:'▸ '}.ev-cal[open] summary::before{content:'▾ '}
+.ev-cal .ev-next{margin:6px 0 0}
+.right-pane .objective{padding:9px 11px;display:grid;gap:6px}
+.right-pane .objective header{font-size:13px}.right-pane .objective header span{color:var(--muted);font-variant-numeric:tabular-nums}
+.right-pane .objective .action{justify-self:start}
+.right-pane .objective.done{border-color:rgba(216,176,98,.5);background:rgba(216,176,98,.06)}
+.pane-more{width:100%;margin-top:6px}
+@media (min-width:1101px){.app:not(.panel-hidden) .village-hub .hub-goal{display:none}}
+.res[hidden]{display:none!important}
+@media (max-width:1400px){#village-actions .signpost small{display:none}}
