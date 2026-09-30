@@ -1030,11 +1030,35 @@
   // ---------------------------------------------------------------------------
   // WIKI COMPLETA (gerada a partir dos dados do jogo)
   // ---------------------------------------------------------------------------
+  // O Livro do Véu (src/lore-book.js): índice à esquerda, capítulo em prosa à direita; capítulos se revelam com o avanço.
+  P.loreBookHtml = function() {
+    const book = KT.Lore?.book || [], s = this.state;
+    const open = ch => { const u = ch.unlock; if (!u) return true; const p = s.progress?.[u.zone] || {}; return u.kill ? (p.kills || 0) > 0 : (p.best || 0) > 0 || (p.kills || 0) > 0; };
+    const opened = book.map(open), last = opened.lastIndexOf(true);
+    let i = Number.isInteger(this.bookCh) ? this.bookCh : 0; if (!opened[i]) i = Math.max(0, last);
+    const ch = book[i]; if (!ch) return '<p class="dim">O livro ainda não foi escrito.</p>';
+    const toc = book.map((c, k) => opened[k]
+      ? `<button class="toc-item ${k === i ? 'active' : ''}" data-book-ch="${k}" type="button"><small>${esc(c.part)}</small><b>${esc(c.title)}</b></button>`
+      : `<div class="toc-item locked"><small>${esc(c.part)}</small><b>Páginas seladas</b><em>Revela-se em ${esc(D.zones[c.unlock.zone]?.title || 'terras distantes')}${c.unlock.kill ? ' (vença o chefe)' : ''}</em></div>`).join('');
+    let first = true;
+    const body = ch.pages.map(pg => {
+      if (typeof pg === 'string') { const cls = first ? ' class="drop"' : ''; first = false; return `<p${cls}>${esc(pg)}</p>`; }
+      if (pg.verse) return `<blockquote class="verse">${pg.verse.map(l => `<span>${esc(l)}</span>`).join('')}${pg.by ? `<cite>${esc(pg.by)}</cite>` : ''}</blockquote>`;
+      if (pg.note) return `<aside class="margin-note">${esc(pg.note)}</aside>`;
+      return '';
+    }).join('');
+    const prev = i > 0 && opened[i - 1] ? `<button class="action small ghost" data-book-ch="${i - 1}" type="button">‹ ${esc(book[i - 1].title)}</button>` : '<span></span>';
+    const next = i < book.length - 1 && opened[i + 1] ? `<button class="action small" data-book-ch="${i + 1}" type="button">${esc(book[i + 1].title)} ›</button>` : i < book.length - 1 ? '<small class="dim">O próximo capítulo ainda está selado.</small>' : '<span></span>';
+    const worlds = Object.entries(KT.Lore?.worlds || {}).map(([n, w]) => `<div data-wiki-entry><b>${esc(n)}</b><small>${esc(w.text)}</small></div>`).join('');
+    return `<div class="lore-book"><nav class="book-toc" aria-label="Capítulos"><header><small>CRÔNICA DE TSUKIMORI</small><h3>O Livro do Véu</h3></header>${toc}</nav>
+      <article class="book-page"><header><small>${esc(ch.part)}</small><h2>${esc(ch.title)}</h2>${ch.epigraph ? `<p class="epigraph">${esc(ch.epigraph.text)}<cite>${esc(ch.epigraph.from)}</cite></p>` : ''}</header>${body}<footer class="book-nav">${prev}${next}</footer></article></div>
+      <details class="book-appendix"><summary>Apêndice · Os mundos de onde vêm os viajantes</summary><div class="wiki-grid">${worlds}</div></details>`;
+  };
   P.wikiPanel = function(_, tab) {
     const search = `<input id="wiki-search" type="search" placeholder="Buscar nesta seção…" aria-label="Buscar" value="${esc(this.wikiQuery || '')}">`;
     let html = '';
     switch (tab) {
-      case 'lore': html = `<article class="wiki-art lore-art">${(KT.Lore?.world || []).map(sec => `<h3>${esc(sec.title)}</h3><p>${esc(sec.text)}</p>`).join('')}<h3>Crônica dos Selos</h3><div class="lore-chronicle">${Object.entries(KT.Lore?.chapters || {}).map(([n, x]) => `<section data-wiki-entry><span>CAPÍTULO ${n}</span><h4>${esc(x.oath)}</h4><p>${esc(x.premise)}</p><small><b>Em jogo:</b> ${esc(x.stake)}</small><small><b>Revelação:</b> ${esc(x.truth)}</small></section>`).join('')}</div><h3>Os mundos da Fenda</h3><div class="wiki-grid">${Object.entries(KT.Lore?.worlds || {}).map(([n, w]) => `<div data-wiki-entry><b>${esc(n)}</b><small>${esc(w.text)}</small></div>`).join('')}</div></article>`; break;
+      case 'lore': html = this.loreBookHtml(); break;
       case 'start': html = `<article class="wiki-art"><h3>Bem-vindo à Fenda</h3><p>Mythverse é um RPG de equipe com combate automático e decisões estratégicas. Heróis de 60 mundos atravessam a Fenda para enfrentar o eclipse que ameaça Tsukimori.</p>
         <h4>Ciclo de jogo</h4><ol><li><b>Convoque</b> heróis na Caixa dos Mundos (10 grátis no início).</li><li><b>Monte a equipe</b> de 4 pensando em classes, elementos, posições e laços.</li><li><b>Cace</b> nos estágios: ganhe ouro, EXP, EXP de classe, itens e materiais.</li><li><b>Fortaleça</b>: atributos, equipamentos, Forja, Dojo, talentos e qualidade.</li><li><b>Avance</b>: vença o estágio 12 e o andar III da dungeon para desafiar o <b>chefe da região</b>, que libera o próximo capítulo.</li><li><b>Repita em dificuldades maiores</b>: chefes têm Pesadelo e Inferno com recompensas multiplicadas.</li></ol>
         <h4>Recursos</h4><ul><li><b>Ouro</b>, combate; gasto em prédios, treino, aprimoramento, loja e qualidade.</li><li><b>Cristais</b>, primeiras vitórias, níveis de conta, missões e conquistas; trocados por chaves e itens especiais.</li><li><b>Éter</b>, desmontando itens; usado em encantamentos e receitas.</li><li><b>Tamahagane</b>, desmontando itens e inimigos fortes; usado para aprimorar.</li><li><b>Chaves</b>, convocações.</li><li><b>Fragmentos</b>, heróis repetidos; usados para elevar qualidade.</li><li><b>Gemas</b>, moeda de dinheiro real (100 = R$ 1,00), guardada no servidor; usada no Mercado de Jogadores. Entra por depósito Pix e sai por saque, com taxas pequenas.</li><li><b>Cartas</b>, drops raríssimos de monstros; valem Gemas no Mercado.</li></ul>
@@ -1195,6 +1219,7 @@
       run('openBoxes', [n, box, cls], got => { if (got && got.length) { this.closeModal(); this.showReveal(got); if (!s.story.seen.intro2) c('markSeen', 'intro2'); } else this.toast(esc(e.lastError || 'Chaves insuficientes.')); });
       return;
     }
+    if (d.bookCh !== undefined) { this.bookCh = Number(d.bookCh); this.refreshPanel(); this.el.modal.querySelector('.lore-book')?.scrollIntoView({ block:'start' }); return; }
     if (d.slot !== undefined) { this.selectedSlot = Number(d.slot); refresh(); return; }
     if (d.assign) { run('setParty', [this.selectedSlot, d.assign], ok2 => { if (ok2) { const nx = s.formation.indexOf(null); this.selectedSlot = nx >= 0 ? nx : this.selectedSlot; this.dockKey = ''; if (e.heroes.length === 4) this.callbacks.reward?.(); } }); return; }
     if (d.hero && this.view.panel !== 'hero') { this.openPanel('hero', d.hero); return; }

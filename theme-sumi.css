@@ -747,3 +747,42 @@ body .stage-controls .ctl>span,body .stage-controls .ctl>b{line-height:1!importa
   body .stage-controls #boost-btn,body .stage-controls .journey-cta{min-width:68px!important;height:44px!important;padding:0 6px!important}
 }
 body .stage-controls .ctl,body .stage-controls .journey-cta{min-height:0!important}
+
+/* O Livro do Véu: leitura de livro (serifa, coluna estreita, capitular em laca, canções centradas). */
+.lore-book{display:grid;grid-template-columns:minmax(200px,250px) minmax(0,1fr);gap:18px;align-items:start}
+.book-toc{position:sticky;top:0;display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--line2);border-radius:10px;background:#15131b}
+.book-toc header{padding:2px 4px 8px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.book-toc header small{font:700 10px var(--ui);letter-spacing:.14em;color:var(--gold)}
+.book-toc header h3{margin:2px 0 0;font:700 18px var(--display);color:var(--washi)}
+.toc-item{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;padding:7px 9px;border-radius:7px;border:1px solid transparent;background:none;text-align:left;color:var(--washi);cursor:pointer}
+.toc-item small{font:700 9.5px var(--ui);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.toc-item b{font:600 13.5px/1.25 var(--display)}
+.toc-item:hover{border-color:var(--line2)}
+.toc-item.active{border-color:rgba(216,176,98,.55);background:rgba(216,176,98,.07)}
+.toc-item.locked{opacity:.55;cursor:default}
+.toc-item.locked em{font:600 10.5px/1.3 var(--ui);font-style:normal;color:var(--muted)}
+.book-page{max-width:72ch;padding:26px clamp(16px,4vw,44px) 20px;border:1px solid var(--line2);border-radius:10px;background:var(--grain,none),#17151d;color:#e6dccb}
+.book-page header{text-align:center;margin-bottom:18px}
+.book-page header small{font:700 11px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+.book-page h2{margin:6px 0 14px;font:700 clamp(22px,2.4vw,30px)/1.2 var(--display);color:var(--washi)}
+.book-page .epigraph{margin:0 auto;max-width:52ch;font:italic 15px/1.6 var(--display);color:#cdbfa8}
+.book-page .epigraph cite{display:block;margin-top:6px;font:600 11.5px var(--ui);font-style:normal;letter-spacing:.04em;color:var(--muted)}
+.book-page .epigraph cite::before{content:"— "}
+.book-page p{margin:0 0 1.05em;font:400 16.5px/1.85 var(--display);text-align:justify;hyphens:auto;text-indent:1.4em}
+.book-page p.drop{text-indent:0}
+.book-page p.drop::first-letter{float:left;margin:.06em .12em 0 0;font:700 3.4em/.82 var(--display);color:var(--shu,#c9472d)}
+.book-page .verse{display:flex;flex-direction:column;align-items:center;gap:2px;margin:1.4em auto;padding:14px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font:italic 16px/1.7 var(--display);color:#efe3cc;text-align:center}
+.book-page .verse cite{margin-top:8px;font:600 11.5px var(--ui);font-style:normal;color:var(--muted)}
+.book-page .margin-note{margin:1em 0 1.3em;padding:8px 12px;border-left:2px solid var(--gold);font:500 13.5px/1.55 var(--ui);color:#cbbfa9;background:rgba(216,176,98,.05)}
+.book-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px;padding-top:14px;border-top:1px solid var(--line)}
+.book-appendix{margin-top:16px}
+.book-appendix summary{cursor:pointer;font:700 14px var(--display);color:var(--gold);padding:8px 0}
+@media (max-width:760px){
+  .lore-book{grid-template-columns:1fr}
+  .book-toc{position:static;flex-direction:row;overflow-x:auto;gap:6px;padding:8px}
+  .book-toc header{display:none}
+  .toc-item{flex:0 0 auto;width:auto;max-width:180px}
+  .book-page p{font-size:15.5px;line-height:1.75;text-align:left}
+}
+.book-page p.epigraph{text-align:center;text-indent:0;font:italic 15px/1.6 var(--display);margin:0 auto}
+.book-page{justify-self:center;width:100%}
