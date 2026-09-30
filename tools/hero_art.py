@@ -150,10 +150,6 @@ def transparent(path):
     return sum(v > 30 for v in edge) < len(edge) * .05
 
 
-if __name__ == '__main__':
-    ids = [a for a in sys.argv[1:] if not a.startswith('-')] or list(HEROES)
-    with ThreadPoolExecutor(3) as ex:
-        list(ex.map(generate, ids))
 
 
 def prompt_text(hid):
@@ -202,3 +198,40 @@ def to_webp(path):
     Image.open(path).save(path[:-4] + '.webp', quality=92, method=6)
     os.remove(path)
     return True
+
+
+# ---------------------------------------------------------------------------
+# CHEFES: mesma folha de 8 poses, virados para a ESQUERDA (ficam do lado direito da arena). Id = sprite do chefe.
+# Uso: python tools/hero_art.py --bosses
+# ---------------------------------------------------------------------------
+BOSS_LAYOUT = (
+    "Create exactly one landscape image: an animation pose sheet of ONE original boss monster for a 2D side-view RPG. Eight poses "
+    "in 2 rows of 4, all the SAME creature with identical design, colors and scale, every pose facing LEFT, whole body visible and "
+    "grounded, wide empty space between poses so they never touch. Row 1: (1) idle menacing stance, (2) the same stance breathing "
+    "(slightly raised), (3) advancing, (4) staggered by a hit. Row 2: (5) attack wind-up, (6) attack at full extension, (7) recovering, "
+    "(8) signature special attack. Big, heavy, imposing silhouette."
+)
+BOSSES = {
+    'eclipse': ('Shirogane, Rei do Eclipse', "a tall armored moon king with a black eclipse disc behind his head like a halo, pale silver mask with a thin crescent crack, long tattered indigo cloak, a curved silver moon glaive; the special attack raises the glaive as the eclipse disc darkens and spreads violet shadow."),
+    'dragon': ('Mizuchi, Dragão Abissal', "a serpentine sea dragon with deep teal scales, pearl-white belly, barbels like whiskers, glowing seafoam eyes, fins like torn sails; the special attack coils and roars a tidal wave of water."),
+    'lantern_kitsune': ('Kitsune das Lanternas', "a large festival fox spirit with ivory fur, nine flame-tipped tails, a red shrine ribbon collar and floating paper lanterns; the special attack spreads all nine tails into a fan of fox-fire."),
+    'dragon_amber': ('Apep, Serpente do Tempo', "a colossal desert serpent of amber and gold scales with an hourglass-shaped crest, cracked stone ribs, sand pouring from its jaws; the special attack rears up as a broken hourglass of sand spins around it."),
+    'raijin': ('Raijin, o Tambor do Trovão', "a muscular storm deity with dark blue skin, wild white hair, a ring of taiko drums on his back, tiger-skin loincloth, lightning sparking from drumsticks; the special attack strikes the drums releasing a thunder blast. Original design, not based on any existing character or statue."),
+}
+
+
+def boss_prompt(bid):
+    name, design = BOSSES[bid]
+    return (f"Use your built-in image generation tool to create the image and save it as {bid}.png in the current directory. "
+            f"{BOSS_LAYOUT}\nBoss: {name}: {design}\n{STYLE.replace('PROPORTIONS (strict): chunky chibi, the head is about one third of the total height, short legs, big hands and feet; every pose keeps these proportions. ', 'PROPORTIONS: stylized and imposing, bigger than the heroes, same hand-inked style. ')}")
+
+
+if __name__ == '__main__':
+    if '--bosses' in sys.argv:
+        prompt = boss_prompt  # generate() usa prompt(hid) e, na reserva pela API, prompt_text(hid)
+        prompt_text = lambda b: boss_prompt(b).split('current directory. ', 1)[1]  # noqa: E731
+        ids = [a for a in sys.argv[1:] if not a.startswith('-')] or list(BOSSES)
+    else:
+        ids = [a for a in sys.argv[1:] if not a.startswith('-')] or list(HEROES)
+    with ThreadPoolExecutor(3) as ex:
+        list(ex.map(generate, ids))

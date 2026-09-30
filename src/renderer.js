@@ -114,7 +114,7 @@
       if (t === 'attack') {
         const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
         const ranged = RANGED.has(fx.role);
-        if (a.u.side === 'hero') this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][this.v(fx.source).combo++ % 3]);
+        if (a.u.side === 'hero' || a.u.boss) this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][this.v(fx.source).combo++ % 3]);
         this.v(fx.source).lunge = { t:0, dur:ranged ? .34 : .3, dx:ranged ? 16 : (b.x - a.x) * .42, dy:ranged ? -6 : (b.y - a.y) * .42, hop:ranged };
         if (ranged) this.launch(a, b, a.u);
         else this.later(.12, () => { this.particles.push({ kind:'slash', x:b.x, y:b.y - b.h * .5, color:fx.color || '#fff', life:.26, max:.26, rot:U.rand(-.6, .6), size:1 }); });
@@ -127,7 +127,7 @@
         const delay = fx.kind === 'basic' ? .12 : 0;
         this.later(delay, () => {
           if (!dot) this.hitActor(fx.uid, hero ? -1 : 1, fx.crit ? .9 : .55);
-          if (!dot && hero) { const cs = this.v(fx.uid).clip; if (!cs || cs === 'idle' || cs === 'run' || cs === 'hit') this.playClip(fx.uid, 'hit'); }
+          if (!dot && (hero || this.unit(fx.uid)?.boss)) { const cs = this.v(fx.uid).clip; if (!cs || cs === 'idle' || cs === 'run' || cs === 'hit') this.playClip(fx.uid, 'hit'); }
           const color = fx.color || (hero ? '#ff6b6b' : fx.crit ? '#ffd76a' : '#ffffff');
           this.number(p.x + U.rand(-26, 26), p.y - p.h - 8, fx.value, color, fx.crit, hero, dot);
           if (fx.weak && !dot) this.text(p.x + 40, p.y - p.h + 14, 'FRACO!', '#ffe28a', 15, .8);
@@ -179,7 +179,7 @@
         for (let i = 0; i < 22; i++) this.particles.push({ kind:'rise', x:p.x + U.rand(-45, 45), y:p.y - U.rand(0, 20), vy:-U.rand(120, 260), color:'#ffd76a', life:U.rand(.7, 1.3), max:1.3, size:U.rand(2, 4) });
         return;
       }
-      if (t === 'bossWindup') { this.shake = Math.max(this.shake, 4); return; }
+      if (t === 'bossWindup') { this.shake = Math.max(this.shake, 4); if (fx.uid) this.playClip(fx.uid, 'ult'); return; }
       // Quebra de postura: estilhaços, anel duplo e aviso grande.
       if (t === 'break') {
         const p = this.posOf(fx.uid); if (!p) return;
@@ -619,7 +619,9 @@
       if ((e.elite || e.miniboss) && !dying) this.aura(e.sprite, x, y + floatY, height, e.miniboss ? '#ff9a3b' : '#c77dff', .5 + .15 * Math.sin(t * 3));
       if (e.treasure && !dying) this.aura(e.sprite, x, y, height, '#ffd76a', .8);
       if (e.windup > 0) this.aura(e.sprite, x, y, height, '#ff3a5a', .6 + .4 * Math.sin(this.worldTime * 20));
-      this.drawSprite(e.sprite, x, y + floatY + (dying ? s.death * 30 : 0), height, { sy:1 + Math.sin(t * 2.2) * .022, flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:!!e.rival });
+      const ban = e.boss ? this.assets.anim?.(e.sprite) : null;
+      if (ban) this.drawAnim(ban, s, e, x, y + floatY + (dying ? s.death * 30 : 0), height, { flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:ban.meta.facing === 'right' });
+      else this.drawSprite(e.sprite, x, y + floatY + (dying ? s.death * 30 : 0), height, { sy:1 + Math.sin(t * 2.2) * .022, flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:!!e.rival });
       c.restore();
       if (dying) return;
       if (e.effects.some(x => x.s === 'burn')) this.flames(x, y, height);
@@ -693,7 +695,7 @@
       const dx = -M.cx * k, dy = -M.footY * k;
       const e = frac * frac * (3 - 2 * frac), A = this.poseMotion(col, this.worldTime, u.slot || 0), B = this.poseMotion(next, this.worldTime, u.slot || 0);
       const mix = key => A[key] + (B[key] - A[key]) * e, dir = u.side === 'enemy' ? -1 : 1, mk = height / 180;
-      c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx'), mix('sy'));
+      c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx') * (o.flip ? -1 : 1), mix('sy'));
       c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
       const base = c.globalAlpha;

@@ -26,6 +26,8 @@ BODY_H = 300          # altura do corpo na pose parada (px), igual aos sprites a
 SCALE_OUT = .62       # a folha de animação é salva menor (o combate desenha ~150-200 px de altura)
 
 # Clipes do renderer (src/renderer.js animFrame): seq = índices das poses, na ordem.
+BOSS_FACING = {'eclipse':'left', 'dragon':'left', 'lantern_kitsune':'left', 'dragon_amber':'left', 'raijin':'right'}
+
 CLIPS = {
     'idle':    {'seq': [0, 1], 'fps': 2, 'loop': True},
     'run':     {'seq': [2, 0], 'fps': 6, 'loop': True},
@@ -111,6 +113,15 @@ def main():
             print(f'{hid:12s} ok')
         except Exception as e:  # uma folha ruim não para as outras
             print(f'{hid:12s} ERRO {e}')
+    # Chefes (poses geradas por tools/hero_art.py --bosses; id = sprite do chefe). facing: para onde a arte olha.
+    for bid, facing in BOSS_FACING.items():
+        if os.path.exists(os.path.join(POSES, f'{bid}.webp')):
+            try:
+                sizes[bid] = list(build(bid)); done.append(bid)
+                mp = os.path.join(ANIM, f'{bid}.json'); m = json.load(open(mp, encoding='utf-8')); m['facing'] = facing; m['boss'] = True
+                json.dump(m, open(mp, 'w', encoding='utf-8'), separators=(',', ':')); print(f'{bid:12s} ok (chefe)')
+            except Exception as e:
+                print(f'{bid:12s} ERRO {e}')
     for vid, base, h, s, v, col in B.SEASON_HEROES:
         if base in done:
             sizes[vid] = list(build(vid, (base, h, s, v, col)))
