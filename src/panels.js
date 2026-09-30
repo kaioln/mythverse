@@ -667,10 +667,13 @@
         <div class="train-grid">${Object.entries(PR.training).map(([k, tr]) => { const lv = s.training[k] || 0, cost = PR.trainingCost(lv); return `<div class="train-card"><b>${tr.name}</b><small>${tr.text}</small><div class="meter"><span style="width:${lv / cap * 100}%"></span></div><small>Nível ${lv}/${cap} · atual ${statValue(tr.stat, PR.trainingBonus(k, lv))}</small><button class="action ${s.player.gold >= cost && lv < cap ? 'primary' : ''}" data-train="${k}" type="button" ${lv >= cap ? 'disabled' : ''}>${lv >= cap ? 'Limite' : `Treinar · ${compact(cost)} ouro`}</button></div>`; }).join('')}</div>`;
     }
     if (tab === 'shrine') {
-      const list = this.state.collection.slice().sort((a, b2) => ((this.state.shards[b2.id] || 0) - (this.state.shards[a.id] || 0)));
+      // Ordem: quem pode evoluir agora, depois quem está mais perto (fragmentos/necessário), e o Poder desempata.
+      const prog = r => { if (r.stars >= 6) return -1; const c = S().awakenCost(r.stars, b.shrine); return Math.min(1, (this.state.shards[r.id] || 0) / c.shards) + ((this.state.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold ? 1 : 0); };
+      const pw = new Map(this.state.collection.map(r => [r.uid, e.heroPower(r)]));
+      const list = this.state.collection.slice().sort((a, b2) => (prog(b2) - prog(a)) || (pw.get(b2.uid) - pw.get(a.uid)));
       const keyOffer = Object.values(PR.shop).flat().find(o => o?.id === 'key1'), keyPrice = keyOffer ? e.offerPrice(keyOffer).crystal : 150;
       return `${bHead('shrine')}<div class="box-actions"><button class="action pink" data-go="collection" type="button">✦ Ir para Convocação</button><button class="action" data-buy="key1" type="button" ${s.player.crystal >= keyPrice ? '' : 'disabled'}>Trocar ${U.fmt(keyPrice)} cristais → 1 chave</button></div>
-        <h4 class="sub-title">Qualidade dos heróis</h4><p class="note">Fragmentos elevam a qualidade em ★. Cada ★ dá +12% em HP/ATK/DEF; todos os heróis têm limite de nível 100.</p>
+        <h4 class="sub-title">Qualidade dos heróis</h4><p class="note">Fragmentos elevam a qualidade em ★. Cada ★ dá +12% em HP/ATK/DEF. <b>Ordem:</b> prontos para evoluir, depois os mais perto, depois por Poder.</p>
         <div class="roster-list">${list.map(r => { const t = this.engine.template(r.id), c = S().awakenCost(r.stars, b.shrine), sh = this.state.shards[r.id] || 0, ok = r.stars < 6 && sh >= c.shards && s.player.gold >= c.gold; return `<article class="roster-row rarity-${r.rarity}"><img src="${portrait(t.id)}" alt=""><div><b>${esc(t.name)} ${stars(r.stars)}</b><small>Fragmentos ${sh}/${r.stars >= 6 ? ', ' : c.shards} · ${compact(c.gold)} ouro</small></div><button class="action small ${ok ? 'pink' : ''}" data-awaken="${r.uid}" type="button" ${ok ? '' : 'disabled'}>${r.stars >= 6 ? 'Máximo' : 'Elevar qualidade'}</button></article>`; }).join('')}</div>`;
     }
     if (tab === 'guild') {
