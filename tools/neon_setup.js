@@ -13,10 +13,11 @@ const fs = require('fs'), path = require('path'), pg = require('pg');
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_social.sql'), 'utf8'));
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_economy.sql'), 'utf8'));
   await c.query(fs.readFileSync(path.join(__dirname, 'neon_admin.sql'), 'utf8'));
+  await c.query(fs.readFileSync(path.join(__dirname, 'neon_community.sql'), 'utf8'));
   await c.query("NOTIFY pgrst, 'reload schema'");
   // Poder do ranking recalculado com as regras atuais do jogo (exato para todas as contas).
   const changed = await require('./neon_recompute').recomputeAll(c);
   changed.forEach(x => console.log(`Poder recalculado: ${x.user.slice(0, 8)}… ${x.from.toLocaleString('pt-BR')} → ${x.to.toLocaleString('pt-BR')}`));
-  console.log('Modo Neon pronto: saves (RLS), ranking, Mercado de Jogadores, Arena PvP, Loja de Honra, Guildas, Guerra de Guildas, Banco Kogane, ordens de compra, relógio do servidor, presentes e auditoria.');
+  console.log('Modo Neon pronto: saves (RLS), ranking, Mercado de Jogadores, Arena PvP, Loja de Honra, Guildas, Guerra de Guildas, Banco Kogane, ordens de compra, relógio do servidor, presentes, auditoria, chat global com filtro de ódio e perfis.');
   await c.end();
 })().catch(e => { console.error('Falhou:', e.message); process.exit(1); });

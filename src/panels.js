@@ -78,6 +78,7 @@
     wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['lore','Lore'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
     arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
     guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
+    chat:{ k:'COMUNIDADE', t:'Chat e perfil', tabs:[['chat','Chat global','scroll'], ['profile','Meu perfil','star']] }, player:{ k:'JOGADOR', t:'Perfil do jogador' },
     record:{ k:'PERFIL', t:'Conta e Configurações' }, profile:{ k:'JOGADOR', t:'Perfil do jogador' }, help:{ k:'AJUDA', t:'Como jogar' }
   };
   P.openPanel = function(name, param = null) {
@@ -89,7 +90,7 @@
     if (name === 'hero') tab = PANELS.hero.tabs.some(t => t[0] === this.pendingHeroTab) ? this.pendingHeroTab : this.view.panel === 'hero' ? this.view.tab : 'stats';
     this.pendingHeroTab = null;
     if (name === 'talents') { param = param || this.view.talentHero || this.state.formation.find(Boolean) || this.state.collection[0]?.uid || null; this.view.talentHero = param; }
-    this.view = { panel:name, tab, param:['hero','destination','talents','profile','journey'].includes(name) ? param : this.view.panel === name ? this.view.param : null, talentHero:this.view.talentHero, node:name === this.view.panel ? this.view.node : null };
+    this.view = { panel:name, tab, param:['hero','destination','talents','profile','journey','player'].includes(name) ? param : this.view.panel === name ? this.view.param : null, talentHero:this.view.talentHero, node:name === this.view.panel ? this.view.node : null };
     if (name === 'inventory') this.newItems = 0;
     this.pickSlot = null; this.hideTip();
     this.el.modal.hidden = false;
@@ -103,13 +104,14 @@
     this.el.modalKicker.textContent = def.k;
     let title = def.t;
     if (v.panel === 'destination') title = D.zones[v.param]?.title || title;
+    if (v.panel === 'player') title = KT.Community?.profiles?.[v.param]?.data?.name || title;
     if (v.panel === 'profile') title = this.profiles?.[v.param]?.data?.profile?.name || title;
     if (v.panel === 'hero' || v.panel === 'talents') { const r = this.engine.record(v.param); title = r ? `${v.panel === 'talents' ? 'Talentos · ' : ''}${this.engine.template(r.id).name}` : title; }
     this.el.modalTitle.textContent = title;
     this.el.modalBackNav.hidden = v.panel !== 'destination';
     this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
     const top = this.el.modalBody.scrollTop;
-    const fn = { adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', bank:'bankPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
+    const fn = { chat:'chatPanel', player:'playerPanel', adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', bank:'bankPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
