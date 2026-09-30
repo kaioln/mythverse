@@ -28,7 +28,29 @@
     rock:{ dur:.34, arc:74, delay:.08, trail:5, scale:1.15, trailFx:'dust', additive:false, spin:14 },
     light:{ dur:.15, arc:4, delay:.05, trail:6, scale:1.1, trailFx:null, additive:true },
     void:{ dur:.30, arc:26, delay:.07, trail:8, scale:1.0, trailFx:'wisp', additive:false },
-    orb:{ dur:.24, arc:30, delay:.04, trail:8, scale:1.0, trailFx:null, additive:true }
+    orb:{ dur:.24, arc:30, delay:.04, trail:8, scale:1.0, trailFx:null, additive:true },
+    // Projéteis próprios de heróis (HERO_PROJ).
+    sun:{ dur:.28, arc:28, delay:.06, trail:8, scale:1.1, additive:true, spin:6 }, talisman:{ dur:.22, arc:18, delay:.04, trail:3, scale:1, additive:false, spin:10 },
+    page:{ dur:.26, arc:30, delay:.04, trail:2, scale:.9, additive:false, spin:8 }, feather:{ dur:.24, arc:22, delay:.04, trail:4, scale:1, additive:false },
+    lantern:{ dur:.32, arc:36, delay:.06, trail:6, scale:.95, additive:false }, rune:{ dur:.26, arc:24, delay:.05, trail:5, scale:1, additive:true, spin:5 },
+    clock:{ dur:.30, arc:20, delay:.06, trail:5, scale:1, additive:false, spin:-4 }, snow:{ dur:.26, arc:26, delay:.04, trail:4, scale:.9, additive:false, spin:9 },
+    vial:{ dur:.36, arc:80, delay:.06, trail:3, scale:.9, additive:false, spin:14 }, bell:{ dur:.28, arc:30, delay:.05, trail:4, scale:.9, additive:false, spin:6 },
+    moon:{ dur:.28, arc:22, delay:.05, trail:6, scale:1, additive:true, spin:7 }, leaf:{ dur:.28, arc:34, delay:.04, trail:4, scale:.9, additive:false, spin:10 },
+    mist:{ dur:.34, arc:20, delay:.05, trail:10, scale:1.1, additive:false }, steam:{ dur:.26, arc:12, delay:.05, trail:10, scale:1.1, additive:false },
+    bullet:{ dur:.10, arc:2, delay:.02, trail:3, scale:.9, additive:true }, pellet:{ dur:.12, arc:4, delay:.02, trail:2, scale:.7, additive:true },
+    rocket:{ dur:.40, arc:60, delay:.06, trail:12, scale:1.05, additive:false }, rail:{ dur:.08, arc:0, delay:.08, trail:10, scale:1.2, additive:true },
+    laser:{ dur:.12, arc:0, delay:.05, trail:8, scale:1.1, additive:true }
+  };
+  // Cada herói de longo alcance tem o próprio disparo: tipo, quantidade (n), abertura e cor. Formas da temporada usam o do herói base.
+  const HERO_PROJ = {
+    solen:{ kind:'sun', color:'#ffcf6b' }, ren:{ kind:'talisman', color:'#ffe066' }, sora:{ kind:'page', color:'#fff6de', n:2 }, ignis:{ kind:'fire', color:'#ff5a3a', n:2 },
+    ryo:{ kind:'fire', color:'#ff8a2a', n:3, spread:14, scale:.7 }, drake:{ kind:'fire', color:'#ff6a1a', scale:1.45 }, sael:{ kind:'feather', color:'#7a5cff', n:3, spread:12 },
+    kira:{ kind:'lantern', color:'#ffb347' }, garrick:{ kind:'rune', color:'#ff9a3c' }, selene:{ kind:'clock', color:'#c07dff' }, kori:{ kind:'shard', color:'#9fe6ff', n:2 },
+    yuki:{ kind:'snow', color:'#dff6ff' }, alden:{ kind:'vial', color:'#6fe39a' }, elian:{ kind:'bell', color:'#ffd76a' }, aiko:{ kind:'moon', color:'#d9c8ff' },
+    rina:{ kind:'wind', color:'#ffcf6b' }, bjorn:{ kind:'leaf', color:'#8fdc6a' }, aurelia:{ kind:'leaf', color:'#fff1b8' }, dana:{ kind:'mist', color:'#8fe0a4' },
+    volt:{ kind:'steam', color:'#ffb08a' }, nadia:{ kind:'arrow', color:'#d8ad6a' }, tessa:{ kind:'arrow', color:'#8fdc6a', n:3, spread:10 }, rook:{ kind:'rail', color:'#6fc4ff' },
+    warden:{ kind:'pellet', color:'#ff7a3a', n:5, spread:16 }, zara:{ kind:'rocket', color:'#ff6fa8' }, ivy:{ kind:'bullet', color:'#ffe066', n:2, spread:6 },
+    cole:{ kind:'bullet', color:'#ff9a3c' }, wade:{ kind:'bullet', color:'#e0c393' }, n9:{ kind:'laser', color:'#b58cff' }, rex:{ kind:'bullet', color:'#ff4a5a', n:2, spread:8 }
   };
 
   const THEMES = {
@@ -227,10 +249,14 @@
     }
     // ---------- projéteis texturizados (por classe e elemento) ----------
     launch(a, b, u) {
-      const kind = u.cls === 'Atirador' ? 'arrow' : (ELEM_PROJ[u.el] || 'orb'), P = PROJ[kind], color = D.elements[u.el]?.color || '#ffd76a';
-      const dir = u.side === 'hero' ? 1 : -1, x = a.x + 30 * dir, y = a.y - a.h * .55;
+      const tid = u.id || u.sprite, base = D.roster?.find(r => r.id === tid)?.base || tid, hp = u.side === 'hero' ? HERO_PROJ[base] : null;
+      const kind = hp?.kind || (u.cls === 'Atirador' ? 'arrow' : (ELEM_PROJ[u.el] || 'orb')), P = PROJ[kind], color = hp?.color || D.elements[u.el]?.color || '#ffd76a';
+      const dir = u.side === 'hero' ? 1 : -1, x = a.x + 30 * dir, y = a.y - a.h * .55, n = hp?.n || 1, spread = hp?.spread || 10;
       this.particles.push({ kind:'impact', x, y, color, life:.14, max:.14, size:.45, rot:0 });          // antecipação: brilho de carga
-      this.projectiles.push({ kind, x, y, tx:b.x, ty:b.y - b.h * .45, t:-P.delay, dur:P.dur, arc:P.arc, color, spin:U.rand(-1, 1), trail:[], seed:Math.random() * 100 });
+      for (let i = 0; i < n; i++) {
+        const off = (i - (n - 1) / 2) * spread;
+        this.projectiles.push({ kind, x, y:y + off * .5, tx:b.x, ty:b.y - b.h * .45 + off, t:-P.delay - i * .05, dur:P.dur, arc:P.arc, color, spin:U.rand(-1, 1), trail:[], seed:Math.random() * 100, scale:hp?.scale || 1 });
+      }
     }
     projPos(p, k) {
       const x = p.x + (p.tx - p.x) * k, y = p.y + (p.ty - p.y) * k - Math.sin(k * Math.PI) * p.arc;
@@ -279,6 +305,63 @@
       } else if (kind === 'void') {
         glow(28, .5); g.fillStyle = '#12061f'; g.beginPath(); g.arc(0, 0, 11, 0, Math.PI * 2); g.fill();
         g.strokeStyle = color; g.lineWidth = 3; g.shadowColor = color; g.shadowBlur = 12; g.beginPath(); g.arc(0, 0, 12, 0, Math.PI * 2); g.stroke();
+      } else if (kind === 'sun') {
+        glow(26, 1); g.strokeStyle = '#fff3c4'; g.lineWidth = 2.5;
+        for (let i = 0; i < 8; i++) { const a2 = i * Math.PI / 4; g.beginPath(); g.moveTo(Math.cos(a2) * 13, Math.sin(a2) * 13); g.lineTo(Math.cos(a2) * 22, Math.sin(a2) * 22); g.stroke(); }
+        g.fillStyle = '#fff7da'; g.beginPath(); g.arc(0, 0, 10, 0, Math.PI * 2); g.fill();
+      } else if (kind === 'talisman') {
+        g.fillStyle = '#f1e6c8'; g.fillRect(-16, -9, 32, 18); g.strokeStyle = '#1d1822'; g.lineWidth = 1.5; g.strokeRect(-16, -9, 32, 18);
+        g.strokeStyle = '#c9472d'; g.lineWidth = 2.4; g.beginPath(); g.moveTo(-8, -5); g.lineTo(2, 0); g.lineTo(-4, 1); g.lineTo(8, 6); g.stroke();
+        g.shadowColor = color; g.shadowBlur = 10; g.strokeStyle = color; g.lineWidth = 1.5; g.strokeRect(-18, -11, 36, 22);
+      } else if (kind === 'page') {
+        g.fillStyle = '#fbf3df'; g.beginPath(); g.moveTo(-14, -12); g.lineTo(12, -10); g.lineTo(14, 12); g.lineTo(-12, 10); g.closePath(); g.fill();
+        g.strokeStyle = '#8a7d66'; g.lineWidth = 1; for (let i = -6; i <= 6; i += 4) { g.beginPath(); g.moveTo(-8, i); g.lineTo(8, i + 1); g.stroke(); }
+        glow(18, .35);
+      } else if (kind === 'feather') {
+        g.fillStyle = '#16121f'; g.beginPath(); g.moveTo(34, 0); g.quadraticCurveTo(0, -12, -30, -2); g.quadraticCurveTo(0, 10, 34, 0); g.fill();
+        g.strokeStyle = color; g.lineWidth = 1.6; g.shadowColor = color; g.shadowBlur = 10; g.beginPath(); g.moveTo(34, 0); g.lineTo(-30, -1); g.stroke();
+      } else if (kind === 'lantern') {
+        glow(26, .8); g.fillStyle = '#ffe2b0'; g.beginPath(); g.ellipse(0, 0, 11, 14, 0, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = '#c9472d'; g.lineWidth = 1.4; for (const yy of [-7, 0, 7]) { g.beginPath(); g.moveTo(-11, yy); g.lineTo(11, yy); g.stroke(); }
+        g.fillStyle = '#2a1d0c'; g.fillRect(-6, -16, 12, 3); g.fillRect(-6, 13, 12, 3);
+      } else if (kind === 'rune') {
+        glow(24, .8); g.strokeStyle = '#fff1d6'; g.lineWidth = 2.4; g.strokeRect(-11, -11, 22, 22);
+        g.beginPath(); g.moveTo(-6, -8); g.lineTo(6, 0); g.lineTo(-6, 8); g.moveTo(0, -11); g.lineTo(0, 11); g.stroke();
+      } else if (kind === 'clock') {
+        g.shadowColor = color; g.shadowBlur = 12; g.strokeStyle = color; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.stroke();
+        g.strokeStyle = '#f3e9ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -10); g.moveTo(0, 0); g.lineTo(7, 3); g.stroke();
+        g.fillStyle = '#f3e9ff'; for (let i = 0; i < 12; i++) { const a2 = i * Math.PI / 6; g.fillRect(Math.cos(a2) * 11 - 1, Math.sin(a2) * 11 - 1, 2, 2); }
+      } else if (kind === 'snow') {
+        g.strokeStyle = '#ffffff'; g.lineWidth = 2.2; g.shadowColor = color; g.shadowBlur = 10;
+        for (let i = 0; i < 6; i++) { const a2 = i * Math.PI / 3, cx = Math.cos(a2), cy = Math.sin(a2); g.beginPath(); g.moveTo(0, 0); g.lineTo(cx * 14, cy * 14); g.moveTo(cx * 8, cy * 8); g.lineTo(cx * 8 + cy * 4, cy * 8 - cx * 4); g.stroke(); }
+      } else if (kind === 'vial') {
+        g.fillStyle = color; g.beginPath(); g.arc(0, 4, 10, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#e9f7ee'; g.globalAlpha = .6; g.beginPath(); g.arc(-3, 1, 3, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+        g.fillStyle = '#d8d0c0'; g.fillRect(-3, -12, 6, 8); g.fillStyle = '#6b4a2a'; g.fillRect(-4, -15, 8, 4);
+        g.strokeStyle = '#1d1822'; g.lineWidth = 1.2; g.beginPath(); g.arc(0, 4, 10, 0, Math.PI * 2); g.stroke();
+      } else if (kind === 'bell') {
+        glow(20, .6); g.fillStyle = color; g.beginPath(); g.moveTo(-10, 8); g.quadraticCurveTo(-10, -12, 0, -12); g.quadraticCurveTo(10, -12, 10, 8); g.closePath(); g.fill();
+        g.fillStyle = '#6b4a1a'; g.beginPath(); g.arc(0, 10, 3, 0, Math.PI * 2); g.fill();
+      } else if (kind === 'moon') {
+        glow(24, .7); g.fillStyle = '#f4ecff'; g.beginPath(); g.arc(0, 0, 14, 0, Math.PI * 2); g.arc(6, -3, 12, 0, Math.PI * 2, true); g.fill('evenodd');
+      } else if (kind === 'leaf') {
+        g.shadowColor = color; g.shadowBlur = 12; g.fillStyle = color; g.beginPath(); g.moveTo(18, 0); g.quadraticCurveTo(0, -12, -16, 0); g.quadraticCurveTo(0, 12, 18, 0); g.fill();
+        g.strokeStyle = '#ffffff'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(16, 0); g.lineTo(-14, 0); g.stroke();
+      } else if (kind === 'mist' || kind === 'steam') {
+        g.fillStyle = kind === 'mist' ? color : '#efe7e0'; g.globalAlpha = .75;
+        for (const [xx, yy, r] of [[-12, 2, 10], [0, -4, 12], [12, 2, 9], [4, 8, 8]]) { g.beginPath(); g.arc(xx, yy, r, 0, Math.PI * 2); g.fill(); }
+        g.globalAlpha = 1;
+      } else if (kind === 'bullet' || kind === 'pellet') {
+        const lg = g.createLinearGradient(-40, 0, 10, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(1, color);
+        g.fillStyle = lg; g.fillRect(-40, -2, 50, 4); g.fillStyle = '#fff6e0'; g.beginPath(); g.ellipse(10, 0, 6, 3, 0, 0, Math.PI * 2); g.fill();
+      } else if (kind === 'rocket') {
+        g.fillStyle = '#d9d0c4'; g.beginPath(); g.moveTo(22, 0); g.lineTo(10, -7); g.lineTo(-14, -7); g.lineTo(-14, 7); g.lineTo(10, 7); g.closePath(); g.fill();
+        g.fillStyle = color; g.fillRect(-2, -7, 5, 14);
+        g.fillStyle = '#6b6b78'; g.beginPath(); g.moveTo(-14, -7); g.lineTo(-22, -12); g.lineTo(-18, 0); g.lineTo(-22, 12); g.lineTo(-14, 7); g.fill();
+        g.fillStyle = '#ffb347'; g.beginPath(); g.moveTo(-22, -4); g.lineTo(-40, 0); g.lineTo(-22, 4); g.fill();
+      } else if (kind === 'rail' || kind === 'laser') {
+        const lg = g.createLinearGradient(-64, 0, 64, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(.5, color); lg.addColorStop(1, '#ffffff');
+        g.shadowColor = color; g.shadowBlur = 14; g.fillStyle = lg; g.fillRect(-64, kind === 'rail' ? -3 : -2, 128, kind === 'rail' ? 6 : 4);
       } else { glow(22, 1); }
       this.projCache.set(key, t); return t;
     }
@@ -300,7 +383,7 @@
         c.globalAlpha = .9; const gl = this.fxTex('glow', p.color); c.drawImage(gl, q.x - 22, q.y - 22, 44, 44);
       } else {
         const tex = this.projTex(p.kind, p.color), rot = P.spin ? p.t * P.spin * (p.spin < 0 ? -1 : 1) : q.a;
-        const sc = P.scale * (1 + .08 * Math.sin(p.t * 40 + p.seed));
+        const sc = P.scale * (p.scale || 1) * (1 + .08 * Math.sin(p.t * 40 + p.seed));
         const gl = this.fxTex('glow', p.color); c.globalAlpha = .55; c.drawImage(gl, q.x - 26 * sc, q.y - 26 * sc, 52 * sc, 52 * sc);
         c.globalAlpha = 1; c.globalCompositeOperation = P.additive ? 'lighter' : 'source-over';
         c.translate(q.x, q.y); c.rotate(rot); c.scale(sc, sc); c.drawImage(tex, -64, -32);
@@ -319,6 +402,11 @@
         case 'light': this.impact(x, y, '#fff6d6', 1.2); this.sparks(x, y, 8, p.color, 260); break;
         case 'void': this.ring(x, y, p.color, 60); this.impact(x, y, p.color, .7); this.sparks(x, y, 8, '#d9b8ff', 180); break;
         case 'arrow': this.sparks(x, y, 6, '#fff3d9', 200); this.impact(x, y, p.color, .55); break;
+        case 'rocket': this.impact(x, y, '#ffb347', 1.3); this.ring(x, y + 20, p.color, 80, true); this.sparks(x, y, 16, '#ffd0a0', 360); this.shake = Math.max(this.shake, 4); break;
+        case 'bullet': case 'pellet': this.sparks(x, y, 4, '#fff3d9', 240); this.impact(x, y, p.color, .35); break;
+        case 'vial': this.ring(x, y + 20, p.color, 60, true); this.sparks(x, y, 10, '#d8ffe4', 160); break;
+        case 'mist': case 'steam': this.ring(x, y, p.color, 50); this.sparks(x, y, 6, p.color, 120); break;
+        case 'sun': case 'moon': case 'bell': case 'lantern': this.impact(x, y, p.color, 1); this.sparks(x, y, 8, p.color, 220); break;
         default: this.sparks(x, y, 8, p.color, 240); this.ring(x, y + 30, p.color, 50);
       }
     }
