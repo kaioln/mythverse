@@ -74,7 +74,7 @@
     { id:'infected', name:'Sobreviventes da Névoa', ids:['cole','dana'], text:'+12% ATK e +10% DEF', stats:{ atk:.12, def:.10 } },
     { id:'wolf', name:'Mestre e Aprendiz das Runas', ids:['garrick','zira'], text:'+12% ATK e +10% esquiva', stats:{ atk:.12, dodge:.10 } },
     { id:'units', name:'Unidades de Combate', ids:['n9','unit7'], text:'+12% ATK e ignora 10% da DEF', stats:{ atk:.12, pierce:.10 } },
-    { id:'sable', name:'Filhos de Sable', ids:['rex','virel'], text:'+15% ATK e +8% roubo de vida', stats:{ atk:.15, lifesteal:.08 } },
+    { id:'sable', name:'Filhos de Kurenai', ids:['rex','virel'], text:'+15% ATK e +8% roubo de vida', stats:{ atk:.15, lifesteal:.08 } },
     { id:'demon_hunters', name:'Pacto Carmesim', ids:['rex','selene'], text:'+15% dano de habilidade e +8% esquiva', stats:{ skill:.15, dodge:.08 } },
     { id:'underworld', name:'Rivais das Cinzas', ids:['kaji','kori'], text:'+12% ATK e +25% dano contínuo', stats:{ atk:.12, dot:.25 } },
     { id:'ionar', name:'Vento Solto', ids:['zara','kira','haru'], text:'+12% ATK e +10% energia', stats:{ atk:.12, nrg:.10 } },

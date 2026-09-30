@@ -12,7 +12,7 @@ const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };
 ok(D.roster.length === 60 + D.SEASON.heroes.length && new Set(D.roster.map(h => h.id)).size === D.roster.length && D.SEASON.heroes.every(id => D.roster.some(h => h.id === id)), '60 heróis + temporada, todos únicos');
 { const IP = /\b(goku|vegeta|naruto|sasuke|luffy|zoro|ichigo|tanjiro|gojo|levi|mikasa|eren|saitama|sailor|kratos|jinx|ahri|mercy|geralt|dante|kamehameha|bankai|susanoo|kurama|saiyajin|rinnegan|overwatch|zaun)\b/i;
   const txt = D.roster.map(h => [h.name, h.world, h.passive?.name, h.skill?.name, h.ult?.name].join(' ')).join(' ') + D.bonds.map(b => b.name).join(' ');
-  ok(D.roster.find(h => h.id === 'solen').name === 'Solen Kairos' && !IP.test(txt), 'elenco só com nomes originais (sem personagens ou termos de outras obras)'); }
+  ok(D.roster.find(h => h.id === 'solen').name === 'Hinata Asahi' && !IP.test(txt), 'elenco só com nomes originais (sem personagens ou termos de outras obras)'); }
 ok(new Set(D.roster.map(h => h.skill.name)).size === D.roster.length && new Set(D.roster.map(h => h.ult.name)).size === D.roster.length, 'habilidades e ultimates únicas');
 D.roster.forEach(h => { ok(h.passiveText && h.skillText && h.ultText, `kit descrito: ${h.id}`); ok(fs.existsSync(path.join(root, 'assets/sprites', `${h.sprite}.png`)) && fs.existsSync(path.join(root, 'assets/portraits', `${h.id}.png`)), `arte: ${h.id}`); });
 ok(Object.keys(D.classes).every(c => D.roster.filter(h => h.cls === c).length >= 8), 'todas as classes têm heróis');
