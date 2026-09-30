@@ -502,12 +502,14 @@
     drawScene() {
       const c = this.ctx, z = this.engine.zone, img = this.assets.scene(z.id);
       const moving = this.engine.phase === 'between' || this.engine.phase === 'stageClear';
-      const zoom = 1.04 + Math.sin(this.worldTime * .08) * .012 + (moving ? .02 : 0);
-      const dx = Math.sin(this.worldTime * .05) * 10;
-      if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, (W - sw) / 2 + dx, (H - sh) / 2 - 6, sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
+      // Na cidade a câmera fica parada (as ruas são o chão de quem anda nelas) e a arte aparece clara; nas lutas, leve respiro.
+      const town = z.kind === 'village';
+      const zoom = town ? 1 : 1.04 + Math.sin(this.worldTime * .08) * .012 + (moving ? .02 : 0);
+      const dx = town ? 0 : Math.sin(this.worldTime * .05) * 10;
+      if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
       c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H);
-      const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H);
-      const vig = c.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, H * .95); vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(6,4,18,.62)'); c.fillStyle = vig; c.fillRect(0, 0, W, H);
+      if (!town) { const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H); }
+      const vig = c.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, H * .95); vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, `rgba(6,4,18,${town ? .32 : .62})`); c.fillStyle = vig; c.fillRect(0, 0, W, H);
       if (z.kind === 'village') this.drawVillageLife();
       if (this.zoneFade < 1) { c.fillStyle = `rgba(8,6,20,${1 - easeOut(this.zoneFade)})`; c.fillRect(0, 0, W, H); }
     }
@@ -515,7 +517,7 @@
     drawVillageLife() {
       const c = this.ctx, t = this.worldTime;
       const hour = new Date(this.engine.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
-      const tint = hour >= 7 && hour < 17 ? 'rgba(255,226,180,.07)' : hour >= 17 && hour < 19 ? 'rgba(255,140,90,.13)' : hour >= 5 && hour < 7 ? 'rgba(255,170,200,.1)' : 'rgba(36,34,110,.2)';
+      const tint = hour >= 7 && hour < 17 ? 'rgba(255,226,180,.07)' : hour >= 17 && hour < 19 ? 'rgba(255,140,90,.13)' : hour >= 5 && hour < 7 ? 'rgba(255,170,200,.1)' : 'rgba(36,34,110,.1)';
       c.fillStyle = tint; c.fillRect(0, 0, W, H);
       if (!this.skyLanterns) {
         this.skyLanterns = Array.from({ length:16 }, () => ({ x:U.rand(0, W), y:U.rand(H * .05, H * .95), vy:U.rand(7, 16), ph:U.rand(0, 6), s:U.rand(.55, 1.25) }));
@@ -564,6 +566,7 @@
 
     drawActors() {
       const village = this.engine.zone.kind === 'village', list = [];
+      if (village && KT.TownLife && this.townReady()) { this.drawTown(); return; }
       if (village) {
         this.engine.state.formation.forEach((uid, i) => { const r = uid && this.engine.record(uid); if (r) list.push({ r, t:this.engine.template(r.id), pos:VILLAGE_POS[i] }); });
         list.sort((a, b) => a.pos.y - b.pos.y).forEach(o => {
@@ -583,6 +586,48 @@
       this.engine.enemies.forEach(u => list.push({ u, pos:this.enemyPos(u) }));
       list.sort((a, b) => a.pos.y - b.pos.y);
       list.forEach(o => o.u.side === 'hero' ? this.drawHero(o.u, o.pos) : this.drawEnemy(o.u, o.pos));
+    }
+    // ---------- cidade viva (src/town.js) ----------
+    // Só com a arte nova da cidade (ruas caminháveis) e a folha de moradores carregadas; senão, a praça antiga.
+    townReady() {
+      if (!this.folk) { this.folk = { meta:null, img:null }; fetch('assets/folk/folk.json').then(r => r.ok ? r.json() : null).then(m => { if (!m) return; const img = new Image(); img.onload = () => Object.assign(this.folk, { meta:m, img }); img.src = 'assets/folk/folk.webp'; }).catch(() => {}); }
+      return !!this.folk.img;
+    }
+    drawTown() {
+      const c = this.ctx, e = this.engine;
+      if (!this.town) this.town = new KT.TownLife();
+      const heroes = e.state.formation.filter(Boolean).map(uid => { const r = e.record(uid), t = r && e.template(r.id); return t && { uid, sprite:t.sprite, name:t.name.replace(/^(Coronel|Mestre|Comandante|Unidade|O|A)\s+/, '').split(/[ ,]/)[0] }; }).filter(Boolean);
+      this.town.sync(heroes);
+      const dt = Math.min(.1, Math.max(0, this.worldTime - (this.townT ?? this.worldTime))); this.townT = this.worldTime; this.town.update(dt);
+      const F = this.folk.meta;
+      this.townHits = [];
+      for (const { a, h } of this.town.drawList()) {
+        const step = a.moving ? Math.floor(a.walkT * 6) % 2 : 0, bob = a.moving ? -Math.abs(Math.sin(a.walkT * Math.PI * 3)) * h * .05 : Math.sin(this.worldTime * 2 + a.x) * h * .006;
+        c.save(); c.fillStyle = 'rgba(12,8,4,.38)'; c.beginPath(); c.ellipse(a.x, a.y + 1, h * .3, h * .09, 0, 0, Math.PI * 2); c.fill(); c.restore();
+        if (a.kind === 'hero') {
+          const an = this.assets.anim?.(a.sprite);
+          if (an) this.drawFrame(an.img, an.meta, step ? 2 : 0, a.x, a.y + bob, h * 1.08, a.face < 0);
+          else this.drawSprite(a.sprite, a.x, a.y + bob, h, { flip:a.face < 0 });
+          this.townHits.push({ uid:a.uid, x:a.x, y:a.y, h });
+          // Herói sempre com o nome (e o que está fazendo quando parado), para achá-lo no meio da cidade.
+          this.townBubble(a.x, a.y - h * 1.12 - 4, !a.moving && a.verb ? a.verb : '', a.name);
+        } else {
+          c.save(); c.translate(a.x, a.y + bob); if (a.face < 0) c.scale(-1, 1);
+          const k = h / F.bodyH; c.drawImage(this.folk.img, step * F.frameW, a.f * F.frameH, F.frameW, F.frameH, -F.frameW / 2 * k, -F.footY * k, F.frameW * k, F.frameH * k); c.restore();
+        }
+      }
+    }
+    townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
+    // Um quadro da folha de poses do herói, com os pés em (x, y).
+    drawFrame(img, M, col, x, y, height, flip) {
+      const c = this.ctx, k = height / M.bodyH;
+      c.save(); c.translate(x, y); if (flip) c.scale(-1, 1);
+      c.drawImage(img, col * M.frameW, 0, M.frameW, M.frameH, -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k); c.restore();
+    }
+    townBubble(x, y, verb, name) {
+      const c = this.ctx; c.save(); c.font = `700 9.5px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const t = verb ? `${name} · ${verb}` : name, w = c.measureText(t).width + 12;
+      this.roundRect(x - w / 2, y - 8, w, 15, 7); c.fillStyle = 'rgba(14,12,18,.8)'; c.fill(); c.fillStyle = '#efe6d2'; c.fillText(t, x, y); c.restore();
     }
     actorOffset(s, dirSign) {
       let x = 0, y = 0;
@@ -702,7 +747,11 @@
         if (clip === 'death') return at(m, m.frames - 1, false);
         s.clip = null;
       }
-      const b = C[this.baseClip(u)] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
+      // Repouso numa pose só (a respiração vem de poseMotion): alternar dois desenhos fazia o herói piscar e trocar de lugar.
+      const base = this.baseClip(u), row0 = U.clamp(Number((C.idle || {}).row) || 0, 0, rows - 1);
+      if (base === 'idle') return [row0, 0, 0, 0];
+      if (base === 'victory') return [row0, pose(C.victory || C.idle, 0), pose(C.victory || C.idle, 0), 0];
+      const b = C[base] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
       return at(b, it * b.fps, true);
     }
     // Movimento contínuo por pose (0 parado · 1 respira · 2 corre · 3 dano · 4 prepara · 5 golpe · 6 fim · 7 especial):
@@ -729,10 +778,9 @@
       c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx') * (o.flip ? -1 : 1), mix('sy'));
       c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
-      const base = c.globalAlpha, blend = next !== col ? Math.max(0, (frac - .62) / .38) : 0, fade = blend * blend * (3 - 2 * blend);
-      c.globalAlpha = base * (1 - fade); c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
-      if (fade > 0) { c.globalAlpha = base * fade; c.drawImage(an.img, next * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); }
-      c.globalAlpha = base;
+      // Troca de pose seca, como em sprites desenhados à mão (sem mistura transparente, que parecia piscar);
+      // o movimento entre poses fica por conta de deslocamento, inclinação e escala interpolados acima.
+      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
       c.filter = 'none';
       if (o.flash > 0) {
         if (!an.flash) { const f = document.createElement('canvas'); f.width = an.img.width; f.height = an.img.height; const g = f.getContext('2d'); g.drawImage(an.img, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd9b8'; g.fillRect(0, 0, f.width, f.height); an.flash = f; }

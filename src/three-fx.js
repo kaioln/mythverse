@@ -136,6 +136,57 @@
     abyss:{ color:'#b48cff', n:60, size:[5, 10], v:[0, .08], sway:.7, add:true, a:.45 },
     rift:{ color:'#b48cff', n:60, size:[5, 10], v:[0, .08], sway:.7, add:true, a:.45 }
   };
+  // Luzes da capital (x, y em 1280×720 sobre assets/scenes/village-expanded; força 1–3): achadas nos pontos quentes
+  // da própria arte (lanternas, janelas, balcões) + a fornalha da Forja e o portal do Salão feitos à mão.
+  const CITY_LIGHTS = [[577,153,3],[203,292,3],[215,605,3],[288,655,3],[138,282,3],[177,404,3],[139,629,3],[371,645,3],[164,669,3],[255,143,3],[1048,427,3],[458,307,3],[381,471,3],[177,559,3],[461,662,3],[79,462,3],[61,633,3],[1090,402,3],[937,580,3],[1103,600,3],[17,464,3],[171,583,3],[398,604,3],[989,600,3],[384,140,3],[174,163,3],[435,256,3],[232,414,3],[72,415,3],[606,642,3],[826,386,3],[66,272,3],[1143,390,3],[238,593,3],[239,609,3],[137,610,3],[507,149,3],[283,195,3],[306,237,3],[98,299,3],[35,397,3],[315,439,3],[80,114,3],[174,258,3],[149,469,3],[963,483,3],[1238,600,3],[285,610,3],[518,678,3],[702,644,3],[1187,617,3],[560,275,2],[1000,434,2],[331,490,2],[628,630,2],[1194,643,2],[733,680,2],[323,275,2],[86,370,2],[985,376,2],[274,648,2],[779,657,2],[394,201,2],[308,297,2]];
+  const CITY_FIRE = [[785,352,9,'#ff8a3d'],[548,78,8,'#9fc8ff'],[560,130,4,'#b8d4ff']];
+  // Camada presa à arte da cidade (câmera ortográfica 1280×720): halos de luz aditivos que tremulam, névoa baixa
+  // correndo sobre canais e cascatas, e vaga-lumes nos jardins. Some nas lutas.
+  const CityLayer = {
+    build(T, r) {
+      const scene = new T.Scene(), cam = new T.PerspectiveCamera();  // não usado: os shaders projetam direto da arte (1280×720)
+      const pts = [...CITY_LIGHTS.map(([x, y, s]) => [x, y, 10 + s * 7, '#ffc27a']), ...CITY_FIRE.map(([x, y, s, c]) => [x, y, 12 + s * 8, c])];
+      const g = new T.BufferGeometry(), p = new Float32Array(pts.length * 3), sz = new Float32Array(pts.length), col = new Float32Array(pts.length * 3), seed = new Float32Array(pts.length);
+      pts.forEach(([x, y, s, c], i) => { p.set([x, y, 0], i * 3); sz[i] = s; const cc = new T.Color(c); col.set([cc.r, cc.g, cc.b], i * 3); seed[i] = Math.random(); });
+      g.setAttribute('position', new T.BufferAttribute(p, 3)); g.setAttribute('size', new T.BufferAttribute(sz, 1)); g.setAttribute('color', new T.BufferAttribute(col, 3)); g.setAttribute('seed', new T.BufferAttribute(seed, 1));
+      const uni = { uTime:{ value:0 }, uScale:{ value:1 }, uView:{ value:new T.Vector2(0, 1280) } };
+      // Pixel da arte -> tela, com o recorte do celular em pé (view.x, view.w).
+      const CLIP = `uniform vec2 uView; vec4 toClip(vec3 p){ vec4 w = modelMatrix * vec4(p, 1.); return vec4((w.x - uView.x) / uView.y * 2. - 1., 1. - w.y / 360., 0., 1.); }`;
+      const glow = new T.Points(g, new T.ShaderMaterial({ transparent:true, depthWrite:false, blending:T.NormalBlending, uniforms:uni,
+        vertexShader:CLIP + `attribute float size, seed; attribute vec3 color; uniform float uTime, uScale; varying vec3 vC; varying float vA;
+          void main(){ float f = .78 + .14 * sin(uTime * (2.3 + seed * 3.) + seed * 40.) + .08 * sin(uTime * 11. + seed * 90.);
+            vC = color; vA = f; gl_PointSize = size * uScale * (.92 + .1 * f); gl_Position = toClip(position); }`,
+        fragmentShader:`varying vec3 vC; varying float vA; void main(){ float d = length(gl_PointCoord - .5) * 2.; if (d > 1.) discard;
+          float core = exp(-d * d * 9.), halo = exp(-d * d * 2.2) * .45; gl_FragColor = vec4(mix(vC, vec3(1., .96, .86), core * .5), min(1., (core * .9 + halo) * vA * .6)); }` }));
+      scene.add(glow);
+      // Névoa: faixa baixa (canais, cascatas e o pé das escadas), ruído que corre devagar para a direita.
+      const mist = new T.Mesh(new T.PlaneGeometry(1280, 300), new T.ShaderMaterial({ transparent:true, depthWrite:false, uniforms:uni,
+        vertexShader:CLIP + `varying vec2 vUv; void main(){ vUv = uv; gl_Position = toClip(position); }`,
+        fragmentShader:`uniform float uTime; varying vec2 vUv;
+          float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+          float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f); return mix(mix(h(i), h(i + vec2(1, 0)), f.x), mix(h(i + vec2(0, 1)), h(i + vec2(1, 1)), f.x), f.y); }
+          float fbm(vec2 p){ float v = 0., a = .5; for (int k = 0; k < 4; k++) { v += a * n(p); p *= 2.03; a *= .5; } return v; }
+          void main(){ vec2 q = vec2(vUv.x * 6. + uTime * .025, vUv.y * 2.2 - uTime * .01); float m = fbm(q + fbm(q * .7 + uTime * .02));
+            float band = smoothstep(0., .45, vUv.y) * smoothstep(1., .55, vUv.y); gl_FragColor = vec4(.72, .78, .95, m * band * .2); }` }));
+      mist.position.set(640, 590, -1); mist.scale.y = -1; scene.add(mist);
+      // Vaga-lumes nos jardins e beiras de caminho: vagam em volta de um ponto e piscam.
+      const FN = 46, fg = new T.BufferGeometry(), fp = new Float32Array(FN * 3), fs = new Float32Array(FN);
+      for (let i = 0; i < FN; i++) { fp.set([40 + Math.random() * 1200, 230 + Math.random() * 470, 0], i * 3); fs[i] = Math.random(); }
+      fg.setAttribute('position', new T.BufferAttribute(fp, 3)); fg.setAttribute('seed', new T.BufferAttribute(fs, 1));
+      const flies = new T.Points(fg, new T.ShaderMaterial({ transparent:true, depthWrite:false, blending:T.NormalBlending, uniforms:uni,
+        vertexShader:CLIP + `attribute float seed; uniform float uTime, uScale; varying float vA;
+          void main(){ vec3 p = position; p.x += sin(uTime * (.3 + seed * .4) + seed * 20.) * 18.; p.y += cos(uTime * (.25 + seed * .3) + seed * 13.) * 10.;
+            vA = pow(.5 + .5 * sin(uTime * (1. + seed * 1.8) + seed * 60.), 4.); gl_PointSize = (5. + seed * 4.) * uScale; gl_Position = toClip(p); }`,
+        fragmentShader:`varying float vA; void main(){ float d = length(gl_PointCoord - .5) * 2.; if (d > 1.) discard; gl_FragColor = vec4(.88, 1., .6, exp(-d * d * 4.) * vA); }` }));
+      scene.add(flies);
+      return { scene, cam, uni };
+    },
+    render(T, r, L, t, view) {
+      const v = view || { x:0, w:1280 }; L.uni.uView.value.set(v.x, v.w);
+      L.uni.uTime.value = t / 1000; L.uni.uScale.value = r.domElement.height / 720;
+      r.autoClear = false; r.render(L.scene, L.cam); r.autoClear = true;
+    }
+  };
   const Atmos = {
     T:null, r:null, scene:null, cam:null, pts:null, canvas:null, host:null, theme:'', raf:0, lastT:0, mx:0, my:0, on:false,
     async mount(host) {
@@ -188,9 +239,11 @@
         this.cam.position.x += (this.mx * .8 - this.cam.position.x) * Math.min(1, dt * 2); this.cam.position.y += (-this.my * .45 - this.cam.position.y) * Math.min(1, dt * 2); this.cam.lookAt(0, 0, 0);
         if (this.pts) this.pts.material.uniforms.uTime.value = t / 1000;
         this.r.render(this.scene, this.cam);
+        if (zone.kind === 'village') { this.city ||= CityLayer.build(this.T, this.r); CityLayer.render(this.T, this.r, this.city, t, KT.__view?.()); }
       }
       this.raf = requestAnimationFrame(x => this.frame(x));
     }
   };
+  Atmos.CityLayer = CityLayer;
   KT.Atmos = Atmos;
 })();

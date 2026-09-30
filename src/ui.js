@@ -85,8 +85,8 @@
       this.el.reveal.addEventListener('click', () => this.closeReveal());
       // Foco em inimigos.
       const cv = this.el.canvas;
-      cv.addEventListener('click', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); if (uid) { this.engine.input('focus', uid); const f = this.engine.focusUid; this.callbacks.click?.(); if (f) this.onLog({ text:`Equipe focando ${this.engine.enemies.find(x => x.uid === f)?.name}.`, type:'system' }); } });
-      cv.addEventListener('mousemove', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
+      cv.addEventListener('click', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); const th = !uid && this.renderer.townHeroAt?.(p.x, p.y); if (th) { this.openPanel('hero', th); return; } if (uid) { this.engine.input('focus', uid); const f = this.engine.focusUid; this.callbacks.click?.(); if (f) this.onLog({ text:`Equipe focando ${this.engine.enemies.find(x => x.uid === f)?.name}.`, type:'system' }); } });
+      cv.addEventListener('mousemove', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid || !!this.renderer.townHeroAt?.(p.x, p.y)); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
       cv.addEventListener('mouseleave', () => { this.renderer.hoverEnemy = null; this.hideTip(); });
       // Tooltips gerais.
       document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (t) this.showTip(t.dataset.tip, t); });
@@ -206,8 +206,8 @@
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
-      hub.innerHTML = `<span class="eyebrow">${greet}, ${esc(s.player.name || 'Viajante')}</span>
-        <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
+      // Compacto no canto de baixo (a cidade viva ocupa o palco): saudação numa linha, objetivo e Continuar.
+      hub.innerHTML = `<span class="eyebrow" data-tip="${esc(`Sua equipe passeia por Tsukimori. ${now.replace(/<[^>]+>/g, '')}`)}">${greet}, ${esc(s.player.name || 'Viajante')}</span>
         ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
         <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> <span class="hub-go"><small>Continuar</small><b>${esc(hz.title)}</b></span><em class="hub-stage">${stage}</em></button>
         <div class="hub-row"><button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-target"></i> O que fazer'}</button></div></div>`;

@@ -300,6 +300,8 @@ function repo(d) {
     walletForce: (uid, delta, now) => d.run(`UPDATE ${T}wallets SET balance = CASE WHEN balance + ? < 0 THEN 0 ELSE balance + ? END, updated_at = ? WHERE user_id = ?`, [delta, delta, now, uid]),
     markDepositReversed: (id, now) => d.run(`UPDATE ${T}deposits SET status = 'reversed', paid_at = ? WHERE id = ? AND status = 'paid'`, [now, id]),
     withdrawalsOf: uid => d.all(`SELECT id, amount, fee, status, created_at, decided_at FROM ${T}withdrawals WHERE user_id = ? ORDER BY id DESC LIMIT 10`, [uid]),
+    lastEventAt: async (uid, event) => Number((await one(`SELECT COALESCE(MAX(at), 0) AS t FROM ${T}audit WHERE user_id = ? AND event = ?`, [uid, event])).t),
+    usedPixKey: async (uid, key) => !!(await one(`SELECT 1 AS x FROM ${T}withdrawals WHERE user_id = ? AND pix_key = ? AND status = 'paid' LIMIT 1`, [uid, key])),
     withdrawalsToday: async (uid, since) => Number((await one(`SELECT COALESCE(SUM(amount), 0) AS t FROM ${T}withdrawals WHERE user_id = ? AND created_at >= ? AND status <> 'rejected'`, [uid, since])).t),
     pendingWithdrawals: () => d.all(`SELECT w.*, u.username FROM ${T}withdrawals w LEFT JOIN ${T}users u ON u.id = w.user_id WHERE w.status = 'pending' ORDER BY w.id`),
     withdrawalLock: id => one(`SELECT * FROM ${T}withdrawals WHERE id = ?${d.forUpdate}`, [id]),

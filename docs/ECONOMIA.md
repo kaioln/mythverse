@@ -191,6 +191,7 @@ cinco falhas conhecidas; cada uma tem uma defesa, ligada por padrão (`server/ec
 | **Lavagem de dinheiro e cartão roubado**: deposita dinheiro sujo e saca limpo | Gemas depositadas só compram; **só se saca o que foi ganho vendendo** (`WITHDRAW_EARNED_ONLY`). Sem cartão: só Pix |
 | **Estorno** (Pix MED) depois que o item já foi entregue | Estorno tira as Gemas da conta, registra alerta e **bloqueia a conta para negociar**; vendas feitas a contas com menos de 30 dias ficam **7 dias** retidas antes do saque (as demais, 72 h) |
 | **Exércitos de bots sacando** | Saque só com **30 dias de conta, nível 30 e 20 h de jogo**, para **chave Pix CPF válida, um CPF por conta**; revisão manual de cada saque |
+| **Conta roubada sacando para o invasor** | **72 h sem saque depois de trocar a senha** (`WITHDRAW_AFTER_PASSWORD_HOURS`); o primeiro saque para um CPF que nunca recebeu desta conta gera o alerta `first_cpf_withdraw` para conferir a titularidade antes de pagar |
 | **Mulas e revenda em cadeia** | Item comprado com Gemas fica **7 dias travado** para revenda; bloqueio de compra na mesma rede; alerta de pares que negociam demais |
 | **Preço combinado** (entregar dinheiro comprando lixo caro) | **Faixa dura**: entre 1/4 e 5× a mediana das vendas daquela peça, no anúncio e na compra; acima de 10× gera alerta |
 | **Pay-to-win e inflação** | Gemas não compram ouro nem nada da loja; só itens que outros jogadores **dropam jogando**, com nível mínimo para equipar; taxa de 5% sai da economia |

@@ -109,7 +109,7 @@
     if (v.panel === 'hero' || v.panel === 'talents') { const r = this.engine.record(v.param); title = r ? `${v.panel === 'talents' ? 'Talentos · ' : ''}${this.engine.template(r.id).name}` : title; }
     this.el.modalTitle.textContent = title;
     this.el.modalBackNav.hidden = v.panel !== 'destination';
-    this.el.modalTabs.innerHTML = def.tabs ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
+    this.el.modalTabs.innerHTML = def.tabs && v.panel !== 'wiki' ? def.tabs.map(([id, n, icon]) => `<button class="${icon ? 'has-ic tone-' + icon : ''} ${id === v.tab ? 'active' : ''}" data-tab="${id}" type="button">${icon ? ic(icon) : ''}<span>${n}</span></button>`).join('') : '';
     const top = this.el.modalBody.scrollTop;
     const fn = { chat:'chatPanel', player:'playerPanel', adventure:'adventurePanel', journey:'journeyPanel', destination:'destinationPanel', party:'partyPanel', hero:'heroPanel', collection:'collectionPanel', inventory:'inventoryPanel', talents:'talentPanel', ranking:'rankingPanel', city:'cityPanel', shop:'shopPanel', bank:'bankPanel', quests:'questPanel', wiki:'wikiPanel', record:'recordPanel', profile:'profilePanel', help:'helpPanel', arena:'arenaPanel', guild:'guildPanel' }[v.panel] || 'helpPanel';
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
@@ -317,8 +317,10 @@
     if (tab === 'lore') {
       const L = KT.Lore?.heroes?.[KT.Data.roster.find(x => x.id === t.id)?.base || t.id] || KT.Lore?.heroes?.[t.id], wd = KT.Lore?.worlds?.[t.world];
       const bonds = D.bonds.filter(b => b.ids.includes(t.id)).map(b => `<li><b>${esc(b.name)}</b> · ${b.ids.map(id => esc(e.template(id)?.name || id)).join(', ')}<small>${esc(b.text)}</small></li>`).join('');
-      const purpose = KT.Lore?.heroPurpose?.(t.id);
-      return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}<article class="lore-card">
+      const purpose = KT.Lore?.heroPurpose?.(t.id), baseId = KT.Data.roster.find(x => x.id === t.id)?.base || t.id, tale = KT.Lore?.tales?.[baseId] || KT.Lore?.tales?.[t.id];
+      // Conto da travessia em tipografia de livro; a biografia curta vira o retrato logo abaixo.
+      const taleHtml = tale ? `<section class="book-page hero-tale"><header><small>Conto da travessia</small><h2>${esc(t.name)}</h2></header>${tale.map((p, i) => `<p${i ? '' : ' class="drop"'}>${esc(p)}</p>`).join('')}</section>` : '';
+      return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}${taleHtml}<article class="lore-card">
         ${L ? `<blockquote>“${esc(L.quote)}”</blockquote><p>${esc(L.bio)}</p>` : '<p class="dim">A história deste herói ainda não foi contada.</p>'}
         ${purpose ? `<h4>Papel na Crônica</h4><p>${esc(purpose.role)}</p>${purpose.ties.map(x => `<p class="dim">${esc(x)}</p>`).join('')}` : ''}
         <h4>${esc(t.world)}</h4><p class="dim">${esc(wd?.text || '')}</p>
@@ -550,7 +552,9 @@
         : kind === 'capstone' ? `<circle class="seal" r="${rad}"/><circle class="seal-inner" r="${rad - 7}"/>`
         : `<circle class="seal" r="${rad}"/>`;
       const pips = n.max > 1 ? `<g class="pips" transform="translate(0,${rad + 10})">${Array.from({ length:n.max }, (_, k) => `<circle cx="${(k - (n.max - 1) / 2) * 11}" r="3.6" class="${k < rank ? 'on' : ''}"/>`).join('')}</g>` : '';
-      return `<g class="tnode ${state} k-${kind} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})">
+      // Família pela estatística principal do talento: dá a cor do anel e do desenho (ataque, defesa, vida, ritmo, crítico, arte).
+      const sk = Object.keys(n.stats || {})[0] || '', fam = /^(atk|pierce|boss|breakPow)/.test(sk) ? 'atk' : /^(def|dr|thorns)/.test(sk) ? 'def' : /^(hp|regen|lifesteal|healPow)/.test(sk) ? 'hp' : /^(spd|dodge|cdr)/.test(sk) ? 'spd' : /^crit/.test(sk) ? 'crit' : 'arc';
+      return `<g class="tnode ${state} k-${kind} fam-${fam} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})">
         <circle class="halo" r="${rad + 9}"/>${shape}
         ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" class="sig-art"/><circle class="sig-ring" r="${rad - 3}"/>` : `<g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>`}
         ${pips}
@@ -562,7 +566,7 @@
     const BY = [14, 214, 572, 762], BH = [188, 346, 178, 276];
     const bands = [0, 1, 2, 3].map(i => `<rect x="10" y="${BY[i]}" width="940" height="${BH[i]}" rx="12" class="band ${bandLocked(i) ? 'locked' : 'open'}"/>`).join('');
     // Título da faixa por cima das ligações, com fundo próprio (as linhas não cortam o texto).
-    const bandLabels = [0, 1, 2, 3].map(i => { const txt = `CÍRCULO ${['I', 'II', 'III', 'IV'][i]} · ${bandTxt(i)}${bandLocked(i) ? ' · bloqueado' : ''}`; return `<g class="band-tag ${bandLocked(i) ? 'locked' : ''}" transform="translate(24,${BY[i] + 12})"><rect width="${58 + txt.length * 7.2}" height="30" rx="7"/><text x="14" y="21" class="band-num">${['壱', '弐', '参', '四'][i]}</text><text x="42" y="20" class="band-sub">${txt}</text></g>`; }).join('');
+    const bandLabels = [0, 1, 2, 3].map(i => { const txt = `CÍRCULO ${['I', 'II', 'III', 'IV'][i]} · ${bandTxt(i)}${bandLocked(i) ? ' · bloqueado' : ''}`; return `<g class="band-tag ${bandLocked(i) ? 'locked' : ''}" transform="translate(24,${BY[i] + 12})"><rect width="${58 + txt.length * 7.2}" height="30" rx="7"/><path class="band-gem" d="M22 7l8 8-8 8-8-8z"/><text x="42" y="20" class="band-sub">${txt}</text></g>`; }).join('');
     const srank = r.talents[sel.id] || 0, sst = e.talentState(r, sel.id);
     const cur = srank ? this.nodeEffectText(sel, srank, t) : [], next = srank < sel.max ? this.nodeEffectText(sel, srank + 1, t) : [];
     const reqs = [];
@@ -1054,6 +1058,8 @@
       <article class="book-page"><header><small>${esc(ch.part)}</small><h2>${esc(ch.title)}</h2>${ch.epigraph ? `<p class="epigraph">${esc(ch.epigraph.text)}<cite>${esc(ch.epigraph.from)}</cite></p>` : ''}</header>${body}<footer class="book-nav">${prev}${next}</footer></article></div>
       <details class="book-appendix"><summary>Apêndice · Os mundos de onde vêm os viajantes</summary><div class="wiki-grid">${worlds}</div></details>`;
   };
+  const WIKI_GROUPS = [['Começar', ['start', 'progress']], ['História', ['lore', 'world', 'events']], ['Combate', ['combat', 'classes', 'elements', 'synergy']],
+    ['Heróis', ['heroes', 'builds', 'trees']], ['Equipamento', ['items', 'weapons', 'refine', 'cards']], ['Mundo', ['monsters', 'systems']], ['Economia', ['economy', 'market']]];
   P.wikiPanel = function(_, tab) {
     const search = `<input id="wiki-search" type="search" placeholder="Buscar nesta seção…" aria-label="Buscar" value="${esc(this.wikiQuery || '')}">`;
     let html = '';
@@ -1158,7 +1164,10 @@
         <h4>Recursos são escassos de propósito</h4><p>Cristais vêm de marcos (primeiras vitórias, conquistas, crônicas, login) em pequenas quantidades; uma chave custa 150 cristais. Fragmentos de herói vêm só de convocações repetidas (2/4/8/16 conforme a raridade) e de ofertas raras do Mercado do Porto. Aprimorar acima de +3 pode falhar, e acima de +10 a falha faz o item perder 1 nível.</p>
         <h4>Rank da Guilda</h4><p>Cada contrato resgatado dá experiência à Guilda. O rank não tem limite: contratos ficam maiores, mais difíceis e mais valiosos a cada rank.</p></article>`; break;
     }
-    return `<div class="wiki-search">${search}</div><div class="wiki-body">${html}</div>`;
+    // Índice agrupado por assunto (em vez de 20 abas numa fileira): o leitor acha o tema pelo grupo.
+    const names = Object.fromEntries(PANELS.wiki.tabs.map(([id, n]) => [id, n]));
+    const nav = WIKI_GROUPS.map(([g, ids]) => `<section><small>${g}</small>${ids.filter(id => names[id]).map(id => `<button class="${id === tab ? 'active' : ''}" data-wiki-tab="${id}" type="button">${names[id]}</button>`).join('')}</section>`).join('');
+    return `<div class="wiki-layout"><nav class="wiki-nav" aria-label="Assuntos">${nav}</nav><div class="wiki-main"><div class="wiki-search">${search}</div><div class="wiki-body">${html}</div></div></div>`;
   };
 
   // ---------------------------------------------------------------------------
@@ -1219,6 +1228,7 @@
       run('openBoxes', [n, box, cls], got => { if (got && got.length) { this.closeModal(); this.showReveal(got); if (!s.story.seen.intro2) c('markSeen', 'intro2'); } else this.toast(esc(e.lastError || 'Chaves insuficientes.')); });
       return;
     }
+    if (d.wikiTab) { this.view.tab = d.wikiTab; this.refreshPanel(); this.el.modalBody.scrollTop = 0; return; }
     if (d.bookCh !== undefined) { this.bookCh = Number(d.bookCh); this.refreshPanel(); this.el.modal.querySelector('.lore-book')?.scrollIntoView({ block:'start' }); return; }
     if (d.slot !== undefined) { this.selectedSlot = Number(d.slot); refresh(); return; }
     if (d.assign) { run('setParty', [this.selectedSlot, d.assign], ok2 => { if (ok2) { const nx = s.formation.indexOf(null); this.selectedSlot = nx >= 0 ? nx : this.selectedSlot; this.dockKey = ''; if (e.heroes.length === 4) this.callbacks.reward?.(); } }); return; }

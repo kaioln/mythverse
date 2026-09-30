@@ -441,7 +441,14 @@ def sheet_blobs(path, n=10, rows=2):
     img = Image.open(os.path.join(ROOT, path)).convert('RGBA')
     k = 4
     a = np.array(img.getchannel('A').resize((img.width // k, img.height // k), Image.BILINEAR))
-    labels, sizes = components(a > 128)
+    mask = a > 128
+    # Brilho de um golpe especial pode encostar na pose da linha de cima e juntar as duas numa peça só: corta a
+    # folha na linha mais vazia entre as fileiras antes de separar os personagens.
+    for r in range(1, rows):
+        lo, hi = int(mask.shape[0] * (r / rows - .12)), int(mask.shape[0] * (r / rows + .12))
+        cut = lo + int(np.argmin(mask[lo:hi].sum(1)))
+        mask[max(0, cut - 1):cut + 2] = False
+    labels, sizes = components(mask)
     main = sorted(range(1, len(sizes)), key=lambda i: -sizes[i])[:n]
     cen = {}
     for i in range(1, len(sizes)):

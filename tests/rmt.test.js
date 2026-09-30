@@ -76,6 +76,21 @@ async function grant(c, fn, summary = {}) {
   const flags = (await anon.req('GET', '/api/admin/economy', undefined, { 'X-Admin-Token':'adm' })).data;
   ok(flags && JSON.stringify(flags).includes('chargeback'), 'estorno aparece nos alertas da administração');
 
+  // 5. Conta roubada: depois de trocar a senha, 72 h sem saque (mesmo com a conta madura).
+  server.close();
+  const dir2 = fs.mkdtempSync(path.join(os.tmpdir(), 'mythverse-rmt2-'));
+  server = await createServer({ dataDir:dir2, quiet:true, noBackups:true, secureCookie:false, paymentProvider:provider,
+    economy:economyConfig({ RMT_ENABLED:'1', ADMIN_TOKEN:'adm', WITHDRAW_MIN_ACCOUNT_DAYS:'0', WITHDRAW_MIN_LEVEL:'0', WITHDRAW_MIN_PLAY_HOURS:'0', MARKET_MIN_ACCOUNT_DAYS:'0' }) });
+  await new Promise(r2 => server.listen(0, '127.0.0.1', r2)); base = `http://127.0.0.1:${server.address().port}`;
+  const V = new Client(), W = new Client();
+  for (const [c, u] of [[V, 'VitimaRMT'], [W, 'NormalRMT']]) { await c.req('POST', '/api/auth/register', { username:u, email:`${u}@x.test`, password:'Kizuna2026x', confirm:'Kizuna2026x', acceptTerms:true }); await c.req('GET', '/api/state'); }
+  await V.req('POST', '/api/auth/password', { current:'Kizuna2026x', next:'Outra2026senha' });
+  await new Promise(r2 => setTimeout(r2, 150));
+  r = await V.req('POST', '/api/wallet/withdraw', { amount:2000, pixKey:'529.982.247-25', password:'Outra2026senha' });
+  ok(r.status === 403 && /troca de senha/.test(r.data?.error || ''), `saque bloqueado logo depois da troca de senha (${r.status} ${r.data?.error})`);
+  r = await W.req('POST', '/api/wallet/withdraw', { amount:2000, pixKey:'111.444.777-35', password:'Kizuna2026x' });
+  ok(!/troca de senha/.test(r.data?.error || ''), 'conta sem troca de senha não cai nessa trava');
+
   console.log(JSON.stringify({ ok:true, checks }));
   server.close(); process.exit(0);
 })().catch(e => { console.error(e); process.exit(1); });

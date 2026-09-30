@@ -22,7 +22,7 @@ function economyConfig(env = process.env, production = false) {
     holdHours:num(env.MARKET_HOLD_HOURS, 72), blockSameNetwork:env.MARKET_BLOCK_SAME_NETWORK !== '0', outlierX:num(env.MARKET_OUTLIER_X, 10), pairLimit:num(env.MARKET_PAIR_TRADES_WEEK, 3),
     // Defesas do dinheiro real (o que destruiu economias de MMO: lavagem, estorno, bots sacando, mulas e preço combinado).
     earnedOnly:env.WITHDRAW_EARNED_ONLY !== '0',                 // só saca Gemas ganhas vendendo; Gemas depositadas só compram (sem lavagem)
-    wdMinAccountDays:num(env.WITHDRAW_MIN_ACCOUNT_DAYS, 30), wdMinLevel:num(env.WITHDRAW_MIN_LEVEL, 30), wdMinPlayHours:num(env.WITHDRAW_MIN_PLAY_HOURS, 20),
+    wdMinAccountDays:num(env.WITHDRAW_MIN_ACCOUNT_DAYS, 30), wdAfterPasswordHours:num(env.WITHDRAW_AFTER_PASSWORD_HOURS, 72), wdMinLevel:num(env.WITHDRAW_MIN_LEVEL, 30), wdMinPlayHours:num(env.WITHDRAW_MIN_PLAY_HOURS, 20),
     pixRequireCpf:env.PIX_REQUIRE_CPF !== '0',                     // saque só para chave CPF válida, e um CPF por conta
     priceBandX:num(env.MARKET_PRICE_BAND_X, 5), priceFloorX:num(env.MARKET_PRICE_FLOOR_X, .25), // faixa dura contra preço combinado
     resaleLockDays:num(env.MARKET_RESALE_LOCK_DAYS, 7),           // item comprado com Gemas só volta ao mercado depois disso (sem corrente de mulas)
@@ -154,6 +154,11 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
         const others = (await store.pixKeyOwners(pixKey.replace(/\D/g, ''))).filter(id => id !== s.user_id);
         if (others.length) { await store.flag('pix_shared', s.user_id, others[0], 'mesmo CPF em outra conta', Date.now()); return fail(res, 403, 'Este CPF já recebe saques de outra conta. Uma conta por CPF.'); }
       }
+      // Conta roubada: quem invade troca a senha e saca para o próprio CPF. Depois de trocar a senha, 72 h sem saque;
+      // CPF que nunca recebeu saque desta conta vai para revisão manual (alerta) antes de ser pago.
+      const pwAt = await store.lastEventAt(s.user_id, 'password_change');
+      if (pwAt && Date.now() - pwAt < E.wdAfterPasswordHours * HOUR) return fail(res, 403, `Por segurança, saques voltam ${E.wdAfterPasswordHours} h depois da troca de senha.`);
+      const cpfKey = pixKey.replace(/\D/g, ''), firstKey = E.pixRequireCpf && !await store.usedPixKey(s.user_id, cpfKey);
       if (await store.withdrawalsToday(s.user_id, Date.now() - DAY) + amount > E.maxWithdrawDay) return fail(res, 400, 'Limite diário de saque atingido.');
       const fee = withdrawFee(amount), now = Date.now();
       if (fee >= amount) return fail(res, 400, 'Valor menor que a taxa de saque.');
@@ -166,6 +171,7 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
         return { id };
       });
       if (r.error) return fail(res, 400, r.error);
+      if (firstKey) await store.flag('first_cpf_withdraw', s.user_id, null, `saque ${r.id}: primeiro saque para este CPF (conferir titularidade)`, now);
       audit(s.user_id, 'withdraw_request', req, `${r.id}:${amount}`);
       send(res, 200, { ok:true, id:r.id, fee, net:amount - fee });
     },

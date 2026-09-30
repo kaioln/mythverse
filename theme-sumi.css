@@ -739,7 +739,7 @@ body.stage-portrait .stage{aspect-ratio:920/720!important}
 @media (max-width:700px){body .stage-controls #boost-btn{padding:0 4px!important;min-width:68px!important;flex-direction:column!important;justify-content:center!important;gap:2px!important}body .stage-controls #boost-btn b{font-size:10.5px!important;letter-spacing:0!important}}
 /* Barra do palco: todos os controles na mesma altura e no mesmo eixo (PREPARAR e MAPA idênticos em tamanho). */
 body .stage-controls{align-items:center!important}
-body .stage-controls .ctl{height:50px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;box-sizing:border-box;margin:0!important;vertical-align:middle}
+body .stage-controls .ctl{height:50px!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;box-sizing:border-box;margin:0!important;vertical-align:middle}
 body .stage-controls #boost-btn,body .stage-controls .journey-cta{min-width:84px!important;height:50px!important;padding:0 10px!important}
 body .stage-controls .ctl>span,body .stage-controls .ctl>b{line-height:1!important;margin:0!important}
 @media (max-width:900px){
@@ -786,3 +786,46 @@ body .stage-controls .ctl,body .stage-controls .journey-cta{min-height:0!importa
 }
 .book-page p.epigraph{text-align:center;text-indent:0;font:italic 15px/1.6 var(--display);margin:0 auto}
 .book-page{justify-self:center;width:100%}
+
+/* Cidade viva: o painel de boas-vindas vira um cartão compacto no céu do canto de cima à direita (a arte deixa essa área
+   livre), para a cidade e os moradores ocuparem o palco. */
+body .village-hub{top:74px!important;bottom:auto!important;right:14px!important;width:clamp(240px,24%,300px)!important;max-height:none!important;padding:10px 12px!important;overflow:visible!important}
+body .village-hub .eyebrow{display:block;margin-bottom:6px;font-size:10px}
+body .village-hub .hub-goal{margin-bottom:6px}
+body .village-hub .hub-actions>.action.primary{min-height:46px}
+body .village-hub .hub-row .action{min-height:32px}
+
+.hero-tale{max-width:760px;margin:0 0 14px}
+.hero-tale h2{font-size:clamp(20px,2vw,26px)}
+
+/* Enciclopédia: índice agrupado à esquerda (7 assuntos), conteúdo à direita. */
+.wiki-layout{display:grid;grid-template-columns:minmax(170px,200px) minmax(0,1fr);gap:16px;align-items:start}
+.wiki-nav{position:sticky;top:0;display:flex;flex-direction:column;gap:10px;padding:10px;border:1px solid var(--line2);border-radius:10px;background:#15131b}
+.wiki-nav section{display:flex;flex-direction:column;gap:2px}
+.wiki-nav small{padding:0 8px 2px;font:700 10px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.wiki-nav button{padding:6px 8px;border:1px solid transparent;border-radius:6px;background:none;color:#d9d0c1;font:600 13px var(--ui);text-align:left;cursor:pointer}
+.wiki-nav button:hover{border-color:var(--line2)}
+.wiki-nav button.active{background:rgba(216,176,98,.1);border-color:rgba(216,176,98,.5);color:var(--washi)}
+.wiki-main{min-width:0}
+@media (max-width:760px){
+  .wiki-layout{grid-template-columns:1fr}
+  .wiki-nav{position:static;flex-direction:row;overflow-x:auto;gap:12px;padding:8px}
+  .wiki-nav section{flex:0 0 auto;flex-direction:row;align-items:center;gap:4px}
+  .wiki-nav small{padding:0 2px}
+  .wiki-nav button{white-space:nowrap}
+}
+
+/* Árvore de talentos: medalhões de tinta com anel e desenho na cor da família do atributo; aprendido = anel cheio. */
+.tnode.fam-atk{--fc:#e0654a}.tnode.fam-def{--fc:#6f9fd8}.tnode.fam-hp{--fc:#6fbf86}.tnode.fam-spd{--fc:#5fc4b4}.tnode.fam-crit{--fc:#d8b062}.tnode.fam-arc{--fc:#a98be0}
+.talent-tree .tnode:not(.k-sig):not(.k-keystone) .seal{fill:#17151e;stroke:color-mix(in srgb,var(--fc) 35%,#3a3644);stroke-width:2.5}
+.talent-tree .tnode:not(.k-keystone) .glyph path{stroke:color-mix(in srgb,var(--fc) 45%,#6d6878);fill:color-mix(in srgb,var(--fc) 10%,transparent);stroke-width:2.1}
+.talent-tree .tnode.avail:not(.k-sig):not(.k-keystone) .seal{fill:#1d1a26;stroke:color-mix(in srgb,var(--fc) 70%,#cdbf9f)}
+.talent-tree .tnode.avail:not(.k-keystone) .glyph path{stroke:#efe7d8;fill:color-mix(in srgb,var(--fc) 18%,transparent)}
+.talent-tree .tnode.some:not(.k-sig):not(.k-keystone) .seal,.talent-tree .tnode.max:not(.k-sig):not(.k-keystone) .seal{fill:color-mix(in srgb,var(--fc) 16%,#15131b);stroke:var(--fc);stroke-width:3.5}
+.talent-tree .tnode.some:not(.k-keystone) .glyph path,.talent-tree .tnode.max:not(.k-keystone) .glyph path{stroke:var(--fc);fill:color-mix(in srgb,var(--fc) 28%,transparent);stroke-width:2.4}
+.talent-tree .tnode.some .seal-inner,.talent-tree .tnode.max .seal-inner{stroke:var(--fc)}
+.talent-tree .tnode.max:not(.k-sig):not(.k-keystone) .halo{opacity:.55;stroke:var(--fc);stroke-dasharray:none}
+.talent-tree .band-tag .band-gem{fill:var(--shu);stroke:#f0b1a4;stroke-width:1}
+.talent-tree .band-tag.locked .band-gem{fill:#4a4656;stroke:#6d665b}
+.talent-tree .band-tag text{stroke:none!important;paint-order:normal}
+.talent-tree .band-tag .band-sub{font:700 12px var(--ui)!important;fill:#cfc6b6!important;letter-spacing:.06em}
