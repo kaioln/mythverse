@@ -374,10 +374,10 @@
         c.lineCap = 'round'; c.strokeStyle = p.color;
         for (let i = 1; i < p.trail.length; i++) { const a0 = p.trail[i - 1], a1 = p.trail[i], f = 1 - i / p.trail.length; c.globalAlpha = f * .55; c.lineWidth = P.trail * f; c.beginPath(); c.moveTo(a0.x, a0.y); c.lineTo(a1.x, a1.y); c.stroke(); }
       }
-      if (p.kind === 'bolt') {   // raio: zigue-zague que se refaz a cada quadro, da origem até a ponta
+      if (p.kind === 'bolt') {   // raio: zigue-zague estável por disparo, sem tremor aleatório por quadro
         c.globalAlpha = 1; c.strokeStyle = p.color; c.lineWidth = 6; c.shadowColor = p.color; c.shadowBlur = 22;
         const pts = [[p.x, p.y]], n = 7;
-        for (let i = 1; i <= n; i++) { const kk = k * i / n, pp = this.projPos(p, kk); pts.push([pp.x + (i < n ? U.rand(-18, 18) : 0), pp.y + (i < n ? U.rand(-18, 18) : 0)]); }
+        for (let i = 1; i <= n; i++) { const kk = k * i / n, pp = this.projPos(p, kk), jx = Math.sin(p.seed * 17.13 + i * 91.7) * 16, jy = Math.sin(p.seed * 31.7 + i * 47.3) * 16; pts.push([pp.x + (i < n ? jx : 0), pp.y + (i < n ? jy : 0)]); }
         c.beginPath(); pts.forEach(([x2, y2], i) => i ? c.lineTo(x2, y2) : c.moveTo(x2, y2)); c.stroke();
         c.strokeStyle = '#ffffff'; c.lineWidth = 1.8; c.shadowBlur = 0; c.stroke();
         c.globalAlpha = .9; const gl = this.fxTex('glow', p.color); c.drawImage(gl, q.x - 22, q.y - 22, 44, 44);
@@ -386,7 +386,7 @@
         const sc = P.scale * (p.scale || 1) * (1 + .08 * Math.sin(p.t * 40 + p.seed));
         const gl = this.fxTex('glow', p.color); c.globalAlpha = .55; c.drawImage(gl, q.x - 26 * sc, q.y - 26 * sc, 52 * sc, 52 * sc);
         c.globalAlpha = 1; c.globalCompositeOperation = P.additive ? 'lighter' : 'source-over';
-        c.translate(q.x, q.y); c.rotate(rot); c.scale(sc, sc); c.drawImage(tex, -64, -32);
+        const stretch = 1 + Math.sin(Math.PI * k) * .16; c.translate(q.x, q.y); c.rotate(rot); c.scale(sc * stretch, sc / Math.sqrt(stretch)); c.drawImage(tex, -64, -32);
       }
       c.restore();
     }
@@ -591,7 +591,7 @@
       const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y - run + hm[1] * HERO_H;
       c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(pos.x + off.x, pos.y + 4, 46, 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
       const ultReady = alive && u.energy >= 100;
-      if (alive) this.runeCircle(pos.x + off.x, pos.y + 4, 54, u.color, ultReady ? .95 : .45, ultReady ? 1.8 : .5);
+      if (alive) this.runeCircle(pos.x + off.x, pos.y + 4, ultReady ? 52 : 46, u.color, ultReady ? .7 : .16, ultReady ? 1.5 : .25);
       if (s.cast > 0) this.aura(u.sprite, x, y, HERO_H, s.castColor, s.cast);
       else if (ultReady) this.aura(u.sprite, x, y, HERO_H, u.color, .55 + .25 * Math.sin(t * 5));
       if (s.level > 0) this.aura(u.sprite, x, y, HERO_H, '#ffd76a', s.level / 1.4);
@@ -600,12 +600,20 @@
       const an = this.assets.anim?.(u.sprite);
       if (an) this.drawAnim(an, s, u, x, y, HERO_H, { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .6, gray:!alive });
       else this.drawSprite(u.sprite, x, y, HERO_H, { sy:alive ? 1 + Math.sin(t * 2.6) * .018 : 1, flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .35, gray:!alive, tilt:alive ? 0 : -.25 });
-      if (u.shield > 0 && alive) { const sh = s.shieldHit > 0 ? .9 : .35 + .1 * Math.sin(t * 4); c.save(); c.globalAlpha = sh; c.strokeStyle = '#8fe9ff'; c.lineWidth = 3; c.fillStyle = 'rgba(120,220,255,.12)'; c.beginPath(); c.ellipse(x, y - HERO_H * .48, 62, HERO_H * .6, 0, 0, Math.PI * 2); c.fill(); c.stroke(); c.restore(); }
+      if (u.shield > 0 && alive) this.drawBarrier(x, y, HERO_H, U.clamp(u.shield / u.maxHp, 0, 1), s.shieldHit > 0);
       if (!alive) return;
       this.statusIcons(u, pos.x - 44, y - HERO_H - 28);
       if (u.effects.some(e => e.s === 'stun' || e.s === 'freeze')) this.stunStars(x, y - HERO_H - 6);
       this.bar(pos.x - 44, y - HERO_H - 16, 88, 9, s, '#57e389', u.shield / u.maxHp);
       this.thin(pos.x - 44, y - HERO_H - 5, 88, U.clamp(u.energy / 100, 0, 1), ultReady ? '#ffd76a' : '#e0a93b');
+    }
+    drawBarrier(x, y, h, strength, hit) {
+      const c = this.ctx, pulse = .5 + .5 * Math.sin(this.worldTime * 3.2), rx = Math.max(38, h * .31), ry = Math.max(58, h * .48);
+      c.save(); c.translate(x, y - h * .48); c.globalCompositeOperation = 'lighter';
+      c.fillStyle = `rgba(120,220,255,${.025 + strength * .055})`; c.beginPath(); c.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = hit ? '#ffffff' : '#8fe9ff'; c.lineCap = 'round'; c.shadowColor = '#6fdcff'; c.shadowBlur = hit ? 16 : 5;
+      for (let i = 0; i < 6; i++) { const gap = .16, a0 = -Math.PI / 2 + i * Math.PI / 3 + gap, a1 = -Math.PI / 2 + (i + 1) * Math.PI / 3 - gap; c.globalAlpha = (hit ? .95 : .34 + pulse * .12) * (.65 + strength * .35); c.lineWidth = hit ? 4 : 2.2; c.beginPath(); c.ellipse(0, 0, rx, ry, 0, a0, a1); c.stroke(); }
+      c.globalAlpha = .25 + strength * .25; c.lineWidth = 1; c.setLineDash([3, 8]); c.beginPath(); c.ellipse(0, 0, rx - 6, ry - 7, 0, 0, Math.PI * 2); c.stroke(); c.restore();
     }
     drawEnemy(e, pos) {
       const c = this.ctx, s = this.v(e.uid), t = this.worldTime + pos.x * .01, dying = !e.alive;
@@ -662,8 +670,9 @@
       if (!u.alive) { if (clip !== 'death') { clip = 'death'; s.clip = 'death'; s.clipAt = this.worldTime; t = 0; } }
       else if (clip === 'death') { s.clip = null; clip = null; }
       // seq: índices das poses na linha (folhas de 8 poses de tools/build_anim.py); sem seq, quadros seguidos.
-      const pose = (m, i) => m.seq ? m.seq[i] : i;
-      const at = (m, x, loop) => { const i = Math.floor(x), f = x - i, a = loop ? i % m.frames : Math.min(i, m.frames - 1), b = loop ? (a + 1) % m.frames : Math.min(a + 1, m.frames - 1); return [m.row, pose(m, a), pose(m, b), f]; };
+      const cols = Math.max(1, Math.floor(an.img.width / an.meta.frameW)), rows = Math.max(1, Math.floor(an.img.height / an.meta.frameH));
+      const pose = (m, i) => U.clamp(Number(m.seq ? m.seq[i] : i) || 0, 0, cols - 1);
+      const at = (m, x, loop) => { const frames = Math.max(1, Number(m.frames) || 1), i = Math.floor(x), f = x - i, a = loop ? ((i % frames) + frames) % frames : Math.min(Math.max(0, i), frames - 1), b = loop ? (a + 1) % frames : Math.min(a + 1, frames - 1); return [U.clamp(Number(m.row) || 0, 0, rows - 1), pose(m, a), pose(m, b), f]; };
       if (clip && C[clip]) {
         const m = C[clip], x = t * m.fps;
         if (m.loop) return at(m, x, true);
@@ -698,11 +707,10 @@
       c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx') * (o.flip ? -1 : 1), mix('sy'));
       c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
-      const base = c.globalAlpha;
-      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
-      // Fusão com a próxima pose no fim do quadro (sem salto seco entre desenhos diferentes).
-      const blend = next !== col ? Math.max(0, (frac - .65) / .35) : 0;
-      if (blend > 0) { c.globalAlpha = base * blend * blend; c.drawImage(an.img, next * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); c.globalAlpha = base; }
+      const base = c.globalAlpha, blend = next !== col ? Math.max(0, (frac - .62) / .38) : 0, fade = blend * blend * (3 - 2 * blend);
+      c.globalAlpha = base * (1 - fade); c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
+      if (fade > 0) { c.globalAlpha = base * fade; c.drawImage(an.img, next * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); }
+      c.globalAlpha = base;
       c.filter = 'none';
       if (o.flash > 0) {
         if (!an.flash) { const f = document.createElement('canvas'); f.width = an.img.width; f.height = an.img.height; const g = f.getContext('2d'); g.drawImage(an.img, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd9b8'; g.fillRect(0, 0, f.width, f.height); an.flash = f; }

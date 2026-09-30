@@ -170,7 +170,7 @@
         this.el.powerCheck.dataset.tip = `Poder da equipe / poder recomendado.${ratio < .8 ? ' Sua equipe está fraca para esta região, treine em estágios anteriores.' : ''}`;
       } else this.el.powerCheck.hidden = true;
       this.el.locations.hidden = z.kind !== 'village' || this.engine.heroes.length < 4;
-      document.querySelector('#journey-cta').hidden = this.el.locations.hidden;
+      document.querySelector('#journey-cta').hidden = this.engine.heroes.length < 4;
       this.renderVillage();
       this.el.cons.hidden = z.kind === 'village';
       const needTeam = this.engine.heroes.length < 4;
@@ -210,7 +210,7 @@
         <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
         ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
         <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> <span class="hub-go"><small>Continuar</small><b>${esc(hz.title)}</b></span><em class="hub-stage">${stage}</em></button>
-        <div class="hub-row"><button class="action" data-open="journey" type="button"><i class="ic ic-compass"></i> Mapa</button>
+        <div class="hub-row"><button class="action map-action" data-open="journey" type="button"><i class="ic ic-compass"></i> Explorar mapa</button>
         <button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-target"></i> O que fazer'}</button></div></div>`;
     }
 

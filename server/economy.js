@@ -262,13 +262,15 @@ function economy({ store, cfg, send, fail, readJson, readBody, limiter, clientIp
           await t.flag('price_band', s.user_id, seller, `${l.name}: ${price} Gemas (mediana ${median(hist)})`, now);
           return { error:[400, `Preço fora da faixa de mercado (mediana ${median(hist)} Gemas). Compra bloqueada para evitar negociação combinada.`] };
         }
-        if (hist.length >= 5 && price > E.outlierX * median(hist)) await t.flag('price_outlier', s.user_id, seller, `${l.name}: ${price} Gemas (mediana ${median(hist)})`, now);
-        if (seller && await t.pairTrades(s.user_id, seller, now - 7 * DAY) >= E.pairLimit) await t.flag('pair_trading', s.user_id, seller, `${l.name}: ${price} Gemas`, now);
+        const outlierRisk = hist.length >= 5 && price > E.outlierX * median(hist);
+        const pairRisk = seller && await t.pairTrades(s.user_id, seller, now - 7 * DAY) >= E.pairLimit;
+        if (outlierRisk) await t.flag('price_outlier', s.user_id, seller, `${l.name}: ${price} Gemas (mediana ${median(hist)})`, now);
+        if (pairRisk) await t.flag('pair_trading', s.user_id, seller, `${l.name}: ${price} Gemas`, now);
         await t.walletLock(s.user_id);
         if (!await t.walletMove(s.user_id, -price, 0, now)) return { error:[400, 'Saldo de Gemas insuficiente.'] };
         await t.ledger(s.user_id, -price, 'market_buy', `l:${id}`, `Compra: ${l.name}`, now);
-        const buyerNew = now - Number(u.created_at) < E.newBuyerAccountDays * DAY;
-        if (seller) await credit(t, seller, price - fee, buyerNew ? 'market_sale_slow' : 'market_sale', `l:${id}`, `Venda: ${l.name} (taxa ${fee})${buyerNew ? ` · liberada para saque em ${E.newBuyerHoldDays} dias (comprador novo)` : ''}`, now);
+        const buyerNew = now - Number(u.created_at) < E.newBuyerAccountDays * DAY, review = buyerNew || pairRisk || outlierRisk;
+        if (seller) await credit(t, seller, price - fee, review ? 'market_sale_slow' : 'market_sale', `l:${id}`, `Venda: ${l.name} (taxa ${fee})${review ? ` · liberada para saque em ${E.newBuyerHoldDays} dias (análise de risco)` : ''}`, now);
         await t.ledger(null, fee, 'fee_market', `l:${id}`, 'Taxa do mercado', now);
         if (!await t.closeListing(id, 'sold', s.user_id, now)) throw new Error('listing_race');
         let payload = l.payload;

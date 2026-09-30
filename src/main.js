@@ -63,6 +63,10 @@
   // Online, o estado vem sempre do servidor (fonte única da verdade): não existe mais conflito
   // entre "local" e "nuvem". Offline (arquivo aberto direto), o progresso fica neste navegador.
   async function resolveState() {
+    // Atalho estritamente local para QA visual; jamais ativa no site publicado.
+    if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).has('devoffline')) {
+      KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' };
+    }
     const online = await KT.Net.detect();
     if (!online) {
       // Site só de arquivos (ex.: GitHub Pages): leva ao servidor configurado; sem servidor, avisa em vez de entrar sem conta.

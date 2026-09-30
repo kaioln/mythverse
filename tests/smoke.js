@@ -311,7 +311,7 @@ ok(kk >= 5 && state.chronicle.k > 5, 'crônicas se renovam sem fim');
 // Conselheiro e build recomendada
 const hr = engine.heroes[0]; hr.level = 20; hr.attr = { str:0, agi:0, vit:0, int:0, dex:0, luk:0 }; hr.talents = {};
 const tips = engine.advice(); ok(tips.length && tips.some(t => t.action === 'autoAttr'), 'conselheiro aponta pontos livres');
-const hb = State.statPower(State.heroStats(state, hr)); engine.autoBuild(hr.uid);
+const hb = State.statPower(State.heroStats(state, hr)); engine.autoAttr(hr.uid); engine.autoTalents(hr.uid);
 ok(engine.freeAttr(hr) === 0 && State.statPower(State.heroStats(state, hr)) > hb && (hr.talents.ess || 0) > 0, 'build recomendada aplica atributos e talentos (incluindo a Essência)');
 let stuck = 0; engine.events.onStuck = () => stuck++; engine.trackStuck('hunt:9', true); engine.trackStuck('hunt:9', true); ok(stuck === 1, 'conselheiro abre após 2 derrotas no mesmo desafio');
 // Refino com materiais (regras: comum até +10 com volta/quebra; raro até +8 seguro e quebra em +9/+10;
@@ -335,7 +335,7 @@ const r15 = I.makeItem({ ilvl:20, rarity:'legendary', slot:'weapon', wt:'sword' 
   hero.el = 'Terra'; ok(e5.hit(hero, raijin, 3, { kind:'basic' }) > 0, 'Raijin recebe dano de outros elementos');
   const sh = e5.makeEnemyUnit('boss', 1); e5.enemies = [sh]; sh.hp = sh.maxHp * .5; const h1 = sh.hp; e5.kill(e5.party[1], sh); ok(sh.hp > h1, 'Shirogane se cura quando um herói cai');
   const kit = e5.makeEnemyUnit('boss_event', 1), lamp = Object.assign(e5.makeEnemyUnit('wisp_ember', 1), { summoned:true }); hero.el = 'Água';
-  const R = globalThis.KT.Rng, run = list => R.with(R.seeded(7), () => { e5.enemies = list; const out = []; for (let i = 0; i < 30; i++) { kit.hp = kit.maxHp; out.push(e5.hit(hero, kit, 2, { kind:'basic' })); } return out; });
+  const R = globalThis.KT.Rng, run = list => R.with(R.seeded(7), () => { e5.enemies = list; const out = []; for (let i = 0; i < 30; i++) { kit.hp = kit.maxHp; kit.alive = true; out.push(e5.hit(hero, kit, 2, { kind:'basic' })); } return out; });
   const solo = run([kit]), withLamp = run([kit, lamp]);
   const avg = a => a.reduce((x, y) => x + Math.max(0, y), 0) / a.length; ok(avg(withLamp) < avg(solo) * .9, 'lanterna viva protege a Kitsune');
   const miz = e5.makeEnemyUnit('boss_tide', 1); e5.enemies = [miz]; hero.hp = hero.maxHp * .8; hero.shield = 0; hero.st.lifesteal = 0; hero.hooks = {}; const hh = hero.hp; const dealt = e5.hit(hero, miz, 3, { kind:'basic' }); ok(hero.hp < hh, 'Mizuchi reflete dano de golpe direto'); }
@@ -372,7 +372,7 @@ ok(html.join('').includes('Shirogane') && html.join('').includes('Muramasa Seden
 ok(ui.shopPanel(null, 'gems').includes('servidor oficial') && ui.shopPanel(null, 'p2p').includes('servidor oficial'), 'carteira e mercado de jogadores só com conta');
 ['daily','advisor'].forEach(t => ok(ui.questPanel(null, t).length > 150, `missões: ${t}`));
 ['builds','weapons','events','market'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
-ok(ui.heroPanel(r0.uid, 'build').includes('Aplicar build completa'), 'aba de build recomendada');
+{ const build = ui.heroPanel(r0.uid, 'build'); ok(build.includes('Distribuir atributos') && build.includes('Equipar melhores') && !build.includes('Aplicar build completa'), 'build mantém decisões em ações separadas'); }
 ok(ui.destinationPanel('rift').includes('Recorde'), 'tela da Fenda');
 ['refine','systems','cards','items','start','combat'].forEach(t => ok(ui.wikiPanel(null, t).length > 300, `wiki: ${t}`));
 ok(!fs.readFileSync(path.join(root, 'src/panels.js'), 'utf8').includes("['security','Segurança']"), 'aba Segurança removida da wiki');
@@ -557,7 +557,7 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   ok(st.settings.autoAdvance === false && e.nextStage === 2, 'AFK nunca avança: continua farmando o mesmo estágio');
   ok(e.applyInput({ k:'afk', a:false }) && !st.settings.afk, 'AFK liga e desliga por comando gravável (replay do servidor)');
   const st2 = X.createState(), e2 = new CombatEngine(st2, {}); for (let i = 0; i < 10; i++) e2.openBox(true); e2.autoTeam();
-  const r2 = e2.heroes[0]; e2.giveXp(9e9, 0); ok(r2.level > 1 && e2.freeAttr(r2) === 0 && st2.settings.autoPoints, 'ao subir de nível, pontos vão sozinhos para a build recomendada');
+  const r2 = e2.heroes[0]; e2.giveXp(9e9, 0); ok(r2.level > 1 && e2.freeAttr(r2) > 0 && !st2.settings.autoPoints, 'ao subir de nível, a decisão de distribuir pontos continua com o jogador');
 }
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

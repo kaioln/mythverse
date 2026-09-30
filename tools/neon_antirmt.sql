@@ -1,6 +1,6 @@
 -- ANTI-RMT (comércio por dinheiro real fora do jogo). Aplicado depois dos outros SQL do Neon.
--- O que os MMOs aprenderam (Lost Ark, FFXI, Albion) e a resposta de cada ponto aqui:
---   · pay-to-win e fraude com cartão/estorno ....... o jogo não vende ouro nem tem saque: não há dinheiro real na economia
+-- Mercado em ouro do Neon (sem saque). O mercado com Gemas/dinheiro real usa o backend autoritativo em server/economy.js.
+-- Riscos conhecidos de RMT e a resposta de cada ponto aqui:
 --   · contas-mula de bots recebendo ouro ............ só troca quem tem conta nível 12 e 48 h de vida
 --   · ouro entregue comprando lixo caríssimo ........ faixa de preço: 0,25× a 5× a mediana (sem histórico, teto por raridade)
 --   · o mesmo pelo lado das ordens de compra ........ a mesma faixa vale para o preço de cada ordem
@@ -24,6 +24,9 @@ BEGIN
   IF s IS NULL THEN RAISE EXCEPTION 'Jogue um pouco antes de negociar: o Mercado abre no nível 12 da conta.'; END IF;
   IF coalesce(s.account_level, 1) < 12 THEN RAISE EXCEPTION 'O Mercado de Jogadores abre no nível 12 da conta (você está no %).', s.account_level; END IF;
   IF s.created_at > now() - interval '48 hours' THEN RAISE EXCEPTION 'Contas novas negociam depois de 48 horas de jogo. Isso protege a economia contra bots.'; END IF;
+  IF EXISTS (SELECT 1 FROM public.mv_audit WHERE user_id = p_user AND kind IN ('gold','rmt_velocity') AND at > now() - interval '72 hours') THEN
+    RAISE EXCEPTION 'Mercado temporariamente em análise por atividade econômica incomum.';
+  END IF;
 END $$;
 
 -- Teto por unidade quando a peça ainda não tem histórico de vendas.

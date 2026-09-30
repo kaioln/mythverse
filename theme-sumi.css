@@ -520,7 +520,25 @@ body .hero-portrait .lv{font-size:11px}
    Celular/tablet: FORÇA compacto, objetivo empilhado, distritos sem briga com selos,
    conteúdo nunca atrás da barra inferior. Telas grandes: interface escala.
    ===================================================================== */
-body:not(.in-combat) .journey-cta{display:none!important}
+body .journey-cta{display:flex!important}
+.journey-cta[hidden]{display:none!important}
+.journey-cta{left:14px!important;right:auto!important;bottom:14px!important;min-width:210px;background:rgba(18,16,24,.94)!important;border:1px solid rgba(216,176,98,.55)!important;border-left:4px solid var(--gold)!important}
+.journey-cta .cta-text b{color:var(--gold)!important;letter-spacing:.12em}
+.journey-cta .cta-text small{color:#d5cdbf!important}
+.village-hub .map-action{border-color:rgba(216,176,98,.55);color:var(--gold)}
+body.in-combat .journey-cta{min-width:0;padding:7px 10px!important;bottom:10px!important}
+body.in-combat .journey-cta .cta-text small,body.in-combat .journey-cta .cta-arrow{display:none}
+body.in-combat .journey-cta .cta-emblem{width:28px;height:28px}
+body.in-combat .resources .res:not(.gold):not(.gem){display:none!important}
+body.in-combat .resources{justify-content:flex-start;flex:0 1 auto}
+body.in-combat .res.gold,body.in-combat .res.gem{height:30px;min-width:72px;padding-right:9px;opacity:.92}
+@media (max-width:900px){
+  body .journey-cta{display:flex!important;left:7px!important;right:auto!important;bottom:7px!important;min-width:0;min-height:42px;padding:5px 8px!important}
+  .journey-cta[hidden]{display:none!important}
+  .journey-cta .cta-text small,.journey-cta .cta-arrow{display:none}
+  .journey-cta .cta-emblem{width:28px;height:28px}
+  body.in-combat .resources .res.gold{display:flex!important}
+}
 .village-hub{top:72px;right:14px;width:clamp(280px,27%,340px);max-height:calc(58% - 20px);padding:12px 14px;overflow:auto}
 .village-hub .eyebrow{font-size:10px}
 .village-hub h3{font-size:clamp(17px,1.4vw,21px)!important;margin:2px 0 6px}

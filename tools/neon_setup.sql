@@ -74,6 +74,8 @@ BEGIN
       INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'keys', jsonb_build_object('from', OLD.data->'player'->'keys', 'to', NEW.data->'player'->'keys', 'seconds', round(dt))); END IF;
     IF coalesce((NEW.data->'player'->>'crystal')::numeric, 0) - coalesce((OLD.data->'player'->>'crystal')::numeric, 0) > 2000 THEN
       INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'crystal', jsonb_build_object('from', OLD.data->'player'->'crystal', 'to', NEW.data->'player'->'crystal', 'seconds', round(dt))); END IF;
+    IF coalesce((NEW.data->'player'->>'gold')::numeric, 0) - coalesce((OLD.data->'player'->>'gold')::numeric, 0) > 2000000 + dt * 25000 THEN
+      INSERT INTO public.mv_audit (user_id, kind, detail) VALUES (NEW.user_id, 'gold', jsonb_build_object('from', OLD.data->'player'->'gold', 'to', NEW.data->'player'->'gold', 'seconds', round(dt))); END IF;
   END IF;
   NEW.updated_at := now();
   RETURN NEW;

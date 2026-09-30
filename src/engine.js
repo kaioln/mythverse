@@ -40,7 +40,7 @@
       prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
-      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:true, speed:1, sound:false, autoSalvage:'none' }, afkTrain:0,
+      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:false, speed:1, sound:false, autoSalvage:'none' }, afkTrain:0,
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
       buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 }, dojoV:2,
@@ -63,6 +63,8 @@
     if (!raw || raw.version !== 3) return fresh;
     const s = { ...fresh, ...raw };
     for (const k of ['player','settings','stats','training','buildings','consumables','guide','market','story','codex','bestiary','guildRank','daily','login','stuck','mats','buffs','shopDaily','worldBoss','bounty','crafted','house','paragon','bossLoot','matDaily','prof']) s[k] = { ...fresh[k], ...(raw[k] || {}) };
+    // Builds permanecem uma decisão do jogador, inclusive em saves antigos.
+    s.settings.autoPoints = false;
     s.expeditions = Array.isArray(raw.expeditions) ? raw.expeditions.filter(x => x && D.zones[x.zone]) : [];
     s.invCap = Math.max(fresh.invCap, Number(raw.invCap) || 0);
     s.overflow = (raw.overflow || []).filter(it => it && it.slot && I.slots[it.slot]).map(it => ({ cards:[], ...it }));
@@ -1489,7 +1491,7 @@
         let amt = per * xpFactor(r.level, enemyLv);
         if (enemyLv && r.level < HERO_LEVEL_CAP) amt = Math.min(amt, heroXpNext(r.level) * XP_RULES.perKill * Math.max(1, kills));
         amt = Math.max(1, Math.round(amt));
-        this.gainClassXp(r, Math.max(1, Math.round(amt * .20))); if (this.gainHeroXp(r, amt)) { if (this.state.settings.autoPoints) { this.autoAttr(r.uid); this.autoTalents(r.uid); } const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
+        this.gainClassXp(r, Math.max(1, Math.round(amt * .20))); if (this.gainHeroXp(r, amt)) { const u = this.party.find(x => x.recUid === r.uid); this.emit('onFx', { type:'levelUp', uid:r.uid }); ups.push(`${this.template(r.id).name} Nv.${r.level}`); if (u) this.refreshUnit(u, r); } });
       if (ups.length) this.emit('onToast', `<b>Nível up!</b> ${ups.join(' · ')}, +${PR.ATTR_PER_LEVEL} pontos de atributo cada (Equipe → Ficha).`);
       // Só quem está na equipe ganha EXP de combate; heróis do banco evoluem apenas em expedições.
       this.gainAccountXp(Math.round(xp * .35));
@@ -1684,7 +1686,7 @@
       const st = this.state.settings;
       if (key === 'auto' || key === 'autoAdvance' || key === 'autoRepeat') { st[key] = !!value; return true; }
       if (key === 'afk') { this.setAfk(!!value); return true; }
-      if (key === 'autoPoints') { st.autoPoints = !!value; if (st.autoPoints) this.heroes.forEach(r => { this.autoAttr(r.uid); this.autoTalents(r.uid); }); return true; }
+      if (key === 'autoPoints') { st.autoPoints = false; return value === false; }
       if (key === 'autoSalvage' && ['none', 'common', 'rare', 'epic'].includes(value)) { st.autoSalvage = value; return true; }
       return false;
     }
@@ -2297,7 +2299,6 @@
       if (n) this.refreshPartyUnits();
       return n;
     }
-    autoBuild(uid) { return { attr:this.autoAttr(uid), talents:this.autoTalents(uid), items:0 }; }
     // Modo offline: sem comunidade, a Invasão rende a recompensa básica depois da janela.
     claimWorldBoss() { const w = this.wbWindow(), wb = this.state.worldBoss; if (!wb.day || wb.claimed) return false; if (w.active && w.day === wb.day && w.index === wb.window) { this.lastError = 'A recompensa sai quando a janela terminar.'; return false; } return this.grantWorldBoss({ killed:false, pct:.5 }); }
 

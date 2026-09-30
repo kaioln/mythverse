@@ -1,5 +1,5 @@
 // Modo AFK Total (botão, confirmação explícita, faixa com resumo da sessão e gerenciamento automático)
-// e o botão "⚡ Fortalecer equipe". Carregado depois de ui.js/panels.js.
+// e o botão de preparo. Carregado depois de ui.js/panels.js.
 (() => {
   const KT = globalThis.KT, U = KT.Utils, P = KT.UIController.prototype;
   const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -11,15 +11,15 @@
   P.initAfk = function() {
     const ctl = document.querySelector('.stage-controls'); if (!ctl || document.querySelector('#afk-btn')) return;
     const afk = document.createElement('button'); afk.id = 'afk-btn'; afk.className = 'ctl afk'; afk.type = 'button';
-    afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual sem parar, usa poções, equipa itens e distribui pontos sozinho. Não avança.';
+    afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual, usa poções e equipa itens melhores. Não avança nem distribui pontos.';
     afk.innerHTML = '<span><i class="ic ic-moon"></i> AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
-    boost.dataset.tip = 'Fortalecer equipe: equipa os melhores itens e distribui atributos e talentos de todos de uma vez.';
-    boost.innerHTML = '<span><i class="ic ic-bolt"></i></span><b>FORÇA</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
+    boost.dataset.tip = 'Preparação: escolha entre farm, equipamento, atributos ou talentos. Nenhuma build inteira é montada sozinha.';
+    boost.innerHTML = '<span><i class="ic ic-bolt"></i></span><b>PREPARAR</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
     const banner = document.createElement('div'); banner.id = 'afk-banner'; banner.hidden = true; document.querySelector('#viewport')?.appendChild(banner);
     this.el.afk = afk; this.el.boost = boost; this.el.afkBanner = banner;
     afk.addEventListener('click', () => this.toggleAfk());
-    boost.addEventListener('click', () => this.optimizeTeam());
+    boost.addEventListener('click', () => this.openPreparation());
     banner.addEventListener('click', e => { if (e.target.closest('[data-afk-off]')) this.toggleAfk(false); });
     setInterval(() => this.afkManage(), 45_000);
     setInterval(() => this.renderAfk(), 1000);
@@ -39,7 +39,7 @@
         <li>Luta com ultimates automáticas e escolhe os eventos sozinha.</li>
         <li><b>Farma</b> o estágio atual sem parar (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
         <li>Usa poções quando a vida fica baixa e elixires contra chefes.</li>
-        <li>A cada ~45 s equipa itens melhores e distribui pontos de atributo e talento.</li>
+        <li>A cada ~45 s equipa itens melhores; atributos e talentos continuam sob sua decisão.</li>
         <li>Masmorras e chefes se repetem enquanto derem espólio; depois volta a caçar.</li></ul>
         <p class="dim">Com o jogo fechado, o progresso continua pelo AFK offline (até 12 h, rendendo menos). Toque em <b>Sair do AFK</b> a qualquer momento.</p></div>`,
         [{ id:'yes', label:'Ativar AFK Total', primary:true }, { id:'no', label:'Cancelar' }]);
@@ -60,7 +60,8 @@
   P.afkManage = function() {
     if (!this.state.settings.afk) return;
     const e = this.engine; if (e.phase === 'fight' && e.zone?.kind !== 'village' && e.enemies?.some(x => x.alive)) { this._afkPending = true; return; }
-    if (e.optimizeHint().any) Promise.resolve(this.cmd('optimizeTeam')).then(r => { this.renderParty?.(); this.renderResources(); if (r?.changes?.length) this.toast(`<b>AFK trocou equipamento:</b> ${this.describeChanges(r.changes)}`); });
+    const heroes = [...e.heroes];
+    (async () => { let n = 0; for (const h of heroes) n += Number(await this.cmd('autoEquip', h.uid)) || 0; if (n) { this.renderParty?.(); this.renderResources(); this.toast(`<b>AFK:</b> ${n} equipamento(s) melhor(es) equipado(s).`); } })();
     this._afkPending = false;
   };
 
@@ -86,15 +87,22 @@
     const shown = list.slice(0, 3).map(c => `<b>${esc2(c.item)}</b> → ${esc2(c.hero)}${c.old ? ` <small>(${esc2(c.old)} foi para ${c.oldTo === 'Armazém' ? 'o Armazém' : c.oldTo === 'Bolsa' ? 'a Bolsa' : esc2(c.oldTo)})</small>` : ''}`);
     return shown.join(' · ') + (list.length > 3 ? ` e mais ${list.length - 3}.` : '.');
   };
-  P.optimizeTeam = function() {
+  P.openPreparation = async function() {
     if (!this.engine.heroes.length) { this.toast('Monte a equipe primeiro.'); this.openPanel('party'); return; }
-    Promise.resolve(this.cmd('optimizeTeam')).then(r => {
-      if (!r) return;
-      const parts = [r.items && `${r.items} item(ns) equipado(s)`, r.attr && `${r.attr} ponto(s) de atributo`, r.talents && `${r.talents} talento(s)`].filter(Boolean);
-      this.toast(parts.length ? `<b>Equipe fortalecida!</b> ${parts.join(', ')}. Poder ${U.fmt(r.before)} → <b>${U.fmt(r.after)}</b>.${r.changes?.length ? `<br>${this.describeChanges(r.changes)}` : ''}` : 'Sua equipe já está no melhor que dá agora. Para crescer: caçar (nível), Forja (refino) e Dojo (treino).', parts.length ? 'gold' : '');
-      if (parts.length) this.callbacks.reward?.();
-      this.renderParty?.(); this.renderResources(); if (this.view?.panel) this.refreshPanel();
-      this.coachEvent?.('optimized');
-    });
+    const choice = await this.ask('Preparar equipe', '<div class="prep-choice"><p>Escolha uma tarefa. A preparação não troca heróis nem cria uma build completa.</p><small>Farm mantém o estágio atual repetindo; as outras ações usam apenas recursos e pontos já disponíveis.</small></div>', [
+      { id:'farm', label:'Farmar estágio', primary:true }, { id:'items', label:'Equipar melhores' }, { id:'attr', label:'Distribuir atributos' }, { id:'talents', label:'Aprender talentos' }, { id:'cancel', label:'Cancelar' }
+    ]);
+    if (!choice || choice === 'cancel') return;
+    if (choice === 'farm') {
+      await this.cmd('setSetting', 'autoAdvance', false);
+      if (this.engine.zone.kind === 'village') { const z = this.state.lastHunt || 'hunt', p = this.state.progress[z] || {}; this.engine.enterZone(z, { stage:Math.max(1, p.cur || p.best || 1) }); }
+      this.toast('<b>Farm ativado.</b> O estágio atual será repetido; ligue AFK se quiser automatizar apenas o combate.', 'gold'); return;
+    }
+    const op = { items:'autoEquip', attr:'autoAttr', talents:'autoTalents' }[choice]; let n = 0;
+    for (const h of [...this.engine.heroes]) n += Number(await this.cmd(op, h.uid)) || 0;
+    const label = { items:'equipamento(s)', attr:'ponto(s) de atributo', talents:'talento(s)' }[choice];
+    this.toast(n ? `<b>Preparação concluída:</b> ${n} ${label}.` : 'Nada disponível para essa tarefa.', n ? 'gold' : '');
+    if (n) this.callbacks.reward?.(); this.renderParty?.(); this.renderResources(); if (this.view?.panel) this.refreshPanel();
+    this.coachEvent?.('optimized');
   };
 })();

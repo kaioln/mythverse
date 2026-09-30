@@ -112,5 +112,26 @@
     kori:{ bio:'Rival eterno de Kaji na Arena das Cinzas, Kori é o gelo contra o fogo dele. Os dois não se falam desde a última final, que terminou empatada por mil anos.', quote:'Fogo apaga. Gelo espera.' }
   };
 
-  KT.Lore = { world, worlds, heroes };
+  const chapters = {
+    1:{ oath:'A lua roubada', premise:'As lanternas apagam uma a uma enquanto Shirogane transforma antigos guardiões em sombras.', stake:'Restaurar o primeiro selo antes que Tsukimori esqueça como era o luar.', truth:'Shirogane não criou o Eclipse: aceitou a Coroa para salvar a irmã, e a Coroa o consumiu.' },
+    2:{ oath:'O mar que se lembra', premise:'O selo restaurado acorda Mizuchi e devolve à costa todos os nomes que o mar havia enterrado.', stake:'Salvar o Arquivo Submerso, onde está registrada a origem do Véu.', truth:'Mizuchi protegeu Tsukimori no passado; sua fúria é uma ordem corrompida, não crueldade.' },
+    3:{ oath:'A hora devorada', premise:'Apep engole dias inteiros para impedir que chegue o momento previsto de sua própria morte.', stake:'Fazer o tempo voltar a correr e impedir que cidades inteiras virem lembranças imóveis.', truth:'Os quatro selos também eram fechaduras. Cada vitória enfraquece o Eclipse e liberta algo mais antigo.' },
+    4:{ oath:'O céu partido', premise:'Raijin toca o tambor para manter as ilhas no ar, mas cada batida rasga ainda mais a Fenda.', stake:'Silenciar o trovão sem derrubar as cidades suspensas sobre Tsukimori.', truth:'Sayo abriu a Fenda sabendo o preço: os heróis foram chamados para escolher quem o Véu salvará.' },
+    8:{ oath:'A dívida da Fenda', premise:'Abaixo dos selos existe um lugar que conhece o nome de cada herói antes de sua chegada.', stake:'Descer, recuperar memórias perdidas e impedir que a Fenda aprenda a imitar os viajantes.', truth:'Os andares não são ruínas: são futuros que falharam.' },
+    9:{ oath:'Noites de Tsukimori', premise:'Festivais e invasões revelam histórias que a guerra principal não consegue contar.', stake:'Proteger a vida comum que torna a cidade digna de ser salva.', truth:'Nem toda criatura que atravessa o Véu é inimiga; algumas procuram abrigo.' }
+  };
+  const bosses = {
+    boss:{ desire:'Devolver a irmã perdida, mesmo que precise apagar a lua.', tragedy:'A Coroa responde a cada sacrifício com uma mentira mais convincente.', link:'Sua queda devolve o primeiro fragmento lunar e desperta o mar.' },
+    boss_tide:{ desire:'Cumprir para sempre a última ordem de proteger o Arquivo.', tragedy:'O Eclipse trocou “proteger” por “afogar quem se aproxima”.', link:'As memórias do Arquivo revelam o nome de Apep e o caminho das Areias.' },
+    boss_sand:{ desire:'Escapar da hora em que foi destinada a morrer.', tragedy:'Ao devorar o futuro, Apep aprisiona inocentes no passado.', link:'Sua última ampulheta aponta para o quarto selo, acima das nuvens.' },
+    boss_sky:{ desire:'Sustentar as ilhas e provar que seu trovão ainda governa o céu.', tragedy:'Parar o tambor derruba as ilhas; deixá-lo tocar destrói o Véu.', link:'A vitória fecha os quatro selos e abre a verdadeira Crônica da Fenda.' },
+    boss_event:{ desire:'Manter acesas as lanternas dos mortos até que alguém se lembre deles.', tragedy:'O Eclipse transforma saudade em fogo faminto.', link:'Ao libertá-la, Tsukimori recupera nomes apagados de suas famílias.' }
+  };
+  const heroPurpose = (id, roster = KT.Data?.roster || []) => {
+    const h = roster.find(x => x.id === id), same = h ? roster.filter(x => x.id !== id && x.world === h.world).slice(0, 2).map(x => x.name) : [], bonds = (KT.Data?.bonds || []).filter(b => b.ids.includes(id)).map(b => b.name).slice(0, 2);
+    const role = { Vanguarda:'manter o grupo unido quando o Véu tentar separar suas memórias', Executor:'encarar a verdade que os grandes inimigos escondem', Arcanista:'decifrar por que mundos diferentes compartilham o mesmo Eclipse', Atirador:'encontrar o caminho que os mapas da Fenda apagam', Suporte:'lembrar aos viajantes quem eram antes da guerra' }[h?.cls] || 'encontrar seu lugar em Tsukimori';
+    return { role:`Em Tsukimori, sua promessa é ${role}.`, ties:[same.length ? `Veio do mesmo mundo que ${same.join(' e ')}.` : '', bonds.length ? `Seus laços ativos contam a história de ${bonds.join(' e ')}.` : ''].filter(Boolean) };
+  };
+
+  KT.Lore = { world, worlds, heroes, chapters, bosses, heroPurpose };
 })();

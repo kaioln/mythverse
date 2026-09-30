@@ -22,19 +22,19 @@
   // Vagas 1 e 2 são a LINHA DE FRENTE; vagas 3 e 4, a RETAGUARDA.
   // ---------------------------------------------------------------------------
   const classes = {
-    Vanguarda: { icon:'盾', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
+    Vanguarda: { icon:'盾', title:'Guardião do Véu', promise:'Controla a linha de frente, protege aliados e transforma pressão em contra-ataque.', tradeoff:'Resiste muito, mas depende da equipe para encerrar lutas longas.', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
       trait:'Linha de frente: base de HP e DEF altas; atrai mais ataques por estar à frente.', baseBonus:{ def:.15 }, threat:2,
       synergy:[{ n:2, text:'Equipe +10% DEF', stats:{ def:.10 } }, { n:3, text:'Equipe +10% DEF e +10% HP', stats:{ def:.10, hp:.10 } }] },
-    Executor:  { icon:'刃', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
+    Executor:  { icon:'刃', title:'Lâmina Jurada', promise:'Caça alvos prioritários e converte leitura de risco em explosões de dano.', tradeoff:'Brilha com precisão; posicionamento ruim é punido depressa.', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
       trait:'Duelista: base de ATK e dano crítico altas, pouca defesa.', baseBonus:{ critDmg:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe +12% dano crítico', stats:{ critDmg:.12 } }, { n:3, text:'Equipe +12% dano crítico e +5% crítico', stats:{ critDmg:.12, crit:.05 } }] },
-    Arcanista: { icon:'術', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
+    Arcanista: { icon:'術', title:'Tecedor da Fenda', promise:'Manipula elementos, recargas e efeitos para mudar o ritmo da batalha.', tradeoff:'Grande impacto por habilidade, pouca tolerância a foco inimigo.', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
       trait:'Canalizador: base de dano de habilidade alta, corpo frágil.', baseBonus:{ skill:.20 }, threat:1,
       synergy:[{ n:2, text:'Equipe +10% dano de habilidade', stats:{ skill:.10 } }, { n:3, text:'Equipe +10% dano de habilidade e +10% energia', stats:{ skill:.10, nrg:.10 } }] },
-    Atirador:  { icon:'弓', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
+    Atirador:  { icon:'弓', title:'Vigia das Rotas', promise:'Mantém dano constante, explora marcas e desmonta ameaças antes que se aproximem.', tradeoff:'Precisa de tempo e cobertura para alcançar sua melhor cadência.', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
       trait:'Atirador: base de velocidade e crítico altas.', baseBonus:{ spd:.10 }, threat:1,
       synergy:[{ n:2, text:'Equipe +8% velocidade de ataque', stats:{ spd:.08 } }, { n:3, text:'Equipe +8% velocidade e ignora 10% da DEF', stats:{ spd:.08, pierce:.10 } }] },
-    Suporte:   { icon:'癒', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
+    Suporte:   { icon:'癒', title:'Faroleiro de Almas', promise:'Cura, protege e cria a janela certa para o Elo Kizuna decidir a luta.', tradeoff:'Seu valor aparece na sobrevivência e no tempo, não no dano bruto.', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
       trait:'Protetor: base de poder de cura e escudo alta.', baseBonus:{ healPow:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe regenera 0,6% do HP por segundo', stats:{ regen:.006 } }, { n:3, text:'Equipe regenera 0,6% HP/s e recebe 8% menos dano', stats:{ regen:.006, dr:.08 } }] }
   };
@@ -407,18 +407,18 @@
       unlock:{ stage:{ hunt_desert:12 }, floor:{ dungeon_clock:3 } } },
     // --- Capítulo IV: O Céu Partido ---
     hunt_sky: { id:'hunt_sky', kind:'hunt', chapter:4, title:'Ilhas Flutuantes', subtitle:'Ilhas de pedra presas por correntes de nuvem.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 12', theme:'sky',
-      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, lv:[84, 98], ilvl:47,
+      pool:['fox_cloud','wisp_storm','spider_wind','oni_thunder'], elites:['golem_sky','revenant_sky'], stages:12, lv:[84, 94], ilvl:47,
       weakTo:['Terra','Gelo'], lore:'Quando Apep caiu, o céu rachou. Ilhas inteiras subiram com templos, pontes e criaturas, e lá no alto um tambor não para de tocar.',
       unlock:{ kills:{ boss_sand:1 } } },
     hunt_sakura: { id:'hunt_sakura', kind:'hunt', chapter:4, side:true, title:'Vale das Cerejeiras Eternas', subtitle:'Onde as flores nunca caem de verdade.', kicker:'CAPÍTULO IV · CAÇADA', difficulty:'Estágios 1 a 8', theme:'sakura',
-      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, lv:[88, 98], ilvl:51,
+      pool:['fox_sakura','wisp_petal','spider_silk','oni_blossom'], elites:['golem_root','revenant_geisha'], stages:8, lv:[86, 91], ilvl:49,
       weakTo:['Fogo','Sombra'], lore:'Um vale suspenso onde é sempre primavera. Lindo, e perigoso: as flores têm dentes.',
       unlock:{ stage:{ hunt_sky:5 } } },
     dungeon_sky: { id:'dungeon_sky', kind:'dungeon', chapter:4, title:'Santuário das Nuvens', subtitle:'Sinos, monges e o Senhor dos Ventos.', kicker:'CAPÍTULO IV · DUNGEON', difficulty:'Andares I a III', theme:'skyShrine',
       pool:['fox_lightning','wisp_cloud','spider_thunder','oni_wind'], elites:['revenant_monk','golem_bell'], floorBoss:'golem_fujin', floors:3, lvs:[92, 95, 98], ilvl:55,
       weakTo:['Terra','Sombra'], lore:'O templo onde Fujin guardava os ventos. Agora os sinos tocam sozinhos e cada badalada derruba um herói.',
       unlock:{ stage:{ hunt_sky:8 } } },
-    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', lv:96, ilvl:61,
+    boss_sky: { id:'boss_sky', kind:'boss', chapter:4, title:'Trono de Raijin', subtitle:'O tambor que racha o céu.', kicker:'CAPÍTULO IV · CHEFE', difficulty:'Chefe', theme:'skyBoss', enemy:'boss_sky', lv:100, ilvl:61,
       weakTo:['Terra'], lore:'No topo das nuvens, Raijin toca o tambor do trovão sem parar. Cada batida abre mais a Fenda.',
       unlock:{ stage:{ hunt_sky:12 }, floor:{ dungeon_sky:3 } } },
     // --- PvP: a equipe rival é a defesa salva de outro jogador ---

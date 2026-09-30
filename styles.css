@@ -389,6 +389,11 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke
 .journey-card span{font-size:9px;font-weight:800;letter-spacing:.12em;color:var(--sakura)}
 .journey-card b{font:15px/1.1 var(--display)}
 .journey-card small{font-size:11px;color:var(--muted)}
+.chapter-head>div{min-width:0;flex:1}.chapter-head>div p{margin:3px 0 0;color:var(--muted);font-size:11px;line-height:1.35;font-weight:500}.chapter-head>div+.chapter-prog{flex:0 1 110px}
+.story-stake{display:block;max-width:760px;margin-top:8px;padding:8px 10px;border-left:3px solid var(--gold);background:rgba(10,8,20,.65);color:#eee5d6;line-height:1.4}
+.boss-motive{margin:12px 0;padding:12px 14px;border:1px solid var(--line2);border-left:3px solid var(--sakura);border-radius:12px;background:rgba(14,12,28,.72)}.boss-motive p{margin:5px 0;font-size:13px;color:var(--muted)}.boss-motive b{color:var(--text)}
+.lore-chronicle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lore-chronicle section{padding:14px;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:12px;background:rgba(255,255,255,.025)}.lore-chronicle span{font-size:10px;letter-spacing:.12em;color:var(--gold)}.lore-chronicle h4{margin:4px 0}.lore-chronicle p{font-size:13px}.lore-chronicle small{display:block;margin-top:6px;color:var(--muted);line-height:1.4}.class-concept .tradeoff{padding:8px;border-left:3px solid var(--sakura);background:rgba(255,126,182,.06)}
+@media(max-width:760px){.lore-chronicle{grid-template-columns:1fr}.chapter-head>div p{display:none}}
 .journey-card.current{box-shadow:0 0 0 2px var(--gold)}
 .journey-card.locked{filter:grayscale(.8) brightness(.6)}
 .journey-card.done{box-shadow:inset 0 0 0 2px rgba(95,227,154,.5)}
