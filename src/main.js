@@ -125,7 +125,7 @@
       });
       ui.session = session; ui.ask = askBox;
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
-      if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) KT.dev = { ui, engine, renderer };
+      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => engine.enterZone(f, { stage:1, floor:1, tier:0 }), 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => ui.onZone(z), onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
@@ -157,7 +157,7 @@
         setInterval(() => KT.Neon.syncClock().catch(() => {}), 10 * 60_000);
         const gifts = () => KT.NeonMarket?.claimGifts(engine).then(list => list.forEach(g => {
           const t = g.kind === 'hero' && engine.template(g.payload.id);
-          ui.toast(g.kind === 'keys' ? `🎁 <b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação!` : `🎁 <b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção!`, 'gold');
+          ui.toast(g.kind === 'keys' ? `<b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação!` : `<b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção!`, 'gold');
           ui.callbacks.summon?.(g.kind === 'hero' ? g.payload.rarity : 'epic'); ui.renderResources();
         })).catch(() => {});
         setTimeout(gifts, 2500); setInterval(gifts, 5 * 60_000);

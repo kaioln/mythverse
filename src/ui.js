@@ -159,7 +159,7 @@
       if (z.kind === 'dungeon') { diff = `Andar ${['I','II','III'][e.opts.floor - 1]}`; wave = `Sala ${e.room}/5`; }
       if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido!' : `Sala ${e.room}/${D.RIFT.rooms}`; }
       if (z.kind === 'boss') { diff = D.bossTiers[e.opts.tier || 0].name; wave = `Fase ${(e.bossPhase || 0) + 1}/3`; }
-      if (z.kind === 'arena') { diff = `vs ${e.arenaFoe?.name || 'rival'}`; wave = e.phase === 'fight' ? `⏱ ${Math.max(0, Math.ceil(D.PVP.time - (e.arenaTime || 0)))}s` : 'Arena'; }
+      if (z.kind === 'arena') { diff = `vs ${e.arenaFoe?.name || 'rival'}`; wave = e.phase === 'fight' ? `${Math.max(0, Math.ceil(D.PVP.time - (e.arenaTime || 0)))}s` : 'Arena'; }
       this.el.difficulty.textContent = diff; this.el.wave.textContent = wave;
       if (z.kind !== 'village' && z.kind !== 'arena') {
         const rec = e.recommendedPower(z.id, e.opts), pow = e.getPower(), ratio = pow / rec;
@@ -268,7 +268,7 @@
       const phases = boss.t.phases || [];
       this.el.bossMark1.hidden = !phases[1]; this.el.bossMark2.hidden = !phases[2];
       if (phases[1]) this.el.bossMark1.style.left = `${phases[1].at * 100}%`; if (phases[2]) this.el.bossMark2.style.left = `${phases[2].at * 100}%`;
-      this.el.bossPhase.textContent = boss.windup > 0 ? `⚠ Preparando ${boss.windupSpecial?.name || 'ataque'}!` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
+      this.el.bossPhase.textContent = boss.windup > 0 ? `危 Preparando ${boss.windupSpecial?.name || 'ataque'}!` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
       this.el.bossPanel.classList.toggle('danger', boss.windup > 0);
       const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.BREAK.time : U.clamp(boss.breakG / boss.breakMax, 0, 1);
       this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'POSTURA QUEBRADA · +35% DE DANO' : 'POSTURA';
@@ -366,7 +366,7 @@
       if (!this.el.rightLoot.hidden) this.renderLoot();
     }
     onLog(p) { const e = typeof p === 'string' ? { text:p, type:'system' } : p; this.logs.unshift(e); this.logs = this.logs.slice(0, 80); if (!this.logTimer) this.logTimer = setTimeout(() => { this.logTimer = null; this.renderCombat(); }, 300); }
-    onWarn(text) { this.el.warn.textContent = `⚠ ${text}`; this.el.warn.hidden = false; this.el.warn.style.animation = 'none'; void this.el.warn.offsetWidth; this.el.warn.style.animation = ''; clearTimeout(this.warnTimer); this.warnTimer = setTimeout(() => this.el.warn.hidden = true, 2200); this.callbacks.warn?.(); }
+    onWarn(text) { this.el.warn.textContent = `危 ${text}`; this.el.warn.hidden = false; this.el.warn.style.animation = 'none'; void this.el.warn.offsetWidth; this.el.warn.style.animation = ''; clearTimeout(this.warnTimer); this.warnTimer = setTimeout(() => this.el.warn.hidden = true, 2200); this.callbacks.warn?.(); }
     onAccountLevel() { this.renderResources(); }
     onCard(c) {
       const card = c.card;
@@ -457,7 +457,7 @@
       if (this.engine.heroes.some(r => e.freeAttr(r) > 0)) tips.push('Há <b>pontos de atributo</b> não distribuídos (Equipe → ficha do herói).');
       if (e.talentPoints() > 0) tips.push(`Você tem <b>${e.talentPoints()} ponto(s) de talento</b> livres.`);
       tips.push('Aprimore equipamentos na <b>Forja</b> e treine a equipe no <b>Dojo</b>.');
-      tips.push('Desligue o AUTO e guarde ultimates de escudo/cura para quando o inimigo mostrar ⚠.');
+      tips.push('Desligue o AUTO e guarde ultimates de escudo/cura para quando o inimigo mostrar 危.');
       return tips.slice(0, 4);
     }
     toast(text, tone = '') { const t = document.createElement('div'); t.className = `toast ${tone}`; t.innerHTML = text; this.el.toastStack.appendChild(t); while (this.el.toastStack.children.length > 4) this.el.toastStack.firstChild.remove(); setTimeout(() => t.remove(), 4200); }

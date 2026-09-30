@@ -61,7 +61,7 @@ def foot_anchor(img):
 
 
 def build(hid, recolor=None):
-    blobs = B.sheet_blobs(os.path.relpath(os.path.join(POSES, f'{hid if not recolor else recolor[0]}.png'), ROOT).replace('\\', '/'), n=8, rows=2)
+    blobs = B.sheet_blobs(os.path.relpath(os.path.join(POSES, f'{hid if not recolor else recolor[0]}.webp'), ROOT).replace('\\', '/'), n=8, rows=2)
     poses = [defringe(B.clean_cell(p)) for p in blobs]
     if recolor:
         h, s, v, col = recolor[1:]
@@ -102,7 +102,7 @@ def main():
     sizes_path = os.path.join(B.OUT_SPRITES, 'sizes.json')
     sizes = json.load(open(sizes_path, encoding='utf-8')) if os.path.exists(sizes_path) else {}
     for hid in B.ANIME + B.GAMES:
-        if not os.path.exists(os.path.join(POSES, f'{hid}.png')):
+        if not os.path.exists(os.path.join(POSES, f'{hid}.webp')):
             print(f'{hid:12s} sem poses (mantém o sprite atual)')
             continue
         try:

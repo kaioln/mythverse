@@ -540,7 +540,7 @@
       if (!e.boss) {
         const top = y + floatY - height - 14, bw = e.miniboss ? 150 : e.elite ? 120 : 96;
         this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#ff9a3b' : e.elite ? '#c77dff' : '#ff5d6c', e.shield / e.maxHp);
-        this.nameTag(`${e.guardian ? '👑 ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
+        this.nameTag(`${e.guardian ? '◆ ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
         this.statusIcons(e, pos.x - bw / 2, top - 30);
         if (e.elite || e.miniboss || e.guardian) this.thin(pos.x - bw / 2, top + (e.elite ? 13 : 11), bw, e.broken > 0 ? e.broken / 4 : U.clamp(e.breakG / e.breakMax, 0, 1), e.broken > 0 ? '#fff1c9' : '#ffb35c');
       }

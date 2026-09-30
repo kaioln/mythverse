@@ -2321,7 +2321,7 @@
       Object.values(D.zones).filter(z => (z.kind === 'hunt' || z.kind === 'dungeon') && z.side && !this.zoneLock(z.id).locked && (s.progress[z.id]?.best || 0) < (z.stages || z.floors)).slice(0, 2)
         .forEach(z => add(3, `Explore <b>${esc(z.title)}</b>: monstros diferentes e um conjunto próprio (${esc(I.sets.find(st => st.source.includes(z.title.split(' ').pop()))?.name || 'itens novos')}).`, 'open', { go:`destination:${z.id}`, label:'Ver região' }));
       if (!this.zoneLock('rift').locked) add(2, 'A <b>Fenda Abissal</b> dá Tamahagane e itens em qualquer andar, ótima para fortalecer sem travar.', 'open', { go:'destination:rift', label:'Ver Fenda' });
-      if (s.settings.auto) add(2, 'Com o <b>AUTO</b> desligado você decide a hora das ultimates, guarde escudos e curas para quando o chefe mostrar ⚠.');
+      if (s.settings.auto) add(2, 'Com o <b>AUTO</b> desligado você decide a hora das ultimates, guarde escudos e curas para quando o chefe mostrar 危.');
       return tips.sort((a, b) => b.prio - a.prio);
     }
     applyAdvice(tip) {

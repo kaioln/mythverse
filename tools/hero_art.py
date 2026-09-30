@@ -119,7 +119,7 @@ def prompt(hid):
 
 def generate(hid):
     os.makedirs(OUT, exist_ok=True)
-    if os.path.exists(os.path.join(OUT, f'{hid}.png')) and '--force' not in sys.argv:
+    if os.path.exists(os.path.join(OUT, f'{hid}.webp')) and '--force' not in sys.argv:
         print(f'{hid:10s} já existe', flush=True)
         return True
     path = os.path.join(OUT, f'{hid}.png')
@@ -128,10 +128,11 @@ def generate(hid):
         r = subprocess.run(['codex', 'exec', '--skip-git-repo-check', '-s', 'workspace-write', '-C', OUT, '-'],
                            input=prompt(hid) + extra, text=True, encoding='utf-8', capture_output=True, timeout=1500)
         if 'usage limit' in (r.stdout + r.stderr):
-            ok = api_generate(prompt_text(hid), path)
+            ok = api_generate(prompt_text(hid), path) and to_webp(path)
             print(f'{hid:10s} {"ok (API)" if ok else "COTA ESGOTADA"}', flush=True)
             return ok
         if os.path.exists(path) and transparent(path):
+            to_webp(path)
             print(f'{hid:10s} ok', flush=True)
             return True
         if os.path.exists(path):
@@ -193,3 +194,11 @@ def api_generate(text, path, size='1536x1024'):
     except Exception as e:  # sem saldo, rede, etc.: registra e segue
         print('API falhou:', str(e)[:200], flush=True)
         return False
+
+
+def to_webp(path):
+    """Guarda a fonte em webp (qualidade 92, ~5x menor que o PNG) e apaga o PNG."""
+    from PIL import Image
+    Image.open(path).save(path[:-4] + '.webp', quality=92, method=6)
+    os.remove(path)
+    return True

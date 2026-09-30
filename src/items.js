@@ -15,17 +15,17 @@
   // (implícitos) e afixos mais prováveis. Tipos são compartilhados por 2 ou 3 classes, para dar
   // variedade de builds. Omamoris servem a todos; peças de conjunto seguem as classes do conjunto.
   const itemTypes = {
-    sword:{ slot:'weapon', name:'Espada', icon:'⚔', classes:['Executor','Vanguarda'], attr:'str', implicit:{ crit:.03, critDmg:.08 }, affixW:{ crit:3, critDmg:3, atkP:2, pierce:2, lifesteal:2, boss:1.5 } },
-    heavy:{ slot:'weapon', name:'Arma pesada', icon:'🔨', classes:['Vanguarda'], attr:'vit', implicit:{ hp:.05, def:.04 }, affixW:{ hpP:3, defP:3, dr:2.5, atkP:1.5, regen:1.5, lifesteal:1.5, breakPow:3, thorns:2 } },
-    ranged:{ slot:'weapon', name:'Arco / à distância', icon:'🏹', classes:['Atirador'], attr:'dex', implicit:{ spd:.05, pierce:.03 }, affixW:{ spd:3, crit:2.5, pierce:2.5, critDmg:2, boss:2, elem:1.5 } },
+    sword:{ slot:'weapon', name:'Espada', icon:'剣', classes:['Executor','Vanguarda'], attr:'str', implicit:{ crit:.03, critDmg:.08 }, affixW:{ crit:3, critDmg:3, atkP:2, pierce:2, lifesteal:2, boss:1.5 } },
+    heavy:{ slot:'weapon', name:'Arma pesada', icon:'鎚', classes:['Vanguarda'], attr:'vit', implicit:{ hp:.05, def:.04 }, affixW:{ hpP:3, defP:3, dr:2.5, atkP:1.5, regen:1.5, lifesteal:1.5, breakPow:3, thorns:2 } },
+    ranged:{ slot:'weapon', name:'Arco / à distância', icon:'弓', classes:['Atirador'], attr:'dex', implicit:{ spd:.05, pierce:.03 }, affixW:{ spd:3, crit:2.5, pierce:2.5, critDmg:2, boss:2, elem:1.5 } },
     arcane:{ slot:'weapon', name:'Cajado arcano', icon:'✦', classes:['Arcanista','Suporte'], attr:'int', implicit:{ skill:.08, nrg:.04 }, affixW:{ skill:3, nrg:3, cdr:2.5, elem:2, dot:2, startNrg:1.5 } },
     holy:{ slot:'weapon', name:'Relíquia sagrada', icon:'✚', classes:['Suporte'], attr:'int', implicit:{ healPow:.10, regen:.002 }, affixW:{ healPow:3.5, regen:2.5, nrg:2, cdr:2, hpP:2, dr:1.5 } },
-    tome:{ slot:'focus', name:'Tomo', icon:'📖', classes:['Arcanista','Suporte'], implicit:{ skill:.05, cdr:.03 }, affixW:{ skill:3, cdr:3, healPow:2, nrg:2 } },
-    crystal:{ slot:'focus', name:'Cristal', icon:'💎', classes:['Arcanista','Atirador','Suporte'], implicit:{ nrg:.05, elem:.04 }, affixW:{ nrg:3, elem:3, startNrg:2, skill:1.5, chainPow:2.5, ultDmg:2 } },
-    emblem:{ slot:'focus', name:'Emblema de guerra', icon:'🎖', classes:['Vanguarda','Executor'], implicit:{ atk:.04, critDmg:.06 }, affixW:{ atkP:3, critDmg:2.5, defP:2, boss:2, breakPow:2.5 } },
-    quiver:{ slot:'focus', name:'Aljava', icon:'🎯', classes:['Atirador','Executor'], implicit:{ spd:.04, crit:.02 }, affixW:{ spd:3, crit:3, pierce:2, critDmg:2 } },
-    plate:{ slot:'seal', name:'Selo de aço', icon:'🛡', classes:['Vanguarda','Executor','Atirador'], implicit:{ def:.06, dr:.015 }, affixW:{ defP:3, dr:3, hpP:2, lifesteal:1.5 } },
-    ward:{ slot:'seal', name:'Selo espiritual', icon:'🔮', classes:['Arcanista','Suporte','Atirador'], implicit:{ hp:.05, healPow:.04 }, affixW:{ hpP:3, healPow:2.5, regen:2, dodge:2 } },
+    tome:{ slot:'focus', name:'Tomo', icon:'書', classes:['Arcanista','Suporte'], implicit:{ skill:.05, cdr:.03 }, affixW:{ skill:3, cdr:3, healPow:2, nrg:2 } },
+    crystal:{ slot:'focus', name:'Cristal', icon:'晶', classes:['Arcanista','Atirador','Suporte'], implicit:{ nrg:.05, elem:.04 }, affixW:{ nrg:3, elem:3, startNrg:2, skill:1.5, chainPow:2.5, ultDmg:2 } },
+    emblem:{ slot:'focus', name:'Emblema de guerra', icon:'章', classes:['Vanguarda','Executor'], implicit:{ atk:.04, critDmg:.06 }, affixW:{ atkP:3, critDmg:2.5, defP:2, boss:2, breakPow:2.5 } },
+    quiver:{ slot:'focus', name:'Aljava', icon:'矢', classes:['Atirador','Executor'], implicit:{ spd:.04, crit:.02 }, affixW:{ spd:3, crit:3, pierce:2, critDmg:2 } },
+    plate:{ slot:'seal', name:'Selo de aço', icon:'鋼', classes:['Vanguarda','Executor','Atirador'], implicit:{ def:.06, dr:.015 }, affixW:{ defP:3, dr:3, hpP:2, lifesteal:1.5 } },
+    ward:{ slot:'seal', name:'Selo espiritual', icon:'霊', classes:['Arcanista','Suporte','Atirador'], implicit:{ hp:.05, healPow:.04 }, affixW:{ hpP:3, healPow:2.5, regen:2, dodge:2 } },
     relic:{ slot:null, name:'Relíquia de conjunto', icon:'◆', classes:null, implicit:{}, affixW:{} }
   };
   const weaponTypes = itemTypes;

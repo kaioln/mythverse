@@ -30,7 +30,7 @@
     render(message = '') {
       const m = this.mode;
       const tab = (id, label) => `<button type="button" class="auth-tab ${m === id ? 'active' : ''}" data-auth-mode="${id}">${label}</button>`;
-      const pw = (name, label, auto, hint = '') => `<label class="field"><span>${label}</span><div class="pw-wrap"><input name="${name}" type="password" autocomplete="${auto}" required maxlength="128"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Mostrar senha">👁</button></div>${hint ? `<small>${hint}</small>` : ''}</label>`;
+      const pw = (name, label, auto, hint = '') => `<label class="field"><span>${label}</span><div class="pw-wrap"><input name="${name}" type="password" autocomplete="${auto}" required maxlength="128"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Mostrar senha">ver</button></div>${hint ? `<small>${hint}</small>` : ''}</label>`;
       let form = '';
       const neon = this.provider === 'neon';
       if (m === 'login') form = `<form data-auth-form="login" novalidate>

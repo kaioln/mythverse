@@ -85,7 +85,7 @@
       ${pend.length ? `<p class="note">Pedidos aguardando resposta: ${pend.map(p => `<b>${esc(p.name)}</b>`).join(', ')}.</p>` : ''}
       <div class="box-actions"><button class="action primary" data-tab-go="list" type="button">Procurar guildas</button></div>
       <h4 class="sub-title">Fundar uma guilda (${U.fmt(D.GUILD.createCost)} de ouro)</h4>
-      <div class="guild-form"><input id="gc-name" maxlength="22" placeholder="Nome (3 a 22)"><input id="gc-tag" maxlength="4" placeholder="Sigla (2 a 4)"><input id="gc-emblem" maxlength="4" placeholder="Emblema (ex.: 🏮)"><input id="gc-motto" maxlength="120" placeholder="Lema"><label class="check"><input type="checkbox" id="gc-open" checked> Qualquer um pode entrar</label>
+      <div class="guild-form"><input id="gc-name" maxlength="22" placeholder="Nome (3 a 22)"><input id="gc-tag" maxlength="4" placeholder="Sigla (2 a 4)"><input id="gc-emblem" maxlength="4" placeholder="Emblema (ex.: 月)"><input id="gc-motto" maxlength="120" placeholder="Lema"><label class="check"><input type="checkbox" id="gc-open" checked> Qualquer um pode entrar</label>
       <button class="action pink" data-guild-create type="button" ${this.state.player.gold >= D.GUILD.createCost ? '' : 'disabled'}>Fundar guilda</button></div>`;
   };
   P.guildListHtml = function() {

@@ -83,7 +83,7 @@
       const s = this.engine.state, cost = KT.Data.GUILD.createCost;
       if (s.player.gold < cost) return this.fail(new Error(`Fundar uma guilda custa ${cost.toLocaleString('pt-BR')} de ouro.`));
       try {
-        await this.rpc('mv_guild_create', { p_name:f.name, p_tag:f.tag, p_emblem:f.emblem || '⚔', p_motto:f.motto || '', p_open:!!f.open, p_display:String(s.player.name || 'Viajante'), p_power:Math.round(this.engine.getPower()) });
+        await this.rpc('mv_guild_create', { p_name:f.name, p_tag:f.tag, p_emblem:f.emblem || '月', p_motto:f.motto || '', p_open:!!f.open, p_display:String(s.player.name || 'Viajante'), p_power:Math.round(this.engine.getPower()) });
         s.player.gold -= cost; this.engine.save(); KT.Neon.flush();
         this.ui.toast(`Guilda <b>${KT.UIController.helpers.esc(f.name)}</b> fundada!`, 'gold'); await this.refreshGuild();
       } catch (e) { this.fail(e); }
