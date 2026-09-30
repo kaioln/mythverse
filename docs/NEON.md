@@ -4,7 +4,7 @@ O site estático (GitHub Pages) fala direto com o Neon:
 
 - **Neon Auth** (Better Auth gerenciado): cadastro e login por e-mail e senha. A sessão fica num cookie seguro do domínio do Neon (`HttpOnly; Secure; SameSite=None; Partitioned`).
 - **Data API**: o save de cada conta fica em `public.mv_saves`, protegido por **RLS** (cada jogador só lê e grava a própria linha). O ranking lê a visão `public.mv_ranking`, que mostra só nome, poder e progresso.
-- O jogo roda no navegador e salva na conta a cada 20 s e ao fechar a aba. Uma revisão por save impede que um aparelho antigo sobrescreva um progresso mais novo.
+- O jogo roda no navegador, guarda uma cópia local a cada ciclo e envia à conta no máximo 1 vez por minuto (10 min com a aba em segundo plano), além de enviar na hora ao trocar de aba ou fechar. Isso deixa o banco dormir e economiza horas de computação. Uma revisão por save impede que um aparelho antigo sobrescreva um progresso mais novo.
 
 ## Configuração (uma vez)
 
@@ -39,3 +39,25 @@ Sem servidor Node, o combate e as recompensas são calculados no navegador e o s
 - Guarda do save: recusa relógio adiantado (mais de 15 min), herói acima do nível 100 ou 6★ e recursos negativos; saltos grandes (níveis, chaves, cristais) vão para `mv_audit` (só o dono do banco lê).
 - Tabelas do servidor Node no mesmo banco (`users`, `saves`, `save_history`…) ficam fechadas para a Data API (antes qualquer conta logada lia e apagava, inclusive hashes de senha).
 - Presentes: `node --env-file=.env tools/neon_gift.js <conta> keys 1000` ou `... hero vegeta_ego legendary`. O presente vai para o correio e o jogo resgata sozinho ao abrir.
+
+
+## Trocar de projeto Neon sem perder saves (`tools/neon_migrate.js`)
+
+O banco do jogo é pequeno (≈12 MB em 2026-09-30, limite grátis 0,5 GB). O que esgota no plano grátis são as **horas de
+computação**: o banco fica ligado enquanto recebe requisições. Desde 2026-09-30 o jogo envia o save no máximo 1 vez por
+minuto (10 min em segundo plano), o que deixa o banco dormir. Se mesmo assim precisar de um projeto novo:
+
+1. No Console do Neon, crie o projeto novo e faça nele os passos 1 a 3 da configuração acima (Auth com e-mail e senha,
+   domínio `https://kaioln.github.io`, Data API com o Neon Auth).
+2. Copie a *connection string* do projeto novo e simule (não grava nada):
+   `node --env-file=.env tools/neon_migrate.js "postgresql://…NOVO…"`
+3. Migre: `node --env-file=.env tools/neon_migrate.js "postgresql://…NOVO…" --apply`
+   - grava um backup completo do banco antigo em `data/backups/`;
+   - cria as tabelas do jogo no novo, copia as contas do Neon Auth **com os hashes de senha** e todas as tabelas `mv_*`
+     com os mesmos ids (saves, guildas, Arena, mercado, correio, chat, perfis);
+   - confere linha por linha e recusa gravar por cima de um projeto que já tenha saves;
+   - o banco antigo é aberto só para leitura e continua intacto (dá para voltar a ele).
+4. Troque `DATABASE_URL` no `.env` e `neon` em `src/config.js` pelo valor que o script mostrar; commit e push.
+5. Cada jogador entra de novo uma vez, com o **mesmo e-mail e senha**, e encontra o save como estava.
+
+Teste: `node tests/neon_migrate.test.js` (dois Postgres embutidos).

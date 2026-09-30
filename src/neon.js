@@ -101,7 +101,7 @@
         best_stage:Object.values(KT.Data.zones).filter(z => z.kind === 'hunt' && !z.side).reduce((a, z) => a + (prog[z.id]?.best || 0), 0), rift_best:Number(prog.rift?.best) || 0,
         account_level:Number(state.player?.level) || 1, team:(state.formation || []).map(uid => uid && state.collection.find(h => h.uid === uid)).filter(Boolean).map(h => ({ id:h.id, stars:h.stars })) };
     },
-    // Protege localmente a cada ciclo e envia à nuvem em até 5 s.
+    // Protege localmente a cada ciclo e envia à nuvem em até 1 min (10 min com a aba em segundo plano).
     queue(state) {
       if (this.conflict) return false;
       const entry = { id:`${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`, baseRevision:this.row?.revision || 0, generation:Number(state.saveGeneration) || 0, queuedAt:Date.now(), json:JSON.stringify(state) };
@@ -109,7 +109,9 @@
       if (!durable) this.onError?.('O navegador bloqueou a cópia local de segurança.');
       this.pending = entry;
       this.setStatus('pending');
-      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, 5_000);
+      // Economia de horas de computação do Neon: cada envio acorda o banco. Com o jogo na tela, no máximo 1 envio por minuto;
+      // em segundo plano (AFK), 1 a cada 10 min. A cópia local continua a cada ciclo e trocar de aba/fechar envia na hora.
+      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, (typeof document !== 'undefined' && document.hidden) ? 600_000 : 60_000);
       return durable;
     },
     // Um envio por vez: chamadas simultâneas (timer, trocar de aba, botão) esperam a anterior terminar.
