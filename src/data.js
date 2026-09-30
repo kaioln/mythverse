@@ -347,7 +347,7 @@
   };
   const levelOfPower = P => { P = Math.max(1, P); if (P <= LP33) return 1 + Math.log(P) / Math.log(1.065); let lo = 33, hi = 400; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (levelPower(m) < P) lo = m; else hi = m; } return (lo + hi) / 2; };
   const zones = {
-    village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'CAPITAL · TSUKIMORI', difficulty:'Capital', theme:'village', scene:'village-expanded',
+    village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'FESTIVAL DAS CEREJEIRAS · TSUKIMORI', difficulty:'Festival ativo', theme:'village', scene:'village-expanded',
       lore:'A capital sob a proteção do Véu cresceu em torno da Praça da Lua. Guilda, dojo, forja, mercado, santuário e oficinas recebem heróis antes de cada expedição.' },
     hunt: { id:'hunt', kind:'hunt', chapter:1, title:'Bosque das Lanternas', subtitle:'Raposas, onis e guardiões antigos entre cerejeiras.', kicker:'CAPÍTULO I · CAÇADA', difficulty:'Estágios 1 a 12', theme:'forest',
       pool:['fox','golem','spider_jade','oni'], elites:['golem_elder','fox_nine'], stages:12, basePower:1, ilvl:1,

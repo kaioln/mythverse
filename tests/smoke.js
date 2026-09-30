@@ -570,15 +570,16 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   const animDir = path.join(root, 'assets', 'anim'), bad = [];
   for (const f of fs.readdirSync(animDir).filter(x => x.endsWith('.json') && x !== 'index.json')) { const m = JSON.parse(fs.readFileSync(path.join(animDir, f), 'utf8')); if (m.frameH > m.bodyH * 1.6) bad.push(f); }
   ok(!bad.length, `folhas de animação com pose grudada: ${bad.join(', ')}`);
-  // Cidade viva: malha de ruas conexa; lugares e rotas dos moradores só usam nós que existem.
+  // Cidade viva: todo destino fica sobre piso real e é alcançável pela malha calculada.
   vm.runInThisContext(fs.readFileSync(path.join(root, 'src/town.js'), 'utf8'));
-  const TM = KT.TownMap, adj = {}; TM.EDGES.forEach(([a, b]) => { ok(TM.NODES[a] && TM.NODES[b], `rua liga nós que existem (${a}-${b})`); (adj[a] ||= []).push(b); (adj[b] ||= []).push(a); });
-  const seen = new Set(['plaza']), q = ['plaza']; while (q.length) for (const m of adj[q.shift()] || []) if (!seen.has(m)) { seen.add(m); q.push(m); }
-  ok(Object.keys(TM.NODES).every(n => seen.has(n)), 'toda a cidade é alcançável a partir da praça');
-  ok(TM.SPOTS.every(s => TM.NODES[s.node]) && TM.FOLK.every(f => (f.post ? [f.post] : f.route).every(n => TM.NODES[n])), 'lugares e rotas dos moradores existem');
+  const TM = KT.TownMap, points = [...TM.SPOTS.map(s => s.at), ...TM.FOLK.flatMap(f => f.post ? [f.post] : f.route)];
+  ok(points.every(p => TM.isWalk(...p)), 'lugares e rotas dos moradores ficam no piso');
+  ok(points.every(p => TM.route(560, 430, ...p) !== null), 'toda a cidade é alcançável a partir da praça');
   const life = new KT.TownLife(); life.sync([{ uid:'a', sprite:'akira', name:'Akira' }, { uid:'b', sprite:'mei', name:'Mei' }]);
   for (let i = 0; i < 3000; i++) life.update(.05);
-  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && a.x > 0 && a.x < 1280 && a.y > 150 && a.y < 720), 'ninguém sai da cidade depois de 2,5 minutos andando');
+  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && TM.isWalk(a.x, a.y)), 'ninguém sai do piso depois de 2,5 minutos andando');
+  const gap = Math.min(...life.agents.flatMap((a, i) => life.agents.slice(i + 1).map(b => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55))));
+  ok(gap > 15, 'personagens mantêm espaço pessoal e não se sobrepõem');
 }
 
 console.log(JSON.stringify({ ok:true, checks, power:engine.getPower(), kills:state.stats.kills, loot:events.loot, inventory:state.inventory.length }, null, 2));

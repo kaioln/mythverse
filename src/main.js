@@ -3,20 +3,32 @@
 
   // Sons sintetizados via Web Audio (sem arquivos), ativados só após interação.
   class SoundEngine {
-    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.last = {}; }
+    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.musicStep = 0; this.scene = 'village'; this.last = {}; }
     async enable(on) {
       this.enabled = on;
-      if (on && !this.ctx) { const C = globalThis.AudioContext || globalThis.webkitAudioContext; if (C) { this.ctx = new C(); this.master = this.ctx.createGain(); this.master.gain.value = .5; this.master.connect(this.ctx.destination); } }
+      if (on && !this.ctx) { const C = globalThis.AudioContext || globalThis.webkitAudioContext; if (C) { this.ctx = new C(); this.master = this.ctx.createGain(); this.music = this.ctx.createGain(); this.master.gain.value = .5; this.music.gain.value = .16; this.music.connect(this.master); this.master.connect(this.ctx.destination); } }
       if (this.ctx?.state === 'suspended') await this.ctx.resume();
-      if (on) this.chord([523, 659, 784], .08, 'triangle', .05);
+      if (on) { this.chord([523, 659, 784], .08, 'triangle', .05); this.startMusic(); } else this.stopMusic();
     }
+    setScene(kind) { this.scene = kind === 'village' ? 'village' : 'combat'; if (this.enabled) this.startMusic(); }
+    startMusic() {
+      this.stopMusic(); if (!this.enabled || !this.ctx || this.scene !== 'village') return;
+      const melody = [659,784,880,784,659,587,659,523,587,659,784,659,587,523,494,523], bass = [131,147,165,147];
+      const play = () => { if (!this.enabled || this.scene !== 'village') return; const i = this.musicStep++;
+        this.tone(melody[i % melody.length], .62, 'triangle', .022, .998, 0, this.music);
+        if (!(i % 4)) this.tone(bass[(i / 4) % bass.length | 0], 1.5, 'sine', .028, 1.002, 0, this.music);
+        if (i % 8 === 4) this.tone(melody[(i + 4) % melody.length] / 2, 1.1, 'sine', .012, 1, .12, this.music);
+      };
+      play(); this.musicTimer = setInterval(play, 720);
+    }
+    stopMusic() { if (this.musicTimer) clearInterval(this.musicTimer); this.musicTimer = 0; }
     throttle(key, ms) { const now = performance.now(); if (now - (this.last[key] || 0) < ms) return false; this.last[key] = now; return true; }
-    tone(freq = 320, dur = .08, type = 'sine', gain = .05, slide = 0, delay = 0) {
+    tone(freq = 320, dur = .08, type = 'sine', gain = .05, slide = 0, delay = 0, bus = null) {
       if (!this.enabled || !this.ctx) return;
       const t = this.ctx.currentTime + delay, o = this.ctx.createOscillator(), g = this.ctx.createGain();
       o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t + dur);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + .008); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-      o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + .02);
+      o.connect(g); g.connect(bus || this.master); o.start(t); o.stop(t + dur + .02);
     }
     noise(dur = .1, gain = .05, freq = 1800, delay = 0) {
       if (!this.enabled || !this.ctx) return;
@@ -133,7 +145,7 @@
       if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => { engine.enterZone(f, { stage:1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
-        onZone:z => ui.onZone(z), onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
+        onZone:z => { ui.onZone(z); sound.setScene(z.kind); }, onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.summon(c.mvp ? 'legendary' : 'epic'); },
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); sound.fx(fx); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
@@ -207,6 +219,7 @@
       const savedZone = state.zone && KT.Data.zones[state.zone] ? state.zone : 'village';
       const reenter = KT.Data.zones[savedZone].kind === 'hunt' ? savedZone : savedZone === 'village' ? 'village' : state.lastHunt;
       if (!engine.enterZone(reenter)) engine.enterZone('village');
+      sound.setScene(engine.zone.kind);
       ui.renderAll();
 
       let last = performance.now(), uiClock = 0, slowClock = 0, saveClock = 0;

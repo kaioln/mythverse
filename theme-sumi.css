@@ -795,6 +795,9 @@ body .village-hub .hub-goal{margin-bottom:6px}
 body .village-hub .hub-actions>.action.primary{min-height:46px}
 body .village-hub .hub-row .action{min-height:32px}
 
+#village-actions .signpost{transition:opacity .25s}
+#village-actions .signpost.over-actor{opacity:.28}
+#village-actions .signpost.over-actor:hover,#village-actions .signpost.over-actor:focus-visible{opacity:1}
 .hero-tale{max-width:760px;margin:0 0 14px}
 .hero-tale h2{font-size:clamp(20px,2vw,26px)}
 
