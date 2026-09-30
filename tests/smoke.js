@@ -572,8 +572,8 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   ok(!bad.length, `folhas de animação com pose grudada: ${bad.join(', ')}`);
   // Cidade viva: todo destino fica sobre piso real e é alcançável pela malha calculada.
   vm.runInThisContext(fs.readFileSync(path.join(root, 'src/town.js'), 'utf8'));
-  const TM = KT.TownMap, points = [...TM.SPOTS.map(s => s.at), ...TM.FOLK.flatMap(f => f.post ? [f.post] : f.route)];
-  ok(points.every(p => TM.isWalk(...p)), 'lugares e rotas dos moradores ficam no piso');
+  const TM = KT.TownMap, nodes = [...TM.SPOTS.map(s => s.node), ...TM.FOLK.flatMap(f => f.post ? [f.post] : f.route)], points = nodes.map(n => TM.NODES[n]);
+  ok(points.every(p => p && TM.isWalk(...p)), 'lugares e rotas dos moradores ficam nas linhas centrais');
   ok(points.every(p => TM.route(560, 430, ...p) !== null), 'toda a cidade é alcançável a partir da praça');
   const life = new KT.TownLife(); life.sync([{ uid:'a', sprite:'akira', name:'Akira' }, { uid:'b', sprite:'mei', name:'Mei' }]);
   for (let i = 0; i < 3000; i++) life.update(.05);

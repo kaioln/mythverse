@@ -621,7 +621,7 @@
         if (a.kind === 'hero') {
           const an = this.assets.anim?.(a.sprite);
           if (an) this.drawTownHero(an, a, h);
-          else { const breath = Math.sin(a.animT * 2.2) * .012; this.drawSprite(a.sprite, a.x, a.y, h, { flip:a.face < 0, sy:1 + breath, sx:1 - breath * .35 }); }
+          else this.drawSprite(a.sprite, a.x, a.y, h, { flip:a.face < 0 });
           this.townHits.push({ uid:a.uid, x:a.x, y:a.y, h });
         } else {
           this.drawTownFolk(a, h, F);
@@ -633,37 +633,15 @@
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
         else if (!a.moving && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name);
       }
-      this.dimSignposts();
     }
     drawTownHero(an, a, h) {
-      const c = this.ctx, M = an.meta, moving = a.moving;
-      const stages = [{p:0,y:0,r:-.018,sx:1.01,sy:.99},{p:2,y:1,r:-.01,sx:1.02,sy:.975},{p:2,y:-1,r:.005,sx:.995,sy:1.018},{p:2,y:-2,r:.018,sx:.99,sy:1.025},{p:0,y:0,r:.018,sx:1.01,sy:.99},{p:2,y:1,r:.01,sx:1.02,sy:.975},{p:2,y:-1,r:-.005,sx:.995,sy:1.018},{p:0,y:-1,r:-.018,sx:1,sy:1.01}];
-      const x=(a.walkT*2.35%1)*8, i=Math.floor(x), f=x-i, A=stages[i], B=stages[(i+1)%8], mix=(u,v)=>u+(v-u)*(f*f*(3-2*f));
-      const col=moving?(f>.5?B.p:A.p):0, bob=moving?mix(A.y,B.y)*h*.018:Math.sin(a.animT*2.2)*h*.006;
-      const sx=moving?mix(A.sx,B.sx):1-Math.sin(a.animT*2.2)*.004, sy=moving?mix(A.sy,B.sy):1+Math.sin(a.animT*2.2)*.012, rot=moving?mix(A.r,B.r):0;
-      const k = h * 1.08 / M.bodyH;
-      c.save(); c.translate(a.x, a.y + bob); c.rotate(rot*a.face); c.scale(a.face < 0 ? -sx : sx, sy);
-      c.drawImage(an.img, col * M.frameW, 0, M.frameW, M.frameH, -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k); c.restore();
+      const seq=an.meta.clips?.run?.seq||[2,0],col=a.moving?seq[Math.floor(a.walkT*5)%seq.length]:0;
+      this.drawFrame(an.img,an.meta,col,a.x,a.y,h*1.08,a.face<0);
     }
     drawTownFolk(a, h, F) {
-      const c = this.ctx, moving=a.moving, stages=[{p:0,y:0,r:-.025,sx:1.01,sy:.99},{p:0,y:1,r:-.015,sx:1.025,sy:.97},{p:1,y:-1,r:0,sx:.99,sy:1.025},{p:1,y:-2,r:.022,sx:.985,sy:1.035},{p:1,y:0,r:.025,sx:1.01,sy:.99},{p:1,y:1,r:.015,sx:1.025,sy:.97},{p:0,y:-1,r:0,sx:.99,sy:1.025},{p:0,y:-2,r:-.022,sx:.985,sy:1.035}];
-      const x=(a.walkT*2.2%1)*8,i=Math.floor(x),f=x-i,A=stages[i],B=stages[(i+1)%8],mix=(u,v)=>u+(v-u)*(f*f*(3-2*f));
-      const step=moving?(f>.5?B.p:A.p):0,bob=moving?mix(A.y,B.y)*h*.018:Math.sin(a.animT*2+a.id)*h*.007;
-      const talk=!moving&&a.speechFor>0,sx=moving?mix(A.sx,B.sx):1-Math.sin(a.animT*2)*.004,sy=moving?mix(A.sy,B.sy):1+Math.sin(a.animT*2)*.014,rot=moving?mix(A.r,B.r):talk?Math.sin(a.animT*3)*.012:0;
-      const k = h / F.bodyH;
-      c.save(); c.translate(a.x, a.y + bob); c.rotate(rot*a.face); c.scale(a.face < 0 ? -sx : sx, sy);
+      const c=this.ctx,step=a.moving?Math.floor(a.walkT*5)%2:0,k=h/F.bodyH;
+      c.save();c.translate(a.x,a.y);if(a.face<0)c.scale(-1,1);
       c.drawImage(this.folk.img, step * F.frameW, a.f * F.frameH, F.frameW, F.frameH, -F.frameW / 2 * k, -F.footY * k, F.frameW * k, F.frameH * k); c.restore();
-    }
-    // Placa da cidade na frente de alguém fica translúcida (não esconde personagem); volta ao passar o mouse.
-    dimSignposts() {
-      if ((this._dimAt || 0) > this.worldTime) return; this._dimAt = this.worldTime + .2;
-      const r = this.canvas.getBoundingClientRect(), v = this.view || { x:0, w:W }; if (!r.width) return;
-      const sx = r.width / v.w, sy = r.height / H;
-      const boxes = (this.townHits || []).map(o => ({ l:r.left + (o.x - o.h * .35 - v.x) * sx, rr:r.left + (o.x + o.h * .35 - v.x) * sx, t:r.top + (o.y - o.h * (o.folk ? 1 : 1.3)) * sy, b:r.top + o.y * sy }));
-      document.querySelectorAll('#village-actions .signpost').forEach(el => {
-        const q = el.getBoundingClientRect();
-        el.classList.toggle('over-actor', boxes.some(o => o.l < q.right && o.rr > q.left && o.t < q.bottom && o.b > q.top));
-      });
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     // Um quadro da folha de poses do herói, com os pés em (x, y).

@@ -734,6 +734,11 @@ body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:t
 #village-actions .signpost:hover .sp-icon{border-color:var(--gold)!important}
 @media (max-width:700px){#village-actions .signpost .sp-plate{padding:2px 6px}#village-actions .signpost .sp-lv{display:none!important}}
 #village-actions .signpost{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#village-actions .signpost{opacity:1!important;visibility:visible!important}
+body:not(.in-combat) .zone-chip{max-width:340px;padding:6px 10px 7px}
+body:not(.in-combat) .zone-chip .zone-kicker{font-size:8px}
+body:not(.in-combat) .zone-chip h1{margin:1px 0 3px;font-size:clamp(15px,1.35vw,19px)}
+body:not(.in-combat) .zone-chip .zone-meta span{font-size:8px;padding:1px 6px}
 /* Celular em pé: palco mais alto (a cena é recortada nas laterais em src/renderer.js), sem faixa vazia embaixo. */
 body.stage-portrait .stage{aspect-ratio:920/720!important}
 @media (max-width:700px){body .stage-controls #boost-btn{padding:0 4px!important;min-width:68px!important;flex-direction:column!important;justify-content:center!important;gap:2px!important}body .stage-controls #boost-btn b{font-size:10.5px!important;letter-spacing:0!important}}
@@ -795,9 +800,6 @@ body .village-hub .hub-goal{margin-bottom:6px}
 body .village-hub .hub-actions>.action.primary{min-height:46px}
 body .village-hub .hub-row .action{min-height:32px}
 
-#village-actions .signpost{transition:opacity .25s}
-#village-actions .signpost.over-actor{opacity:.28}
-#village-actions .signpost.over-actor:hover,#village-actions .signpost.over-actor:focus-visible{opacity:1}
 .hero-tale{max-width:760px;margin:0 0 14px}
 .hero-tale h2{font-size:clamp(20px,2vw,26px)}
 
