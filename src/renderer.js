@@ -566,29 +566,54 @@
       if (ph === 'stageClear' || ph === 'victory') return 'victory';
       return 'idle';
     }
+    // Quadro atual da folha: [linha, pose, próxima pose, fração até a próxima (0–1)].
     animFrame(an, s, u) {
       const C = an.meta.clips; let clip = s.clip, t = this.worldTime - s.clipAt;
       if (!u.alive) { if (clip !== 'death') { clip = 'death'; s.clip = 'death'; s.clipAt = this.worldTime; t = 0; } }
       else if (clip === 'death') { s.clip = null; clip = null; }
       // seq: índices das poses na linha (folhas de 8 poses de tools/build_anim.py); sem seq, quadros seguidos.
-      const at = (m, i) => [m.row, m.seq ? m.seq[i] : i];
+      const pose = (m, i) => m.seq ? m.seq[i] : i;
+      const at = (m, x, loop) => { const i = Math.floor(x), f = x - i, a = loop ? i % m.frames : Math.min(i, m.frames - 1), b = loop ? (a + 1) % m.frames : Math.min(a + 1, m.frames - 1); return [m.row, pose(m, a), pose(m, b), f]; };
       if (clip && C[clip]) {
-        const m = C[clip], i = Math.floor(t * m.fps);
-        if (m.loop) return at(m, i % m.frames);
-        if (i < m.frames) return at(m, i);
-        if (clip === 'death') return at(m, m.frames - 1);
+        const m = C[clip], x = t * m.fps;
+        if (m.loop) return at(m, x, true);
+        if (x < m.frames) return at(m, x, false);
+        if (clip === 'death') return at(m, m.frames - 1, false);
         s.clip = null;
       }
       const b = C[this.baseClip(u)] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
-      return at(b, Math.floor(it * b.fps) % b.frames);
+      return at(b, it * b.fps, true);
+    }
+    // Movimento contínuo por pose (0 parado · 1 respira · 2 corre · 3 dano · 4 prepara · 5 golpe · 6 fim · 7 especial):
+    // deslocamento, inclinação e escala interpolados entre poses, desenhados a cada quadro de tela.
+    poseMotion(p, time, slot) {
+      const br = Math.sin(time * 2.4 + slot) * .5 + .5;
+      switch (p) {
+        case 0: case 1: return { x:0, y:0, rot:0, sx:1 + br * .006, sy:1 + br * .014 };
+        case 2: return { x:4, y:-Math.abs(Math.sin(time * 12)) * 4, rot:.03, sx:1, sy:1 };
+        case 3: return { x:-10 + Math.sin(time * 60) * 2, y:0, rot:-.06, sx:1.02, sy:.97 };
+        case 4: return { x:-6, y:0, rot:-.05, sx:1.03, sy:.96 };
+        case 5: return { x:18, y:0, rot:.05, sx:1.05, sy:.97 };
+        case 6: return { x:8, y:0, rot:.02, sx:1, sy:1 };
+        case 7: return { x:4, y:-8, rot:0, sx:1.02, sy:1.03 };
+        default: return { x:0, y:0, rot:0, sx:1, sy:1 };
+      }
     }
     drawAnim(an, s, u, x, y, height, o = {}) {
-      const c = this.ctx, M = an.meta, [row, col] = this.animFrame(an, s, u);
+      const c = this.ctx, M = an.meta, [row, col, next, frac] = this.animFrame(an, s, u);
       const k = height / M.bodyH, fw = M.frameW * k, fh = M.frameH * k;
       const dx = -M.cx * k, dy = -M.footY * k;
-      c.save(); c.translate(x, y); c.globalAlpha *= (o.alpha ?? 1);
+      const e = frac * frac * (3 - 2 * frac), A = this.poseMotion(col, this.worldTime, u.slot || 0), B = this.poseMotion(next, this.worldTime, u.slot || 0);
+      const mix = key => A[key] + (B[key] - A[key]) * e, dir = u.side === 'enemy' ? -1 : 1, mk = height / 180;
+      c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx'), mix('sy'));
+      c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
-      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); c.filter = 'none';
+      const base = c.globalAlpha;
+      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
+      // Fusão com a próxima pose no fim do quadro (sem salto seco entre desenhos diferentes).
+      const blend = next !== col ? Math.max(0, (frac - .65) / .35) : 0;
+      if (blend > 0) { c.globalAlpha = base * blend * blend; c.drawImage(an.img, next * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh); c.globalAlpha = base; }
+      c.filter = 'none';
       if (o.flash > 0) {
         if (!an.flash) { const f = document.createElement('canvas'); f.width = an.img.width; f.height = an.img.height; const g = f.getContext('2d'); g.drawImage(an.img, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd9b8'; g.fillRect(0, 0, f.width, f.height); an.flash = f; }
         c.globalAlpha *= U.clamp(o.flash, 0, 1) * .42; c.drawImage(an.flash, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);

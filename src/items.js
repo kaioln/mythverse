@@ -584,7 +584,7 @@
   function upgradeCost(item, forgeLevel = 1, matId = 'common') {
     const n = (item.plus || 0) + 1, rm = { common:1, rare:1.3, epic:1.7, legendary:2.2, mythic:2.8, set:2.4 }[item.rarity] || 1;
     const disc = 1 - Math.min(.4, (forgeLevel - 1) * .04), rule = refineRule(matId, n) || { allowed:false, reason:'Material inválido.' };
-    const qty = matId === 'common' ? Math.round((3 + n * n * 1.1) * rm * disc) : matId === 'rare' ? 1 + Math.floor(n / 4) : matId === 'epic' ? 1 + Math.max(0, Math.floor((n - 6) / 3)) : 1 + Math.max(0, Math.floor((n - 9) / 3));
+    const qty = matId === 'common' ? Math.round((3 + n * n * 1.1) * rm * disc) : matId === 'rare' ? 1 + Math.floor(n / 4) : matId === 'epic' ? 1 + Math.max(0, Math.floor((n - 9) / 3)) : 1 + Math.max(0, Math.floor((n - 9) / 3));
     return { gold:Math.round(130 * Math.pow(item.ilvl, .9) * Math.pow(n, 1.8) * Math.pow(Math.max(1, n / 4), .8) * rm * disc), mat:matId, key:materials[matId]?.key, qty, ore:matId === 'common' ? qty : 0,
       chance:REFINE_CHANCE[Math.min(15, n)] ?? 0, target:n, ...rule };
   }

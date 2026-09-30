@@ -2286,7 +2286,14 @@
     }
     autoEquip(uid) {
       const r = this.record(uid); if (!r) return 0; let n = 0;
-      Object.keys(I.slots).forEach(slot => { const it = this.bestItemFor(r, slot); if (it && this.equip(r.uid, it.uid)) n++; });
+      // Nunca baixa o Poder exibido: a escolha usa a nota da build, então cada troca é conferida e desfeita se o Poder cair.
+      Object.keys(I.slots).forEach(slot => {
+        const it = this.bestItemFor(r, slot); if (!it) return;
+        const prev = r.equipped[slot], before = this.getPowerRaw();
+        if (!this.equip(r.uid, it.uid)) return;
+        if (this.getPowerRaw() < before * .9995) { if (prev) this.equip(r.uid, prev); else this.unequip(r.uid, slot); return; }
+        n++;
+      });
       if (n) this.refreshPartyUnits();
       return n;
     }

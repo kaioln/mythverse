@@ -113,7 +113,8 @@
     this.el.modalBody.innerHTML = this[fn](v.param, v.tab);
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
-    if (v.panel === 'journey') KT.Map3D?.attach(this.el.modalBody.querySelector('.illustrated-map'), this.mapFocus);
+    // Mapa plano (a versão 3D curvava e escurecia a ilustração): o destino do "Ir" é destacado e centralizado na tela.
+    if (v.panel === 'journey') requestAnimationFrame(() => this.el.modalBody.querySelector('.map-pin.focus')?.scrollIntoView({ block:'center', behavior:'smooth' }));
   };
   P.closeModal = function() { this.el.modal.hidden = true; this.view.panel = null; this.hideTip(); document.querySelectorAll('.nav').forEach(x => x.classList.remove('active')); };
   P.drawSprite = function(cv, id) { const img = this.assets.spriteImage(id); if (!img) return; const ctx = cv.getContext('2d'), r = img.width / img.height, h = Math.min(cv.height - 4, (cv.width - 4) / r), w = h * r; ctx.clearRect(0, 0, cv.width, cv.height); ctx.drawImage(img, (cv.width - w) / 2, cv.height - h - 2, w, h); };
@@ -667,7 +668,8 @@
     }
     if (tab === 'shrine') {
       const list = this.state.collection.slice().sort((a, b2) => ((this.state.shards[b2.id] || 0) - (this.state.shards[a.id] || 0)));
-      return `${bHead('shrine')}<div class="box-actions"><button class="action pink" data-go="collection" type="button">✦ Ir para Convocação</button><button class="action" data-buy="key1" type="button" ${s.player.crystal >= 60 ? '' : 'disabled'}>Trocar 60 cristais → 1 chave</button></div>
+      const keyOffer = Object.values(PR.shop).flat().find(o => o?.id === 'key1'), keyPrice = keyOffer ? e.offerPrice(keyOffer).crystal : 150;
+      return `${bHead('shrine')}<div class="box-actions"><button class="action pink" data-go="collection" type="button">✦ Ir para Convocação</button><button class="action" data-buy="key1" type="button" ${s.player.crystal >= keyPrice ? '' : 'disabled'}>Trocar ${U.fmt(keyPrice)} cristais → 1 chave</button></div>
         <h4 class="sub-title">Qualidade dos heróis</h4><p class="note">Fragmentos elevam a qualidade em ★. Cada ★ dá +12% em HP/ATK/DEF; todos os heróis têm limite de nível 100.</p>
         <div class="roster-list">${list.map(r => { const t = this.engine.template(r.id), c = S().awakenCost(r.stars, b.shrine), sh = this.state.shards[r.id] || 0, ok = r.stars < 6 && sh >= c.shards && s.player.gold >= c.gold; return `<article class="roster-row rarity-${r.rarity}"><img src="${portrait(t.id)}" alt=""><div><b>${esc(t.name)} ${stars(r.stars)}</b><small>Fragmentos ${sh}/${r.stars >= 6 ? ', ' : c.shards} · ${compact(c.gold)} ouro</small></div><button class="action small ${ok ? 'pink' : ''}" data-awaken="${r.uid}" type="button" ${ok ? '' : 'disabled'}>${r.stars >= 6 ? 'Máximo' : 'Elevar qualidade'}</button></article>`; }).join('')}</div>`;
     }

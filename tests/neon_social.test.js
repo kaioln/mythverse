@@ -86,6 +86,10 @@ const path = require('node:path');
   await one('ana', 'mv_guild_settings($1, $2, $3)', ['Só convidados', false, '🔥']);
   ok(await one('caio', 'mv_guild_join($1, $2, $3)', [gid, 'Caio', 7000]) === 'requested', 'guilda fechada recebe pedido');
   await fails(one('bia', 'mv_guild_manage($1, $2)', ['accept', 'x']), 'membro comum não aceita pedidos');
+  { await db.exec("INSERT INTO public.mv_saves (user_id, data, power) VALUES ('ana', '{\"powerScale\":3}', 1) ON CONFLICT (user_id) DO NOTHING");
+    await db.exec("UPDATE public.mv_saves SET power = 123456, revision = revision + 1 WHERE user_id = 'ana'");
+    const me = (await one('ana', 'mv_guild_mine()')).members.find(x => x.name === 'Ana');
+    ok(me && Number(me.power) === 123456, 'poder do membro acompanha o save (não congela ao entrar)'); }
   const mine = await one('ana', 'mv_guild_mine()');
   ok(mine.guild.tag === 'LR' && mine.members.length === 2 && mine.requests.length === 1 && mine.me.role === 'leader', 'painel da guilda com membros e pedidos');
   ok(await one('ana', 'mv_guild_manage($1, $2)', ['accept', mine.requests[0].ref]) === 'accepted', 'líder aceita pedido');

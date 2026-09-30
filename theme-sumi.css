@@ -624,3 +624,4 @@ body:not(.in-combat) .journey-cta{display:none!important}
 /* Mapa novo é mais detalhado: nomes bloqueados com fundo sólido e texto legível */
 .map-pin.locked,.illustrated-map .map-pin.locked{background:rgba(12,10,18,.88);opacity:1;border-color:rgba(239,230,212,.35)}
 .map-pin.locked .pin-name{color:#c9bfae}
+.illustrated-map>img{filter:saturate(.82) brightness(1.02)}

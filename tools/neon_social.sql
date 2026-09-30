@@ -562,3 +562,18 @@ DO $$ DECLARE f text; BEGIN
     EXECUTE format('REVOKE ALL ON FUNCTION public.%s FROM PUBLIC', f);
   END LOOP;
 END $$;
+
+-- Poder sempre atual na guilda e na Arena: antes era gravado só ao entrar (ou ao montar a defesa) e ficava congelado.
+CREATE OR REPLACE FUNCTION public.mv_sync_power() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NEW.power IS DISTINCT FROM OLD.power THEN
+    UPDATE public.mv_guild_members SET power = NEW.power WHERE user_id = NEW.user_id;
+    UPDATE public.mv_pvp SET power = NEW.power WHERE user_id = NEW.user_id;
+  END IF;
+  RETURN NEW;
+END $$;
+DROP TRIGGER IF EXISTS mv_sync_power ON public.mv_saves;
+CREATE TRIGGER mv_sync_power AFTER UPDATE OF power ON public.mv_saves FOR EACH ROW EXECUTE FUNCTION public.mv_sync_power();
+-- Corrige quem já está congelado.
+UPDATE public.mv_guild_members m SET power = s.power FROM public.mv_saves s WHERE s.user_id = m.user_id AND m.power <> s.power;
+UPDATE public.mv_pvp p SET power = s.power FROM public.mv_saves s WHERE s.user_id = p.user_id AND p.power <> s.power;
