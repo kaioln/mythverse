@@ -113,10 +113,12 @@ module.exports = { migrate, gameTables };
 if (require.main === module) {
   (async () => {
     const pg = require('pg');
-    const target = process.argv.slice(2).find(a => !a.startsWith('--')), apply = process.argv.includes('--apply');
-    if (!process.env.DATABASE_URL || !target) { console.error('Uso: node --env-file=.env tools/neon_migrate.js "postgresql://…NOVO…" [--apply]'); process.exit(1); }
-    if (target === process.env.DATABASE_URL) { console.error('O destino é o mesmo banco da DATABASE_URL.'); process.exit(1); }
-    const src = new pg.Client({ connectionString:process.env.DATABASE_URL }), dst = new pg.Client({ connectionString:target });
+    // Com OLD_DATABASE_URL no .env (depois do `neon link` no projeto novo): antigo = OLD_DATABASE_URL, novo = DATABASE_URL.
+    const arg = process.argv.slice(2).find(a => !a.startsWith('--')), apply = process.argv.includes('--apply');
+    const source = process.env.OLD_DATABASE_URL || process.env.DATABASE_URL, target = arg || (process.env.OLD_DATABASE_URL ? process.env.DATABASE_URL : '');
+    if (!source || !target) { console.error('Uso: node --env-file=.env tools/neon_migrate.js [--apply]  (OLD_DATABASE_URL = antigo, DATABASE_URL = novo)'); process.exit(1); }
+    if (target === source) { console.error('O destino é o mesmo banco da origem.'); process.exit(1); }
+    const src = new pg.Client({ connectionString:source }), dst = new pg.Client({ connectionString:target });
     await src.connect(); await dst.connect();
     await src.query('SET default_transaction_read_only = on'); // o banco antigo nunca é alterado
     try {
