@@ -524,7 +524,8 @@ body .stage-controls .journey-cta{position:static!important;display:flex!importa
 .stage-controls .journey-cta[hidden]{display:none!important}
 .stage-controls .journey-cta span{display:block!important;color:var(--gold)!important;line-height:1}
 .stage-controls .journey-cta b{font:800 13px/1 var(--ui)!important;color:var(--gold)!important;letter-spacing:.08em}
-.hud-top .resources .res.gold,.hud-top .resources .res.crystal{display:none!important}
+/* Moedas: ouro, cristais e chaves juntos no centro do topo (padrão de jogos). O palco fica livre para a luta. */
+.stage-wallet{display:none!important}
 @media (max-width:900px){
   body .stage-controls .journey-cta{min-width:42px!important;height:40px!important;padding:0 5px!important}
 }
@@ -699,3 +700,20 @@ body.in-combat .stage-wallet{opacity:.9}
 .village-hub .hub-row{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
 /* Marcadores do mapa com nível e poder: texto menor para não se sobreporem */
 .illustrated-map .map-pin small{white-space:nowrap;font-size:10px}
+
+/* Ícones desenhados (src/icons.js) no lugar dos kanji: traço na cor do texto. */
+.gl{display:inline-block;width:1.1em;height:1.1em;flex:none;vertical-align:-.18em;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.kj .gl{width:1.15em;height:1.15em}
+.hero-portrait .cls .gl{width:12px;height:12px;vertical-align:middle}
+.dlg-mark .gl{width:46px;height:46px;stroke-width:1.8;color:var(--laca,#c9472d)}
+/* Tecla do ultimate: selo pequeno no canto de cima do ícone, sem cobrir o desenho nem o texto. */
+.hero-slot .ult-btn .ult-ic kbd{position:absolute;left:auto;right:-6px;top:-6px;bottom:auto;width:14px;height:14px;border-radius:4px;font:700 8.5px/1 var(--ui,sans-serif);color:#1b1512;background:var(--washi,#efe6d2);box-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
+.hero-slot .ult-btn{overflow:visible}
+@media (hover:none),(max-width:700px){.hero-slot .ult-btn .ult-ic kbd{display:none}}
+/* Botão MAPA: o destino principal fora da luta atual. Laca cheia, ícone de mapa e o maior alvo da barra do palco. */
+body .stage-controls .journey-cta{min-width:76px!important;height:52px!important;padding:0 12px!important;background:var(--shu,#c9472d)!important;border:1px solid #e07a5f!important;border-radius:12px!important;box-shadow:0 6px 16px rgba(0,0,0,.45)!important}
+body .stage-controls .journey-cta span,body .stage-controls .journey-cta b{color:#fff7ea!important}
+body .stage-controls .journey-cta .gl{width:20px;height:20px;stroke-width:2}
+body .stage-controls .journey-cta b{font:800 14px/1 var(--ui)!important;letter-spacing:.1em}
+body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:translateY(-1px)}
+@media (max-width:900px){body .stage-controls .journey-cta{min-width:54px!important;height:44px!important;padding:0 7px!important}}

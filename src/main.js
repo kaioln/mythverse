@@ -130,7 +130,7 @@
       });
       ui.session = session; ui.ask = askBox;
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
-      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => engine.enterZone(f, { stage:1, floor:1, tier:0 }), 800); }
+      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => { engine.enterZone(f, { stage:1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => ui.onZone(z), onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),

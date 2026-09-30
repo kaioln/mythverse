@@ -1831,7 +1831,7 @@
       const qty = rare ? 1 : 1 + Math.floor(lv / 20);
       s.prof.mats[mat.id] = (s.prof.mats[mat.id] || 0) + qty;
       this.profXp(prof, rare ? 40 : 8 * tier);
-      this.emit('onLog', { text:`${D.PROF.gather[prof].icon} Coletou ${qty}× ${mat.name}.`, type:'reward' });
+      this.emit('onLog', { text:`Coletou ${qty}× ${mat.name}.`, type:'reward' });
       if (rare) this.emit('onToast', `Coleta rara: <b>${esc(mat.name)}</b>!`);
       return { id:mat.id, qty };
     }

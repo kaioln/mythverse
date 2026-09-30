@@ -3,7 +3,7 @@
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const root = path.resolve(__dirname, '..');
 global.setTimeout = fn => { fn(); return 0; };
-for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js','src/assets.js','src/ui.js','src/panels.js','src/economy-ui.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
+for (const f of ['src/data.js','src/utils.js','src/items.js','src/progression.js','src/roster.js','src/builds.js','src/engine.js','src/icons.js','src/assets.js','src/ui.js','src/panels.js','src/economy-ui.js']) vm.runInThisContext(fs.readFileSync(path.join(root, f), 'utf8'), { filename:f });
 const { State, CombatEngine, Data:D, Items:I, Progression:PR } = global.KT;
 let checks = 0;
 const ok = (cond, msg) => { checks++; if (!cond) throw new Error(msg); };

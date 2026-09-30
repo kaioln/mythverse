@@ -7,13 +7,14 @@
   const UI_FONT = 'Outfit, "Segoe UI", system-ui, sans-serif';
 
   // Vagas 1 e 2 = linha de frente (mais perto dos inimigos); 3 e 4 = retaguarda.
-  const HERO_POS = [{x:480,y:552},{x:490,y:668},{x:335,y:600},{x:200,y:656}];
-  const ENEMY_POS = [{x:820,y:552},{x:815,y:668},{x:975,y:600},{x:1115,y:655},{x:1120,y:540}];
-  const BOSS_POS = {x:990,y:640};
-  const BOSS_ADDS = [{x:790,y:560},{x:790,y:675},{x:1170,y:560},{x:1175,y:680}];
+  // Formação em zigue-zague: cada herói numa coluna própria (linha de trás mais alta), sem um cobrir o outro.
+  const HERO_POS = [{x:545,y:598},{x:435,y:690},{x:325,y:590},{x:205,y:684}];
+  const ENEMY_POS = [{x:755,y:598},{x:865,y:690},{x:975,y:590},{x:1090,y:684},{x:1190,y:588}];
+  const BOSS_POS = {x:1000,y:672};
+  const BOSS_ADDS = [{x:760,y:598},{x:790,y:694},{x:1200,y:596},{x:1195,y:694}];
   // Na cidade os heróis ficam na escala das construções, em volta do medalhão da praça (linha de frente adiante).
   const VILLAGE_POS = [{x:596,y:404},{x:676,y:404},{x:552,y:370},{x:720,y:370}], VILLAGE_H = 66;
-  const HERO_H = 176, HERO_H0 = HERO_H, ENEMY_H = 158, ELITE_H = 205;
+  const HERO_H = 206, HERO_H0 = HERO_H, ENEMY_H = 184, ELITE_H = 232;
   const RANGED = new Set(['Arcanista','Suporte','Atirador']);
   // Projéteis: forma por classe/elemento; duração, arco e rastro dão o peso (pedra pesada e lenta, raio quase instantâneo).
   const ELEM_PROJ = { Fogo:'fire', Gelo:'shard', Raio:'bolt', Vento:'wind', Água:'water', Natureza:'thorn', Terra:'rock', Luz:'light', Sombra:'void' };
@@ -96,7 +97,7 @@
       if (boss) { const adds = list.filter(e => !e.boss); return BOSS_ADDS[adds.indexOf(u) % BOSS_ADDS.length]; }
       return ENEMY_POS[i] || ENEMY_POS[i % ENEMY_POS.length];
     }
-    enemyHeight(e) { return e.boss ? (e.sprite === 'lantern_kitsune' ? 330 : 390) : e.miniboss ? 250 : e.elite ? ELITE_H : e.treasure ? 120 : ENEMY_H; }
+    enemyHeight(e) { return e.boss ? (e.sprite === 'lantern_kitsune' ? 370 : 430) : e.miniboss ? 280 : e.elite ? ELITE_H : e.treasure ? 120 : ENEMY_H; }
     posOf(uid) {
       const u = this.unit(uid); if (!u) return null;
       if (u.side === 'hero') return { ...this.heroPos(u), h:HERO_H, u };
@@ -127,7 +128,13 @@
         const delay = fx.kind === 'basic' ? .12 : 0;
         this.later(delay, () => {
           if (!dot) this.hitActor(fx.uid, hero ? -1 : 1, fx.crit ? .9 : .55);
-          if (!dot && (hero || this.unit(fx.uid)?.boss)) { const cs = this.v(fx.uid).clip; if (!cs || cs === 'idle' || cs === 'run' || cs === 'hit') this.playClip(fx.uid, 'hit'); }
+          // Herói reage a cada golpe; chefe só a críticos/golpes fortes e no máximo a cada 2,5 s (senão fica preso na pose de dano).
+          const bu = !hero && this.unit(fx.uid)?.boss && this.unit(fx.uid);
+          if (!dot && (hero || bu)) {
+            const vs = this.v(fx.uid), cs = vs.clip, big = fx.crit || fx.kind === 'ult' || (bu && fx.value > bu.maxHp * .03);
+            const free = !cs || cs === 'idle' || cs === 'run' || (hero && cs === 'hit');
+            if (hero ? free : free && big && this.worldTime - (vs.hitAt || -9) > 2.5) { vs.hitAt = this.worldTime; this.playClip(fx.uid, 'hit'); }
+          }
           const color = fx.color || (hero ? '#ff6b6b' : fx.crit ? '#ffd76a' : '#ffffff');
           this.number(p.x + U.rand(-26, 26), p.y - p.h - 8, fx.value, color, fx.crit, hero, dot);
           if (fx.weak && !dot) this.text(p.x + 40, p.y - p.h + 14, 'FRACO!', '#ffe28a', 15, .8);
@@ -653,7 +660,12 @@
     }
     statusIcons(u, x, y) {
       const c = this.ctx, seen = new Set(); let ix = x;
-      u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 120) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return; c.save(); c.font = `800 12px ${DISPLAY_FONT}`; c.textAlign = 'left'; c.fillStyle = 'rgba(12,10,30,.75)'; this.roundRect(ix - 1, y - 12, 18, 16, 4); c.fill(); c.fillStyle = info.color; c.fillText(info.icon, ix + 1, y); c.restore(); ix += 19; });
+      u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 115) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return;
+        // Selo do efeito: fundo escuro, borda na cor (benéfico = contorno cheio, negativo = tracejado) e ícone desenhado.
+        c.save(); c.fillStyle = 'rgba(12,10,20,.82)'; this.roundRect(ix - 1, y - 15, 21, 20, 5); c.fill();
+        c.strokeStyle = info.color; c.lineWidth = 1.4; if (!info.buff) c.setLineDash([3, 2]); this.roundRect(ix - 1, y - 15, 21, 20, 5); c.stroke(); c.setLineDash([]);
+        if (!KT.Icons?.draw(c, info.icon, ix + 9.5, y - 5, 14, info.color, 2.6)) { c.font = `800 12px ${DISPLAY_FONT}`; c.textAlign = 'center'; c.fillStyle = info.color; c.fillText(info.name[0], ix + 9.5, y); }
+        c.restore(); ix += 23; });
     }
     // ---------- animação por folha de sprites (heróis 3D) ----------
     playClip(uid, clip) { const s = this.v(uid); s.clip = clip; s.clipAt = this.worldTime; }

@@ -102,8 +102,8 @@
     }
     showEnemyTip(uid, ev) {
       const e = this.engine.enemies.find(x => x.uid === uid); if (!e) return;
-      const el = D.elements[e.el], weak = Object.entries(D.elements).filter(([, v]) => v.strong.includes(e.el)).map(([k, v]) => `${v.icon} ${k}`).join(', ');
-      this.el.tooltip.innerHTML = `<b style="color:${el.color}">${el.icon} ${esc(e.name)}</b><br><small>Nv.${e.level} · ${e.t.role} · HP ${U.fmt(Math.max(0, e.hp))}/${U.fmt(e.maxHp)}</small><br><small>${esc(e.t.desc || '')}</small>${weak ? `<br><small>Fraco contra: <b>${weak}</b></small>` : ''}${e.t.skill ? `<br><small>Habilidade: <b>${esc(e.t.skill.name)}</b></small>` : ''}<br><small class="dim">Clique para focar a equipe neste alvo.</small>`;
+      const el = D.elements[e.el], weak = Object.entries(D.elements).filter(([, v]) => v.strong.includes(e.el)).map(([k, v]) => `${KT.glyph(v.icon)} ${k}`).join(', ');
+      this.el.tooltip.innerHTML = `<b style="color:${el.color}">${KT.glyph(el.icon)} ${esc(e.name)}</b><br><small>Nv.${e.level} · ${e.t.role} · HP ${U.fmt(Math.max(0, e.hp))}/${U.fmt(e.maxHp)}</small><br><small>${esc(e.t.desc || '')}</small>${weak ? `<br><small>Fraco contra: <b>${weak}</b></small>` : ''}${e.t.skill ? `<br><small>Habilidade: <b>${esc(e.t.skill.name)}</b></small>` : ''}<br><small class="dim">Clique para focar a equipe neste alvo.</small>`;
       const t = this.el.tooltip; t.hidden = false; t.style.left = `${Math.min(ev.clientX + 16, innerWidth - t.offsetWidth - 8)}px`; t.style.top = `${Math.min(ev.clientY + 16, innerHeight - t.offsetHeight - 8)}px`;
     }
     hideTip() { this.el.tooltip.hidden = true; }
@@ -205,7 +205,7 @@
       document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const n = badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); });
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
-      const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${ev.icon} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
+      const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
       hub.innerHTML = `<span class="eyebrow">${greet}, ${esc(s.player.name || 'Viajante')}</span>
         <h3>Bem-vindo(a) a Tsukimori</h3><p>Sua equipe descansa na Praça da Lua. ${now}</p>
         ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
@@ -224,8 +224,8 @@
           const rec = u.rec || e.record(u.recUid), t = e.template(rec.id);
           const idx = village ? i : e.party.indexOf(u);
           return `<article class="hero-slot rarity-${rec.rarity}" data-uid="${rec.uid}" style="--hc:${t.color};--rc:var(--${rec.rarity})">
-            <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${D.classes[t.cls].icon}</span></button>
-            <div class="hero-info"><header><b>${esc(t.name)}</b><small><i class="kj" style="color:${D.elements[t.el].color}">${D.elements[t.el].icon}</i> <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
+            <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${KT.glyph(D.classes[t.cls].icon)}</span></button>
+            <div class="hero-info"><header><b>${esc(t.name)}</b><small><i class="kj" style="color:${D.elements[t.el].color}">${KT.glyph(D.elements[t.el].icon)}</i> <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
               <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div>
               <div class="skill-line"><span class="skill-cd" data-tip="<b>${esc(t.skill.name)}</b> (automática)<br>${esc(t.skillText)}"><i></i>${esc(t.skill.name)}</span></div></div>
             <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>
@@ -310,8 +310,8 @@
       const nexts = KT.State.upcomingEvents(now, 3).filter(x => x.start > now).slice(0, 3);
       const open = this.eventOpen ? 'open' : '';
       const html = `<header class="sec-h"><span>Evento</span><small>${ev.id === 'calm' ? `próximo em ${fmtTime(left)}` : `termina em ${fmtTime(left)}`}</small></header>
-        <strong data-tip="${esc(ev.text)}"><i class="kj" style="color:${ev.color}">${ev.icon}</i> ${ev.name}</strong>
-        <details class="ev-cal" ${open}><summary>Próximos</summary><ul class="ev-next">${nexts.map(x => `<li><span style="color:${x.color}">${x.icon} ${x.name}</span><em>${hm(x.start)}</em></li>`).join('')}</ul></details>`;
+        <strong data-tip="${esc(ev.text)}"><i class="kj" style="color:${ev.color}">${KT.glyph(ev.icon)}</i> ${ev.name}</strong>
+        <details class="ev-cal" ${open}><summary>Próximos</summary><ul class="ev-next">${nexts.map(x => `<li><span style="color:${x.color}">${KT.glyph(x.icon)} ${x.name}</span><em>${hm(x.start)}</em></li>`).join('')}</ul></details>`;
       if (html !== this.eventHtml) { this.eventHtml = html; this.el.event.innerHTML = html; this.el.event.style.setProperty('--ec', ev.color); this.el.event.querySelector('details')?.addEventListener('toggle', e2 => { this.eventOpen = e2.target.open; }); }
     }
     rewardPills(r) {
@@ -424,7 +424,7 @@
       if (!line) { this.el.dialog.hidden = true; this.engine.paused = false; return; }
       const sp = D.speakers[line.who] || { color:'#fff', title:'' };
       this.engine.paused = true;
-      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : '<span class="dlg-mark">神</span>'}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(sp.title)}</small></span><p>${esc(line.text)}</p><small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
+      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(sp.title)}</small></span><p>${esc(line.text)}</p><small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
       this.el.dialog.hidden = false;
       const p = this.el.dialog.querySelector('p'); p.classList.remove('typing'); void p.offsetWidth; p.classList.add('typing');
     }
@@ -478,7 +478,7 @@
       const order = { legendary:0, epic:1, rare:2, common:3 }, single = results.length === 1;
       const best = results.reduce((a, h) => order[h.rarityRolled] < order[a.rarityRolled] ? h : a, results[0]);
       const label = r => D.heroRarities.find(x => x.id === r)?.label || r;
-      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${D.classes[t.cls].icon} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><span class="hanko" aria-hidden="true">神話</span></div></div></div>`; }).join('')}</div><p class="reveal-hint">Toque em qualquer lugar para continuar</p></div>`;
+      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${KT.glyph(D.classes[t.cls].icon)} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><span class="hanko" aria-hidden="true">神話</span></div></div></div>`; }).join('')}</div><p class="reveal-hint">Toque em qualquer lugar para continuar</p></div>`;
       this.el.reveal.hidden = false;
       this.callbacks.summon?.(best.rarityRolled);
     }

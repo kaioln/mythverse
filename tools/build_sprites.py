@@ -466,7 +466,8 @@ def sheet_blobs(path, n=10, rows=2):
         box = (max(0, xs.min() * k - 2 * k), max(0, ys.min() * k - 2 * k), min(img.width, (xs.max() + 1) * k + 2 * k), min(img.height, (ys.max() + 1) * k + 2 * k))
         piece = img.copy()
         piece.putalpha(Image.composite(img.getchannel('A'), Image.new('L', img.size, 0), mask))
-        out.append(piece.crop(box))
+        pc = piece.crop(box); pc.info['box'] = box
+        out.append(pc)
     _BLOBS[path] = out
     return out
 

@@ -64,11 +64,21 @@ def foot_anchor(img):
 
 def build(hid, recolor=None):
     blobs = B.sheet_blobs(os.path.relpath(os.path.join(POSES, f'{hid if not recolor else recolor[0]}.webp'), ROOT).replace('\\', '/'), n=8, rows=2)
-    poses = [defringe(B.clean_cell(p)) for p in blobs]
+    # Chão de cada linha da folha: as 4 poses de uma linha pisam na mesma linha (mediana das bases). Alinhar pelo chão,
+    # e não pelo pixel mais baixo de cada pose, evita o boneco "subir" quando uma espada ou efeito passa abaixo dos pés.
+    boxes = [b.info.get('box') for b in blobs]
+    grounds = [float(np.median([bx[3] for bx in boxes[r * 4:(r + 1) * 4]])) for r in range(2)] if all(boxes) else None
+    poses, feet = [], []
+    for i, bl in enumerate(blobs):
+        a = np.array(bl.getchannel('A')); ys = np.where((a >= 48).any(1))[0]
+        top = int(ys[0]) if len(ys) else 0
+        poses.append(defringe(B.clean_cell(bl)))
+        feet.append((grounds[i // 4] - boxes[i][1] - top) if grounds else None)
     if recolor:
         h, s, v, col = recolor[1:]
         poses = [B.shift_keep_skin(p, h, s, v) for p in poses]
     k = BODY_H / poses[0].height
+    opad = 5  # B.outline(p, 3) acrescenta 3 + 2 px de cada lado
     poses = [p.resize((max(1, round(p.width * k)), max(1, round(p.height * k))), Image.LANCZOS) for p in poses]
     poses = [B.outline(p, 3) for p in poses]
     if recolor:
@@ -77,7 +87,13 @@ def build(hid, recolor=None):
             c.paste(p, (n, n))
             return c
         poses = [B.aura(pad(p), recolor[4], 8) for p in poses]
-    anchors = [foot_anchor(p) for p in poses]
+    anchors = []
+    for p, f in zip(poses, feet):
+        ax, ay = foot_anchor(p)
+        if f is not None:
+            gy = f * k + opad
+            if p.height * .55 <= gy <= p.height + 4: ay = gy  # chão da folha (se fizer sentido para a pose)
+        anchors.append((ax, ay))
     left = max(ax for ax, _ in anchors) + 8
     right = max(p.width - ax for p, (ax, _) in zip(poses, anchors)) + 8
     up = max(ay for _, ay in anchors) + 8
