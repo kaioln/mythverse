@@ -21,6 +21,10 @@ const AUTH_TABLES = ['user', 'account'];
 
 const q = (db, sql, params) => db.query(sql, params).then(r => r.rows);
 const ident = s => '"' + String(s).replace(/"/g, '""') + '"';
+const dataApiBaseUrl = connectionString => {
+  const u = new URL(connectionString);
+  return `https://${u.hostname.replace(/-pooler(?=\.)/, '')}${u.pathname.replace(/\/+$/, '')}`;
+};
 
 async function gameTables(db) {
   const rows = await q(db, `SELECT c.relname t FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -108,7 +112,7 @@ async function migrate(src, dst, { apply = false, backupDir = null, sqlDir = __d
   return report;
 }
 
-module.exports = { migrate, gameTables };
+module.exports = { migrate, gameTables, dataApiBaseUrl };
 
 if (require.main === module) {
   (async () => {
@@ -123,8 +127,7 @@ if (require.main === module) {
     await src.query('SET default_transaction_read_only = on'); // o banco antigo nunca é alterado
     try {
       await migrate(src, dst, { apply, backupDir:path.join(__dirname, '..', 'data', 'backups') });
-      const u = new URL(target); u.username = ''; u.password = ''; u.search = '';
-      console.log(apply ? `\nPronto. Agora:\n  · .env: DATABASE_URL=<a URL nova>\n  · src/config.js: neon:'${u.origin.replace(/^postgres(ql)?:/, 'https:')}${u.pathname}'\n  · commit e push. Os jogadores entram de novo com o mesmo e-mail e senha.`
+      console.log(apply ? `\nPronto. Agora:\n  · .env: DATABASE_URL=<a URL nova>\n  · src/config.js: neon:'${dataApiBaseUrl(target)}'\n  · commit e push. Os jogadores entram de novo com o mesmo e-mail e senha.`
         : '\nSimulação concluída: nada foi gravado. Rode de novo com --apply para migrar.');
     } finally { await src.end(); await dst.end(); }
   })().catch(e => { console.error('Falhou:', e.message); process.exit(1); });

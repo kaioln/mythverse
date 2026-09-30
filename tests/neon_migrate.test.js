@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { migrate } = require('../tools/neon_migrate');
+const { migrate, dataApiBaseUrl } = require('../tools/neon_migrate');
 
 (async () => {
   const { PGlite } = await import('@electric-sql/pglite');
@@ -19,6 +19,7 @@ const { migrate } = require('../tools/neon_migrate');
     return db;
   };
   let checks = 0; const ok = (c, m) => { assert.ok(c, m); checks++; };
+  ok(dataApiBaseUrl('postgresql://user:secret@ep-demo-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require') === 'https://ep-demo.c-7.us-east-2.aws.neon.tech/neondb', 'URL pública não expõe credenciais nem usa o pooler');
   const src = await neonProject(), dst = await neonProject();
   for (const f of ['neon_setup.sql', 'neon_social.sql', 'neon_economy.sql', 'neon_admin.sql', 'neon_community.sql', 'neon_antirmt.sql']) await src.exec(fs.readFileSync(path.join(__dirname, '..', 'tools', f), 'utf8'));
   await src.exec(`INSERT INTO neon_auth."user" (id, name, email) VALUES ('u-ana', 'ana', 'ana@x.test'), ('u-bia', 'bia', 'bia@x.test');
