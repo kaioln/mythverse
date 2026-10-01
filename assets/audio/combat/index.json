@@ -1,0 +1,7051 @@
+{
+  "license": "CC0-1.0",
+  "sources": [
+    {
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8"
+    },
+    {
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "sha256": "6dbeaf8544da958d8f2adcb4a4a4b76c1ade34a05f8ab9edccd327da7375f38b"
+    }
+  ],
+  "heroes": {
+    "solen": {
+      "name": "Hinata Asahi",
+      "element": "Luz",
+      "weapon": "impactSoft_medium",
+      "attack": "solen-attack.mp3",
+      "skill": "solen-skill.mp3",
+      "ult": "solen-ult.mp3"
+    },
+    "varyon": {
+      "name": "Shiden, o Príncipe Cinza",
+      "element": "Raio",
+      "weapon": "knifeSlice",
+      "attack": "varyon-attack.mp3",
+      "skill": "varyon-skill.mp3",
+      "ult": "varyon-ult.mp3"
+    },
+    "hayato": {
+      "name": "Hayato Kazeno",
+      "element": "Vento",
+      "weapon": "impactPunch_medium",
+      "attack": "hayato-attack.mp3",
+      "skill": "hayato-skill.mp3",
+      "ult": "hayato-ult.mp3"
+    },
+    "ren": {
+      "name": "Rai Kurogane",
+      "element": "Raio",
+      "weapon": "knifeSlice",
+      "attack": "ren-attack.mp3",
+      "skill": "ren-skill.mp3",
+      "ult": "ren-ult.mp3"
+    },
+    "tobias": {
+      "name": "Tobimaru da Maré",
+      "element": "Fogo",
+      "weapon": "impactPunch_medium",
+      "attack": "tobias-attack.mp3",
+      "skill": "tobias-skill.mp3",
+      "ult": "tobias-ult.mp3"
+    },
+    "kenji": {
+      "name": "Kenji Sanjin",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "kenji-attack.mp3",
+      "skill": "kenji-skill.mp3",
+      "ult": "kenji-ult.mp3"
+    },
+    "hiro": {
+      "name": "Hiro Kagetsu",
+      "element": "Sombra",
+      "weapon": "knifeSlice",
+      "attack": "hiro-attack.mp3",
+      "skill": "hiro-skill.mp3",
+      "ult": "hiro-ult.mp3"
+    },
+    "yuki": {
+      "name": "Yuki Shirasagi",
+      "element": "Gelo",
+      "weapon": "impactBell_heavy",
+      "attack": "yuki-attack.mp3",
+      "skill": "yuki-skill.mp3",
+      "ult": "yuki-ult.mp3"
+    },
+    "akira": {
+      "name": "Akira Minase",
+      "element": "Água",
+      "weapon": "knifeSlice",
+      "attack": "akira-attack.mp3",
+      "skill": "akira-skill.mp3",
+      "ult": "akira-ult.mp3"
+    },
+    "hana": {
+      "name": "Hana Minase",
+      "element": "Fogo",
+      "weapon": "impactPunch_medium",
+      "attack": "hana-attack.mp3",
+      "skill": "hana-skill.mp3",
+      "ult": "hana-ult.mp3"
+    },
+    "sora": {
+      "name": "Sora Hakuren",
+      "element": "Luz",
+      "weapon": "impactSoft_medium",
+      "attack": "sora-attack.mp3",
+      "skill": "sora-skill.mp3",
+      "ult": "sora-ult.mp3"
+    },
+    "daichi": {
+      "name": "Daichi Kuroba",
+      "element": "Sombra",
+      "weapon": "impactPunch_medium",
+      "attack": "daichi-attack.mp3",
+      "skill": "daichi-skill.mp3",
+      "ult": "daichi-ult.mp3"
+    },
+    "lucan": {
+      "name": "Genzō Asagiri",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "lucan-attack.mp3",
+      "skill": "lucan-skill.mp3",
+      "ult": "lucan-ult.mp3"
+    },
+    "mira": {
+      "name": "Mirai Asagiri",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "mira-attack.mp3",
+      "skill": "mira-skill.mp3",
+      "ult": "mira-ult.mp3"
+    },
+    "erik": {
+      "name": "Iwao Hazama",
+      "element": "Terra",
+      "weapon": "impactMining",
+      "attack": "erik-attack.mp3",
+      "skill": "erik-skill.mp3",
+      "ult": "erik-ult.mp3"
+    },
+    "alden": {
+      "name": "Kōji Ibara",
+      "element": "Terra",
+      "weapon": "impactMetal_heavy",
+      "attack": "alden-attack.mp3",
+      "skill": "alden-skill.mp3",
+      "ult": "alden-ult.mp3"
+    },
+    "ignis": {
+      "name": "Coronel Homura Kaga",
+      "element": "Fogo",
+      "weapon": "impactSoft_medium",
+      "attack": "ignis-attack.mp3",
+      "skill": "ignis-skill.mp3",
+      "ult": "ignis-ult.mp3"
+    },
+    "toma": {
+      "name": "Toma Hikari",
+      "element": "Raio",
+      "weapon": "impactPunch_medium",
+      "attack": "toma-attack.mp3",
+      "skill": "toma-skill.mp3",
+      "ult": "toma-ult.mp3"
+    },
+    "ryo": {
+      "name": "Ryo Kazan",
+      "element": "Fogo",
+      "weapon": "impactSoft_medium",
+      "attack": "ryo-attack.mp3",
+      "skill": "ryo-skill.mp3",
+      "ult": "ryo-ult.mp3"
+    },
+    "grant": {
+      "name": "Takeru Ōtaka",
+      "element": "Luz",
+      "weapon": "impactPunch_medium",
+      "attack": "grant-attack.mp3",
+      "skill": "grant-skill.mp3",
+      "ult": "grant-ult.mp3"
+    },
+    "kenta": {
+      "name": "Mestre Kenta",
+      "element": "Luz",
+      "weapon": "impactPunch_medium",
+      "attack": "kenta-attack.mp3",
+      "skill": "kenta-skill.mp3",
+      "ult": "kenta-ult.mp3"
+    },
+    "volt": {
+      "name": "Jōki-7",
+      "element": "Fogo",
+      "weapon": "impactMetal_medium",
+      "attack": "volt-attack.mp3",
+      "skill": "volt-skill.mp3",
+      "ult": "volt-ult.mp3"
+    },
+    "kai": {
+      "name": "Kai Morinaga",
+      "element": "Natureza",
+      "weapon": "impactPunch_medium",
+      "attack": "kai-attack.mp3",
+      "skill": "kai-skill.mp3",
+      "ult": "kai-ult.mp3"
+    },
+    "riku": {
+      "name": "Riku Shiro",
+      "element": "Raio",
+      "weapon": "knifeSlice",
+      "attack": "riku-attack.mp3",
+      "skill": "riku-skill.mp3",
+      "ult": "riku-ult.mp3"
+    },
+    "elian": {
+      "name": "Seiran Ake",
+      "element": "Luz",
+      "weapon": "impactBell_heavy",
+      "attack": "elian-attack.mp3",
+      "skill": "elian-skill.mp3",
+      "ult": "elian-ult.mp3"
+    },
+    "aiko": {
+      "name": "Aiko Tsukishiro",
+      "element": "Luz",
+      "weapon": "impactBell_heavy",
+      "attack": "aiko-attack.mp3",
+      "skill": "aiko-skill.mp3",
+      "ult": "aiko-ult.mp3"
+    },
+    "kiba": {
+      "name": "Kiba, o Meio-Espírito",
+      "element": "Vento",
+      "weapon": "impactPunch_medium",
+      "attack": "kiba-attack.mp3",
+      "skill": "kiba-skill.mp3",
+      "ult": "kiba-ult.mp3"
+    },
+    "jin": {
+      "name": "Jin Hayate",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "jin-attack.mp3",
+      "skill": "jin-skill.mp3",
+      "ult": "jin-ult.mp3"
+    },
+    "drake": {
+      "name": "Tatsuya Hibana",
+      "element": "Fogo",
+      "weapon": "impactSoft_medium",
+      "attack": "drake-attack.mp3",
+      "skill": "drake-skill.mp3",
+      "ult": "drake-ult.mp3"
+    },
+    "sienna": {
+      "name": "Kaede Tetsuyama",
+      "element": "Terra",
+      "weapon": "impactPlate_heavy",
+      "attack": "sienna-attack.mp3",
+      "skill": "sienna-skill.mp3",
+      "ult": "sienna-ult.mp3"
+    },
+    "daigo": {
+      "name": "Daigo Arashi",
+      "element": "Fogo",
+      "weapon": "impactPunch_medium",
+      "attack": "daigo-attack.mp3",
+      "skill": "daigo-skill.mp3",
+      "ult": "daigo-ult.mp3"
+    },
+    "mei": {
+      "name": "Mei Lan",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "mei-attack.mp3",
+      "skill": "mei-skill.mp3",
+      "ult": "mei-ult.mp3"
+    },
+    "kael": {
+      "name": "Kaito Arata",
+      "element": "Raio",
+      "weapon": "knifeSlice",
+      "attack": "kael-attack.mp3",
+      "skill": "kael-skill.mp3",
+      "ult": "kael-ult.mp3"
+    },
+    "sael": {
+      "name": "Karasu, a Asa Negra",
+      "element": "Sombra",
+      "weapon": "knifeSlice",
+      "attack": "sael-attack.mp3",
+      "skill": "sael-skill.mp3",
+      "ult": "sael-ult.mp3"
+    },
+    "rina": {
+      "name": "Rina Akemi",
+      "element": "Terra",
+      "weapon": "impactPunch_heavy",
+      "attack": "rina-attack.mp3",
+      "skill": "rina-skill.mp3",
+      "ult": "rina-ult.mp3"
+    },
+    "nadia": {
+      "name": "Nanami Sunaga",
+      "element": "Terra",
+      "weapon": "impactWood_light",
+      "attack": "nadia-attack.mp3",
+      "skill": "nadia-skill.mp3",
+      "ult": "nadia-ult.mp3"
+    },
+    "thorn": {
+      "name": "Gorō Shimotsuki",
+      "element": "Gelo",
+      "weapon": "impactMetal_heavy",
+      "attack": "thorn-attack.mp3",
+      "skill": "thorn-skill.mp3",
+      "ult": "thorn-ult.mp3"
+    },
+    "bjorn": {
+      "name": "Botan Shimotsuki",
+      "element": "Natureza",
+      "weapon": "impactWood_light",
+      "attack": "bjorn-attack.mp3",
+      "skill": "bjorn-skill.mp3",
+      "ult": "bjorn-ult.mp3"
+    },
+    "rook": {
+      "name": "Comandante Rokurō",
+      "element": "Raio",
+      "weapon": "impactMetal_heavy",
+      "attack": "rook-attack.mp3",
+      "skill": "rook-skill.mp3",
+      "ult": "rook-ult.mp3"
+    },
+    "warden": {
+      "name": "Mumei, o Carrasco",
+      "element": "Fogo",
+      "weapon": "impactMetal_heavy",
+      "attack": "warden-attack.mp3",
+      "skill": "warden-skill.mp3",
+      "ult": "warden-ult.mp3"
+    },
+    "zara": {
+      "name": "Suzu Hanabi",
+      "element": "Fogo",
+      "weapon": "impactTin_medium",
+      "attack": "zara-attack.mp3",
+      "skill": "zara-skill.mp3",
+      "ult": "zara-ult.mp3"
+    },
+    "kira": {
+      "name": "Kira das Nove Caudas",
+      "element": "Luz",
+      "weapon": "impactSoft_medium",
+      "attack": "kira-attack.mp3",
+      "skill": "kira-skill.mp3",
+      "ult": "kira-ult.mp3"
+    },
+    "haru": {
+      "name": "Haru Kaze",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "haru-attack.mp3",
+      "skill": "haru-skill.mp3",
+      "ult": "haru-ult.mp3"
+    },
+    "ivy": {
+      "name": "Itsuki Tokiwa",
+      "element": "Raio",
+      "weapon": "impactMetal_medium",
+      "attack": "ivy-attack.mp3",
+      "skill": "ivy-skill.mp3",
+      "ult": "ivy-ult.mp3"
+    },
+    "nari": {
+      "name": "Nari Kōkaku",
+      "element": "Raio",
+      "weapon": "impactPunch_medium",
+      "attack": "nari-attack.mp3",
+      "skill": "nari-skill.mp3",
+      "ult": "nari-ult.mp3"
+    },
+    "aurelia": {
+      "name": "Akane Tsubasa",
+      "element": "Luz",
+      "weapon": "impactBell_heavy",
+      "attack": "aurelia-attack.mp3",
+      "skill": "aurelia-skill.mp3",
+      "ult": "aurelia-ult.mp3"
+    },
+    "dario": {
+      "name": "Daisuke Yane",
+      "element": "Sombra",
+      "weapon": "knifeSlice",
+      "attack": "dario-attack.mp3",
+      "skill": "dario-skill.mp3",
+      "ult": "dario-ult.mp3"
+    },
+    "cole": {
+      "name": "Kōta Harada",
+      "element": "Fogo",
+      "weapon": "impactMetal_medium",
+      "attack": "cole-attack.mp3",
+      "skill": "cole-skill.mp3",
+      "ult": "cole-ult.mp3"
+    },
+    "dana": {
+      "name": "Nagi Kusano",
+      "element": "Natureza",
+      "weapon": "impactBell_heavy",
+      "attack": "dana-attack.mp3",
+      "skill": "dana-skill.mp3",
+      "ult": "dana-ult.mp3"
+    },
+    "wade": {
+      "name": "Watari Kōya",
+      "element": "Terra",
+      "weapon": "impactMetal_medium",
+      "attack": "wade-attack.mp3",
+      "skill": "wade-skill.mp3",
+      "ult": "wade-ult.mp3"
+    },
+    "garrick": {
+      "name": "Gantetsu do Vale",
+      "element": "Fogo",
+      "weapon": "impactSoft_medium",
+      "attack": "garrick-attack.mp3",
+      "skill": "garrick-skill.mp3",
+      "ult": "garrick-ult.mp3"
+    },
+    "zira": {
+      "name": "Shiina Kagemi",
+      "element": "Vento",
+      "weapon": "knifeSlice",
+      "attack": "zira-attack.mp3",
+      "skill": "zira-skill.mp3",
+      "ult": "zira-ult.mp3"
+    },
+    "n9": {
+      "name": "Unidade Kū",
+      "element": "Sombra",
+      "weapon": "impactMetal_medium",
+      "attack": "n9-attack.mp3",
+      "skill": "n9-skill.mp3",
+      "ult": "n9-ult.mp3"
+    },
+    "unit7": {
+      "name": "Unidade Tetsu",
+      "element": "Fogo",
+      "weapon": "impactPunch_medium",
+      "attack": "unit7-attack.mp3",
+      "skill": "unit7-skill.mp3",
+      "ult": "unit7-ult.mp3"
+    },
+    "rex": {
+      "name": "Raizō Kurenai",
+      "element": "Fogo",
+      "weapon": "impactMetal_medium",
+      "attack": "rex-attack.mp3",
+      "skill": "rex-skill.mp3",
+      "ult": "rex-ult.mp3"
+    },
+    "virel": {
+      "name": "Yūgen Kurenai",
+      "element": "Sombra",
+      "weapon": "impactWood_light",
+      "attack": "virel-attack.mp3",
+      "skill": "virel-skill.mp3",
+      "ult": "virel-ult.mp3"
+    },
+    "selene": {
+      "name": "Tokiko Yoru",
+      "element": "Sombra",
+      "weapon": "impactWood_light",
+      "attack": "selene-attack.mp3",
+      "skill": "selene-skill.mp3",
+      "ult": "selene-ult.mp3"
+    },
+    "tessa": {
+      "name": "Tsubaki Morie",
+      "element": "Natureza",
+      "weapon": "impactMetal_medium",
+      "attack": "tessa-attack.mp3",
+      "skill": "tessa-skill.mp3",
+      "ult": "tessa-ult.mp3"
+    },
+    "kaji": {
+      "name": "Kaji, o Espectro",
+      "element": "Fogo",
+      "weapon": "knifeSlice",
+      "attack": "kaji-attack.mp3",
+      "skill": "kaji-skill.mp3",
+      "ult": "kaji-ult.mp3"
+    },
+    "kori": {
+      "name": "Kori, o Gélido",
+      "element": "Gelo",
+      "weapon": "impactSoft_medium",
+      "attack": "kori-attack.mp3",
+      "skill": "kori-skill.mp3",
+      "ult": "kori-ult.mp3"
+    },
+    "goku_ui": {
+      "name": "Hinata, Aurora Silenciosa",
+      "element": "Vento",
+      "weapon": "impactSoft_medium",
+      "attack": "goku_ui-attack.mp3",
+      "skill": "goku_ui-skill.mp3",
+      "ult": "goku_ui-ult.mp3"
+    },
+    "sasuke_susanoo": {
+      "name": "Rai, Armadura do Trovão Negro",
+      "element": "Sombra",
+      "weapon": "knifeSlice",
+      "attack": "sasuke_susanoo-attack.mp3",
+      "skill": "sasuke_susanoo-skill.mp3",
+      "ult": "sasuke_susanoo-ult.mp3"
+    },
+    "gojo_void": {
+      "name": "Sora, Olhar do Vazio",
+      "element": "Luz",
+      "weapon": "impactSoft_medium",
+      "attack": "gojo_void-attack.mp3",
+      "skill": "gojo_void-skill.mp3",
+      "ult": "gojo_void-ult.mp3"
+    },
+    "tanjiro_hinokami": {
+      "name": "Akira, Dança da Brasa Solar",
+      "element": "Fogo",
+      "weapon": "knifeSlice",
+      "attack": "tanjiro_hinokami-attack.mp3",
+      "skill": "tanjiro_hinokami-skill.mp3",
+      "ult": "tanjiro_hinokami-ult.mp3"
+    },
+    "ichigo_bankai": {
+      "name": "Hiro, Lâmina da Lua Final",
+      "element": "Sombra",
+      "weapon": "knifeSlice",
+      "attack": "ichigo_bankai-attack.mp3",
+      "skill": "ichigo_bankai-skill.mp3",
+      "ult": "ichigo_bankai-ult.mp3"
+    },
+    "vegeta_ego": {
+      "name": "Shiden, Orgulho Destruidor",
+      "element": "Raio",
+      "weapon": "knifeSlice",
+      "attack": "vegeta_ego-attack.mp3",
+      "skill": "vegeta_ego-skill.mp3",
+      "ult": "vegeta_ego-ult.mp3"
+    },
+    "luffy_gear5": {
+      "name": "Tobimaru, Tambor da Maré Livre",
+      "element": "Luz",
+      "weapon": "impactPunch_medium",
+      "attack": "luffy_gear5-attack.mp3",
+      "skill": "luffy_gear5-skill.mp3",
+      "ult": "luffy_gear5-ult.mp3"
+    },
+    "naruto_kurama": {
+      "name": "Hayato, Fúria da Raposa do Vento",
+      "element": "Fogo",
+      "weapon": "impactPunch_medium",
+      "attack": "naruto_kurama-attack.mp3",
+      "skill": "naruto_kurama-skill.mp3",
+      "ult": "naruto_kurama-ult.mp3"
+    },
+    "mercy_valkyrie": {
+      "name": "Akane, Asas da Alvorada",
+      "element": "Luz",
+      "weapon": "impactBell_heavy",
+      "attack": "mercy_valkyrie-attack.mp3",
+      "skill": "mercy_valkyrie-skill.mp3",
+      "ult": "mercy_valkyrie-ult.mp3"
+    },
+    "sailor_eternal": {
+      "name": "Aiko, Lua Eterna",
+      "element": "Luz",
+      "weapon": "impactBell_heavy",
+      "attack": "sailor_eternal-attack.mp3",
+      "skill": "sailor_eternal-skill.mp3",
+      "ult": "sailor_eternal-ult.mp3"
+    },
+    "dante_dt": {
+      "name": "Raizō, Pacto Carmesim",
+      "element": "Fogo",
+      "weapon": "impactMetal_medium",
+      "attack": "dante_dt-attack.mp3",
+      "skill": "dante_dt-skill.mp3",
+      "ult": "dante_dt-ult.mp3"
+    },
+    "jinx_arcane": {
+      "name": "Suzu, Fagulha Sem Freio",
+      "element": "Raio",
+      "weapon": "impactTin_medium",
+      "attack": "jinx_arcane-attack.mp3",
+      "skill": "jinx_arcane-skill.mp3",
+      "ult": "jinx_arcane-ult.mp3"
+    }
+  },
+  "files": [
+    {
+      "name": "solen-attack.mp3",
+      "sha256": "8013b309fa97af7e32691c9c53f57833b2c41b911f1afb60443e31abe0fab413",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "solen-skill.mp3",
+      "sha256": "7dfecb7582b544eda25b3d20034181a0d2422ea40fc943b6580ac31b53a10c05",
+      "kit": "Onda Solar",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "solen-ult.mp3",
+      "sha256": "194cbe48a232d826ba022b47ffd7e2f5af77762e0a59c5cd745ad71efad7392c",
+      "kit": "Esfera dos Mil Sóis",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "varyon-attack.mp3",
+      "sha256": "976763c209f50d1c8a804f72c03681460dd538321c093159916d9133f30b4fb5",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "varyon-skill.mp3",
+      "sha256": "6205f692f5a5bb56c1b223d45884b41241478f39f224cf7d46323677da0e78ea",
+      "kit": "Disparo Violeta",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "varyon-ult.mp3",
+      "sha256": "0b72b745d26a1da3ccc1c66deffab2445a9966c53dce64da2942f94e1cc615ff",
+      "kit": "Raio Real",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "hayato-attack.mp3",
+      "sha256": "99769b376945cd454662eed8a9aca29a6ff02d5e2659003b4b174402ccbba6bd",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "hayato-skill.mp3",
+      "sha256": "0cd5964927017cdb05d0f67a98a2282df40e43038de0c18ba9bb0421915af09c",
+      "kit": "Legião de Sombras",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.45,
+          "offset": 0.242,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "hayato-ult.mp3",
+      "sha256": "7d0c24fe29228b968809ba0dc5af43d1d61c54cf5c19c87516faa600354001ae",
+      "kit": "Ciclone Cortante",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "ren-attack.mp3",
+      "sha256": "1202c0ce64c614feb1b604d8331b6815321ba8bffcf48e655816522480431623",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "ren-skill.mp3",
+      "sha256": "6fc600d48a07275447c6d8b31e6de863c94c0e9730bd7e43bb31b90b80d15658",
+      "kit": "Lança Trovejante",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "ren-ult.mp3",
+      "sha256": "35b499b2621caeffd8c5788039152a196325d103d3f5d1432e7b5d8616a0b770",
+      "kit": "Chama do Eclipse",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "tobias-attack.mp3",
+      "sha256": "fa86227b17631c7347b519c7dd59a7f5ed01b3ed1a7a350311459a3bff01f69c",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "tobias-skill.mp3",
+      "sha256": "66ea66a87c979d05af729262d1791a58ae24e92a2b179fe0c673df5009689410",
+      "kit": "Rajada de Punhos",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "tobias-ult.mp3",
+      "sha256": "b1f808c8f11c9d62dcedb0b72b5e4122a21af6aae3f4c77cadfdca4f8154302e",
+      "kit": "Maré Gigante",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kenji-attack.mp3",
+      "sha256": "da01aa7810159f3c843181b3dbcd9ec33de45f63f747018ab614bbfa8324fd9d",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kenji-skill.mp3",
+      "sha256": "fc2e7f472ea9dc9d4aba81fad8429aab7055f8fdf48d9a4601ecb363b8e84981",
+      "kit": "Corte Cruzado",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kenji-ult.mp3",
+      "sha256": "ef19bc38b227c390ede032cf5890ae904d415d7f4c0f7892cbf29e39a2de0fb1",
+      "kit": "Tempestade de Lâminas",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/drawKnife2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "hiro-attack.mp3",
+      "sha256": "3713f9caefcb4ee7f7f56efa01b40c34efccd8ebbb9b2c18f7b401035c1178d3",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "hiro-skill.mp3",
+      "sha256": "762cfee2179853040cba07eb9daab87869163d968cdf92977854e198c3d2290a",
+      "kit": "Crescente Cortante",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "hiro-ult.mp3",
+      "sha256": "b634b57c51cdc17df2922afbc28b10932bea41e0b0479a0063764fcb77348ff6",
+      "kit": "Lua Sem Fim",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "yuki-attack.mp3",
+      "sha256": "6fe6a2eac9fccd6e606d4f601749a1fd650fe9e613d8e5a3a2b5ade197e2cc31",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "yuki-skill.mp3",
+      "sha256": "18656da484e228f340155d9cc4535c7a344c61190baa42dffef003ceb0128669",
+      "kit": "Lótus Branca",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "yuki-ult.mp3",
+      "sha256": "63657cc0e41a981ab8a84376a8387e9e2643eb05cd2c1d11bb500b573e4dbe91",
+      "kit": "Floresta de Gelo Eterno",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "akira-attack.mp3",
+      "sha256": "2e37813bd0624df8945bd9f75ef752d296fe524a64ecaa2ee59eb6d9d1cb44af",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_medium_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "akira-skill.mp3",
+      "sha256": "1d906053748c6eadbc73ebddb4aed859fadda121e2776f2f43149daeefa260f7",
+      "kit": "Correnteza Giratória",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_medium_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "akira-ult.mp3",
+      "sha256": "26cfec1db1126e7b117f99e29ac4ec847f2bbba1bba723184f6fdbf3c9c247d9",
+      "kit": "Dança da Brasa",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/drawKnife2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "hana-attack.mp3",
+      "sha256": "768ee505ec56df8b2d856583ca2cb8239a792c233786d08f93bc4c8280a9dab3",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "hana-skill.mp3",
+      "sha256": "a36ee4573fec5400738277bf7b3bc06351fdebeb2a6a27f4ff82487ec9a0d4b7",
+      "kit": "Chute Carmesim",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "hana-ult.mp3",
+      "sha256": "f20722907fb5897cf4473a3266fbc6f24b8b229f7b7f825fd2f67a99a1c903bf",
+      "kit": "Sangue Incandescente",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "sora-attack.mp3",
+      "sha256": "2cf8e36cec0ab069a01986f8b8fa56d0ac184b19d938cb19aeb41252d4fe934c",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "sora-skill.mp3",
+      "sha256": "eadbad8ebb957f4271d19bb6df8ec4195e19eecf8fa95e67daf758d9bb0d3570",
+      "kit": "Ponto Rubro",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "sora-ult.mp3",
+      "sha256": "a3457379c1b97f3f2fb3c29c451fce1ab74136fa8e0ffa959fc7c0e033737a4e",
+      "kit": "Colapso Índigo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "daichi-attack.mp3",
+      "sha256": "313dfa3d55d3691919e93f24a738c8e89a6bbe243c2d0b55899fc59d7fc3c478",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "daichi-skill.mp3",
+      "sha256": "aab168ee6183c31d06be048d8e1efeab00a6f5a734163bd1467605efc13e29a0",
+      "kit": "Punho Atrasado",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        }
+      ]
+    },
+    {
+      "name": "daichi-ult.mp3",
+      "sha256": "8903f477a26d24886598b5e0432f281bae03ff1f54f88a6fc9511d7e3e8c8277",
+      "kit": "Despertar Amaldiçoado",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "lucan-attack.mp3",
+      "sha256": "d3d6a0e6d55dccd970629b025597439c904578b1d83f7d23ea9f51c93dc415e3",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "lucan-skill.mp3",
+      "sha256": "f562a54469b0072f8816a2d11fbc7dd8239710dc62ebf0a112febef579e4af31",
+      "kit": "Investida Vertical",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "lucan-ult.mp3",
+      "sha256": "7725e3728088293473c3ebcc82198a5dd888c256f356f2a527522cd273443613",
+      "kit": "Giro Cortante",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "mira-attack.mp3",
+      "sha256": "3764673294047a0cd49061c05a223c44d7d5f92a6af0a0d33be10948103a5777",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "mira-skill.mp3",
+      "sha256": "581a9b4de1309c6086015fb227000049e7e5595d6b21e457a93cbb73c30e289e",
+      "kit": "Lâminas Gêmeas",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        }
+      ]
+    },
+    {
+      "name": "mira-ult.mp3",
+      "sha256": "87a52e1c595045ddd410fca56aa10cceaf82670b9bfb9a2b08a172b4bdd5acc0",
+      "kit": "Fúria do Clã",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "erik-attack.mp3",
+      "sha256": "e303972313054d14fc1a416dde602fa0d9a8632187f268f54567b0cdb3bb95b3",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMining_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "erik-skill.mp3",
+      "sha256": "c3743dd69f7e3fe3969082a7a479d59f63e907c8d25a100d5de9db3475498adb",
+      "kit": "Soco Colossal",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMining_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "erik-ult.mp3",
+      "sha256": "94fd0b156081a316753ebdb41521a0ffd02ae13df3a9c2e2ae247553a02f22e3",
+      "kit": "Colosso Primordial",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMining_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "alden-attack.mp3",
+      "sha256": "47a936f13bfe4005aa8fd06569514a53680e17f8f566cd0f805f15698f5bd1c1",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "alden-skill.mp3",
+      "sha256": "2ad9de3ce0ed4f2d3b59f86a7598b6be712a9d4a1ba1eaf97830fd32ba9cb734",
+      "kit": "Muralha de Aço",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "alden-ult.mp3",
+      "sha256": "cbc5e36ca3db3fa556aae23a6955361e7272408c2cab6d3ac45f18d6f8d79682",
+      "kit": "Transmutação Suprema",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "ignis-attack.mp3",
+      "sha256": "4876c1266ac6001d47aaebfe6c57793c4e693e43b07fb9ce460db924b0db7b39",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "ignis-skill.mp3",
+      "sha256": "482e988feb0597a5517aeb1f66f60f958a14e9de2b5a57589d4b6b21e1c93d8f",
+      "kit": "Faísca Alquímica",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "ignis-ult.mp3",
+      "sha256": "ddde088719eb11fe3f154c270b1ab32ca57b6ad16f58cee821061d5fe1908400",
+      "kit": "Inferno do Deserto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "toma-attack.mp3",
+      "sha256": "fdf021213b66c4685b40ab78a5480421e7f9ecace7514ec176f47fada495cab9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "toma-skill.mp3",
+      "sha256": "139af7e5de50d96c974f37db3f6e6bcfc185cb9d7e148d6a1283255fcefaba1c",
+      "kit": "Rajada de Dedo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "toma-ult.mp3",
+      "sha256": "df50f78a691994572d3e056b1bb3ec6d9373f5905d22f822a7389beebad10a20",
+      "kit": "Soco Supremo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "ryo-attack.mp3",
+      "sha256": "02d94043a584aba7bc03a104d42dfe8e403b5b1aff07107f93bd481014dbfeef",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "ryo-skill.mp3",
+      "sha256": "cc12d0838110b887723e414da7f8c311879fb4bf1a964ef799e30e96844d9e6e",
+      "kit": "Tiro Guiado",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "ryo-ult.mp3",
+      "sha256": "1f7ebd124a298de85052f5db0646a854355f2dfba3a3358a44b739cece66e9b3",
+      "kit": "Impacto Giratório",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "grant-attack.mp3",
+      "sha256": "1eca07b9c5cbce976655fec4425a0d0602ff4d966860d082b8553d08b1b17519",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "grant-skill.mp3",
+      "sha256": "7ea5c3e3d3e29c8648f067f17fe0e684f41c20a53d0f8c2332329c3fbf881b96",
+      "kit": "Golpe Vendaval",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "grant-ult.mp3",
+      "sha256": "3d0cab11a10a5601a68f94eac258c0ef9d309a52e3c5fc14f7a3c29345c1795e",
+      "kit": "Golpe da Nação",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kenta-attack.mp3",
+      "sha256": "a139e325d5ee3c3ec463a09dbeeac1a4973639bf8b5e81ca2582ee7ef43ad425",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kenta-skill.mp3",
+      "sha256": "bcda076fc4c4334453dcbf3fd3c9b00ed993d7cbf81066acf362e5c97b84b69c",
+      "kit": "Socos em Série",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "kenta-ult.mp3",
+      "sha256": "1b3c9f4dd206d901a658c0826de515c2abcd0c9fddbb9a36eb482028a3600b66",
+      "kit": "Golpe Definitivo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "volt-attack.mp3",
+      "sha256": "879440449a1386106afd5a396e16a13ef9eb76c2836e6acb5f8b59a80003f4c4",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "volt-skill.mp3",
+      "sha256": "b94ef60879a25fc8b4d38d4e4a3aedd70e7df9984d84320a103e9744345a0519",
+      "kit": "Canhão Térmico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "volt-ult.mp3",
+      "sha256": "473eda67be194a56124c381419f497670ba63930b24c0318fe6061f27f3e4587",
+      "kit": "Sobrecarga do Núcleo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kai-attack.mp3",
+      "sha256": "a7ff340bdc110db5c2644e4a2b10595fdd70c2d6b5019225d131942ac4e446b4",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "kai-skill.mp3",
+      "sha256": "00ea57a7835d5e815df154e751982e4de312a2abcd8fec16e3aac26273a39bf9",
+      "kit": "Punho Carregado",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "kai-ult.mp3",
+      "sha256": "614d74d09e94223253048ae9752b74e69d6eb2fa45174f0b33db86e4f42d01da",
+      "kit": "Forma do Juramento",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "riku-attack.mp3",
+      "sha256": "66cb1e616d4b0dc456bb3de84cfaf6ac158916f2773039ec932864ba690c2ccf",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "riku-skill.mp3",
+      "sha256": "9422186fea109a7b2889689f890666468c5dfbdb2bf810b1addd239dc4251d86",
+      "kit": "Coroa Trovejante",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "riku-ult.mp3",
+      "sha256": "4aaa27386d83450e73204468fff61c5c5caa840d7dca1961038513e137ccda6d",
+      "kit": "Relâmpago Divino",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/drawKnife2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "elian-attack.mp3",
+      "sha256": "c1e4f92bda3a8727c23c290f82cac6617f5cae62c78f7e142217c40b5d9a9c8e",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "elian-skill.mp3",
+      "sha256": "011278c58dca3d40558dd45c7b5393ebdc89e53a196c3c18e426f25c4c4d1257",
+      "kit": "Grilhão Restaurador",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "elian-ult.mp3",
+      "sha256": "0570f34be821a555f53297f2a55fd6456778541b2d377c4bd54e3ca1cbfbdbf0",
+      "kit": "Sentença Acorrentada",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "aiko-attack.mp3",
+      "sha256": "1d77ae8b459def86dfd23363ff561ddf5bcbbdfcd9d2d34ed480c67c9e6bdee6",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "aiko-skill.mp3",
+      "sha256": "f0bf094f69a668501b097b64d784ac21dff176612ecfc2859e067ce7b96d92f8",
+      "kit": "Tiara Lunar",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "aiko-ult.mp3",
+      "sha256": "c0d8987d68605ecce9536a0103e166b0ca27cd356a65241421cb705587a12b68",
+      "kit": "Cura do Luar",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kiba-attack.mp3",
+      "sha256": "9f83a3efcd7168298c344e0d27a281f6e70ac6d2e06b7dcda17ca054bc744481",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kiba-skill.mp3",
+      "sha256": "493d4bf6145b4c27b80c8f4990ed93100a71d1e3b3b64bd3ea58f7e206ed7cde",
+      "kit": "Garras de Aço",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        }
+      ]
+    },
+    {
+      "name": "kiba-ult.mp3",
+      "sha256": "0fb88236d5328601afbb128c2892b9fde96de69d2b2fd6f1829f2817e5e2b991",
+      "kit": "Fenda do Vendaval",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "jin-attack.mp3",
+      "sha256": "71f61132c205c4e1fece7c7d11acac14a69caed9f350171031b8cbe333d619b9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "jin-skill.mp3",
+      "sha256": "70b4cbf65f0183200e431eb7fd2bb1c1627d17b42d473ee2a1faecd4f3d1b6ae",
+      "kit": "Queda da Garça",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "jin-ult.mp3",
+      "sha256": "356d3ce307e08f97705c6be7ab645f4f0b3dab3338042520eaab329fb71cbac1",
+      "kit": "Relâmpago do Céu Alto",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "drake-attack.mp3",
+      "sha256": "185baf4b6f1d124246c3217df609bccd597573c103240d08c06f716f4bd186dc",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "drake-skill.mp3",
+      "sha256": "a844684f58065b2df6a10d951238b8eabbc18a09d2352e172e6228e33e21f182",
+      "kit": "Rugido Flamejante",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "drake-ult.mp3",
+      "sha256": "b19d5da73feb515688901f1f2662e73d65a19b6bf232e8e466d5752efaf44231",
+      "kit": "Forma Draconiana",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "sienna-attack.mp3",
+      "sha256": "c7e7beb6261dd90e17b197304b11dfe0fbf4d0d516a1c959fd5074499cc395a9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPlate_heavy_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "sienna-skill.mp3",
+      "sha256": "6179ab679aab30b73819a383fcb354f5fffefe823bb3035edeaf96f7710f7c00",
+      "kit": "Armadura Adamantina",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPlate_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "sienna-ult.mp3",
+      "sha256": "7730f04b66390fb82dcf4caa463d964204b777c6490c245f9bfd7a47a62f382f",
+      "kit": "Armadura do Céu",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactMining_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "daigo-attack.mp3",
+      "sha256": "95e5e510153feea707c71721f7e0bcd47cd4ab4ce18281602275ca84aa9f69e5",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "daigo-skill.mp3",
+      "sha256": "f87d2e1b8e6796dec6a92bd5a0da367c146f24434498c996872005b344581f17",
+      "kit": "Esfera de Ki",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "daigo-ult.mp3",
+      "sha256": "c53a6550667346e7dddd2ce921ac788b82ab34da45e80e123ab0cb2696f440fa",
+      "kit": "Punho Ascendente",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "mei-attack.mp3",
+      "sha256": "cba445960f68b0017959dd726346121e10e1ef8cb56d130ea0029cd8bc829bb6",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "mei-skill.mp3",
+      "sha256": "74d9ff134481d102adb6b54dac7bef291c9c488b6c62c88a8ac6086e80ba26b4",
+      "kit": "Tempestade de Chutes",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "mei-ult.mp3",
+      "sha256": "2583d4960c00269c65f7ff63a8783f66f65fbfe4df53725130be4d065f4f1a7d",
+      "kit": "Giro da Garça",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kael-attack.mp3",
+      "sha256": "00bd557926fb28bc73816232b4552eed58b3e37c5d2cecafaf6bce6586ef6da9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kael-skill.mp3",
+      "sha256": "1b051ed4b6f98bb1956af0ab85633663587ae9c3b8a008c20073588e938e4e8f",
+      "kit": "Corte em X",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "kael-ult.mp3",
+      "sha256": "0859adaf3da7fd8155e62259323856ea19f9fc524e2fe1159f5c34675f0c29b5",
+      "kit": "Nove Golpes Celestes",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/drawKnife2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "sael-attack.mp3",
+      "sha256": "d92b715b819923085ed34ba96a01c5dab4c9ab3e11b25cf32749cf4c025b461a",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "sael-skill.mp3",
+      "sha256": "9dae6078a832b0ae47ff03779893b4ecf2033730487e62109aa284bc9e56ed65",
+      "kit": "Oito Cortes",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "sael-ult.mp3",
+      "sha256": "76f0290eb492bd67c1c5f5354fb819ee05c4e3775eb14baede1432cd5f2feddd",
+      "kit": "Estrela Cadente",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "rina-attack.mp3",
+      "sha256": "73e47c7ce05e454cac2341cec9337b52b5cb31cd647e41fe159f2cbaf66eccf8",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMining_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "rina-skill.mp3",
+      "sha256": "bc5b62d2dfa5c8b1a2e6be1e76bfdbbed53e53845bb182817d2f67b232c495db",
+      "kit": "Sequência de Golpes",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMining_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.45,
+          "offset": 0.242,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "rina-ult.mp3",
+      "sha256": "4b2c103b993fd7e4e7266b754dad2d533e20cc8054de07aa082f08f72a864fca",
+      "kit": "Golpe do Firmamento",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMining_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "nadia-attack.mp3",
+      "sha256": "4a9e64eda27720239737afda73e254024f9c9b9e96b8f636231bf33d90a6e973",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "nadia-skill.mp3",
+      "sha256": "43ff084bed70fc98c83352d94b369827cc836ddb47d6a81a0675456e7d44e6ec",
+      "kit": "Tiro Preciso",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "nadia-ult.mp3",
+      "sha256": "6e9bd4887622eff4645b03f7f934e1839d9d9256e550eedee90661d26fd1eee2",
+      "kit": "Flechas Explosivas",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "thorn-attack.mp3",
+      "sha256": "8452f7327a186f00fec9f324c9a86e6d8da1673ec04884633564fe3fee27a8be",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "thorn-skill.mp3",
+      "sha256": "d35b4fdbcd70cbb10c3e68f4d2e0ed0d8892761d787960e670d1aa4acdd40aa3",
+      "kit": "Arremesso do Machado Gélido",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "thorn-ult.mp3",
+      "sha256": "fbd169a826f92e5fdacd49dcde3c18912553ad8f35a42873de92fbb038daf69e",
+      "kit": "Ira do Guerreiro",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactMetal_heavy_003.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "bjorn-attack.mp3",
+      "sha256": "abec9101f4a88e72a440695c7d540443b43d9010751e9cec912bd2b385eb3771",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "bjorn-skill.mp3",
+      "sha256": "30df7b9d04d8b9f59ab2c228a5d9a20f692db480a483c22093bf42358641d643",
+      "kit": "Flecha de Luz",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "bjorn-ult.mp3",
+      "sha256": "cd2cdd9a7796f756c82953a3ff4b41e4839edfaaf97e5caaa928c2729b7cef36",
+      "kit": "Invocação Rúnica",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "rook-attack.mp3",
+      "sha256": "e740357137b2bacc1290606aa0de9ae9beead27a973d7483c34977a34627b6b7",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "rook-skill.mp3",
+      "sha256": "5c932c48eb74926a9cdefb8a535339d01c7d99bb48eac29f9a8e30ab632790f7",
+      "kit": "Granada de Fragmentação",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "rook-ult.mp3",
+      "sha256": "db88c23245812f2813500eceffb6c9fc21b87ccac6191ec753d2478c0081249f",
+      "kit": "Canhão Orbital",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "warden-attack.mp3",
+      "sha256": "4fc54faf1d39a6b6f63334149c3e5231d3a11649a55c694f37cd8fbb7941b60e",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "warden-skill.mp3",
+      "sha256": "8f7fc870aba3f2c630e94e4d74eb988d97478e01b0aebee3afdb092cb769266d",
+      "kit": "Escopeta Dupla",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "warden-ult.mp3",
+      "sha256": "0304cf44568e8633f3c4ca681e0ed8ef8cf5da5253964f3fec24b4fda01136e1",
+      "kit": "Canhão de Plasma",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "zara-attack.mp3",
+      "sha256": "f3ad5b1bdf37c8e4799169eac6b4ac1872d108d93a36603733bc5a9ac3803d17",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "zara-skill.mp3",
+      "sha256": "5c6bff55f84bdce1113dd92096b46eba7535f2f4563ecee9e415713097cb2c9d",
+      "kit": "Faísca!",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "zara-ult.mp3",
+      "sha256": "780d9e5b9343e299d7295062cb2b29e46465c3edf1857a99f2c4f7914448789a",
+      "kit": "Míssil Maluco",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kira-attack.mp3",
+      "sha256": "29bcef65d596c8f0aeb33aa7a60b3683d49ec96b3d79e28728651b7dd8a3bfd3",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kira-skill.mp3",
+      "sha256": "9891e94d82f3d1cc3bc825f87a340a27b3db7589b404cad6a2176e93bc5c9f64",
+      "kit": "Encanto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kira-ult.mp3",
+      "sha256": "6b0e5e28ec1f690474e118dce7063696d258f8232e2a23a1453760403934f80a",
+      "kit": "Dança dos Fogos-Fátuos",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "haru-attack.mp3",
+      "sha256": "657c9610c1b1a5d3d08ad3a4dd71c247096b8be058e4cdf1349d0261e28fad38",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "haru-skill.mp3",
+      "sha256": "a50c035043f4b10ca256100fc4437b5a5d7cfa02a6afd801296a033778899e9a",
+      "kit": "Vórtice de Aço",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "haru-ult.mp3",
+      "sha256": "58e0821acc5f84aa41eeb90be917f8f04046514db7991af2a87eee0b590da5ca",
+      "kit": "Vendaval Final",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "ivy-attack.mp3",
+      "sha256": "5101126a6a269f1a86e959cdd5024578e3cd5447e3a0a69c09ada076b4cfcc3f",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "ivy-skill.mp3",
+      "sha256": "3ac98a45ceee954ceb939456149f47fb3e3f2d7ee50682b176754a75e10be335",
+      "kit": "Retrocesso",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "ivy-ult.mp3",
+      "sha256": "758b0568f07543bb0835932b8546571b9bdc56c0ae665dea2cbf868165f6e60b",
+      "kit": "Mina Cronal",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "nari-attack.mp3",
+      "sha256": "84d01d2bca5773e3163093d61775ad83a5b482f112c48667575b6d6a10136dfc",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "nari-skill.mp3",
+      "sha256": "5b07477447c8b6885c144836a52f7c109bd2c4138dbbbf92ddc1ea4d98a545b2",
+      "kit": "Propulsores",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "nari-ult.mp3",
+      "sha256": "0a08efd24b855319c46776cdf91ccde11e0128a4775644a97457eace9d4b7202",
+      "kit": "Autodestruição",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "aurelia-attack.mp3",
+      "sha256": "921c8b5582ff786f334fba2f7868651ff3d4fdaa17ea41f40b41927b53ae272b",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "aurelia-skill.mp3",
+      "sha256": "e6ff37b2e3f266d5cc0228b510acf9c7f67b1e2e506ff1cd86bb49eed79c642a",
+      "kit": "Cajado Curativo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "aurelia-ult.mp3",
+      "sha256": "70f8db3b42d6e4494f74d94f45d5b63a1e59b81680f1dd45b2afada522d3595b",
+      "kit": "Ressurreição",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "dario-attack.mp3",
+      "sha256": "98d5fa3bbca16eb08b3fab2995fc76004555877bbb06ecf64c388abba20721c9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "dario-skill.mp3",
+      "sha256": "305e9ec7065333d89358a56bcb5aff7550fbec38aba36c017eb59c8e38f2de87",
+      "kit": "Lâmina do Punho",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "dario-ult.mp3",
+      "sha256": "7c41ae81e27383d1bcbee86f3938c37bde3114e79a105454bad344340ca150ab",
+      "kit": "Mergulho do Telhado",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "cole-attack.mp3",
+      "sha256": "a59963bb0df75ecd033a469ef6e29522b9e73349298148d89a1b69e5ef7635be",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "cole-skill.mp3",
+      "sha256": "577b5cadae950c9467cef041bbd3022381ebe53bb31b1ca3303574ae1e0bcd80",
+      "kit": "Tiro na Cabeça",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "cole-ult.mp3",
+      "sha256": "b90de41895e3295e45afcf062dd4ca078f71b8e165fc53441a15026943439969",
+      "kit": "Magnum e Chute",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "dana-attack.mp3",
+      "sha256": "a59fa42b05ca2a08bf3615334f2bcdb4251a7d4ac8932767e8c938d5293b21dd",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactWood_light_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "dana-skill.mp3",
+      "sha256": "a7d330da9e6b9224ace292166a2782eb0ddbb2e61ef7318a986ccbdd0f957302",
+      "kit": "Spray de Primeiros Socorros",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactWood_light_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "dana-ult.mp3",
+      "sha256": "4b974599bdc775618309972f058390d9ec5a633f32d7397f928cb37af56ad4ce",
+      "kit": "Granada Incendiária",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "wade-attack.mp3",
+      "sha256": "c466102743c90c4a23b24e8e6999a93209ffe86e37c4caee75cb68c30390f8de",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "wade-skill.mp3",
+      "sha256": "90f534ef6564683291b8849000d059a5643e19cf9cf5ca2befd514be77dd71e4",
+      "kit": "Revólver de Seis Tiros",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "wade-ult.mp3",
+      "sha256": "369e6bd69cd745e5501b17e3c6c266c8c9c555844a6d8b9dd64fde7b048f6937",
+      "kit": "Mira Lenta",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactMining_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "garrick-attack.mp3",
+      "sha256": "1b33fe8b45f1be14a1e247d7b33a689002b98a95decdd9265e325753c59e56c1",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "garrick-skill.mp3",
+      "sha256": "17c87c366963bbbd31f55e593f36aabf46b1f971034d8d82246190906b772901",
+      "kit": "Runa Ígnea",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "garrick-ult.mp3",
+      "sha256": "b1bc0dcd3fe35bbe3a4999cd6698adb524807aeb8a0322135db90690c46b17bb",
+      "kit": "Runa de Impacto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "zira-attack.mp3",
+      "sha256": "836a1df4f9101ab1563430358419d98f92ebb54e0c53792eae3bcdbf93c9c965",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "zira-skill.mp3",
+      "sha256": "84f3cb685ae71f1a1c5914da84ae45d11fcc3870ad2ca0efe6be79edf2c8e922",
+      "kit": "Salto entre Mundos",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "zira-ult.mp3",
+      "sha256": "60c3a98e0ff86e9d1798559a98c95132a7d6f6cbc0e255beb1910e682ea9a4ab",
+      "kit": "Fúria do Relâmpago Branco",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "n9-attack.mp3",
+      "sha256": "56ae11ece4c8e55409cfe81b5604be7e10a20c264dd491760fae096836553b6a",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "n9-skill.mp3",
+      "sha256": "f0be7e61e03820c30fd13724c0a28b00b7624ebece07743b2045c9214bdc6331",
+      "kit": "Programa Laser",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "n9-ult.mp3",
+      "sha256": "f4e45030789f5691390ce7d36fc6f891e4f7644ad16e001822d96c17fd92671a",
+      "kit": "Programa Supremo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "unit7-attack.mp3",
+      "sha256": "ec156ebfda62048d5e2c5b0e2d2a528ba746d3e284732f8019022416cd58f298",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "unit7-skill.mp3",
+      "sha256": "75660854185a4e36912a1832bee71f9218aa43164eaf6fe16094ffc0e706c6a7",
+      "kit": "Corte Selvagem",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "unit7-ult.mp3",
+      "sha256": "402951216226c26dc2dfc5efd540daf4f24654e0dd4084672cc6d6352741c0bb",
+      "kit": "Berserker Total",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "rex-attack.mp3",
+      "sha256": "791cec4f0b844dee965df8d5896f7b53bfc5f08eb88e66b48a1898f8828bb494",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "rex-skill.mp3",
+      "sha256": "dcdb87e483b9824d04dd9861084875d00da4d7c9e9527b83c1fa19e7d1cb2582",
+      "kit": "Pistolas Gêmeas",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.45,
+          "offset": 0.242,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "rex-ult.mp3",
+      "sha256": "a831a1a18f29d11145488e955de1952ef4a64e517997bb38387c2ebc1dfb5693",
+      "kit": "Pacto Demoníaco",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "virel-attack.mp3",
+      "sha256": "2893382f66d77d558be0bf631118ba654b1ae33979859cbac1f16b13638fa5ed",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "virel-skill.mp3",
+      "sha256": "7d49bb647f027760dddfc7dc55090357f6632e883d3eb37ff2a3fc10c9f28a50",
+      "kit": "Espadas Espirituais",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "virel-ult.mp3",
+      "sha256": "a540aa8b0051e3ff1e85d6c913d46fad084628dd397acdb73e59e463a52456f2",
+      "kit": "Corte Dimensional",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "selene-attack.mp3",
+      "sha256": "299a1f1cd81f761b3c31ddf7ac918ff5275f712bf30f57b8981a7b154ca999c9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "selene-skill.mp3",
+      "sha256": "1e553640e24ade61faebbf16cbeb79956ebf2b572351af5289f8b790482e0528",
+      "kit": "Chuva de Balas",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.45,
+          "offset": 0.085,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.45,
+          "offset": 0.17,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "selene-ult.mp3",
+      "sha256": "7d07f6128c497a3ca911e25acf998fa424c84815c4d7ed8e0798cfbb5499aae0",
+      "kit": "Demônio Infernal",
+      "layers": [
+        {
+          "source": "impact/Audio/impactWood_light_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "tessa-attack.mp3",
+      "sha256": "511e4475ce26bd8627a8bfd881abbc71a53ab5f7e749bdc749a610538c801856",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "tessa-skill.mp3",
+      "sha256": "dcc7b49f1a4ee6a4f730b7936f7c7e6293ce32b116ca1d5773181ac0a53c46dc",
+      "kit": "Flecha Elemental",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "tessa-ult.mp3",
+      "sha256": "cd9640ac03e25d12e356b807f9666a32496c77e553522b2b4d12e705edd842da",
+      "kit": "Tempestade de Flechas",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_light_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.45,
+          "offset": 0.10300000000000001,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_004.ogg",
+          "gain": 0.45,
+          "offset": 0.20600000000000002,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kaji-attack.mp3",
+      "sha256": "40a6e625612babf618f4242669cf74658b66ef1dee60c2ba74bce5ee149af50c",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "kaji-skill.mp3",
+      "sha256": "61da9dc5f1391fd34b84336507bea46c40291712be86c1cd58fafd816561ab3d",
+      "kit": "Lança de Corrente",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "kaji-ult.mp3",
+      "sha256": "63dfdaf7e58e86e6e5f7daf5b67b45bc3c22d9257c957c6033f150619e352df2",
+      "kit": "Execução",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "kori-attack.mp3",
+      "sha256": "94f28fbeea9d60bcd00d7a051360032b7cec952009b7c467ebca34ffd12facb6",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_001.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kori-skill.mp3",
+      "sha256": "7850a8032ee2d9820054ca9ad556115df8c5307b325654fd6663ceb91b65d8df",
+      "kit": "Esfera de Gelo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_002.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "kori-ult.mp3",
+      "sha256": "28f8e0008b95451f4363e708ccfa4f187e3e3124f89538ea6e719b1cc9f0848a",
+      "kit": "Congelamento Profundo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactGlass_light_003.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "goku_ui-attack.mp3",
+      "sha256": "87cdd02dda96859a3b68c6bceef3d4e6a9cf58a7a2199daa882d0ded2f32e0b1",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "goku_ui-skill.mp3",
+      "sha256": "194d64f1fbfcb74305ccba58399941a7c843a0df5d0783bc892f592cc129b9ad",
+      "kit": "Raio da Aurora",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "goku_ui-ult.mp3",
+      "sha256": "2ff9813404cc256ac82a0783b855f70f03a2ad5d910394ca4518069f44ccd55a",
+      "kit": "Sol Sem Sombra",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "sasuke_susanoo-attack.mp3",
+      "sha256": "c94414f6c0af35f27a50440e6b8890a3d1bee49e556713f74e81c215c4b078fa",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "sasuke_susanoo-skill.mp3",
+      "sha256": "6878e1b1ba5d3683c0676e34c01ba906cb74e2942f596e0170e2c2ecc4dedf5a",
+      "kit": "Flecha do Céu Rachado",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "sasuke_susanoo-ult.mp3",
+      "sha256": "05197ef3d792c63f0c65e7ddad86b1ec6151c88e88b138c3c7d558d785f7d522",
+      "kit": "Chama do Eclipse Eterno",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.972
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "gojo_void-attack.mp3",
+      "sha256": "73614c5d741f604b3e5bc281428cc820bd489898bdd36103b4301c0cabd4b4c4",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "gojo_void-skill.mp3",
+      "sha256": "7940bea8efa729a57ad79ea31950271040014a2a12be5bdc2efd48e4ce264c8c",
+      "kit": "Ponto Carmim",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "gojo_void-ult.mp3",
+      "sha256": "197f7f850bea9e4de2741af78cc2addf462f2a303ff4bfeeef4d38bd0b70a4bb",
+      "kit": "Colapso Violeta",
+      "layers": [
+        {
+          "source": "impact/Audio/impactSoft_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.004
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "tanjiro_hinokami-attack.mp3",
+      "sha256": "1666fe2a6af73b8d39556aea7c0a31fabebac1a7f69326333740d66700cc4e3b",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "tanjiro_hinokami-skill.mp3",
+      "sha256": "ab94833350cb341a3f2c3955fc66fa6592627c81332f6a21a74723348e2e0908",
+      "kit": "Passos da Brasa",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.139,
+          "rate": 1.07
+        },
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.45,
+          "offset": 0.278,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "tanjiro_hinokami-ult.mp3",
+      "sha256": "eb4d755b0f400763d5e8df738655f57e1eaf0842d220b4d73b440f5eda99a8a5",
+      "kit": "Alvorada Incandescente",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.036
+        },
+        {
+          "source": "rpg/Audio/drawKnife3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "ichigo_bankai-attack.mp3",
+      "sha256": "b3c6be16a48fec4d87d7c4c41b2cad527de40047d7c60dbf22afe60b8c1b4c4c",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_002.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "ichigo_bankai-skill.mp3",
+      "sha256": "22be2d9d7bdf2dd918e6b2efb366a68cb7a419a6da606b5702e227feb0bc3292",
+      "kit": "Crescente Negro",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_003.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "ichigo_bankai-ult.mp3",
+      "sha256": "d870c3bec781b8eba14d04c5cba82c431f1a9fa00e6971cec4f3b828a6152cd0",
+      "kit": "Noite Sem Lua",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactPlate_heavy_004.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.068
+        },
+        {
+          "source": "rpg/Audio/drawKnife1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "vegeta_ego-attack.mp3",
+      "sha256": "e113abc907d14a5250ab8a4d274535d2a8b86df721b7b263ed18f04d4b75e2f9",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "vegeta_ego-skill.mp3",
+      "sha256": "c2e227f38e91620dc5a2c07295d0075191b00280beaac79068eae68057c152a9",
+      "kit": "Estrela Partida",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "vegeta_ego-ult.mp3",
+      "sha256": "99c5e7857785d7556213ae174bee19685d992114106ded535068d90a8a0a9c0a",
+      "kit": "Sentença Real",
+      "layers": [
+        {
+          "source": "rpg/Audio/knifeSlice2.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9700000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 1.1
+        },
+        {
+          "source": "rpg/Audio/drawKnife2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "luffy_gear5-attack.mp3",
+      "sha256": "0c429e0d1eaaa1d4f0856c14bc4ac2c3a1e8c2d7685f2ac20b4d0385674b2a11",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "luffy_gear5-skill.mp3",
+      "sha256": "8dfd5f31773d2b67bf078c35dad699d94422093f56e5764cf524e5838b001f54",
+      "kit": "Punho do Maremoto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "luffy_gear5-ult.mp3",
+      "sha256": "845ac5ebf67b5f4940448e3cb3dce363b1fdf757541d0f82ff7cf2639a19bce4",
+      "kit": "Festa da Maré Alta",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9950000000000001
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.78
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "naruto_kurama-attack.mp3",
+      "sha256": "3508043683ef07a294294115520eb3ccb5b78e7a03028c581eaa0a7177cff04d",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_002.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "naruto_kurama-skill.mp3",
+      "sha256": "144a1948d439567a47d05c8fc39a53279a45cda6151559a1721786cde6b9488b",
+      "kit": "Esfera da Raposa",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "naruto_kurama-ult.mp3",
+      "sha256": "3c4d2b8800973f581983f2eb24ba89de8163de48a387957ed9797b1fe331b42b",
+      "kit": "Ciclone da Raposa",
+      "layers": [
+        {
+          "source": "impact/Audio/impactPunch_medium_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.02
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.812
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_002.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "mercy_valkyrie-attack.mp3",
+      "sha256": "ae43cd4a8b7f84e7da5a29a804bca277e4f24492c5cb4bf25d483fc807980649",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "mercy_valkyrie-skill.mp3",
+      "sha256": "27e14c667291da626278972de5effa776ab9d079c1fcfda22ad24133be3fd605",
+      "kit": "Feixe Restaurador",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "mercy_valkyrie-ult.mp3",
+      "sha256": "8ac084e7fafdbb2f252051120b6127532c76c621ab15601cbe4a94fdbb2780e4",
+      "kit": "Renascer Coletivo",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.045
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.8440000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.3,
+          "offset": 0.1,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "sailor_eternal-attack.mp3",
+      "sha256": "eae5505ed51029bd92689ac766f4505ad22b021ab6adef3e5cc2e91a1a2ce226",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_003.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "sailor_eternal-skill.mp3",
+      "sha256": "f4a8fb7d70753e463216956904d458d8d59725136971e123fd56956cbb1ee05f",
+      "kit": "Bênção Estelar",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        }
+      ]
+    },
+    {
+      "name": "sailor_eternal-ult.mp3",
+      "sha256": "0b3f85ad45d7433945548cc204c35630798310c8c61b6b51fb6065debd1114b6",
+      "kit": "Maré Lunar",
+      "layers": [
+        {
+          "source": "impact/Audio/impactBell_heavy_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_000.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.876
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.1
+        },
+        {
+          "source": "impact/Audio/impactBell_heavy_004.ogg",
+          "gain": 0.3,
+          "offset": 0.125,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "dante_dt-attack.mp3",
+      "sha256": "5ab97c2af24e454fa094d2669c70d518f7254df2a8911935b7ef38a9e09966c6",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_000.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "name": "dante_dt-skill.mp3",
+      "sha256": "7e5735f8185a6f55ffcf8d2ea8d486a0a89d7d2a205070fbceaae9ecfc42b079",
+      "kit": "Salva do Pacto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_001.ogg",
+          "gain": 0.45,
+          "offset": 0.242,
+          "rate": 1.1400000000000001
+        }
+      ]
+    },
+    {
+      "name": "dante_dt-ult.mp3",
+      "sha256": "db30e80be0cd05da01602f2fb8e3bd0bf511ac71c21c2ba2548a45a84846f30e",
+      "kit": "Forma do Pacto",
+      "layers": [
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.92
+        },
+        {
+          "source": "impact/Audio/impactWood_heavy_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.908
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.2000000000000002
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.45,
+          "offset": 0.121,
+          "rate": 1.07
+        },
+        {
+          "source": "impact/Audio/impactMetal_medium_002.ogg",
+          "gain": 0.45,
+          "offset": 0.242,
+          "rate": 1.1400000000000001
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_000.ogg",
+          "gain": 0.3,
+          "offset": 0.15000000000000002,
+          "rate": 0.72
+        }
+      ]
+    },
+    {
+      "name": "jinx_arcane-attack.mp3",
+      "sha256": "81d7e4cceafc33895d2282de80cb4283bb0fb3ed632182847bfc732ec3905b69",
+      "kit": "Ataque básico",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.82,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_004.ogg",
+          "gain": 0.12,
+          "offset": 0.025,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth3.ogg",
+          "gain": 0.16,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "jinx_arcane-skill.mp3",
+      "sha256": "297a6de4b3532b3dab73618c9a5dff7299b4b5d5489e9dd9e7e940a38ebb94a1",
+      "kit": "Canhão Sobrecarregado",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_002.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_000.ogg",
+          "gain": 0.42,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth1.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        }
+      ]
+    },
+    {
+      "name": "jinx_arcane-ult.mp3",
+      "sha256": "7ec0555881b4ae731f325e127db74f5370bfb907b7f184f15d738a39121a1af7",
+      "kit": "Foguete do Fim da Festa",
+      "layers": [
+        {
+          "source": "impact/Audio/impactTin_medium_003.ogg",
+          "gain": 0.68,
+          "offset": 0,
+          "rate": 0.9450000000000001
+        },
+        {
+          "source": "impact/Audio/impactTin_medium_001.ogg",
+          "gain": 0.6,
+          "offset": 0.07,
+          "rate": 0.9400000000000001
+        },
+        {
+          "source": "rpg/Audio/cloth2.ogg",
+          "gain": 0.24,
+          "offset": 0,
+          "rate": 1.3
+        },
+        {
+          "source": "impact/Audio/impactPunch_heavy_001.ogg",
+          "gain": 0.3,
+          "offset": 0.17500000000000002,
+          "rate": 0.72
+        }
+      ]
+    }
+  ],
+  "sourceFiles": [
+    {
+      "name": "impact/Audio/impactSoft_medium_000.ogg",
+      "sha256": "7d3ba0bb5e60a11b5d3e558c141303dcf494256675fbf753c0d252d2cf0481e3"
+    },
+    {
+      "name": "impact/Audio/impactBell_heavy_000.ogg",
+      "sha256": "94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f"
+    },
+    {
+      "name": "rpg/Audio/cloth1.ogg",
+      "sha256": "ddb93a3671233f95da0e0b10367f082f7eb42fa6caaddcf776410aa8833c747d"
+    },
+    {
+      "name": "impact/Audio/impactSoft_medium_001.ogg",
+      "sha256": "7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf"
+    },
+    {
+      "name": "impact/Audio/impactWood_heavy_001.ogg",
+      "sha256": "f1b07a53ac10c615fff9ba470511fdeb722b5902e1a8520759fc20ad6f546015"
+    },
+    {
+      "name": "rpg/Audio/cloth2.ogg",
+      "sha256": "8a7451193c38bc05483aec25dd193e163a15d44cf7fff04ac7912573231b0201"
+    },
+    {
+      "name": "impact/Audio/impactSoft_medium_002.ogg",
+      "sha256": "5069e3571a77d7f7aae9ef71d0364aa245fb7d64a7c8cc9956f221d03088c089"
+    },
+    {
+      "name": "impact/Audio/impactBell_heavy_002.ogg",
+      "sha256": "a4171ed1a4a17fb858a38de1c59b5b42e50d8f046c525706c0e3ac8671f189f5"
+    },
+    {
+      "name": "rpg/Audio/cloth3.ogg",
+      "sha256": "a48632d17a4f1416541d261a32a31612e01267144c407fa3ecab3ff410f0085b"
+    },
+    {
+      "name": "impact/Audio/impactPunch_heavy_000.ogg",
+      "sha256": "b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8"
+    },
+    {
+      "name": "rpg/Audio/knifeSlice2.ogg",
+      "sha256": "6c2064d0ef988d1ec3d56868e823ea8823a5cac00f2742560052633529407def"
+    },
+    {
+      "name": "impact/Audio/impactTin_medium_000.ogg",
+      "sha256": "f4bbee66ca191ec744b84fc07ac9ed2a6fda955d51cfed8360f12b62815d3cbd"
+    },
+    {
+      "name": "rpg/Audio/knifeSlice.ogg",
+      "sha256": "4cd96dc630bed9840c15f1dd2306da2cc56a4da26a5d3f1a03c5a7265ac5e54f"
+    },
+    {
+      "name": "impact/Audio/impactTin_medium_001.ogg",
+      "sha256": "84253095543c094d83cd749f42ecfbc96e356b60385f18a192c18eafb25b3cc6"
+    },
+    {
+      "name": "impact/Audio/impactTin_medium_002.ogg",
+      "sha256": "c1d2c4f9910d4529581ae56a9a9a01454c4619fbb7d6da7616221d8ec58cc0c4"
+    },
+    {
+      "name": "rpg/Audio/drawKnife1.ogg",
+      "sha256": "276403e72c3b71c47bc24db3083970c23f8e5551ffa78f436f83483c56f3f0bb"
+    },
+    {
+      "name": "impact/Audio/impactPunch_heavy_001.ogg",
+      "sha256": "f92f5cb6ba4ff2766497292ffd90865654317eeca976f5652e0708dbdcdc0dd9"
+    },
+    {
+      "name": "impact/Audio/impactPunch_medium_002.ogg",
+      "sha256": "6492f9ccbc8d24dcef607bb1b48790b7870961474561f7fe5601e1c73a3018ef"
+    },
+    {
+      "name": "impact/Audio/impactPunch_medium_003.ogg",
+      "sha256": "2d7c719c05999e0532f4384e1018e04cd916db715140bf16dee2dff3f820e908"
+    },
+    {
+      "name": "impact/Audio/impactPunch_medium_004.ogg",
+      "sha256": "4a256878a3afb994ec9a4399336687748e68c7c136872c08c9c797d8c4e2464a"
+    },
+    {
+      "name": "impact/Audio/impactPunch_heavy_002.ogg",
+      "sha256": "7993dd4c156b9979ad69f17be5ebe31850b16039a3857f8477141be54dfee1b3"
+    },
+    {
+      "name": "impact/Audio/impactWood_heavy_002.ogg",
+      "sha256": "ce1e06f2a05f2634c645cb72f6a1623e64bc2d92be34917430a61031fb6597d4"
+    },
+    {
+      "name": "rpg/Audio/drawKnife3.ogg",
+      "sha256": "a11ae62fb1a628425769d11a9de394980ad8909c31f4c9a4316f226963e21caf"
+    },
+    {
+      "name": "impact/Audio/impactPunch_heavy_003.ogg",
+      "sha256": "4ab53b26f4ea575120dcc1348526c9e0db2afc6af7a442aa0489bdead2ca80b6"
+    },
+    {
+      "name": "impact/Audio/impactWood_heavy_000.ogg",
+      "sha256": "15ff82332f342c30e469215539e1cc57e11b221aa2cf7e11e811d313a9927f3d"
+    },
+    {
+      "name": "impact/Audio/impactPunch_medium_000.ogg",
+      "sha256": "486988aa2d6440ffc4c62a0e8ccf3c23673ba84424bd4723378d451b7255eb5c"
+    },
+    {
+      "name": "impact/Audio/impactPunch_medium_001.ogg",
+      "sha256": "e71d23abcc3f10d9d6bc9615b2a431fff70b12333a5fcdd9964457564ace4349"
+    },
+    {
+      "name": "impact/Audio/impactBell_heavy_004.ogg",
+      "sha256": "49fe4fafa2001bd0d312976796824571ca8429851f285997e1327d17bb34fd00"
+    },
+    {
+      "name": "impact/Audio/impactSoft_medium_003.ogg",
+      "sha256": "5c4a1f35fde7e14046931da7bc3d1b23736541b7190ba107e08a379c4ca43cd6"
+    },
+    {
+      "name": "rpg/Audio/drawKnife2.ogg",
+      "sha256": "d5df6a4130cbb016f97b4883769a418917b9629cb4c21717030b186e0c73281a"
+    },
+    {
+      "name": "impact/Audio/impactPlate_heavy_001.ogg",
+      "sha256": "142fd6c77f13d25f318265901163f70f8dfe12f87829169a570025be43de7011"
+    },
+    {
+      "name": "impact/Audio/impactPlate_heavy_002.ogg",
+      "sha256": "b0cab75d1befa32b4cf215d8ee7e1c400a39182e8b105963b8e310f825b198a1"
+    },
+    {
+      "name": "impact/Audio/impactPlate_heavy_003.ogg",
+      "sha256": "59775f8979a396c8a793b0a1db206d5bdc651eae808d858e9acaee8ebda5bc6d"
+    },
+    {
+      "name": "impact/Audio/impactGlass_light_001.ogg",
+      "sha256": "05e513fbd42829060eb37855f8c3866722ec5c39a8937c9bfde518cc609effa2"
+    },
+    {
+      "name": "impact/Audio/impactBell_heavy_003.ogg",
+      "sha256": "5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514"
+    },
+    {
+      "name": "impact/Audio/impactGlass_light_002.ogg",
+      "sha256": "710db7451bb7857b9140dfe6afe4621ea2188ad65eda3919c569d1bb285b933d"
+    },
+    {
+      "name": "impact/Audio/impactGlass_light_003.ogg",
+      "sha256": "765290ce32fa108c939a0dbd6fbacbcd05abde622b57b708eb8a64058ef4225a"
+    },
+    {
+      "name": "impact/Audio/impactGlass_medium_001.ogg",
+      "sha256": "d3d806cb3012c9ddd87010b30295ccb74d6d8b690077d19e67afd09a9d8feb03"
+    },
+    {
+      "name": "impact/Audio/impactGlass_medium_002.ogg",
+      "sha256": "48616f22c95589ed9fe55babf0fd012721d7b2ef1b9e85c2ad6408a2cd7c164f"
+    },
+    {
+      "name": "impact/Audio/impactWood_heavy_003.ogg",
+      "sha256": "af07511902b309b3f6d8f0e1fafbe93869127fb88099ebdc0aa6a00a98dc3cb0"
+    },
+    {
+      "name": "impact/Audio/impactPunch_heavy_004.ogg",
+      "sha256": "f4c0c3eb8ab6517583b8218ed03f28923d1b687379aab4c1d5a6d4c10cf8e500"
+    },
+    {
+      "name": "impact/Audio/impactPlate_heavy_004.ogg",
+      "sha256": "e31bfec90630155bcc6af541d1d14ae8202c435c52b42e6b6183fdb6ffb248b0"
+    },
+    {
+      "name": "impact/Audio/impactSoft_medium_004.ogg",
+      "sha256": "b0a4dea90eed47accf50b768beff1166f2f1486fb139e4d025b2427637624bca"
+    },
+    {
+      "name": "impact/Audio/impactMining_004.ogg",
+      "sha256": "8ca3a99d85d845751ad8ce7b40509da58263a62e48cde70e5a30b5ccef4c9a3b"
+    },
+    {
+      "name": "impact/Audio/impactMining_002.ogg",
+      "sha256": "059558ec751115ca6b1441e00f0adc837c1a3eeb0a066b109e0fd879fc5d0b0c"
+    },
+    {
+      "name": "impact/Audio/impactMining_000.ogg",
+      "sha256": "36b4ea107222d073c67ca64dde26944975609202d5090b2f2021213c1a7e35cd"
+    },
+    {
+      "name": "impact/Audio/impactMining_003.ogg",
+      "sha256": "4237fa2cd80364ad81cd0af44f67d7497f1c5edcc7bdb02cd22be2ba4580c83d"
+    },
+    {
+      "name": "impact/Audio/impactMining_001.ogg",
+      "sha256": "61235a18de3f3d92118235398222dbf51d448f1be70b1c8bc962b10b86f2d9c6"
+    },
+    {
+      "name": "impact/Audio/impactMetal_heavy_000.ogg",
+      "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831"
+    },
+    {
+      "name": "impact/Audio/impactMetal_heavy_001.ogg",
+      "sha256": "83554049f81f4db9209379e103c30bfa63f65c42189a03f300b045c2c82e23ae"
+    },
+    {
+      "name": "impact/Audio/impactMetal_heavy_002.ogg",
+      "sha256": "b914c8f1eb7c0f34bb165d7c77f4be0351f6be0660c13c53e65424e262e2c093"
+    },
+    {
+      "name": "impact/Audio/impactWood_heavy_004.ogg",
+      "sha256": "2c647ae6bd29c72ae2523f7e16e325d8d331b75cc99ab4f637c48a0e11c34677"
+    },
+    {
+      "name": "impact/Audio/impactTin_medium_003.ogg",
+      "sha256": "0d18737d93ba7aa0669f751094cbc1671bbebac4fe207783922938ce75e24334"
+    },
+    {
+      "name": "impact/Audio/impactTin_medium_004.ogg",
+      "sha256": "fd53e24efec3d5c1cee5a46fee70f97efd4bd01e53ac5d9b5f3b6719dfe9f5aa"
+    },
+    {
+      "name": "impact/Audio/impactBell_heavy_001.ogg",
+      "sha256": "9df61e3ae9a83dc65e5a1fd3ed19d480876f3b22b963a1b9ef6fa293592dcec4"
+    },
+    {
+      "name": "impact/Audio/impactMetal_medium_001.ogg",
+      "sha256": "e8a9eaba7c4d27422e4eeb3e6c7100d5d7dc0f83e005efc98c960adcc5265337"
+    },
+    {
+      "name": "impact/Audio/impactMetal_medium_002.ogg",
+      "sha256": "7e89ce2ca0dbda95ea2b78d4b50791cab35c10d20e9f5ccd45dd0b00e99ff548"
+    },
+    {
+      "name": "impact/Audio/impactMetal_medium_003.ogg",
+      "sha256": "2a185e2e57211d02c1bdd33b872d6b6a2fe83e6c14f4e56f426a95e717acf08e"
+    },
+    {
+      "name": "impact/Audio/impactWood_light_004.ogg",
+      "sha256": "e10009f67ddaeb3a59a3e1129cfc1615d84ba60ab578eae07e7092ac223f099c"
+    },
+    {
+      "name": "impact/Audio/impactWood_light_000.ogg",
+      "sha256": "eb45e35b4bed784d3f120de4afec4b0d6ac09d9e143cce8cfcb7d739e1b1f3c3"
+    },
+    {
+      "name": "impact/Audio/impactWood_light_001.ogg",
+      "sha256": "4b76bf3ccc8e60d19188f3165b778a7817786faa6887c55d9049bcbeef3b425f"
+    },
+    {
+      "name": "impact/Audio/impactPlate_heavy_000.ogg",
+      "sha256": "112d4f93ddcc370b410630f971c0f5d991856102da9c76bc5c5540d388e75aaa"
+    },
+    {
+      "name": "impact/Audio/impactWood_light_002.ogg",
+      "sha256": "b183cf7a5bd783817e0e4b82af34ac6658fa1927049089dadc8b15c2ecc771dc"
+    },
+    {
+      "name": "impact/Audio/impactMetal_heavy_003.ogg",
+      "sha256": "b0f2ba4dabde9a87eb9c188a19d31e0c2300fd321adeba08d3b9b8aa011d7037"
+    },
+    {
+      "name": "impact/Audio/impactGlass_light_004.ogg",
+      "sha256": "f535b7cb7835400d8d28bcf9e1cf047ce3c0eb7a6456bdb1a4a27acbec1ed2cb"
+    },
+    {
+      "name": "impact/Audio/impactWood_light_003.ogg",
+      "sha256": "cdfbe8af2fe7ff9ee28f337a0a989deee0f327620da456c8413644880e9d0004"
+    },
+    {
+      "name": "impact/Audio/impactMetal_heavy_004.ogg",
+      "sha256": "6d65b463c0555dd5be16b8db6d2cbe23a94e07a4637779b8ad17d0db3e500a87"
+    },
+    {
+      "name": "impact/Audio/impactMetal_medium_004.ogg",
+      "sha256": "03e10f800199c7166208e41c11cf4acfac6cc265467f02357da71972bc967295"
+    },
+    {
+      "name": "impact/Audio/impactMetal_medium_000.ogg",
+      "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    }
+  ]
+}

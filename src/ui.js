@@ -57,7 +57,7 @@
       this.el.retreat.addEventListener('click', () => this.engine.enterZone('village'));
       this.el.potionBtn.addEventListener('click', () => this.engine.input('potion'));
       this.el.elixirBtn.addEventListener('click', () => this.engine.input('elixir'));
-      on('#sound-btn', 'click', async () => { const onState = !this.state.settings.sound; this.state.settings.sound = onState; await this.callbacks.sound?.(onState); document.querySelector('#sound-btn').classList.toggle('on', onState); if (onState) this.toast('Vozes de skills e chefes geradas por IA.', 'system'); });
+      on('#sound-btn', 'click', async () => { const onState = !this.state.settings.sound; this.state.settings.sound = onState; U.safeStorage.set('mythverse-sound', onState ? 'on' : 'off'); await this.callbacks.sound?.(onState); document.querySelector('#sound-btn').classList.toggle('on', onState); if (onState) this.toast('Áudio ligado: trilhas, efeitos e vozes de combate.', 'system'); });
       on('#help-btn', 'click', () => this.openPanel('help'));
       on('#panel-toggle', 'click', () => { const narrow = matchMedia('(max-width:1100px)').matches; this.el.app.classList.toggle(narrow ? 'panel-open' : 'panel-hidden'); setTimeout(() => this.renderer.resize(), 320); });
       on('#save-status', 'click', () => {

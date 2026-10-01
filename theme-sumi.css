@@ -736,8 +736,26 @@ body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:t
 @media (max-width:700px){#village-actions .signpost .sp-plate{padding:2px 6px}#village-actions .signpost .sp-lv{display:none!important}}
 #village-actions .signpost{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 #village-actions .signpost{opacity:1!important;visibility:visible!important}
-@media (min-width:1350px) and (min-height:800px){
-  #village-actions .signpost[data-badge="shrine"]{left:83%!important;top:58%!important}
+#village-actions .signpost[data-badge="guild"]{left:23%!important;top:16%!important}
+#village-actions .signpost[data-badge="dojo"]{left:11%!important;top:30%!important}
+#village-actions .signpost[data-badge="collection"]{left:44%!important;top:15%!important}
+#village-actions .signpost[data-badge="shrine"]{left:85%!important;top:49%!important}
+#village-actions .signpost[data-badge="bank"]{left:13%!important;top:72%!important}
+#village-actions .signpost[data-badge="market"]{left:18%!important;top:52%!important}
+#village-actions .signpost[data-badge="house"]{left:32%!important;top:31%!important}
+#village-actions .signpost[data-badge="workshop"]{left:55%!important;top:79%!important}
+#village-actions .signpost[data-badge="expeditions"]{left:87%!important;top:74%!important}
+#viewport{container-type:inline-size;container-name:city-stage}
+@container city-stage (min-width:701px) and (max-width:1100px){
+  body.city-focus .zone-chip{max-width:235px}body.city-focus .zone-chip .zone-meta{display:none}
+  body.city-focus .village-hub{width:220px!important;padding:6px 8px!important}
+  body.city-focus .village-hub .eyebrow,body.city-focus .hub-goal small{display:none}
+  body.city-focus .village-hub .hub-goal{margin:0 0 3px!important;padding:4px 6px}
+  body.city-focus .village-hub .hub-goal b{font-size:12px}
+  body.city-focus .village-hub .hub-goal .action{min-height:26px;padding:0 6px}
+  body.city-focus .village-hub .hub-actions>.action.primary{min-height:32px}
+  body.city-focus .village-hub .hub-go b{font-size:12px}
+  body.city-focus .village-hub .hub-row .action{min-height:24px}
 }
 body:not(.in-combat) .zone-chip{max-width:340px;padding:6px 10px 7px}
 body:not(.in-combat) .zone-chip .zone-kicker{font-size:8px}

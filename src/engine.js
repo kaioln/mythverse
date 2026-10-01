@@ -40,7 +40,7 @@
       prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
-      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:false, speed:1, sound:false, autoSalvage:'none' }, afkTrain:0,
+      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:false, speed:1, sound:true, autoSalvage:'none' }, afkTrain:0,
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
       buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 }, dojoV:2,

@@ -74,11 +74,12 @@
     },
     error(msg) { const el = this.el.querySelector('.auth-msg'); el.textContent = msg; el.classList.add('show'); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); },
     async submit(form) {
+      if (form.querySelector('button[type=submit]').disabled) return;
       const d = Object.fromEntries(new FormData(form).entries()); d.acceptTerms = !!d.acceptTerms;
       const btn = form.querySelector('button[type=submit]'); const label = btn.textContent;
       const kind = form.dataset.authForm;
       if (kind === 'login' && this.soundEnabled) {
-        if (!this.loginSound) { this.loginSound = new Audio('assets/audio/sfx/login.mp3'); this.loginSound.volume = .35; }
+        if (!this.loginSound) { this.loginSound = new Audio('assets/audio/sfx/login.mp3' + (KT.VERSION ? '?v=' + KT.VERSION : '')); this.loginSound.volume = .35; }
         this.loginSound.currentTime = 0; this.loginSound.play().catch(() => {});
       }
       if (kind === 'register') {

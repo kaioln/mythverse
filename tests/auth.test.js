@@ -30,5 +30,6 @@ const tick=()=>new Promise(setImmediate);
   const form={dataset:{authForm:'login'},querySelector:()=>({textContent:'Entrar'})};
   await auth.submit(form);assert.equal(plays,1);assert.equal(auth.loginSound.volume,.35);
   auth.soundEnabled=false;await auth.submit(form);assert.equal(plays,1,'respeitar botão de silêncio');
+  auth.soundEnabled=true;form.querySelector=()=>({disabled:true});await auth.submit(form);assert.equal(plays,1,'bloquear clique duplicado durante login');
   console.log('AUTH_OK: login obrigatório por abertura, saves preservados, cookie não persistente e som no clique');
 })().catch(e=>{console.error(e);process.exitCode=1;});

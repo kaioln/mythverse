@@ -3,14 +3,20 @@
 
   // Vozes originais em arquivos locais; áudio só após interação, sem credenciais no cliente.
   class SoundEngine {
-    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); }
+    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); this.combatIndex = fetch('assets/audio/combat/index.json').then(r => r.ok ? r.json() : null).then(index => index?.heroes || {}).catch(() => ({})); }
+    musicVolume() { return this.scene === 'city' ? .24 : .16; }
     async enable(on) {
       this.enabled = on;
-      if (on && !this.ctx) { const C = globalThis.AudioContext || globalThis.webkitAudioContext; if (C) { this.ctx = new C(); this.master = this.ctx.createGain(); this.music = this.ctx.createGain(); this.master.gain.value = .5; this.music.gain.value = .16; this.music.connect(this.master); this.master.connect(this.ctx.destination); } }
+      if (on && !this.ctx) { const C = globalThis.AudioContext || globalThis.webkitAudioContext; if (C) { this.ctx = new C(); this.master = this.ctx.createGain(); this.music = this.ctx.createGain(); this.master.gain.value = .5; this.music.gain.value = this.musicVolume(); this.music.connect(this.master); this.master.connect(this.ctx.destination); } }
+      if (on && this.ctx?.createDynamicsCompressor && !this.limiter) {
+        this.limiter = this.ctx.createDynamicsCompressor();
+        this.limiter.threshold.value = -12; this.limiter.knee.value = 12; this.limiter.ratio.value = 8; this.limiter.attack.value = .003; this.limiter.release.value = .18;
+        this.master.disconnect(); this.master.connect(this.limiter); this.limiter.connect(this.ctx.destination);
+      }
       if (this.ctx?.state === 'suspended') await this.ctx.resume();
       if (this.enabled !== on) return;
       if (this.master) this.master.gain.value = on ? .5 : 0;
-      if (on) { this.chord([523, 659, 784], .08, 'triangle', .05); this.startMusic(); } else { this.stopMusic(); this.stopVoice(); this.stopFx(); }
+      if (on) this.startMusic(); else { this.stopMusic(); this.stopVoice(); this.stopFx(); }
     }
     setScene(zone) {
       const kind = typeof zone === 'string' ? zone : zone.kind;
@@ -19,7 +25,7 @@
       if (scene === this.scene) return;
       this.stopVoice(); this.stopFx(); this.scene = scene; if (this.enabled) this.startMusic(); else this.stopMusic();
     }
-    stopVoice() { this.voiceGeneration++; if (this.speaker) { this.speaker.stop(); this.speaker = null; } if (this.music) this.music.gain.value = .16; }
+    stopVoice() { this.voiceGeneration++; if (this.speaker) { this.speaker.stop(); this.speaker = null; } if (this.music) this.music.gain.value = this.musicVolume(); }
     async voice(id, replace = false) {
       const generation0 = this.voiceGeneration;
       if (!this.enabled || !this.ctx || !(await this.voiceIndex).has(id) || generation0 !== this.voiceGeneration) return;
@@ -32,7 +38,7 @@
       const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
       source.buffer = buffer; gain.gain.value = .8; source.connect(gain); gain.connect(this.master);
       this.speaker = source; this.music.gain.value = .07;
-      source.onended = () => { source.disconnect(); gain.disconnect(); if (this.speaker === source) { this.speaker = null; this.music.gain.value = .16; } };
+      source.onended = () => { source.disconnect(); gain.disconnect(); if (this.speaker === source) { this.speaker = null; this.music.gain.value = this.musicVolume(); } };
       source.start();
     }
     buffer(url) {
@@ -41,6 +47,7 @@
     }
     async startMusic() {
       this.stopMusic(); if (!this.enabled || !this.ctx) return;
+      this.music.gain.value = this.musicVolume();
       const url = `assets/audio/music/${this.scene}.mp3${KT.VERSION ? '?v=' + KT.VERSION : ''}`, previous = Array.from(this.buffers.keys()).filter(key => key.startsWith('assets/audio/music/') && key !== url);
       for (const key of previous.slice(0, -1)) this.buffers.delete(key);
       const generation = this.musicGeneration, buffer = await this.buffer(url);
@@ -61,6 +68,33 @@
     }
     stopMusic() { this.musicGeneration++; clearTimeout(this.musicTimer); this.musicTimer = 0; for (const source of this.musicSources) source.stop(); this.musicSources.clear(); }
     stopFx() { for (const source of this.fxSources) source.stop(); this.fxSources.clear(); }
+    async prepare(units) {
+      if (!this.enabled || !this.ctx) return;
+      const index = await this.combatIndex;
+      const urls = new Set(units.flatMap(u => { const profile = index[u.sprite]; return profile ? ['attack','skill','ult'].map(event => `assets/audio/combat/${profile[event]}`) : []; }));
+      for (const key of this.buffers.keys()) if (key.startsWith('assets/audio/combat/') && !urls.has(key)) this.buffers.delete(key);
+      await Promise.all([...urls].map(url => this.buffer(url)));
+    }
+    async combat(fx, unit) {
+      if (!this.enabled || !this.ctx || this.scene === 'city' || !unit) return;
+      const generation = this.musicGeneration, index = await this.combatIndex, profile = index[unit.sprite];
+      if (!profile || generation !== this.musicGeneration || !this.enabled) return;
+      const event = fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill', priority = event === 'ult' ? 2 : event === 'skill' ? 1 : 0;
+      if (!this.throttle(`combat:${unit.uid || unit.sprite}:${event}`, event === 'attack' ? 100 : 200)) return;
+      const buffer = await this.buffer(`assets/audio/combat/${profile[event]}`);
+      if (!buffer || generation !== this.musicGeneration || !this.enabled) return;
+      if (this.fxSources.size >= 8) {
+        const victim = [...this.fxSources].find(s => (s.priority || 0) < priority);
+        if (!victim) return;
+        victim.stop(); this.fxSources.delete(victim);
+      }
+      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
+      source.buffer = buffer; source.priority = priority; gain.gain.value = event === 'attack' ? .32 : event === 'skill' ? .45 : .55;
+      const pan = this.ctx.createStereoPanner?.();
+      if (pan) { pan.pan.value = [-.35,-.12,.12,.35][unit.slot] || 0; source.connect(gain); gain.connect(pan); pan.connect(this.master); }
+      else { source.connect(gain); gain.connect(this.master); }
+      this.fxSources.add(source); source.onended = () => { this.fxSources.delete(source); source.disconnect(); gain.disconnect(); pan?.disconnect(); }; source.start();
+    }
     async blade(unit) {
       if (!this.enabled || !this.ctx) return;
       const generation = this.musicGeneration, buffer = await this.buffer('assets/audio/sfx/blade.mp3');
@@ -90,9 +124,9 @@
     fx(fx, unit) {
       if (!fx || !this.enabled) return;
       switch (fx.type) {
-        case 'attack': if (unit?.cls === 'Executor') this.blade(unit); else if (this.throttle('slash', 45)) { this.noise(.07, .05, 2200); this.tone(440, .06, 'triangle', .03, .6); } break;
+        case 'attack': if (unit?.side === 'hero' || unit?.template?.base) this.combat(fx, unit); else this.blade(unit); break;
         case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 90)) { this.noise(.08, .05, 600); this.tone(160, .1, 'square', .025, .6); } else if (fx.crit && this.throttle('crit', 60)) this.tone(880, .08, 'triangle', .035, .7); break;
-        case 'cast': this.tone(fx.ult ? 330 : 440, fx.ult ? .35 : .2, 'sawtooth', .03, 2.2); this.noise(.2, .03, 5000); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
+        case 'cast': if (fx.enemy && !unit?.template?.base) this.blade(unit); else this.combat(fx, unit); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
         case 'burst': this.noise(.25, .07, 900); this.tone(110, .3, 'sine', .08, .4); break;
         case 'heal': if (this.throttle('heal', 150)) this.chord([659, 880, 1175], .05, 'sine', .035); break;
         case 'death': if (this.throttle('death', 60)) { this.tone(260, .2, 'triangle', .04, .3); this.noise(.15, .04, 1200); } break;
@@ -191,7 +225,7 @@
       if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => { engine.enterZone(f, { stage:1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
-        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
+        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare(engine.party); }, onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.summon(c.mvp ? 'legendary' : 'epic'); },
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
@@ -324,7 +358,17 @@
         else catchUp(true);
         last = performance.now();
       });
-      if (state.settings.sound) document.addEventListener('pointerdown', () => sound.enable(true).then(() => document.querySelector('#sound-btn').classList.add('on')), { once:true });
+      state.settings.sound = KT.Utils.safeStorage.get('mythverse-sound') !== 'off';
+      document.querySelector('#sound-btn').classList.toggle('on', state.settings.sound);
+      if (state.settings.sound) {
+        const activate = e => {
+          if (e.target?.closest?.('#sound-btn')) return;
+          document.removeEventListener('pointerdown', activate); document.removeEventListener('keydown', activate);
+          if (state.settings.sound) sound.enable(true).then(() => document.querySelector('#sound-btn').classList.toggle('on', state.settings.sound)).catch(() => {});
+        };
+        document.addEventListener('pointerdown', activate); document.addEventListener('keydown', activate);
+        if (navigator.userActivation?.hasBeenActive) activate({});
+      }
       // Atmosfera 3D do palco (three.js sob demanda; some sozinha sem WebGL ou com "reduzir movimento").
       KT.__zone = () => engine.zone; KT.__view = () => renderer.view; KT.Atmos?.mount(document.querySelector('#viewport'));
       // Mapa 3D desligado: o mapa do mundo é plano.
