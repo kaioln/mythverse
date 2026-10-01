@@ -24,20 +24,22 @@
     {node:'shrine',verb:'Rezando',face:1,w:1},{node:'bridgeM',verb:'Vendo a cascata',face:-1,w:1},{node:'dockMid',verb:'Olhando os barcos',face:1,w:1}
   ];
   const DIALOGUES = [
-    {people:['Renji','Yori'],lines:[['Renji','Guardei caldo para quem voltar depois da dança.'],['Yori','E dango para quem ainda procura um nome nas fitas.'],['Renji','Então deixamos as duas bancas acesas até amanhecer.']]},
+    {people:['Renji','Yori'],lines:[['Renji','O caldo está pronto. Guardou dango para a dança?'],['Yori','Guardei dois. O terceiro você provou três vezes!'],['Renji','Controle de qualidade. Hoje a praça merece o melhor.']]},
     {people:['Aya','Mio'],lines:[['Mio','Esta máscara tem uma pétala diferente das outras.'],['Aya','É a marca de quem se perdeu na última primavera.'],['Mio','Vou pintá-la em todas. Assim ninguém será esquecido.']]},
     {people:['Koharu','Riku'],lines:[['Riku','Três toques para chamar o povo à praça.'],['Koharu','O quarto é para os que ainda não chegaram em casa.'],['Riku','Então não deixarei o tambor se calar.']]},
     {people:['Fumi','Hotaru'],lines:[['Fumi','Kira e Sayo mantêm duas lanternas acesas.'],['Hotaru','Uma pelos que estão aqui; outra pelos ausentes.'],['Fumi','Que as pétalas levem ambos os nomes pela cidade.']]},
     {people:['Hina','Chiyo'],lines:[['Hina','Minha avó dançava esta volta antes de existir a Fenda.'],['Chiyo','Então me ensine sem pular o passo das lanternas.'],['Hina','Duas palmas, uma volta. E deixamos o centro livre para quem chega.']]},
-    {people:['Nao','Setsu'],lines:[['Nao','O chá ganhou uma pétala. Posso bebê-lo assim?'],['Setsu','Pode. Nesta noite dizemos que é um convite da primavera.'],['Nao','Vou guardar outra xícara para quem voltar da expedição.']]}
+    {people:['Nao','Setsu'],lines:[['Nao','O chá ganhou uma pétala. Posso bebê-lo assim?'],['Setsu','Pode. Nesta noite dizemos que é um convite da primavera.'],['Nao','Vou guardar outra xícara para quem voltar da expedição.']]},
+    {people:['Natsu','Yori'],lines:[['Natsu','As fitas de desejos acabaram antes dos doces!'],['Yori','Tem mais no cesto. O rosa é para os reencontros.'],['Natsu','Vou guardar uma para cada viajante que voltar.']]},
+    {people:['Emi','Riku'],lines:[['Emi','Já prendeu seu desejo no corrimão?'],['Riku','Sim: que toda primavera tenha esta roda de novo.'],['Emi','Vou prendê-lo junto ao meu. Que esta noite nunca seja esquecida.']]}
   ];
   const FOLK = [
-    {f:0,name:'Renji',post:'stallRenji',face:1,verb:'Vendendo lámen'},{f:1,name:'Maki',post:'forgePost',face:-1,verb:'Martelando'},{f:2,name:'Suzu',route:['templeL','templeR'],speed:12,verb:'Varrendo'},
-    {f:3,name:'Hotaru',route:['shrine','shrineLantern'],speed:13,verb:'Acendendo lanternas'},
+    {f:0,name:'Renji',post:'stallRenji',face:1,verb:'Vendendo lámen',festival:'ribbon'},{f:1,name:'Maki',post:'forgePost',face:-1,verb:'Martelando',festival:'ribbon'},{f:2,name:'Suzu',route:['templeL','templeR'],speed:12,verb:'Varrendo'},
+    {f:3,name:'Hotaru',route:['shrine','shrineLantern'],speed:13,verb:'Acendendo lanternas',festival:'lantern'},
     {f:4,name:'Goro',post:'stallGoro',face:1,verb:'Vendendo peixe'},{f:5,name:'Aya',post:'stallAya',face:1,verb:'Servindo chá'},{f:6,name:'Tomo',route:['playMarketW','playMarketC','playMarketE'],speed:11,verb:'Brincando'},
     {f:7,name:'Jinbei',route:['plazaW','guardSouth','plazaE','guardSouth'],speed:19,verb:'De ronda'},{f:8,name:'Natsu',post:'marketGuide',face:-1,verb:'Mercadora'},
     {f:9,name:'Daigo',route:['expedition','dockMid'],speed:15,verb:'Carregando caixas'},{f:3,name:'Koharu',post:'dance',face:1,verb:'Dançando'},{f:6,name:'Riku',post:'drum',face:-1,verb:'Tocando tambor'},
-    {f:2,name:'Emi',post:'playB',face:-1,verb:'Entregando talismãs'},{f:5,name:'Yori',post:'stallYori',face:-1,verb:'Fazendo doces'},{f:0,name:'Fumi',post:'shrineStory',face:-1,verb:'Contando histórias'},
+    {f:2,name:'Emi',post:'playB',face:-1,verb:'Entregando talismãs',festival:'ribbon'},{f:5,name:'Yori',post:'stallYori',face:-1,verb:'Fazendo doces',festival:'ribbon'},{f:0,name:'Fumi',post:'shrineStory',face:-1,verb:'Contando histórias'},
     {f:4,name:'Kai',route:['dock','dockWest'],speed:12,verb:'Guiando visitantes'},{f:8,name:'Mio',post:'stallMio',face:1,verb:'Pintando máscaras'},
     {f:9,name:'Bento',route:['bankLanding','workshopGate','workshop','workshopGate'],speed:13,verb:'Levando oferendas'},
     {f:3,name:'Hina',post:'danceA',face:-1,verb:'Dançando a roda das pétalas',festival:'fan'},
@@ -217,9 +219,10 @@
   const dist = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55);
 
   class TownLife {
-    constructor() { this.agents = []; this.key = null; this.dialogueAt = 2; this.dialogue = 0; this.dialogueLine = 0; }
+    constructor() { this.agents = []; this.key = null; this.dialogueAt = 4; this.dialogue = 0; this.dialogueLine = 0; this.dialoguePair = null; }
     sync(heroes) {
       const key = heroes.map(h => h.uid + h.sprite).join('|'); if (key === this.key) return; this.key = key;
+      this.dialoguePair = null; this.dialogueLine = 0; this.dialogueAt = 4;
       const starts = ['plazaN', 'forge', 'marketE', 'dojo', 'garden', 'shrine'];
       this.agents = heroes.map((h, i) => { const [x, y] = at(starts[i % starts.length]); return { id:i, kind:'hero', ...h, x, y, path:[], wait:1.5 + i, face:1, speed:28 + i * 1.5, speedNow:0, verb:'', walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; })
         .concat(FOLK.map((f, i) => { const [x, y] = f.post ? N[f.post] : at(f.route[0]); return { id:heroes.length + i, kind:'folk', f:f.f, def:f, name:f.name, x, y, fixed:!!f.post, path:[], wait:1 + Math.random() * 3, face:f.face || 1, speed:f.speed || 0, speedNow:0, verb:f.verb, ri:0, walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; }));
@@ -264,7 +267,8 @@
     }
     update(dt) {
       for (const a of this.agents) {
-        a.animT += dt; a.speechFor = Math.max(0, a.speechFor - dt);
+        a.animT += dt; a.speechFor = Math.max(0, a.speechFor - dt); a.speechAge = (a.speechAge || 0) + dt;
+        if (!a.speechFor) { a.speech = ''; a.manualSpeech = false; }
         if (!a.fixed && (a.idleFor = (a.idleFor || 0) + dt) > 7 && (a.escapeIn = (a.escapeIn || 0) - dt) <= 0) {
           a.escapeIn = 2; this.giveWay(a);
         }
@@ -318,23 +322,32 @@
       this.updateDialogue(dt);
     }
     updateDialogue(dt) {
-      if ((this.dialogueAt -= dt) > 0) return; this.agents.forEach(a => { a.speech = ''; a.speechFor = 0; });
+      for (const a of this.agents) if (a.speechFor > 0 && !a.manualSpeech && (a.moving || a.path.length)) { a.speech = ''; a.speechFor = 0; }
+      if (this.dialoguePair && (this.dialoguePair.some(a => a.moving || a.path.length) || dist(...this.dialoguePair) >= 72)) {
+        this.dialoguePair.forEach(a => { if (!a.manualSpeech) { a.speech = ''; a.speechFor = 0; } });
+        this.dialoguePair = null; this.dialogueLine = 0; this.dialogue++; this.dialogueAt = 8;
+      }
+      if ((this.dialogueAt -= dt) > 0 || this.agents.some(a => a.manualSpeech && a.speechFor > 0)) return;
       for (let tries = 0; tries < DIALOGUES.length; tries++) {
         const d = DIALOGUES[this.dialogue % DIALOGUES.length], people = d.people.map(n => this.agents.find(a => a.name === n));
-        if (people.every(a => a && !a.moving) && dist(people[0], people[1]) < 72) {
+        if (people.every(a => a && !a.moving && !a.path.length) && dist(people[0], people[1]) < 72) {
           const [speaker, text] = d.lines[this.dialogueLine % d.lines.length], a = this.agents.find(x => x.name === speaker), other = people.find(x => x !== a);
-          a.speech = text; a.speechFor = 4.3; a.face = other.x >= a.x ? 1 : -1; other.face = a.x >= other.x ? 1 : -1; this.dialogueLine++;
-          if (this.dialogueLine >= d.lines.length) { this.dialogueLine = 0; this.dialogue++; this.dialogueAt = 5; } else this.dialogueAt = 4.5; return;
+          this.agents.forEach(o => { o.speech = ''; o.speechFor = 0; });
+          this.dialoguePair = people; a.speech = text; a.speechFor = 4.3; a.speechAge = 0; a.manualSpeech = false;
+          a.face = other.x >= a.x ? 1 : -1; other.face = a.x >= other.x ? 1 : -1; this.dialogueLine++;
+          if (this.dialogueLine >= d.lines.length) { this.dialogueLine = 0; this.dialogue++; this.dialoguePair = null; this.dialogueAt = 10; } else this.dialogueAt = 4.8; return;
         }
         this.dialogue++; this.dialogueLine = 0;
       }
-      this.dialogueAt = 2;
+      this.dialoguePair = null; this.dialogueAt = 4;
     }
     talk(a) {
-      const lines = GREETINGS[a.name]; if (!lines) return false;
+      const greeting = GREETINGS[a.name]; if (!greeting) return false;
+      const lines = greeting.flatMap(text => text.split(/(?<=[.!?])\s+/));
       this.agents.forEach(o => { o.speechFor = 0; o.manualSpeech = false; });
+      this.dialoguePair = null; this.dialogueLine = 0;
       a.speech = lines[(a.talkLine || 0) % lines.length]; a.talkLine = (a.talkLine || 0) + 1;
-      a.speechFor = 7; a.manualSpeech = true; this.dialogueAt = 8; return true;
+      a.speechFor = 6; a.speechAge = 0; a.manualSpeech = true; this.dialogueAt = 9; return true;
     }
     arrive(a) { a.goal = null; a.speedNow = 0; const yielded = a.yielding; a.yielding = false; if (a.kind === 'hero') { a.face = a.spot?.face || a.face; a.verb = a.spot?.verb || ''; a.wait = yielded ? .6 : 2.5 + Math.random() * 4; } else { if (a.routeTarget != null) a.ri = a.routeTarget; a.routeTarget = null; a.wait = yielded ? .6 : 1 + Math.random() * 2; } }
     drawList() { return this.agents.map(a => ({ a, s:depth(a.y), h:34 * depth(a.y) })).sort((p, q) => p.a.y - q.a.y); }

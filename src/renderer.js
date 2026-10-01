@@ -533,9 +533,14 @@
         l.y -= l.vy * dt; if (l.y < -30) { l.y = H + 20; l.x = U.rand(0, W); }
         const x = l.x + Math.sin(t * .6 + l.ph) * 14 * l.s, y = l.y, s = l.s, fl = .75 + .25 * Math.sin(t * 7 + l.ph * 3);
         const g = c.createRadialGradient(x, y, 0, x, y, 26 * s); g.addColorStop(0, `rgba(255,190,110,${.42 * fl})`); g.addColorStop(1, 'rgba(255,150,80,0)');
-        c.fillStyle = g; c.beginPath(); c.arc(x, y, 26 * s, 0, Math.PI * 2); c.fill();
-        c.fillStyle = `rgba(255,214,150,${.85 * fl})`; this.roundRect(x - 5 * s, y - 7 * s, 10 * s, 13 * s, 3 * s); c.fill();
+        c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.beginPath(); c.arc(x, y, 26 * s, 0, Math.PI * 2); c.fill();
+        c.globalCompositeOperation = 'source-over';
+        c.fillStyle = Math.floor(l.ph)%2 ? `rgba(242,173,195,${.8 * fl})` : `rgba(248,209,158,${.8 * fl})`;
+        this.roundRect(x - 5 * s, y - 7 * s, 10 * s, 13 * s, 3 * s); c.fill();
+        c.strokeStyle='rgba(134,69,66,.45)';c.lineWidth=.6;c.stroke();
+        this.drawSakura(x,y,1.5*s,'rgba(255,241,213,.8)');
       }
+      c.globalCompositeOperation = 'lighter';
       for (const f of this.fireflies) {
         const x = f.x + Math.sin(t * f.sp + f.ph) * 22, y = f.y + Math.cos(t * f.sp * 1.3 + f.ph) * 10, a = Math.max(0, Math.sin(t * 2.2 * f.sp + f.ph));
         c.fillStyle = `rgba(210,255,170,${.75 * a})`; c.beginPath(); c.arc(x, y, 2.2, 0, Math.PI * 2); c.fill();
@@ -545,7 +550,7 @@
       this.drawFestivalDecor();
     }
     drawFestivalDecor() {
-      const c = this.ctx, t = this.worldTime, strings = [[[62,370],[395,388],9],[[410,376],[700,390],8],[[980,376],[1190,397],6]];
+      const c = this.ctx, t = this.worldTime, strings = [[[62,370],[395,388],9],[[410,376],[700,390],8],[[980,376],[1190,397],6],[[118,138],[296,152],6],[[539,143],[626,144],5],[[695,341],[846,360],6],[[97,585],[269,598],7],[[622,641],[800,659],7],[[984,597],[1214,629],8]];
       c.save(); c.lineWidth = 1.3; c.strokeStyle = 'rgba(74,35,38,.72)';
       for (const [[x1,y1],[x2,y2],n] of strings) {
         c.beginPath(); c.moveTo(x1,y1); c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+18,x2,y2); c.stroke();
@@ -553,10 +558,23 @@
           c.fillStyle=i%3===0?'rgba(255,225,155,.88)':i%2?'rgba(255,150,185,.86)':'rgba(245,235,220,.86)';
           this.roundRect(x-6+sway,y+2,12,17,5); c.fill();
           c.strokeStyle='rgba(92,42,45,.55)'; c.stroke(); c.fillStyle='#9f484a'; c.fillRect(x-4+sway,y+1,8,2); c.fillRect(x-4+sway,y+18,8,2);
-          c.fillStyle='rgba(255,246,221,.78)'; c.beginPath(); c.arc(x+sway,y+10,2.4,0,Math.PI*2); c.fill();
+          this.drawSakura(x+sway,y+10,1.8,'rgba(255,246,221,.88)');
           c.fillStyle='rgba(255,190,105,.18)'; c.beginPath(); c.arc(x,y+10,15,0,Math.PI*2); c.fill();
         }
       }
+      // Fitas de desejos presas aos corrimãos, não novas barreiras sobre as ruas.
+      for (const [[x1,y1],[x2,y2],n] of [[[148,184],[277,190],10],[[485,391],[674,401],13],[[971,637],[1193,668],12]]) {
+        for(let i=0;i<n;i++) { const u=(i+.5)/n,x=x1+(x2-x1)*u,y=y1+(y2-y1)*u;
+          c.save();c.translate(x,y);c.rotate(Math.sin(t*1.2+i)*.08);c.fillStyle=i%3===0?'#eacb9e':i%2?'#d982a0':'#a95f71';
+          c.fillRect(-1.5,0,3,9+i%4);c.fillStyle='rgba(92,49,52,.55)';c.fillRect(-.5,2,1,4);c.restore();
+        }
+      }
+      if (!this.fallenPetals) {
+        this.fallenPetals=[];
+        for(let i=0;i<650&&this.fallenPetals.length<100;i++){const x=U.rand(0,W),y=U.rand(140,H);if(KT.TownMap?.isWalk(x,y))this.fallenPetals.push({x,y,r:U.rand(0,Math.PI),s:U.rand(1,2)});}
+      }
+      c.fillStyle='rgba(248,184,205,.4)';
+      for(const p of this.fallenPetals){c.save();c.translate(p.x,p.y);c.rotate(p.r);c.beginPath();c.ellipse(0,0,p.s*1.7,p.s*.65,0,0,Math.PI*2);c.fill();c.restore();}
       // Pétalas e fitas pintadas no chão: não introduzem obstáculos falsos nas ruas.
       for (const [x,y] of [[560,424],[605,439],[668,682],[213,650]]) {
         c.save(); c.translate(x,y); c.scale(1,.48); c.fillStyle='rgba(248,170,198,.38)';
@@ -569,6 +587,11 @@
         c.globalAlpha=(1-p)*.6; c.strokeStyle='#efb4cf'; c.lineWidth=1.3;
         for(let i=0;i<16;i++){const a=i*Math.PI/8, r=10+p*35;c.beginPath();c.moveTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r+p*p*10);c.stroke();}
       }
+      c.restore();
+    }
+    drawSakura(x,y,r,color) {
+      const c=this.ctx;c.save();c.translate(x,y);c.fillStyle=color;
+      for(let i=0;i<5;i++){c.rotate(Math.PI*2/5);c.beginPath();c.ellipse(0,-r,r*.55,r*.8,0,0,Math.PI*2);c.fill();}
       c.restore();
     }
     drawAmbient(back) {
@@ -647,10 +670,11 @@
           this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h });
         }
       }
-      // Balões ficam acima de todos os corpos; moradores falam só quando parados para não poluir a cidade.
+      // Uma fala por vez, ancorada no interlocutor e sem cobrir personagens ou serviços.
+      this.townBubbleBoxes = [];
       for (const { a, h } of drawn) {
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
-        else if ((!a.moving || a.manualSpeech) && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name, a.y);
+        else if (a.speechFor > 0 && a.speech && !this.townBubble(a, h) && !a.manualSpeech) { a.speech = ''; a.speechFor = 0; }
       }
     }
     townWalkHero(id) {
@@ -755,19 +779,20 @@
       c.save(); c.translate(x, y); if (flip) c.scale(-1, 1);
       c.drawImage(img, col * M.frameW, 0, M.frameW, M.frameH, -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k); c.restore();
     }
-    townBubble(x, y, verb, name, feetY) {
-      const c = this.ctx; c.save(); c.font = `600 12px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-      const words = (verb || '').split(/\s+/), lines = []; let line = '';
-      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 145) { lines.push(line); line = word; } else line = next; }
+    townBubble(a, h) {
+      const x = a.x, y = a.y - h * 1.15 - 4, name = a.name;
+      const c = this.ctx; c.save(); c.font = `500 10px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const words = a.speech.split(/\s+/), lines = []; let line = '';
+      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 120) { lines.push(line); line = word; } else line = next; }
       if (line) lines.push(line);
-      c.font = `700 13px ${UI_FONT}`;
-      const w = Math.min(172, Math.max(60, c.measureText(name).width + 16, ...lines.map(t => { c.font = `600 12px ${UI_FONT}`; return c.measureText(t).width + 16; })));
-      const hh = 23 + lines.length * 14, v = this.view || { x:0, w:W };
-      const blockers = (this.townHits || []).filter(o => Math.abs(o.x - x) > 1 || Math.abs(o.y - feetY) > 1)
-        .map(o => ({ l:o.x - o.h * .38 - 3, r:o.x + o.h * .38 + 3, t:o.y - o.h * 1.15 - 3, b:o.y + 5 }));
-      if (!this._bubbleRects || this.worldTime >= this._bubbleRectsAt) {
-        const rect = this.canvas.getBoundingClientRect(); this._bubbleRects = [];
-        if (rect.width && rect.height) document.querySelectorAll('#village-actions .signpost, #village-hub').forEach(el => {
+      const w = Math.min(136, Math.max(64, c.measureText(name).width + 14, ...lines.map(t => c.measureText(t).width + 14)));
+      const hh = 17 + lines.length * 11, v = this.view || { x:0, w:W };
+      if (x < v.x + 6 || x > v.x + v.w - 6) { c.restore(); return false; }
+      const blockers = (this.townHits || []).map(o => ({ l:o.x - o.h * .38 - 3, r:o.x + o.h * .38 + 3, t:o.y - o.h * 1.15 - 3, b:o.y + 5 }));
+      const rect = this.canvas.getBoundingClientRect(), rectKey = [rect.left,rect.top,rect.width,rect.height,v.x,v.w].join(':');
+      if (!this._bubbleRects || this.worldTime >= this._bubbleRectsAt || this._bubbleRectsKey !== rectKey) {
+        this._bubbleRects = []; this._bubbleRectsKey = rectKey;
+        if (rect.width && rect.height) document.querySelectorAll('#village-actions .signpost, #village-hub, #viewport .zone-chip, #viewport .stage-top button, #viewport .stage-wallet').forEach(el => {
           if (!el.getClientRects().length) return;
           const r = el.getBoundingClientRect();
           this._bubbleRects.push({ l:v.x + (r.left - rect.left) / rect.width * v.w - 4,
@@ -775,26 +800,31 @@
             t:(r.top - rect.top) / rect.height * H - 4,
             b:(r.bottom - rect.top) / rect.height * H + 4, sign:true });
         });
-        this._bubbleRectsAt = this.worldTime + .25;
+        this._bubbleRectsAt = this.worldTime + .2;
       }
-      blockers.push(...this._bubbleRects);
-      const offsets = [0, -w * .65, w * .65, -w * 1.15, w * 1.15];
+      blockers.push(...this._bubbleRects, ...(this.townBubbleBoxes || []));
+      const side = w / 2 + h * .45 + 5, offsets = [0, -side, side], prior = a.bubblePlacement?.text === a.speech ? a.bubblePlacement : null;
       let best = null;
-      for (const top of [y - hh - 5, y - hh - 24, feetY + 9]) for (const off of offsets) {
+      for (const lift of [0, 18, -hh / 2]) for (const off of offsets) {
+        if (lift < 0 && off === 0) continue;
         const cx = Math.max(v.x + w / 2 + 4, Math.min(v.x + v.w - w / 2 - 4, x + off));
+        const top = y - hh - 4 - lift;
         const box = { l:cx - w / 2, r:cx + w / 2, t:top, b:top + hh };
         if (box.t < 4 || box.b > H - 4) continue;
-        const overlap = blockers.reduce((sum, q) => sum + Math.max(0, Math.min(box.r, q.r) - Math.max(box.l, q.l)) *
-          Math.max(0, Math.min(box.b, q.b) - Math.max(box.t, q.t)) * (q.sign ? 5 : 1), 0);
-        const score = overlap + Math.abs(cx - x) * .15 + Math.abs(top - (y - hh - 5)) * .1;
-        if (!best || score < best.score) best = { cx, top, score };
+        if (blockers.some(q => box.l < q.r && box.r > q.l && box.t < q.b && box.b > q.t)) continue;
+        const score = Math.abs(cx - x) + Math.abs(lift) * .5 - (prior?.off === off && prior?.lift === lift ? 1000 : 0);
+        if (!best || score < best.score) best = { cx, top, score, off, lift, box };
       }
-      if (!best) { c.restore(); return; }
+      if (!best) { c.restore(); return false; }
       const { cx, top } = best;
-      this.roundRect(cx - w / 2, top, w, hh, 5); c.fillStyle = 'rgba(22,17,26,.74)'; c.fill(); c.strokeStyle='rgba(255,216,137,.42)'; c.lineWidth=.8; c.stroke();
-      c.font = `700 13px ${UI_FONT}`; c.fillStyle = '#ffd889'; c.fillText(name, cx, top + 10);
-      c.font = `600 12px ${UI_FONT}`; c.fillStyle = '#fff8ee'; lines.forEach((t, i) => c.fillText(t, cx, top + 23 + i * 14));
-      c.restore();
+      a.bubblePlacement = { text:a.speech, off:best.off, lift:best.lift };
+      this.townBubbleBoxes?.push(best.box);
+      c.globalAlpha = Math.min(1, (a.speechAge || 0) / .15, a.speechFor / .3);
+      c.strokeStyle='rgba(238,193,171,.55)'; c.lineWidth=.7; c.beginPath(); c.moveTo(Math.max(cx-w/2,Math.min(cx+w/2,x)),Math.max(top+6,Math.min(top+hh,y+2))); c.lineTo(x,y+2); c.stroke();
+      this.roundRect(cx - w / 2, top, w, hh, 6); c.fillStyle = 'rgba(22,17,26,.65)'; c.fill(); c.strokeStyle='rgba(238,193,171,.38)'; c.stroke();
+      c.font = `600 9px ${UI_FONT}`; c.fillStyle = '#efc9ad'; c.fillText(name, cx, top + 8);
+      c.font = `500 10px ${UI_FONT}`; c.fillStyle = '#fff8ee'; lines.forEach((t, i) => c.fillText(t, cx, top + 19 + i * 11));
+      c.restore(); return true;
     }
     townNameTag(x,y,name){const c=this.ctx;c.save();c.font=`700 8px ${UI_FONT}`;c.textAlign='center';c.lineWidth=2.5;c.strokeStyle='rgba(10,8,18,.82)';c.strokeText(name,x,y);c.fillStyle='#fff1d4';c.fillText(name,x,y);c.restore();}
     actorOffset(s, dirSign) {
