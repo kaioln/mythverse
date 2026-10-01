@@ -62,7 +62,6 @@
         <div class="auth-tabs">${tab('login', 'Entrar')}${tab('register', 'Criar conta')}</div>
         <div class="auth-msg ${message ? 'show' : ''}" role="alert">${message}</div>
         ${form}
-        <p class="auth-foot">Seu progresso fica salvo na nuvem. Por segurança, entre novamente a cada abertura do site. O navegador pode preencher seus dados, mas não entra automaticamente.</p>
       </section>`;
       this.bind();
     },
