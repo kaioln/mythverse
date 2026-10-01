@@ -16,6 +16,15 @@ vm.runInContext(source('town.js'), game);
 const { TownLife, TownMap } = game.KT;
 assert.equal(TownMap.isWalk(-1, 430), false);
 assert.equal(TownMap.isWalk(1280, 430), false);
+for (const p of [[350,435],[382,432],[150,245],[770,330],[870,600],[890,615],[600,285]]) {
+  assert.equal(TownMap.isWalk(...p), false, `telhado, barraca ou água não é piso: ${p}`);
+}
+const visitor = new TownLife(); visitor.sync([]);
+const renji = visitor.agents.find(a => a.name === 'Renji');
+assert.ok(renji.y > 460, 'vendedor à frente da barraca, não dentro do telhado');
+assert.ok(visitor.talk(renji)); const firstLine = renji.speech;
+assert.ok(visitor.talk(renji)); assert.notEqual(renji.speech, firstLine);
+assert.ok(renji.manualSpeech && renji.speechFor > 0);
 for (const spot of TownMap.SPOTS) assert.ok(TownMap.route(...TownMap.at('plaza'), ...TownMap.at(spot.node)), `rota para ${spot.node}`);
 vm.runInContext('Math.random = () => ((globalThis.__seed = (globalThis.__seed * 1664525 + 1013904223) >>> 0) / 4294967296)', game);
 

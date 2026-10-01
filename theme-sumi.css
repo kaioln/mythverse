@@ -720,16 +720,16 @@ body .stage-controls .journey-cta:hover{background:#d9573b!important;transform:t
 
 /* Marcadores da cidade: medalhão redondo sobre o prédio e placa com nome e nível logo abaixo (padrão de mapa de cidade
    de jogos). A descrição fica na dica; nada de caixas largas cobrindo a praça ou os heróis. */
-#village-actions .signpost{flex-direction:column;align-items:center;gap:3px;min-width:0;padding:0;background:none!important;border:0!important;box-shadow:none!important;transform:translate(-50%,-50%)}
+#village-actions .signpost{flex-direction:row;align-items:center;gap:4px;min-width:44px;min-height:44px;padding:0;background:none!important;border:0!important;box-shadow:none!important;transform:translate(-50%,-50%)}
 #village-actions .signpost::after,#village-actions .signpost::before{display:none!important}
-#village-actions .signpost .sp-icon{width:clamp(34px,3vw,46px);height:clamp(34px,3vw,46px);border-radius:50%;background:rgba(14,12,18,.9)!important;border:2px solid rgba(239,230,210,.82)!important;box-shadow:0 4px 12px rgba(0,0,0,.55)!important;font-size:clamp(16px,1.35vw,21px)}
+#village-actions .signpost .sp-icon{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:rgba(14,12,18,.88)!important;border:1px solid rgba(239,230,210,.72)!important;box-shadow:0 2px 6px rgba(0,0,0,.35)!important;font-size:14px}
 #village-actions .signpost .sp-icon .ic{--icc:var(--washi)}
-#village-actions .signpost .sp-plate{display:flex;flex-direction:column;align-items:center;padding:2px 7px 3px;border-radius:5px;background:rgba(14,12,18,.78);border:1px solid rgba(239,230,210,.24);box-shadow:0 3px 8px rgba(0,0,0,.34)}
-#village-actions .signpost b{font:700 clamp(11px,.9vw,14px)/1.1 var(--display);color:var(--washi);white-space:nowrap}
-#village-actions .signpost .sp-lv{display:block!important;font:700 9.5px/1.1 var(--ui);color:var(--gold);letter-spacing:.04em}
+#village-actions .signpost .sp-plate{display:flex;flex-direction:column;align-items:flex-start;padding:3px 6px;border-radius:5px;background:rgba(14,12,18,.78);border:1px solid rgba(239,230,210,.2);box-shadow:0 2px 5px rgba(0,0,0,.25)}
+#village-actions .signpost b{font:600 11px/1.2 var(--ui);color:var(--washi);white-space:nowrap}
+#village-actions .signpost .sp-lv{display:block!important;font:600 8px/1.2 var(--ui);color:var(--gold);letter-spacing:.02em}
 #village-actions .signpost .sp-lv:empty{display:none!important}
 #village-actions .signpost.ready .sp-icon,#village-actions .signpost.hot .sp-icon,#village-actions .signpost.featured .sp-icon{border-color:var(--gold)!important}
-#village-actions .signpost .sp-badge{position:absolute;top:-4px;left:calc(50% + 10px);right:auto;z-index:2}
+#village-actions .signpost .sp-badge{position:absolute;top:2px;left:18px;right:auto;z-index:2;min-width:14px;height:14px;font-size:8px;line-height:14px;padding:0 3px}
 #village-actions .signpost:hover{transform:translate(-50%,-50%) translateY(-2px)}
 #village-actions .signpost:hover .sp-icon{border-color:var(--gold)!important}
 #village-actions .signpost:focus-visible .sp-icon{outline:2px solid var(--gold);outline-offset:3px}
@@ -806,6 +806,12 @@ body .village-hub .hub-actions>.action.primary{min-height:42px}
 body .village-hub .hub-row .action{min-height:30px}
 
 .hero-tale{max-width:760px;margin:0 0 14px}
+@media (min-width:901px){
+  body.city-focus:not(.in-combat){--dock-h:0px}
+  body.city-focus:not(.in-combat) #party-strip{display:none}
+  body.city-focus:not(.in-combat) .stage-col{--stage-w:min(100%,calc((100dvh / var(--zf,1) - var(--top-h) - 34px) * 16 / 9))}
+}
+@media (max-width:900px){#city-focus-btn{display:none!important}}
 .hero-tale h2{font-size:clamp(20px,2vw,26px)}
 
 /* Enciclopédia: índice agrupado à esquerda (7 assuntos), conteúdo à direita. */

@@ -507,6 +507,10 @@
       const zoom = town ? 1 : 1.04 + Math.sin(this.worldTime * .08) * .012 + (moving ? .02 : 0);
       const dx = town ? 0 : Math.sin(this.worldTime * .05) * 10;
       if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
+      if (town) {
+        if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/festival-homes.png'; }
+        if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65, 390, 260);
+      }
       c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H);
       if (!town) { const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H); }
       const vig = c.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, H * .95); vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, `rgba(6,4,18,${town ? .32 : .62})`); c.fillStyle = vig; c.fillRect(0, 0, W, H);
@@ -625,13 +629,13 @@
           this.townHits.push({ uid:a.uid, x:a.x, y:a.y, h });
         } else {
           this.drawTownFolk(a, h, F);
-          this.townHits.push({ folk:true, x:a.x, y:a.y, h });
+          this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h });
         }
       }
       // Balões ficam acima de todos os corpos; moradores falam só quando parados para não poluir a cidade.
       for (const { a, h } of drawn) {
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
-        else if (!a.moving && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name, a.y);
+        else if ((!a.moving || a.manualSpeech) && a.speechFor > 0 && a.speech) this.townBubble(a.x, a.y - h * 1.38 - 5, a.speech, a.name, a.y);
       }
     }
     townWalkHero(id) {
@@ -644,30 +648,77 @@
       const img = this.townWalks.get(id);
       return img.complete && img.naturalWidth ? img : null;
     }
+    drawnWalker(id) {
+      const row = ['erik', 'akira', 'mercy_valkyrie', 'warden'].indexOf(id);
+      if (row < 0) return null;
+      if (!this.drawnWalk) {
+        const img = new Image(); this.drawnWalk = { img, ready:false };
+        img.onload = () => Object.assign(this.drawnWalk, this.measureWalkSheet(img, 4));
+        img.src = 'assets/town-walk/drawn-party.png';
+      }
+      return this.drawnWalk.ready ? { ...this.drawnWalk, row } : null;
+    }
+    measureWalkSheet(img, rows) {
+      const fw = img.width / 8, fh = img.height / rows, canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently:true }); ctx.drawImage(img, 0, 0);
+      const pixels = ctx.getImageData(0, 0, img.width, img.height).data, frames = [], heights = [];
+      for (let r = 0; r < rows; r++) {
+        frames[r] = []; heights[r] = 0;
+        for (let col = 0; col < 8; col++) {
+          const sx = Math.round(col * fw), sy = Math.round(r * fh), sw = Math.round((col + 1) * fw) - sx, sh = Math.round((r + 1) * fh) - sy;
+          let top = sh, foot = 0, left = sw, right = 0;
+          for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
+            if (pixels[((sy + y) * img.width + sx + x) * 4 + 3] < 96) continue;
+            top = Math.min(top, y); foot = Math.max(foot, y); left = Math.min(left, x); right = Math.max(right, x);
+          }
+          frames[r][col] = { sx, sy, sw, sh, cx:(left + right) / 2, footY:foot };
+          heights[r] = Math.max(heights[r], foot - top);
+        }
+      }
+      return { img, ready:true, frameW:fw, frameH:fh, frames, heights };
+    }
+    drawSheetWalk(sheet, row, a, h) {
+      const frame = Math.floor(a.walkD / 3.2) % 8;
+      this.drawWalker(sheet.img, sheet.img, { frameW:sheet.frameW, frameH:sheet.frameH, bodyH:sheet.heights[row], ...sheet.frames[row][frame] }, row, a, h);
+    }
     // Quadros completos, com pés alinhados ao chão. A fase acompanha a distância percorrida.
     drawWalker(idle, walk, M, row, a, h, idleCol = 0) {
       const c = this.ctx, k = h / M.bodyH;
       const distance = Number.isFinite(a.walkD) ? a.walkD : a.walkT * (a.speed || 24);
-      const frame = a.moving ? Math.floor(distance / 2) % 8 : 0;
+      const frame = a.moving ? Math.floor(distance / 3.2) % 8 : 0;
       const img = a.moving && walk ? walk : idle;
       const col = a.moving && walk ? frame : idleCol;
       c.save(); c.translate(a.x, a.y); if (a.face < 0) c.scale(-1, 1);
       // Respiração ancorada no chão: não desloca a sola, a sombra ou o personagem.
       if (!a.moving) c.scale(1, 1 + Math.sin(a.animT * 2.1 + a.x) * .003);
-      c.drawImage(img, col * M.frameW, row * M.frameH, M.frameW, M.frameH,
-        -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k);
+      c.drawImage(img, M.sx ?? col * M.frameW, M.sy ?? row * M.frameH, M.sw ?? M.frameW, M.sh ?? M.frameH,
+        -M.cx * k, -M.footY * k, (M.sw ?? M.frameW) * k, (M.sh ?? M.frameH) * k);
       c.restore();
     }
     drawTownHero(an, a, h) {
+      const drawn = this.drawnWalker(a.sprite);
+      if (a.moving && drawn) {
+        this.drawSheetWalk(drawn, drawn.row, a, h);
+        return;
+      }
       const M = an.meta, run = M.clips?.run?.seq || [2, 0];
       const walk = this.townWalkHero(a.sprite);
       const idleCol = a.moving ? run[0] : 0;
-      this.drawWalker(an.img, walk, M, 0, a, h * 1.08, idleCol);
+      this.drawWalker(an.img, walk, M, 0, a, h, idleCol);
     }
     drawTownFolk(a, h, F) {
+      if (!this.drawnFolk) {
+        const img = new Image(); this.drawnFolk = { ready:false };
+        img.onload = () => Object.assign(this.drawnFolk, this.measureWalkSheet(img, 10));
+        img.src = 'assets/town-walk/drawn-folk.png';
+      }
+      if (a.moving && this.drawnFolk.ready) { this.drawSheetWalk(this.drawnFolk, a.f, a, h); return; }
       this.drawWalker(this.folk.img, this.folk.walk, { ...F, cx:F.frameW / 2 }, a.f, a, h, a.moving ? 1 : 0);
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
+    townFolkAt(x, y) { if (this.engine.zone.kind !== 'village') return null; return (this.townHits || []).filter(o => o.folk && Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]?.actor; }
+    townTalkAt(x, y) { const a = this.townFolkAt(x, y); return a && this.town.talk(a) ? a : null; }
     // Um quadro da folha de poses do herói, com os pés em (x, y).
     drawFrame(img, M, col, x, y, height, flip) {
       const c = this.ctx, k = height / M.bodyH;
@@ -734,10 +785,10 @@
     drawHero(u, pos) {
       const c = this.ctx, s = this.v(u.uid), alive = u.alive, t = this.worldTime + u.slot * .7;
       const moving = this.engine.phase === 'between' && alive;
-      const off = this.actorOffset(s, 1), run = moving ? Math.abs(Math.sin(t * 11)) * 8 : 0;
+      const off = this.actorOffset(s, 1);
       // Escala por sprite (src/sprite-meta.js): todos os heróis com o mesmo tamanho aparente e o pé no chão.
       const hm = KT.SPRITE_META?.[u.sprite] || [1, 0], HERO_H = HERO_H0 * hm[0];
-      const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y - run + hm[1] * HERO_H;
+      const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y + hm[1] * HERO_H;
       c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(pos.x + off.x, pos.y + 4, 46, 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
       const ultReady = alive && u.energy >= 100;
       if (alive) this.runeCircle(pos.x + off.x, pos.y + 4, ultReady ? 52 : 46, u.color, ultReady ? .7 : .16, ultReady ? 1.5 : .25);
@@ -747,7 +798,11 @@
       if (s.revive > 0) this.aura(u.sprite, x, y, HERO_H, '#ffe19a', s.revive);
       const stealth = u.effects.some(e => e.s === 'stealth');
       const an = this.assets.anim?.(u.sprite);
-      if (an) this.drawAnim(an, s, u, x, y, HERO_H, { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .6, gray:!alive });
+      const walk = moving && this.drawnWalker(u.sprite);
+      if (walk) {
+        this.drawSheetWalk(walk, walk.row, { x, y, moving:true, walkD:t * 32, face:1 }, HERO_H);
+      }
+      else if (an) this.drawAnim(an, s, u, x, y, HERO_H, { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .6, gray:!alive });
       else this.drawSprite(u.sprite, x, y, HERO_H, { sy:alive ? 1 + Math.sin(t * 2.6) * .018 : 1, flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .35, gray:!alive, tilt:alive ? 0 : -.25 });
       if (u.shield > 0 && alive) this.drawBarrier(x, y, HERO_H, U.clamp(u.shield / u.maxHp, 0, 1), s.shieldHit > 0);
       if (!alive) return;
@@ -847,7 +902,7 @@
       const br = Math.sin(time * 2.4 + slot) * .5 + .5;
       switch (p) {
         case 0: case 1: return { x:0, y:0, rot:0, sx:1 + br * .006, sy:1 + br * .014 };
-        case 2: return { x:4, y:-Math.abs(Math.sin(time * 12)) * 4, rot:.03, sx:1, sy:1 };
+        case 2: return { x:4, y:0, rot:.015, sx:1, sy:1 };
         case 3: return { x:-10 + Math.sin(time * 60) * 2, y:0, rot:-.06, sx:1.02, sy:.97 };
         case 4: return { x:-6, y:0, rot:-.05, sx:1.03, sy:.96 };
         case 5: return { x:18, y:0, rot:.05, sx:1.05, sy:.97 };

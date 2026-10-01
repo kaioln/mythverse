@@ -5,12 +5,12 @@
   // Pontos de referência (1280×720). Quem anda usa o ponto encaixado no chão; vendedor parado fica ao lado da banca.
   const N = {
     plaza:[560,430], plazaN:[560,408], plazaS:[560,454], plazaW:[515,438], plazaE:[610,438], guardSouth:[560,470],
-    marketE:[420,462], marketM:[300,470], marketW:[150,470], marketGuide:[410,430], stallRenji:[350,435], stallYori:[382,432], stallAya:[250,435], stallMio:[300,438], stallGoro:[161,435],
+    marketE:[420,462], marketM:[300,470], marketW:[150,470], marketGuide:[410,451], stallRenji:[338,469], stallYori:[379,474], stallAya:[255,469], stallMio:[303,474], stallGoro:[166,451],
     dojo:[200,312], dojoStairs:[205,380], guild:[200,168], guildSteps:[285,190], garden:[450,300],
     temple:[570,162], templeL:[535,160], templeR:[610,166], templeMid:[610,240],
     forge:[770,372], forgePost:[790,395],
-    bridgeW:[800,512], bridgeM:[860,500], eastLand:[935,500], shrine:[1060,410], shrineStory:[1010,470], shrineLantern:[1040,440],
-    dockTop:[965,580], dock:[915,605], dockWest:[945,595], dockMid:[1080,630], expedition:[1230,630],
+    bridgeW:[815,513], bridgeM:[860,506], eastLand:[935,500], shrine:[1060,410], shrineStory:[1010,470], shrineLantern:[1040,440],
+    dockTop:[965,580], dock:[970,600], dockWest:[998,604], dockMid:[1080,630], expedition:[1230,630],
     bankTop:[300,500], bankLanding:[350,590], bank:[190,648],
     workshop:[740,670], workshopGate:[560,640],
     dance:[535,415], drum:[585,415], playMarketW:[320,478], playMarketC:[350,480], playMarketE:[380,478], playB:[630,400]
@@ -37,14 +37,77 @@
     {f:4,name:'Kai',route:['dock','dockWest'],speed:12,verb:'Guiando visitantes'},{f:8,name:'Mio',post:'stallMio',face:1,verb:'Pintando máscaras'},
     {f:9,name:'Bento',route:['bankLanding','workshopGate','workshop','workshopGate'],speed:13,verb:'Levando oferendas'}
   ];
+  const GREETINGS = {
+    Renji:['O caldo é da receita da minha mãe. Na primavera em que ela sumiu, prometi nunca fechar a banca antes da última lanterna.','Yori guarda os doces; eu guardo o fogo. Se alguém regressar da Fenda esta noite, terá uma mesa.'],
+    Yori:['Cada dango tem três cores: a neve que passou, a flor de hoje e a folha que ainda virá.','Renji diz que faço doces demais. Mas sempre há um viajante chegando quando a praça já se esvaziou.'],
+    Aya:['Escolha uma máscara, mas deixe seus olhos à vista. O festival celebra encontros, não disfarces.','Mio pintou uma pétala diferente em cada máscara. É como lembramos quem não voltou.'],
+    Mio:['Esta máscara é para minha irmã. Se ela voltar do Bosque, quero que reconheça a banca de longe.','Aya me ensinou a misturar o rosa. Antes disso, minhas cerejeiras pareciam incêndios.'],
+    Maki:['A lâmina deve cantar baixo quando sai da pedra. Se gritar, há uma fissura: não confie nela contra o Eclipse.','Hoje a forja aquece os sinos da praça. Amanhã voltaremos a cuidar das armas.'],
+    Suzu:['Suba pela escadaria até o portal. As pétalas escondem os degraus; não há atalho pelos jardins.','Varro para que os recém-chegados vejam o círculo inteiro. Um portal incompleto é uma promessa perigosa.'],
+    Hotaru:['Uma lanterna pelos presentes, outra pelos ausentes. Fumi conhece os nomes que não cabem nas fitas.','O vento leva as pétalas para o mar. Não apagamos as luzes até que a última atravesse a ponte.'],
+    Goro:['O peixe veio antes da maré mudar. Desde que Mizuchi despertou, só navego quando os sinos estão quietos.','Kai conhece o cais melhor que eu. Pergunte a ele como o rio ganhou tantas lanternas.'],
+    Tomo:['Riku prometeu deixar eu tocar o quarto toque! É o que chama todo mundo para casa.','Não corro nas escadas. Jinbei disse que o festival também precisa de joelhos inteiros.'],
+    Jinbei:['A ponte é estreita: dê passagem a quem já começou a travessia. Não perdemos ninguém numa noite de festa.','Minha ronda acaba no cais. Daigo deixa as caixas longe dos degraus, e eu confiro as lanternas.'],
+    Natsu:['Há chá para os viajantes na rua das barracas. Não suba nos balcões: Aya acabou de arrumar tudo.','Mercadoria tem preço; uma história boa ganha chá de graça. O que você viu além do Bosque?'],
+    Daigo:['Estas caixas são oferendas, não espólio. Uma vai ao santuário, outra para as famílias dos expedicionários.','A Casa de Expedições recebe novos grupos no nível 8 da conta. Até lá, aprenda a voltar inteiro.'],
+    Koharu:['A dança segue o vento, não o tambor. Riku ainda tenta entender isso.','O último passo fica virado para o portal. Assim os que chegam nunca encontram nossas costas.'],
+    Riku:['Três toques para reunir a praça; o quarto para chamar os que ainda estão longe.','Koharu diz que toco depressa quando fico nervoso. Hoje quero acertar cada volta da dança.'],
+    Emi:['Prenda a fita no pulso, não na arma. O nome que você carrega deve voltar com você.','Este talismã não promete vitória. Promete que alguém em Tsukimori estará esperando.'],
+    Fumi:['Antes da Fenda, o festival durava uma só noite. Agora mantemos duas lanternas, para que a esperança não durma.','Kira e Sayo guardam nomes nas fitas. A cidade sobrevive porque ninguém deixa o outro ser esquecido.'],
+    Kai:['O cais fica abaixo do santuário: siga a rua e desça a escada. A água não é um caminho.','Hoje nenhum barco sai sem uma lanterna na proa. Mizuchi pode guardar o mar; os nomes continuam nossos.'],
+    Bento:['Kogane contou cada oferenda antes de eu partir. Dinheiro não consola, mas mantém uma casa de pé.','Contorno a praça para chegar à oficina. A cascata engana os visitantes: não existe ponte por cima dela.']
+  };
 
   // ---- chão ----
+  // Ruas verificadas na arte, não cores escuras do telhado. Cada segmento termina numa
+  // escada, pátio ou ponte real; a oficina só se liga ao píer contornando a praça.
+  const STREETS = [
+    [10, [[100,168],[260,171],[328,158]]],
+    [8, [[254,141],[266,170],[277,191],[327,225],[290,238],[244,270],[290,288],[332,326],[388,355],[452,394],[512,439]]],
+    [10, [[244,270],[201,287],[181,306],[145,308],[90,301],[55,288]]],
+    [9, [[448,298],[482,334],[540,347],[591,319],[626,296],[605,244],[586,208],[569,187],[580,158]]],
+    [11, [[532,161],[561,174],[586,179],[623,162]]],
+    [10, [[540,347],[547,376],[556,410]]],
+    [13, [[61,413],[184,464],[263,477],[375,478],[439,445],[482,413],[516,430]]],
+    [9, [[166,451],[195,461],[255,469],[303,474],[338,469],[379,474],[420,462]]],
+    [12, [[556,410],[606,410],[677,388],[753,388],[792,370],[831,370]]],
+    [10, [[685,444],[730,455],[752,495],[787,528],[815,513],[855,506],[913,510]]],
+    [10, [[913,510],[965,474],[1017,480],[1067,410]]],
+    [10, [[913,510],[933,559],[970,600],[1080,630],[1188,648],[1242,630]]],
+    [12, [[184,464],[251,522],[337,588],[368,591],[474,619],[641,698],[740,670]]],
+    [12, [[368,591],[266,654],[181,648],[240,637]]]
+  ];
+  const COURTS = [
+    [[515,410],[568,393],[640,397],[686,419],[693,445],[664,463],[558,465],[512,443]],
+    [[54,286],[146,276],[193,283],[202,301],[173,317],[88,310]],
+    [[115,168],[267,162],[307,173],[260,184],[126,184]],
+    [[536,163],[556,155],[610,158],[625,173],[593,186],[554,179]],
+    [[150,652],[183,633],[235,631],[270,649],[245,672],[179,673]],
+    [[627,695],[676,669],[738,659],[777,675],[747,705],[665,711]],
+    [[962,600],[989,589],[1195,625],[1244,620],[1250,640],[1188,664]]
+  ];
+  function inside(x, y, polygon) {
+    let on = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const [ax, ay] = polygon[i], [bx, by] = polygon[j];
+      if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) on = !on;
+    }
+    return on;
+  }
   let G = null, GW = 640, GH = 360, CELL = 2, EDGE = null;
   function grid() {
     if (G) return G;
     const W = KT.TownWalk; if (!W) { G = new Uint8Array(GW * GH); EDGE = new Uint8Array(GW * GH); return G; }
     GW = W.w; GH = W.h; CELL = W.cell; G = new Uint8Array(GW * GH);
-    W.rows.split(';').forEach((r, y) => { let x = 0, on = false; for (const n of r.split(',').map(Number)) { if (on) G.fill(1, y * GW + x, y * GW + x + n); x += n; on = !on; } });
+    for (const [radius, points] of STREETS) for (let i = 1; i < points.length; i++) {
+      const [ax, ay] = points[i - 1], [bx, by] = points[i], dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy;
+      for (let cy = Math.max(0, Math.floor((Math.min(ay, by) - radius) / CELL)); cy <= Math.min(GH - 1, Math.ceil((Math.max(ay, by) + radius) / CELL)); cy++)
+        for (let cx = Math.max(0, Math.floor((Math.min(ax, bx) - radius) / CELL)); cx <= Math.min(GW - 1, Math.ceil((Math.max(ax, bx) + radius) / CELL)); cx++) {
+          const x = cx * CELL + CELL / 2, y = cy * CELL + CELL / 2, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len));
+          if (Math.hypot(x - ax - dx * t, y - ay - dy * t) <= radius) G[cy * GW + cx] = 1;
+        }
+    }
+    for (let cy = 0; cy < GH; cy++) for (let cx = 0; cx < GW; cx++) if (!G[cy * GW + cx] && COURTS.some(p => inside(cx * CELL + CELL / 2, cy * CELL + CELL / 2, p))) G[cy * GW + cx] = 1;
     EDGE = new Uint8Array(GW * GH); const q = [];                    // distância até a borda: a rota prefere o meio do caminho
     for (let i = 0; i < G.length; i++) { if (G[i]) EDGE[i] = 255; else q.push(i); }
     for (let h = 0; h < q.length; h++) { const i = q[h], x = i % GW, y = (i / GW) | 0;
@@ -118,7 +181,7 @@
   const dist = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55);
 
   class TownLife {
-    constructor() { this.agents = []; this.key = ''; this.dialogueAt = 2; this.dialogue = 0; this.dialogueLine = 0; }
+    constructor() { this.agents = []; this.key = null; this.dialogueAt = 2; this.dialogue = 0; this.dialogueLine = 0; }
     sync(heroes) {
       const key = heroes.map(h => h.uid + h.sprite).join('|'); if (key === this.key) return; this.key = key;
       const starts = ['plazaN', 'forge', 'marketE', 'dojo', 'garden', 'shrine'];
@@ -156,8 +219,9 @@
           a.escapeIn = 2; this.giveWay(a);
         }
         if (a.path.length) {
+          while (a.path.length && Math.hypot(a.path[0][0] - a.x, a.path[0][1] - a.y) < .35) a.path.shift();
+          if (!a.path.length) { this.arrive(a); a.moving = false; continue; }
           const [tx, ty] = a.path[0], dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy);
-          if (d < .35) { a.path.shift(); if (!a.path.length) this.arrive(a); a.moving = false; continue; }
           const remaining = Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y);
           const pace = Math.min(a.speed * depth(a.y), Math.max(8, remaining * 2.5));
           a.speedNow = Math.min(pace, (a.speedNow || 0) + 105 * dt);
@@ -183,7 +247,7 @@
             continue;
           }
           a.stuck = 0; a.blockedTries = 0;
-          if (Math.abs(dx) > .4) a.face = dx > 0 ? 1 : -1;
+          if (Math.abs(dx) > Math.max(.4, Math.abs(dy) * .3)) a.face = dx > 0 ? 1 : -1;
           a.x = nx; a.y = ny; a.walkT += dt; a.walkD += step; a.moving = step > .01; a.idleFor = 0;
           if (d <= step + .001) { a.path.shift(); if (!a.path.length) this.arrive(a); }
           continue;
@@ -216,8 +280,14 @@
       }
       this.dialogueAt = 2;
     }
+    talk(a) {
+      const lines = GREETINGS[a.name]; if (!lines) return false;
+      this.agents.forEach(o => { o.speechFor = 0; o.manualSpeech = false; });
+      a.speech = lines[(a.talkLine || 0) % lines.length]; a.talkLine = (a.talkLine || 0) + 1;
+      a.speechFor = 7; a.manualSpeech = true; this.dialogueAt = 8; return true;
+    }
     arrive(a) { a.goal = null; a.speedNow = 0; const yielded = a.yielding; a.yielding = false; if (a.kind === 'hero') { a.face = a.spot?.face || a.face; a.verb = a.spot?.verb || ''; a.wait = yielded ? .6 : 2.5 + Math.random() * 4; } else { if (a.routeTarget != null) a.ri = a.routeTarget; a.routeTarget = null; a.wait = yielded ? .6 : 1 + Math.random() * 2; } }
-    drawList() { return this.agents.map(a => ({ a, s:depth(a.y), h:40 * depth(a.y) })).sort((p, q) => p.a.y - q.a.y); }
+    drawList() { return this.agents.map(a => ({ a, s:depth(a.y), h:34 * depth(a.y) })).sort((p, q) => p.a.y - q.a.y); }
   }
   KT.TownLife = TownLife;
   KT.TownMap = { NODES:N, SPOTS, FOLK, route, isWalk, snap, at };

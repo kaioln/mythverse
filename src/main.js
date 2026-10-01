@@ -1,27 +1,75 @@
 (() => {
   const KT = globalThis.KT;
 
-  // Sons sintetizados via Web Audio (sem arquivos), ativados só após interação.
+  // Vozes originais em arquivos locais; áudio só após interação, sem credenciais no cliente.
   class SoundEngine {
-    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.musicStep = 0; this.scene = 'village'; this.last = {}; }
+    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); }
     async enable(on) {
       this.enabled = on;
       if (on && !this.ctx) { const C = globalThis.AudioContext || globalThis.webkitAudioContext; if (C) { this.ctx = new C(); this.master = this.ctx.createGain(); this.music = this.ctx.createGain(); this.master.gain.value = .5; this.music.gain.value = .16; this.music.connect(this.master); this.master.connect(this.ctx.destination); } }
       if (this.ctx?.state === 'suspended') await this.ctx.resume();
-      if (on) { this.chord([523, 659, 784], .08, 'triangle', .05); this.startMusic(); } else this.stopMusic();
+      if (this.enabled !== on) return;
+      if (this.master) this.master.gain.value = on ? .5 : 0;
+      if (on) { this.chord([523, 659, 784], .08, 'triangle', .05); this.startMusic(); } else { this.stopMusic(); this.stopVoice(); this.stopFx(); }
     }
-    setScene(kind) { this.scene = kind === 'village' ? 'village' : 'combat'; if (this.enabled) this.startMusic(); }
-    startMusic() {
-      this.stopMusic(); if (!this.enabled || !this.ctx || this.scene !== 'village') return;
-      const melody = [659,784,880,784,659,587,659,523,587,659,784,659,587,523,494,523], bass = [131,147,165,147];
-      const play = () => { if (!this.enabled || this.scene !== 'village') return; const i = this.musicStep++;
-        this.tone(melody[i % melody.length], .62, 'triangle', .022, .998, 0, this.music);
-        if (!(i % 4)) this.tone(bass[(i / 4) % bass.length | 0], 1.5, 'sine', .028, 1.002, 0, this.music);
-        if (i % 8 === 4) this.tone(melody[(i + 4) % melody.length] / 2, 1.1, 'sine', .012, 1, .12, this.music);
+    setScene(zone) {
+      const kind = typeof zone === 'string' ? zone : zone.kind;
+      const themes = { forest:'forest', sakura:'forest', swamp:'forest', sky:'forest', skyShrine:'crypt', dungeon:'crypt', crypt:'crypt', ghost:'crypt', rift:'crypt', coast:'coast', archive:'coast', abyss:'coast', frost:'frost', forge:'forge', desert:'desert', desertBoss:'desert', clock:'clock', boss:'boss', skyBoss:'boss' };
+      const scene = kind === 'village' ? 'city' : themes[zone.theme] || (['boss','worldboss'].includes(kind) ? 'boss' : 'battle');
+      if (scene === this.scene) return;
+      this.stopVoice(); this.stopFx(); this.scene = scene; if (this.enabled) this.startMusic(); else this.stopMusic();
+    }
+    stopVoice() { this.voiceGeneration++; if (this.speaker) { this.speaker.stop(); this.speaker = null; } if (this.music) this.music.gain.value = .16; }
+    async voice(id, replace = false) {
+      const generation0 = this.voiceGeneration;
+      if (!this.enabled || !this.ctx || !(await this.voiceIndex).has(id) || generation0 !== this.voiceGeneration) return;
+      if (this.speaker && !replace) return;
+      this.stopVoice(); const generation = this.voiceGeneration;
+      if (!this.voices.has(id) && this.voices.size >= 12) this.voices.delete(this.voices.keys().next().value);
+      if (!this.voices.has(id)) this.voices.set(id, fetch(`assets/audio/voices/${id}.mp3`).then(r => { if (!r.ok) throw new Error('voice unavailable'); return r.arrayBuffer(); }).then(b => this.ctx.decodeAudioData(b)).catch(() => null));
+      const buffer = await this.voices.get(id);
+      if (!buffer || !this.enabled || generation !== this.voiceGeneration) return;
+      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
+      source.buffer = buffer; gain.gain.value = .8; source.connect(gain); gain.connect(this.master);
+      this.speaker = source; this.music.gain.value = .07;
+      source.onended = () => { source.disconnect(); gain.disconnect(); if (this.speaker === source) { this.speaker = null; this.music.gain.value = .16; } };
+      source.start();
+    }
+    buffer(url) {
+      if (!this.buffers.has(url)) this.buffers.set(url, fetch(url).then(r => { if (!r.ok) throw new Error('audio unavailable'); return r.arrayBuffer(); }).then(b => this.ctx.decodeAudioData(b)).catch(() => null));
+      return this.buffers.get(url);
+    }
+    async startMusic() {
+      this.stopMusic(); if (!this.enabled || !this.ctx) return;
+      const url = `assets/audio/music/${this.scene}.mp3`, previous = Array.from(this.buffers.keys()).filter(key => key.startsWith('assets/audio/music/') && key !== url);
+      for (const key of previous.slice(0, -1)) this.buffers.delete(key);
+      const generation = this.musicGeneration, buffer = await this.buffer(url);
+      if (!buffer || !this.enabled || generation !== this.musicGeneration) return;
+      const overlap = Math.min(1.5, buffer.duration / 4);
+      const play = when => {
+        if (!this.enabled || generation !== this.musicGeneration) return;
+        const start = Math.max(this.ctx.currentTime, when), source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
+        source.buffer = buffer; source.connect(gain); gain.connect(this.music); this.musicSources.add(source);
+        gain.gain.setValueAtTime(0, start); gain.gain.linearRampToValueAtTime(1, start + overlap);
+        gain.gain.setValueAtTime(1, start + buffer.duration - overlap); gain.gain.linearRampToValueAtTime(0, start + buffer.duration);
+        source.onended = () => { this.musicSources.delete(source); source.disconnect(); gain.disconnect(); };
+        source.start(start);
+        const next = start + buffer.duration - overlap;
+        this.musicTimer = setTimeout(() => play(next), Math.max(0, (next - this.ctx.currentTime - 2) * 1000));
       };
-      play(); this.musicTimer = setInterval(play, 720);
+      play(this.ctx.currentTime);
     }
-    stopMusic() { if (this.musicTimer) clearInterval(this.musicTimer); this.musicTimer = 0; }
+    stopMusic() { this.musicGeneration++; clearTimeout(this.musicTimer); this.musicTimer = 0; for (const source of this.musicSources) source.stop(); this.musicSources.clear(); }
+    stopFx() { for (const source of this.fxSources) source.stop(); this.fxSources.clear(); }
+    async blade(unit) {
+      if (!this.enabled || !this.ctx) return;
+      const generation = this.musicGeneration, buffer = await this.buffer('assets/audio/sfx/blade.mp3');
+      if (!buffer || !this.enabled || generation !== this.musicGeneration || this.fxSources.size >= 4 || !this.throttle('bladeSample', 110)) return;
+      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain(); source.buffer = buffer;
+      const signature = Array.from(unit?.sprite || '').reduce((n,c)=>n+c.charCodeAt(0),0);
+      source.playbackRate.value = .94 + signature % 13 / 100; gain.gain.value = .3;
+      source.connect(gain); gain.connect(this.master); this.fxSources.add(source); source.onended = () => { this.fxSources.delete(source); source.disconnect(); gain.disconnect(); }; source.start();
+    }
     throttle(key, ms) { const now = performance.now(); if (now - (this.last[key] || 0) < ms) return false; this.last[key] = now; return true; }
     tone(freq = 320, dur = .08, type = 'sine', gain = .05, slide = 0, delay = 0, bus = null) {
       if (!this.enabled || !this.ctx) return;
@@ -39,16 +87,16 @@
       src.connect(f); f.connect(g); g.connect(this.master); src.start(t);
     }
     chord(freqs, step = .07, type = 'triangle', gain = .045) { freqs.forEach((f, i) => this.tone(f, .22, type, gain, 0, i * step)); }
-    fx(fx) {
+    fx(fx, unit) {
       if (!fx || !this.enabled) return;
       switch (fx.type) {
-        case 'attack': if (this.throttle('slash', 45)) { this.noise(.07, .05, 2200); this.tone(440, .06, 'triangle', .03, .6); } break;
+        case 'attack': if (unit?.cls === 'Executor') this.blade(unit); else if (this.throttle('slash', 45)) { this.noise(.07, .05, 2200); this.tone(440, .06, 'triangle', .03, .6); } break;
         case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 90)) { this.noise(.08, .05, 600); this.tone(160, .1, 'square', .025, .6); } else if (fx.crit && this.throttle('crit', 60)) this.tone(880, .08, 'triangle', .035, .7); break;
-        case 'cast': this.tone(fx.ult ? 330 : 440, fx.ult ? .35 : .2, 'sawtooth', .03, 2.2); this.noise(.2, .03, 5000); break;
+        case 'cast': this.tone(fx.ult ? 330 : 440, fx.ult ? .35 : .2, 'sawtooth', .03, 2.2); this.noise(.2, .03, 5000); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
         case 'burst': this.noise(.25, .07, 900); this.tone(110, .3, 'sine', .08, .4); break;
         case 'heal': if (this.throttle('heal', 150)) this.chord([659, 880, 1175], .05, 'sine', .035); break;
         case 'death': if (this.throttle('death', 60)) { this.tone(260, .2, 'triangle', .04, .3); this.noise(.15, .04, 1200); } break;
-        case 'bossWindup': this.tone(90, 1.2, 'sawtooth', .04, 2.5); break;
+        case 'bossWindup': this.tone(90, 1.2, 'sawtooth', .04, 2.5); if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`); break;
         case 'bossBurst': this.noise(.5, .1, 300); this.tone(70, .6, 'sine', .12, .5); break;
         case 'levelUp': this.chord([523, 659, 784, 1047], .06, 'triangle', .045); break;
         case 'reward': if (this.throttle('coin', 200)) { this.tone(1320, .08, 'square', .018); this.tone(1760, .12, 'square', .018, 0, .06); } break;
@@ -145,9 +193,9 @@
       if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => { engine.enterZone(f, { stage:1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
-        onZone:z => { ui.onZone(z); sound.setScene(z.kind); }, onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
+        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => ui.onWave(i), onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.summon(c.mvp ? 'legendary' : 'epic'); },
-        onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); sound.fx(fx); },
+        onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
         onResult:r => ui.onResult(r), onResultClose:() => ui.onResultClose(),
         onChoice:c => ui.onChoice(c), onChoiceResolved:c => ui.onChoiceResolved(c), onStuck:p => ui.onStuck(p), onDialog:l => ui.onDialog(l),
@@ -219,7 +267,7 @@
       const savedZone = state.zone && KT.Data.zones[state.zone] ? state.zone : 'village';
       const reenter = KT.Data.zones[savedZone].kind === 'hunt' ? savedZone : savedZone === 'village' ? 'village' : state.lastHunt;
       if (!engine.enterZone(reenter)) engine.enterZone('village');
-      sound.setScene(engine.zone.kind);
+      sound.setScene(engine.zone);
       ui.renderAll();
 
       let last = performance.now(), uiClock = 0, slowClock = 0, saveClock = 0;

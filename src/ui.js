@@ -40,6 +40,12 @@
       document.querySelectorAll('.nav').forEach(b => b.addEventListener('click', () => this.openPanel(b.dataset.panel)));
       document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (!b || this.el.modalBody.contains(b)) return; const [p, tab] = b.dataset.open.split(':'); this.openPanel(p, tab); });
       on('#player-chip', 'click', () => this.openPanel('record'));
+      on('#city-focus-btn', 'click', e => {
+        const on = document.body.classList.toggle('city-focus');
+        e.currentTarget.setAttribute('aria-pressed', String(on));
+        e.currentTarget.querySelector('b').textContent = on ? 'RECOLHER' : 'AMPLIAR';
+        this.renderer.resize();
+      });
       this.el.party.addEventListener('click', e => {
         const ult = e.target.closest('[data-ult]'); if (ult) { this.castUlt(Number(ult.dataset.ult)); return; }
         const det = e.target.closest('[data-hero-detail]'); if (det) { this.openPanel('hero', det.dataset.heroDetail); return; }
@@ -51,7 +57,7 @@
       this.el.retreat.addEventListener('click', () => this.engine.enterZone('village'));
       this.el.potionBtn.addEventListener('click', () => this.engine.input('potion'));
       this.el.elixirBtn.addEventListener('click', () => this.engine.input('elixir'));
-      on('#sound-btn', 'click', async () => { const onState = !this.state.settings.sound; this.state.settings.sound = onState; await this.callbacks.sound?.(onState); document.querySelector('#sound-btn').classList.toggle('on', onState); });
+      on('#sound-btn', 'click', async () => { const onState = !this.state.settings.sound; this.state.settings.sound = onState; await this.callbacks.sound?.(onState); document.querySelector('#sound-btn').classList.toggle('on', onState); if (onState) this.toast('Vozes de skills e chefes geradas por IA.', 'system'); });
       on('#help-btn', 'click', () => this.openPanel('help'));
       on('#panel-toggle', 'click', () => { const narrow = matchMedia('(max-width:1100px)').matches; this.el.app.classList.toggle(narrow ? 'panel-open' : 'panel-hidden'); setTimeout(() => this.renderer.resize(), 320); });
       on('#save-status', 'click', () => {
@@ -89,8 +95,8 @@
       this.el.reveal.addEventListener('click', () => this.closeReveal());
       // Foco em inimigos.
       const cv = this.el.canvas;
-      cv.addEventListener('click', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); const th = !uid && this.renderer.townHeroAt?.(p.x, p.y); if (th) { this.openPanel('hero', th); return; } if (uid) { this.engine.input('focus', uid); const f = this.engine.focusUid; this.callbacks.click?.(); if (f) this.onLog({ text:`Equipe focando ${this.engine.enemies.find(x => x.uid === f)?.name}.`, type:'system' }); } });
-      cv.addEventListener('mousemove', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid || !!this.renderer.townHeroAt?.(p.x, p.y)); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
+      cv.addEventListener('click', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); const th = !uid && this.renderer.townHeroAt?.(p.x, p.y); if (th) { this.openPanel('hero', th); return; } if (!uid && this.renderer.townTalkAt?.(p.x, p.y)) return; if (uid) { this.engine.input('focus', uid); const f = this.engine.focusUid; this.callbacks.click?.(); if (f) this.onLog({ text:`Equipe focando ${this.engine.enemies.find(x => x.uid === f)?.name}.`, type:'system' }); } });
+      cv.addEventListener('mousemove', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid || !!this.renderer.townHeroAt?.(p.x, p.y) || !!this.renderer.townFolkAt?.(p.x, p.y)); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
       cv.addEventListener('mouseleave', () => { this.renderer.hoverEnemy = null; this.hideTip(); });
       // Tooltips gerais.
       document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (t) this.showTip(t.dataset.tip, t); });
@@ -284,6 +290,7 @@
       this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.afk ? 'FARM' : s.autoAdvance ? 'ON' : 'OFF'; this.el.advance.disabled = !!s.afk;
       this.el.speed.querySelector('b').textContent = `x${s.speed}`; this.el.speed.classList.toggle('active', s.speed > 1);
       const village = z.kind === 'village';
+      const cityFocus = document.querySelector('#city-focus-btn'); if (cityFocus) cityFocus.hidden = !village;
       this.el.auto.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';
       this.renderChoiceTimer(); this.renderAfk?.();
     }
@@ -342,6 +349,7 @@
 
     // ======================= EVENTOS DO MOTOR =======================
     onZone(zone) {
+      this.dialogQueue.length = 0; this.el.dialog.hidden = true;
       this.logs = []; this.onLog({ text:`Você chegou a ${zone.title}.`, type:'system' });
       this.el.result.hidden = true; this.el.choice.hidden = true; this.el.warn.hidden = true; this.dockKey = '';
       if (zone.kind !== 'village') this.renderer.showBanner(zone.title, zone.kicker, '#d8b062');
