@@ -15,6 +15,21 @@
       return new Promise(resolve => { this.resolve = resolve; });
     },
     hide() { if (this.el) this.el.hidden = true; },
+    sessionKey:'mythverse-tab-login',
+    forgetSession() { try { sessionStorage.removeItem(this.sessionKey); } catch (_) {} },
+    async requireUser(provider = 'server') {
+      // Só um reload da mesma aba pode retomar uma sessão já validada. Nova abertura exige login.
+      let previous = null;
+      try { if (performance.getEntriesByType('navigation')[0]?.type === 'reload') previous = sessionStorage.getItem(this.sessionKey); } catch (_) {}
+      if (previous?.startsWith(provider + ':')) {
+        const user = provider === 'neon' ? await KT.Neon.currentUser() : await KT.Net.me();
+        if (user && previous === `${provider}:${user.id}`) return user;
+      }
+      this.forgetSession();
+      const user = await this.show('login', provider);
+      try { sessionStorage.setItem(this.sessionKey, `${provider}:${user.id}`); } catch (_) {}
+      return user;
+    },
     // Sem servidor: explica e deixa o jogador escolher entre tentar de novo e jogar offline (sem conta).
     unavailable() {
       this.el = document.querySelector('#auth'); this.el.hidden = false;

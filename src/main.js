@@ -122,7 +122,7 @@
       switch (fx.type) {
         case 'attack': this.combat(fx, unit); break;
         case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 130)) this.combat(fx, unit); else if (fx.crit && this.throttle('crit', 150)) this.combat({...fx,type:'crit'},unit); break;
-        case 'cast': this.combat(fx, unit); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
+        case 'cast': this.combat(fx, unit); break; // Vozes das skills desativadas por enquanto.
         case 'bossWindup': this.combat(fx, unit); if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`); break;
         case 'burst': if (unit?.side !== 'hero' && !unit?.template?.base) this.combat(fx, unit); break;
         case 'heal': case 'death': case 'bossBurst': case 'levelUp': case 'reward': this.combat(fx, unit); break;
@@ -165,7 +165,7 @@
       if (location.protocol !== 'file:' && await KT.Auth.unavailable() !== 'offline') { location.reload(); return new Promise(() => {}); }
       KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' };
     }
-    const user = await KT.Auth.show('login');
+    const user = await KT.Auth.requireUser();
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:srv:${user.id}`);
     let remote = await KT.Net.getState();
     for (let i = 0; !remote.ok && remote.status !== 401 && i < 3; i++) { await new Promise(r => setTimeout(r, 1500)); remote = await KT.Net.getState(); }
@@ -175,7 +175,7 @@
 
   // Modo Neon: conta no Neon Auth, save na tabela mv_saves (Data API). O jogo roda no navegador.
   async function resolveNeon() {
-    const user = await KT.Auth.show('login', 'neon');
+    const user = await KT.Auth.requireUser('neon');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:neon:${user.id}`);
     await KT.Neon.syncClock().catch(() => false);
     const data = await KT.Neon.loadSave();

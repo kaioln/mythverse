@@ -23,7 +23,7 @@
     async me() { const r = await this.api('GET', '/api/auth/me'); this.user = r.ok ? r.user : null; return this.user; },
     register(d) { return this.api('POST', '/api/auth/register', d); },
     login(d) { return this.api('POST', '/api/auth/login', d); },
-    logout() { return this.api('POST', '/api/auth/logout'); },
+    logout() { KT.Auth?.forgetSession(); return this.api('POST', '/api/auth/logout'); },
     recover(d) { return this.api('POST', '/api/auth/recover', d); },
     changePassword(d) { return this.api('POST', '/api/auth/password', d); },
     newRecovery(password) { return this.api('POST', '/api/auth/recovery-code', { password }); },

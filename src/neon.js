@@ -5,7 +5,7 @@
   const KT = globalThis.KT;
 
   const Neon = {
-    user:null, row:null, jwt:null, jwtExp:0, pending:null, timer:null, retryTimer:null, inflight:null, lastHide:0, conflict:false, status:'idle', error:null, lastSync:0,
+    user:null, row:null, jwt:null, jwtExp:0, tokenFlight:null, tokenError:null, pending:null, timer:null, retryTimer:null, inflight:null, lastHide:0, conflict:false, status:'idle', error:null, lastSync:0,
     get enabled() { return !!this.base; },
     get base() { return String(KT.CONFIG?.neon || '').replace(/\/+$/, ''); },
     // https://ep-x.region.aws.neon.tech/neondb → .neonauth…/neondb/auth e .apirest…/neondb/rest/v1
@@ -14,11 +14,11 @@
     async auth(path, { method = 'GET', body } = {}) {
       // A sessão do Neon Auth é um cookie HttpOnly (SameSite=None; Partitioned) no domínio do Neon: vai com credentials.
       let res; const ctl = new AbortController(), timeout = setTimeout(() => ctl.abort(), 12_000);
-      try { res = await fetch(this.url('auth') + path, { method, credentials:'include', signal:ctl.signal, headers:{ 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined }); }
+      try { res = await fetch(this.url('auth') + path, { method, cache:'no-store', credentials:'include', signal:ctl.signal, headers:{ 'Content-Type':'application/json' }, body:body ? JSON.stringify(body) : undefined }); }
       catch (_) { return { ok:false, status:0, error:ctl.signal.aborted ? 'Tempo de conexão esgotado.' : 'Sem conexão com o Neon.' }; }
       finally { clearTimeout(timeout); }
       let data = null; try { data = await res.json(); } catch (_) { data = null; }
-      const jwt = res.headers.get('set-auth-jwt'); if (jwt) this.setJwt(jwt);
+      const jwt = res.headers.get('set-auth-jwt'); if (res.ok && jwt) this.setJwt(jwt);
       return { ok:res.ok, status:res.status, data, error:res.ok ? null : this.message(data, res.status) };
     },
     message(d, status) {
@@ -27,12 +27,28 @@
       return pt[code] || (status === 429 ? 'Muitas tentativas. Aguarde um pouco.' : msg || `Erro ${status}`);
     },
     setJwt(jwt) { this.jwt = jwt; try { this.jwtExp = JSON.parse(atob(jwt.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp * 1000; } catch (_) { this.jwtExp = Date.now() + 10 * 60_000; } },
-    async token() {
-      if (this.jwt && Date.now() < this.jwtExp - 60_000) return this.jwt;
-      const r = await this.auth('/token');
-      if (r.ok && r.data?.token) this.setJwt(r.data.token);
-      else { const s = await this.auth('/get-session'); if (!s.ok || !s.data?.user) return null; }
-      return this.jwt;
+    async token(force = false) {
+      if (!force && this.jwt && Date.now() < this.jwtExp - 60_000) return this.jwt;
+      if (this.tokenFlight) return this.tokenFlight;
+      this.tokenFlight = (async () => {
+        this.tokenError = null;
+        const r = await this.auth('/token');
+        if (r.ok && r.data?.token) this.setJwt(r.data.token);
+        if (!r.ok && r.status !== 401 && r.status !== 403) {
+          this.tokenError = r;
+          return !force && this.jwt && Date.now() < this.jwtExp ? this.jwt : null;
+        }
+        if (r.ok && this.jwt && Date.now() < this.jwtExp) return this.jwt;
+        const s = await this.auth('/get-session');
+        if (!s.ok || !s.data?.user) {
+          this.tokenError = s.ok ? { ok:false, status:401, error:'Sessão expirada. Entre de novo.' } : s;
+          return null;
+        }
+        if (this.jwt && Date.now() < this.jwtExp) return this.jwt;
+        this.tokenError = { ok:false, status:503, error:'Não foi possível renovar a conexão. Tente novamente.' };
+        return null;
+      })();
+      try { return await this.tokenFlight; } finally { this.tokenFlight = null; }
     },
 
     async currentUser() {
@@ -49,7 +65,7 @@
       const r = await this.auth('/sign-in/email', { method:'POST', body:{ email:String(login || '').trim(), password, rememberMe:false } });
       return r.ok ? { ok:true, user:await this.currentUser() } : r;
     },
-    async signOut() { await this.flush(); await this.auth('/sign-out', { method:'POST', body:{} }); this.jwt = null; this.user = null; },
+    async signOut() { KT.Auth?.forgetSession(); await this.flush(); await this.auth('/sign-out', { method:'POST', body:{} }); this.jwt = null; this.jwtExp = 0; this.user = null; },
 
     // ---- Data API (PostgREST) ----
     journalKey() { return this.user ? `mythverse-neon-pending:${this.user.id}` : ''; },
@@ -57,8 +73,8 @@
     writeJournal(entry) { return !!this.journalKey() && KT.Utils.safeStorage.set(this.journalKey(), JSON.stringify({ id:entry.id, baseRevision:entry.baseRevision, generation:entry.generation, queuedAt:entry.queuedAt })); },
     clearJournal(id) { const j = this.readJournal(); if (!id || !j || j.id === id) KT.Utils.safeStorage.remove(this.journalKey()); },
     setStatus(status, error = null) { this.status = status; this.error = error; this.onStatus?.(); },
-    async api(method, path, body, prefer) {
-      const jwt = await this.token(); if (!jwt) return { ok:false, status:401, error:'Sessão expirada. Entre de novo.' };
+    async api(method, path, body, prefer, retried = false) {
+      const jwt = await this.token(retried); if (!jwt) return this.tokenError || { ok:false, status:401, error:'Sessão expirada. Entre de novo.' };
       let res;
       const payload = body ? JSON.stringify(body) : undefined;
       // Navegadores rejeitam fetch keepalive com corpo acima de ~64 KiB. Saves grandes
@@ -68,6 +84,8 @@
       try { res = await fetch(this.url('api') + path, { method, cache:method === 'GET' ? 'no-store' : 'default', keepalive:!!keepalive, signal:ctl.signal, headers:{ Authorization:`Bearer ${jwt}`, 'Content-Type':'application/json', ...(prefer ? { Prefer:prefer } : {}) }, body:payload }); }
       catch (_) { return { ok:false, status:0, error:ctl.signal.aborted ? 'Tempo de conexão esgotado.' : 'Sem conexão com o Neon.' }; }
       finally { clearTimeout(timeout); }
+      // Uma rejeição de autenticação não executou a operação: renovar e tentar uma única vez.
+      if (res.status === 401 && !retried) return this.api(method, path, body, prefer, true);
       let data = null; try { data = await res.json(); } catch (_) { data = null; }
       return { ok:res.ok, status:res.status, data, error:res.ok ? null : (data?.message || `Erro ${res.status}`) };
     },
