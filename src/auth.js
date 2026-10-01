@@ -7,6 +7,7 @@
     el:null, mode:'login', resolve:null, loginSound:null, soundEnabled:true,
     show(mode = 'login', provider = 'server') {
       this.el = document.querySelector('#auth');
+      this.soundEnabled = KT.Utils.safeStorage.get('mythverse-sound') !== 'off';
       this.mode = mode; this.provider = provider;
       this.render();
       this.el.hidden = false;
@@ -37,7 +38,6 @@
           <label class="field"><span>${neon ? 'E-mail' : 'Usuário ou e-mail'}</span><input name="login" ${neon ? 'type="email" autocomplete="email"' : 'autocomplete="username"'} required maxlength="254" autofocus></label>
           ${pw('password', 'Senha', 'current-password')}
           <button class="action primary big" type="submit">Entrar</button>
-          <button type="button" class="link auth-sound" data-login-sound aria-pressed="${this.soundEnabled}">Som de entrada: ${this.soundEnabled ? 'ligado' : 'desligado'}</button>
           ${neon ? '' : '<p class="auth-alt">Esqueceu a senha? <button type="button" class="link" data-auth-mode="recover">Recuperar acesso</button></p>'}
         </form>`;
       if (m === 'register') form = `<form data-auth-form="register" novalidate>
@@ -55,7 +55,9 @@
           ${pw('newPassword', 'Nova senha', 'new-password', 'Mínimo de 8 caracteres, com letras e números.')}
           <button class="action primary big" type="submit">Redefinir senha</button>
         </form>`;
-      this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="dialog" aria-labelledby="auth-title">
+      this.el.innerHTML = `<div class="auth-bg"></div>
+        <button type="button" class="icon-btn auth-sound ${this.soundEnabled ? 'on' : ''}" data-login-sound aria-pressed="${this.soundEnabled}" aria-label="${this.soundEnabled ? 'Desligar som' : 'Ligar som'}" title="${this.soundEnabled ? 'Desligar som' : 'Ligar som'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="sound-wave" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/><path class="sound-off" d="M16 9l5 6M21 9l-5 6"/></svg></button>
+        <section class="auth-card" role="dialog" aria-labelledby="auth-title">
         <div class="auth-brand"><picture><source type="image/webp" srcset="assets/brand/mv-full-440.webp 440w, assets/brand/mv-full-720.webp 720w" sizes="(max-width:600px) 86vw, 440px"><img class="auth-logo" src="assets/brand/mv-full-440.png" srcset="assets/brand/mv-full-440.png 440w, assets/brand/mv-full-720.png 720w" sizes="(max-width:600px) 86vw, 440px" width="440" height="240" alt="Mythverse: Heróis de todos os mundos"></picture><h1 id="auth-title" class="sr-only">Mythverse</h1></div>
         <div class="auth-tabs">${tab('login', 'Entrar')}${tab('register', 'Criar conta')}</div>
         <div class="auth-msg ${message ? 'show' : ''}" role="alert">${message}</div>
@@ -67,7 +69,15 @@
     bind() {
       this.el.querySelectorAll('[data-auth-mode]').forEach(b => b.addEventListener('click', () => { this.mode = b.dataset.authMode; this.render(); }));
       this.el.querySelectorAll('[data-pw-toggle]').forEach(b => b.addEventListener('click', () => { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; }));
-      this.el.querySelector('[data-login-sound]')?.addEventListener('click', e => { this.soundEnabled = !this.soundEnabled; if (!this.soundEnabled) this.loginSound?.pause(); e.currentTarget.setAttribute('aria-pressed', String(this.soundEnabled)); e.currentTarget.textContent = `Som de entrada: ${this.soundEnabled ? 'ligado' : 'desligado'}`; });
+      this.el.querySelector('[data-login-sound]')?.addEventListener('click', e => {
+        this.soundEnabled = !this.soundEnabled;
+        KT.Utils.safeStorage.set('mythverse-sound', this.soundEnabled ? 'on' : 'off');
+        if (!this.soundEnabled) this.loginSound?.pause();
+        const button = e.currentTarget, label = this.soundEnabled ? 'Desligar som' : 'Ligar som';
+        button.classList.toggle('on', this.soundEnabled);
+        button.setAttribute('aria-pressed', String(this.soundEnabled));
+        button.setAttribute('aria-label', label); button.title = label;
+      });
       const form = this.el.querySelector('form');
       form?.addEventListener('submit', e => { e.preventDefault(); this.submit(form); });
       setTimeout(() => form?.querySelector('input')?.focus(), 50);
@@ -79,8 +89,10 @@
       const btn = form.querySelector('button[type=submit]'); const label = btn.textContent;
       const kind = form.dataset.authForm;
       if (kind === 'login' && this.soundEnabled) {
-        if (!this.loginSound) { this.loginSound = new Audio('assets/audio/sfx/login.mp3' + (KT.VERSION ? '?v=' + KT.VERSION : '')); this.loginSound.volume = .35; }
-        this.loginSound.currentTime = 0; this.loginSound.play().catch(() => {});
+        this.loginSound?.pause();
+        this.loginSound = new Audio('assets/audio/sfx/login.mp3' + (KT.VERSION ? '?v=' + KT.VERSION : ''));
+        this.loginSound.volume = .35;
+        this.loginSound.play().catch(() => {});
       }
       if (kind === 'register') {
         if (!d.username || d.username.length < 3) return this.error('Escolha um nome de usuário com pelo menos 3 caracteres.');

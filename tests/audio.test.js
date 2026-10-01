@@ -39,10 +39,17 @@ const tick=()=>new Promise(setImmediate);
   assert.ok(citySources.every(s=>s.stopped),'cidade não toca fora da cidade');
   const before=requests.length;await sound.voice('npc-renji-0');assert.equal(requests.length,before,'não requisitar fala de morador');
   await sound.voice('hero-akira-ult');assert.ok(sound.speaker?.started);
-  await sound.blade({sprite:'akira'});assert.equal(sound.fxSources.size,1);
+  await sound.combat({type:'attack'},{sprite:'mob',side:'enemy'});assert.equal(sound.fxSources.size,1);
   sound.stopFx();
   await sound.prepare([{sprite:'erik'},{sprite:'akira'},{sprite:'aurelia'},{sprite:'warden'}]);
-  assert.equal([...sound.buffers.keys()].filter(k=>k.includes('/combat/')).length,12);
+  assert.equal([...sound.buffers.keys()].filter(k=>k.includes('/combat/')&&!k.includes('/event-')).length,12);
+  sound.tone=sound.noise=sound.chord=()=>{throw new Error('Combate não pode usar bipes sintéticos');};
+  for(const [fx,event]of [[{type:'attack'},'enemyAttack'],[{type:'cast',enemy:true},'enemyCast'],[{type:'damage',side:'hero'},'damage'],[{type:'damage',side:'enemy',crit:true},'crit'],...['burst','heal','death','bossWindup','bossBurst','levelUp','reward'].map(type=>[{type},type])]){
+    sound.fx(fx,{sprite:'mob',side:'enemy',uid:event});await tick();
+    assert.ok(requests.includes(`assets/audio/combat/${combatManifest.events[event]}`));sound.stopFx();
+  }
+  sound.fx({type:'burst'},{sprite:'erik',side:'hero',uid:'duplicate'});await tick();assert.equal(sound.fxSources.size,0,'skill já contém impacto, não sobrepor explosão genérica');
+  sound.warn();await tick();assert.equal(sound.fxSources.size,0,'não repetir alerta de boss no mesmo instante');
   for(const [sprite,event]of [['erik','attack'],['akira','skill'],['aurelia','ult'],['goku_ui','ult']]){
     await sound.combat({type:event==='attack'?'attack':'cast',ult:event==='ult'},{sprite,uid:sprite,slot:0});
     assert.ok(requests.includes(`assets/audio/combat/${sprite}-${event}.mp3`));
@@ -77,5 +84,11 @@ const tick=()=>new Promise(setImmediate);
     assert.equal(combatManifest.files.find(f=>f.name===combatManifest.heroes[h.id][event]).sha256,hash);
   }
   assert.equal(hashes.size,216);assert.equal(combatManifest.license,'CC0-1.0');
+  assert.equal(combatManifest.mix,'foley-stereo-v2');
+  for(const file of combatManifest.files){
+    assert.equal(file.channels,2,'efeitos em estéreo');
+    const bytes=fs.readFileSync(require('node:path').join(__dirname,'../assets/audio/combat',file.name));
+    assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),file.sha256);
+  }
   console.log('AUDIO_OK: trilhas por cena, vozes apenas de combate, silêncio e carregamento tardio');
 })().catch(e=>{console.error(e);process.exitCode=1;});

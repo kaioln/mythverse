@@ -3,7 +3,7 @@
 
   // Vozes originais em arquivos locais; áudio só após interação, sem credenciais no cliente.
   class SoundEngine {
-    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); this.combatIndex = fetch('assets/audio/combat/index.json').then(r => r.ok ? r.json() : null).then(index => index?.heroes || {}).catch(() => ({})); }
+    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.eventIndex = {}; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); this.combatIndex = fetch('assets/audio/combat/index.json' + (KT.VERSION ? '?v=' + KT.VERSION : '')).then(r => r.ok ? r.json() : null).then(index => { this.eventIndex = index?.events || {}; return index?.heroes || {}; }).catch(() => ({})); }
     musicVolume() { return this.scene === 'city' ? .24 : .16; }
     async enable(on) {
       this.enabled = on;
@@ -42,7 +42,7 @@
       source.start();
     }
     buffer(url) {
-      if (!this.buffers.has(url)) this.buffers.set(url, fetch(url).then(r => { if (!r.ok) throw new Error('audio unavailable'); return r.arrayBuffer(); }).then(b => this.ctx.decodeAudioData(b)).catch(() => null));
+      if (!this.buffers.has(url)) this.buffers.set(url, fetch(url + (url.startsWith('assets/audio/combat/') && KT.VERSION ? '?v=' + KT.VERSION : '')).then(r => { if (!r.ok) throw new Error('audio unavailable'); return r.arrayBuffer(); }).then(b => this.ctx.decodeAudioData(b)).catch(() => null));
       return this.buffers.get(url);
     }
     async startMusic() {
@@ -72,16 +72,20 @@
       if (!this.enabled || !this.ctx) return;
       const index = await this.combatIndex;
       const urls = new Set(units.flatMap(u => { const profile = index[u.sprite]; return profile ? ['attack','skill','ult'].map(event => `assets/audio/combat/${profile[event]}`) : []; }));
+      Object.values(this.eventIndex).forEach(file => urls.add(`assets/audio/combat/${file}`));
       for (const key of this.buffers.keys()) if (key.startsWith('assets/audio/combat/') && !urls.has(key)) this.buffers.delete(key);
       await Promise.all([...urls].map(url => this.buffer(url)));
     }
     async combat(fx, unit) {
-      if (!this.enabled || !this.ctx || this.scene === 'city' || !unit) return;
-      const generation = this.musicGeneration, index = await this.combatIndex, profile = index[unit.sprite];
-      if (!profile || generation !== this.musicGeneration || !this.enabled) return;
-      const event = fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill', priority = event === 'ult' ? 2 : event === 'skill' ? 1 : 0;
-      if (!this.throttle(`combat:${unit.uid || unit.sprite}:${event}`, event === 'attack' ? 100 : 200)) return;
-      const buffer = await this.buffer(`assets/audio/combat/${profile[event]}`);
+      if (!this.enabled || !this.ctx || this.scene === 'city') return;
+      const generation = this.musicGeneration, index = await this.combatIndex;
+      if (generation !== this.musicGeneration || !this.enabled) return;
+      const hero = ['attack','cast'].includes(fx.type) && (unit?.side === 'hero' || unit?.template?.base || (!unit?.side && index[unit?.sprite]));
+      const event = hero ? fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill' : fx.type === 'attack' ? 'enemyAttack' : fx.type === 'cast' ? 'enemyCast' : fx.type;
+      const file = hero ? index[unit.sprite]?.[event] : this.eventIndex[event];
+      const priority = ['ult','bossBurst','bossWindup'].includes(event) ? 2 : ['skill','enemyCast','heal'].includes(event) ? 1 : 0;
+      if (!file || !this.throttle(`combat:${event === 'bossWindup' ? 'field' : unit?.uid || unit?.sprite || 'field'}:${event}`, event === 'bossWindup' ? 1200 : event === 'attack' ? 130 : 200)) return;
+      const buffer = await this.buffer(`assets/audio/combat/${file}`);
       if (!buffer || generation !== this.musicGeneration || !this.enabled) return;
       if (this.fxSources.size >= 8) {
         const victim = [...this.fxSources].find(s => (s.priority || 0) < priority);
@@ -89,20 +93,12 @@
         victim.stop(); this.fxSources.delete(victim);
       }
       const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
-      source.buffer = buffer; source.priority = priority; gain.gain.value = event === 'attack' ? .32 : event === 'skill' ? .45 : .55;
+      source.buffer = buffer; source.priority = priority;
+      gain.gain.value = hero ? event === 'attack' ? .24 : event === 'skill' ? .4 : .55 : ({enemyAttack:.16,enemyCast:.24,damage:.13,crit:.2,heal:.22,death:.13,bossWindup:.3,bossBurst:.45,burst:.32,reward:.12,loot:.15,levelUp:.25,victory:.3}[event] || .2);
       const pan = this.ctx.createStereoPanner?.();
-      if (pan) { pan.pan.value = [-.35,-.12,.12,.35][unit.slot] || 0; source.connect(gain); gain.connect(pan); pan.connect(this.master); }
+      if (pan) { pan.pan.value = [-.35,-.12,.12,.35][unit?.slot] || 0; source.connect(gain); gain.connect(pan); pan.connect(this.master); }
       else { source.connect(gain); gain.connect(this.master); }
       this.fxSources.add(source); source.onended = () => { this.fxSources.delete(source); source.disconnect(); gain.disconnect(); pan?.disconnect(); }; source.start();
-    }
-    async blade(unit) {
-      if (!this.enabled || !this.ctx) return;
-      const generation = this.musicGeneration, buffer = await this.buffer('assets/audio/sfx/blade.mp3');
-      if (!buffer || !this.enabled || generation !== this.musicGeneration || this.fxSources.size >= 4 || !this.throttle('bladeSample', 110)) return;
-      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain(); source.buffer = buffer;
-      const signature = Array.from(unit?.sprite || '').reduce((n,c)=>n+c.charCodeAt(0),0);
-      source.playbackRate.value = .94 + signature % 13 / 100; gain.gain.value = .3;
-      source.connect(gain); gain.connect(this.master); this.fxSources.add(source); source.onended = () => { this.fxSources.delete(source); source.disconnect(); gain.disconnect(); }; source.start();
     }
     throttle(key, ms) { const now = performance.now(); if (now - (this.last[key] || 0) < ms) return false; this.last[key] = now; return true; }
     tone(freq = 320, dur = .08, type = 'sine', gain = .05, slide = 0, delay = 0, bus = null) {
@@ -124,21 +120,17 @@
     fx(fx, unit) {
       if (!fx || !this.enabled) return;
       switch (fx.type) {
-        case 'attack': if (unit?.side === 'hero' || unit?.template?.base) this.combat(fx, unit); else this.blade(unit); break;
-        case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 90)) { this.noise(.08, .05, 600); this.tone(160, .1, 'square', .025, .6); } else if (fx.crit && this.throttle('crit', 60)) this.tone(880, .08, 'triangle', .035, .7); break;
-        case 'cast': if (fx.enemy && !unit?.template?.base) this.blade(unit); else this.combat(fx, unit); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
-        case 'burst': this.noise(.25, .07, 900); this.tone(110, .3, 'sine', .08, .4); break;
-        case 'heal': if (this.throttle('heal', 150)) this.chord([659, 880, 1175], .05, 'sine', .035); break;
-        case 'death': if (this.throttle('death', 60)) { this.tone(260, .2, 'triangle', .04, .3); this.noise(.15, .04, 1200); } break;
-        case 'bossWindup': this.tone(90, 1.2, 'sawtooth', .04, 2.5); if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`); break;
-        case 'bossBurst': this.noise(.5, .1, 300); this.tone(70, .6, 'sine', .12, .5); break;
-        case 'levelUp': this.chord([523, 659, 784, 1047], .06, 'triangle', .045); break;
-        case 'reward': if (this.throttle('coin', 200)) { this.tone(1320, .08, 'square', .018); this.tone(1760, .12, 'square', .018, 0, .06); } break;
+        case 'attack': this.combat(fx, unit); break;
+        case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 130)) this.combat(fx, unit); else if (fx.crit && this.throttle('crit', 150)) this.combat({...fx,type:'crit'},unit); break;
+        case 'cast': this.combat(fx, unit); if (!fx.enemy && unit && this.throttle(`voice:${unit.sprite}`, fx.ult ? 8000 : 18000)) this.voice(`hero-${unit.sprite}-${fx.ult ? 'ult' : 'skill'}`); break;
+        case 'bossWindup': this.combat(fx, unit); if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`); break;
+        case 'burst': if (unit?.side !== 'hero' && !unit?.template?.base) this.combat(fx, unit); break;
+        case 'heal': case 'death': case 'bossBurst': case 'levelUp': case 'reward': this.combat(fx, unit); break;
       }
     }
-    loot(item) { const base = { mythic:1040, legendary:880, set:800, epic:740, rare:660, common:520 }[item.rarity] || 520; if (item.rarity === 'common') this.tone(base, .1, 'sine', .03); else this.chord([base, base * 1.25, base * 1.5], .05, 'triangle', .035); }
-    victory() { this.chord([523, 659, 784, 1047, 1319], .1, 'triangle', .05); }
-    warn() { this.tone(220, .15, 'square', .03); this.tone(220, .15, 'square', .03, 0, .2); }
+    loot() { this.combat({type:'loot'}); }
+    victory() { this.combat({type:'victory'}); }
+    warn() { this.combat({type:'bossWindup'}); }
     summon(r) { const n = { legendary:[523, 659, 784, 1047, 1319, 1568], epic:[523, 659, 784, 1047, 1319], rare:[523, 659, 784, 1047] }[r] || [523, 659, 784]; this.chord(n, .08, 'triangle', .045); }
   }
 
@@ -226,7 +218,7 @@
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare(engine.party); }, onPhase:p => ui.onPhase(p),
-        onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.summon(c.mvp ? 'legendary' : 'epic'); },
+        onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.loot(); },
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
         onResult:r => ui.onResult(r), onResultClose:() => ui.onResultClose(),

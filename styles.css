@@ -904,6 +904,8 @@ a.action{text-decoration:none;color:inherit}
    ========================================================= */
 .auth{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;overflow:auto}
 .auth-bg{position:fixed;inset:0;background:linear-gradient(180deg,rgba(11,10,26,.55),rgba(11,10,26,.92)),url("assets/scenes/web/summoning.webp") center/cover}
+.auth-sound{position:fixed;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:1;width:44px;height:44px;background:var(--bg0)}
+.auth-sound .sound-wave{display:none}.auth-sound.on .sound-wave{display:block}.auth-sound.on .sound-off{display:none}.auth-sound.on{color:var(--gold)}
 .auth-card{position:relative;width:min(440px,100%);padding:26px 26px 20px;border-radius:24px;background:linear-gradient(180deg,rgba(28,25,60,.94),rgba(14,12,32,.97));border:1px solid rgba(255,207,107,.3);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(255,126,182,.12);backdrop-filter:blur(12px);animation:modalIn .4s cubic-bezier(.2,1.2,.4,1)}
 .auth-brand{display:flex;align-items:center;gap:14px;margin-bottom:16px}
 .auth-brand .brand-mark{width:56px;height:56px;font-size:32px;border-radius:16px}
