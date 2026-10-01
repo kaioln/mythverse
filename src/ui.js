@@ -290,7 +290,7 @@
       this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.afk ? 'FARM' : s.autoAdvance ? 'ON' : 'OFF'; this.el.advance.disabled = !!s.afk;
       this.el.speed.querySelector('b').textContent = `x${s.speed}`; this.el.speed.classList.toggle('active', s.speed > 1);
       const village = z.kind === 'village';
-      const cityFocus = document.querySelector('#city-focus-btn'); if (cityFocus) cityFocus.hidden = !village;
+      const cityFocus = document.querySelector('#city-focus-btn'); if (cityFocus) { const focused = document.body.classList.contains('city-focus'); cityFocus.hidden = !village; cityFocus.setAttribute('aria-pressed', String(focused)); cityFocus.querySelector('b').textContent = focused ? 'RECOLHER' : 'AMPLIAR'; }
       this.el.auto.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';
       this.renderChoiceTimer(); this.renderAfk?.();
     }
@@ -349,6 +349,7 @@
 
     // ======================= EVENTOS DO MOTOR =======================
     onZone(zone) {
+      document.body.classList.toggle('city-focus', zone.kind === 'village');
       this.dialogQueue.length = 0; this.el.dialog.hidden = true;
       this.logs = []; this.onLog({ text:`Você chegou a ${zone.title}.`, type:'system' });
       this.el.result.hidden = true; this.el.choice.hidden = true; this.el.warn.hidden = true; this.dockKey = '';

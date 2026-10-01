@@ -64,7 +64,7 @@ b,strong{font-variant-numeric:tabular-nums}
 .signpost:hover{border-color:rgba(216,176,98,.5);border-left-color:var(--gold)}
 .signpost.hot,.signpost.featured,.signpost.house,.signpost.bank{border-left-color:var(--gold)}
 .sp-badge{background:var(--shu);box-shadow:none}
-.village-hub{border-radius:12px;background:var(--grain),linear-gradient(180deg,rgba(22,19,30,.95),rgba(15,13,21,.95));border:1px solid var(--line2);box-shadow:var(--shadow)}
+.village-hub{border-radius:12px;background:#15131b;backdrop-filter:none;border:1px solid var(--line2);box-shadow:var(--shadow)}
 .village-hub h3{font-family:var(--display)}
 .journey-cta{border-radius:12px;box-shadow:0 10px 26px rgba(0,0,0,.45)}
 
@@ -809,7 +809,7 @@ body .village-hub .hub-row .action{min-height:30px}
 @media (min-width:901px){
   body.city-focus:not(.in-combat){--dock-h:0px}
   body.city-focus:not(.in-combat) #party-strip{display:none}
-  body.city-focus:not(.in-combat) .stage-col{--stage-w:min(100%,calc((100dvh / var(--zf,1) - var(--top-h) - 34px) * 16 / 9))}
+  body.city-focus:not(.in-combat) .stage-col{padding:6px;--stage-w:min(100%,calc((100dvh / var(--zf,1) - var(--top-h) - 14px) * 16 / 9))}
 }
 @media (max-width:900px){#city-focus-btn{display:none!important}}
 .hero-tale h2{font-size:clamp(20px,2vw,26px)}

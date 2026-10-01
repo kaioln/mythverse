@@ -13,7 +13,9 @@
     dockTop:[965,580], dock:[970,600], dockWest:[998,604], dockMid:[1080,630], expedition:[1230,630],
     bankTop:[300,500], bankLanding:[350,590], bank:[190,648],
     workshop:[740,670], workshopGate:[560,640],
-    dance:[535,415], drum:[585,415], playMarketW:[320,478], playMarketC:[350,480], playMarketE:[380,478], playB:[630,400]
+    dance:[535,415], drum:[585,415], playMarketW:[320,478], playMarketC:[350,480], playMarketE:[380,478], playB:[630,400],
+    danceA:[606,442], danceB:[636,438], danceC:[666,438], teaA:[677,682], teaB:[710,683], guildTea:[139,178], bankTea:[220,660],
+    guildGuest:[315,170], bankGuest:[251,650], dockGuest:[1173,640], plazaGuest:[670,419], marketGuest:[213,456], templeGuest:[604,176], gardenGuest:[475,328], shrineGuest:[1018,479], workshopGuest:[744,698]
   };
   const SPOTS = [
     {node:'forge',verb:'Olhando as lâminas',face:1,w:2},{node:'dojo',verb:'Treinando',face:-1,w:2},{node:'marketE',verb:'Pechinchando',face:-1,w:1},{node:'marketM',verb:'Provando chá',face:1,w:1},{node:'marketW',verb:'Vendo tecidos',face:1,w:1},
@@ -25,7 +27,9 @@
     {people:['Renji','Yori'],lines:[['Renji','Guardei caldo para quem voltar depois da dança.'],['Yori','E dango para quem ainda procura um nome nas fitas.'],['Renji','Então deixamos as duas bancas acesas até amanhecer.']]},
     {people:['Aya','Mio'],lines:[['Mio','Esta máscara tem uma pétala diferente das outras.'],['Aya','É a marca de quem se perdeu na última primavera.'],['Mio','Vou pintá-la em todas. Assim ninguém será esquecido.']]},
     {people:['Koharu','Riku'],lines:[['Riku','Três toques para chamar o povo à praça.'],['Koharu','O quarto é para os que ainda não chegaram em casa.'],['Riku','Então não deixarei o tambor se calar.']]},
-    {people:['Fumi','Hotaru'],lines:[['Fumi','Kira e Sayo mantêm duas lanternas acesas.'],['Hotaru','Uma pelos que estão aqui; outra pelos ausentes.'],['Fumi','Que as pétalas levem ambos os nomes pela cidade.']]}
+    {people:['Fumi','Hotaru'],lines:[['Fumi','Kira e Sayo mantêm duas lanternas acesas.'],['Hotaru','Uma pelos que estão aqui; outra pelos ausentes.'],['Fumi','Que as pétalas levem ambos os nomes pela cidade.']]},
+    {people:['Hina','Chiyo'],lines:[['Hina','Minha avó dançava esta volta antes de existir a Fenda.'],['Chiyo','Então me ensine sem pular o passo das lanternas.'],['Hina','Duas palmas, uma volta. E deixamos o centro livre para quem chega.']]},
+    {people:['Nao','Setsu'],lines:[['Nao','O chá ganhou uma pétala. Posso bebê-lo assim?'],['Setsu','Pode. Nesta noite dizemos que é um convite da primavera.'],['Nao','Vou guardar outra xícara para quem voltar da expedição.']]}
   ];
   const FOLK = [
     {f:0,name:'Renji',post:'stallRenji',face:1,verb:'Vendendo lámen'},{f:1,name:'Maki',post:'forgePost',face:-1,verb:'Martelando'},{f:2,name:'Suzu',route:['templeL','templeR'],speed:12,verb:'Varrendo'},
@@ -35,7 +39,23 @@
     {f:9,name:'Daigo',route:['expedition','dockMid'],speed:15,verb:'Carregando caixas'},{f:3,name:'Koharu',post:'dance',face:1,verb:'Dançando'},{f:6,name:'Riku',post:'drum',face:-1,verb:'Tocando tambor'},
     {f:2,name:'Emi',post:'playB',face:-1,verb:'Entregando talismãs'},{f:5,name:'Yori',post:'stallYori',face:-1,verb:'Fazendo doces'},{f:0,name:'Fumi',post:'shrineStory',face:-1,verb:'Contando histórias'},
     {f:4,name:'Kai',route:['dock','dockWest'],speed:12,verb:'Guiando visitantes'},{f:8,name:'Mio',post:'stallMio',face:1,verb:'Pintando máscaras'},
-    {f:9,name:'Bento',route:['bankLanding','workshopGate','workshop','workshopGate'],speed:13,verb:'Levando oferendas'}
+    {f:9,name:'Bento',route:['bankLanding','workshopGate','workshop','workshopGate'],speed:13,verb:'Levando oferendas'},
+    {f:3,name:'Hina',post:'danceA',face:-1,verb:'Dançando a roda das pétalas',festival:'fan'},
+    {f:5,name:'Chiyo',post:'danceB',face:-1,verb:'Aprendendo a dança',festival:'fan'},
+    {f:2,name:'Yume',post:'danceC',face:-1,verb:'Cantando com a roda',festival:'fan'},
+    {f:8,name:'Nao',post:'teaA',face:1,verb:'Provando chá de primavera',festival:'ribbon'},
+    {f:0,name:'Setsu',post:'teaB',face:-1,verb:'Servindo os viajantes',festival:'ribbon'},
+    {f:4,name:'Takeshi',post:'guildTea',face:1,verb:'Recebendo os visitantes',festival:'lantern'},
+    {f:5,name:'Sumire',post:'bankTea',face:1,verb:'Distribuindo fitas de desejos',festival:'ribbon'},
+    {f:7,name:'Isamu',route:['guildGuest','guild','guildSteps'],speed:16,verb:'Convidando para a roda',festival:'lantern'},
+    {f:3,name:'Aoi',route:['bankGuest','bank','bankLanding'],speed:15,verb:'Visitando o festival',festival:'fan'},
+    {f:4,name:'Minato',route:['dockGuest','dockMid','expedition'],speed:16,verb:'Recebendo os barcos',festival:'lantern'},
+    {f:6,name:'Saki',route:['plazaGuest','plazaN','plazaE'],speed:16,verb:'Levando fitas à praça',festival:'ribbon'},
+    {f:8,name:'Kenta',route:['marketGuest','marketW','marketE'],speed:15,verb:'Conhecendo as barracas',festival:'ribbon'},
+    {f:2,name:'Rei',route:['templeGuest','templeL','templeR'],speed:14,verb:'Cuidando das lanternas',festival:'lantern'},
+    {f:5,name:'Mari',route:['gardenGuest','garden','plazaN'],speed:15,verb:'Levando flores',festival:'fan'},
+    {f:0,name:'Shun',route:['shrineGuest','shrine','shrineStory'],speed:14,verb:'Levando nomes ao santuário',festival:'lantern'},
+    {f:9,name:'Gen',route:['workshopGuest','workshop','workshopGate'],speed:16,verb:'Entregando chá e doces',festival:'ribbon'}
   ];
   const GREETINGS = {
     Renji:['O caldo é da receita da minha mãe. Na primavera em que ela sumiu, prometi nunca fechar a banca antes da última lanterna.','Yori guarda os doces; eu guardo o fogo. Se alguém regressar da Fenda esta noite, terá uma mesa.'],
@@ -55,7 +75,23 @@
     Emi:['Prenda a fita no pulso, não na arma. O nome que você carrega deve voltar com você.','Este talismã não promete vitória. Promete que alguém em Tsukimori estará esperando.'],
     Fumi:['Antes da Fenda, o festival durava uma só noite. Agora mantemos duas lanternas, para que a esperança não durma.','Kira e Sayo guardam nomes nas fitas. A cidade sobrevive porque ninguém deixa o outro ser esquecido.'],
     Kai:['O cais fica abaixo do santuário: siga a rua e desça a escada. A água não é um caminho.','Hoje nenhum barco sai sem uma lanterna na proa. Mizuchi pode guardar o mar; os nomes continuam nossos.'],
-    Bento:['Kogane contou cada oferenda antes de eu partir. Dinheiro não consola, mas mantém uma casa de pé.','Contorno a praça para chegar à oficina. A cascata engana os visitantes: não existe ponte por cima dela.']
+    Bento:['Kogane contou cada oferenda antes de eu partir. Dinheiro não consola, mas mantém uma casa de pé.','Contorno a praça para chegar à oficina. A cascata engana os visitantes: não existe ponte por cima dela.'],
+    Hina:['Duas palmas, uma volta, o leque voltado para a lua. Minha avó dizia que assim a primavera encontra o caminho de casa.'],
+    Chiyo:['Errei o passo três vezes, e Hina só riu. Hoje ninguém precisa dançar sozinho.'],
+    Yume:['Cantamos os nomes dos viajantes entre uma volta e outra. Você quer que eu acrescente o seu?'],
+    Nao:['O chá da oficina é de flor de cerejeira. Setsu promete uma segunda xícara para quem trouxer uma história.'],
+    Setsu:['Não vendo este chá. Os aprendizes o prepararam para agradecer a quem mantém os caminhos seguros.'],
+    Takeshi:['A guilda pendurou fitas em vez de contratos esta noite. Amanhã retomamos o trabalho; hoje recebemos quem voltou.'],
+    Sumire:['Escreva um desejo e guarde a fita. No próximo festival veremos o que a primavera mudou.'],
+    Isamu:['Estou chamando os últimos visitantes para a roda. A dança começa na praça, não na escadaria.'],
+    Aoi:['Vim pelas lanternas, fiquei pelo cheiro de lámen. Ainda preciso conhecer a banca da Aya.'],
+    Minato:['Cada barco trouxe uma cor de lanterna. O rio parece uma estrada de estrelas nesta noite.'],
+    Saki:['Esta fita é para meu irmão na Casa de Expedições. Ele sempre diz que volta antes da última dança.'],
+    Kenta:['Yori me mandou provar o chá antes dos doces. Será que faz parte da receita ou da brincadeira?'],
+    Rei:['Suzu varreu os degraus; eu cuido das luzes. Quem chega pelo portal deve encontrar uma cidade de braços abertos.'],
+    Mari:['Estas flores são para a roda da praça. As que sobrarem vão para as famílias que esperam alguém.'],
+    Shun:['Não acendemos lanternas só pelos heróis. Cada nome importa: barqueiros, cozinheiras, aprendizes, todos.'],
+    Gen:['A oficina aprendeu a fazer doces sem usar os frascos de poção. Maki ainda confere as etiquetas por garantia.']
   };
 
   // ---- chão ----
@@ -146,7 +182,7 @@
     if (!G[S] || !G[T]) return null;
     if (S === T) return [];
     const blockers = avoid.map(([ox, oy, r]) => ({ ox, oy, r, start:Math.hypot(ax - ox, (ay - oy) * 1.55) }));
-    const blockedAt = (x, y) => blockers.some(o => { const d = Math.hypot(x - o.ox, (y - o.oy) * 1.55); return d < o.r && (o.start >= o.r || d < o.start - .1); });
+    const blockedAt = (x, y) => blockers.some(o => { const d = Math.hypot(x - o.ox, (y - o.oy) * 1.55); return d < o.r && (o.start >= o.r || d < Math.max(GAP + .05, o.start - .01)); });
     const blocked = i => blockedAt((i % GW) * CELL + CELL / 2, ((i / GW) | 0) * CELL + CELL / 2);
     const g = new Float32Array(GW * GH).fill(Infinity), from = new Int32Array(GW * GH).fill(-1), done = new Uint8Array(GW * GH);
     const heap = [], push = (i, f) => { heap.push([f, i]); let k = heap.length - 1; while (k) { const p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
@@ -187,6 +223,20 @@
       const starts = ['plazaN', 'forge', 'marketE', 'dojo', 'garden', 'shrine'];
       this.agents = heroes.map((h, i) => { const [x, y] = at(starts[i % starts.length]); return { id:i, kind:'hero', ...h, x, y, path:[], wait:1.5 + i, face:1, speed:28 + i * 1.5, speedNow:0, verb:'', walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; })
         .concat(FOLK.map((f, i) => { const [x, y] = f.post ? N[f.post] : at(f.route[0]); return { id:heroes.length + i, kind:'folk', f:f.f, def:f, name:f.name, x, y, fixed:!!f.post, path:[], wait:1 + Math.random() * 3, face:f.face || 1, speed:f.speed || 0, speedNow:0, verb:f.verb, ri:0, walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; }));
+      const placed = [];
+      for (const a of this.agents) {
+        if (placed.some(o => dist(a, o) < GAP + 1)) {
+          let found = false;
+          for (const radius of [20,32,44,60]) {
+            for (let i=0;i<16;i++) {
+              const angle = i * Math.PI / 8, x = a.x + Math.cos(angle) * radius, y = a.y + Math.sin(angle) * radius / 1.55;
+              if (isWalk(x,y) && placed.every(o => Math.hypot(x-o.x,(y-o.y)*1.55) >= GAP + 1)) { a.x=x; a.y=y; found=true; break; }
+            }
+            if (found) break;
+          }
+        }
+        placed.push(a);
+      }
     }
     // Destino livre: ninguém parado nem chegando a menos de GAP.
     free(a, p) { return this.agents.every(o => o === a || [[o.x, o.y], (a.kind === 'hero' || Math.hypot(o.x - p[0], (o.y - p[1]) * 1.55) < 80) && o.goal].every(q => !q || Math.hypot(q[0] - p[0], (q[1] - p[1]) * 1.55) > GAP + 4)); }

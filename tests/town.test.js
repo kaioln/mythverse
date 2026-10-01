@@ -20,6 +20,8 @@ for (const p of [[350,435],[382,432],[150,245],[770,330],[870,600],[890,615],[60
   assert.equal(TownMap.isWalk(...p), false, `telhado, barraca ou água não é piso: ${p}`);
 }
 const visitor = new TownLife(); visitor.sync([]);
+assert.equal(visitor.agents.length,34,'festival com 34 moradores e visitantes');
+assert.ok(visitor.agents.filter(a=>a.def.festival).length>=16,'participantes com atividades do festival');
 const renji = visitor.agents.find(a => a.name === 'Renji');
 assert.ok(renji.y > 460, 'vendedor à frente da barraca, não dentro do telhado');
 assert.ok(visitor.talk(renji)); const firstLine = renji.speech;

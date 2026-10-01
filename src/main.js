@@ -41,7 +41,7 @@
     }
     async startMusic() {
       this.stopMusic(); if (!this.enabled || !this.ctx) return;
-      const url = `assets/audio/music/${this.scene}.mp3`, previous = Array.from(this.buffers.keys()).filter(key => key.startsWith('assets/audio/music/') && key !== url);
+      const url = `assets/audio/music/${this.scene}.mp3${KT.VERSION ? '?v=' + KT.VERSION : ''}`, previous = Array.from(this.buffers.keys()).filter(key => key.startsWith('assets/audio/music/') && key !== url);
       for (const key of previous.slice(0, -1)) this.buffers.delete(key);
       const generation = this.musicGeneration, buffer = await this.buffer(url);
       if (!buffer || !this.enabled || generation !== this.musicGeneration) return;
@@ -139,8 +139,7 @@
       if (location.protocol !== 'file:' && await KT.Auth.unavailable() !== 'offline') { location.reload(); return new Promise(() => {}); }
       KT.State.setSaveKey(KT.State.SAVE_KEY); return { state:KT.State.loadState(), mode:'offline' };
     }
-    let user = await KT.Net.me();
-    if (!user) user = await KT.Auth.show('login');
+    const user = await KT.Auth.show('login');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:srv:${user.id}`);
     let remote = await KT.Net.getState();
     for (let i = 0; !remote.ok && remote.status !== 401 && i < 3; i++) { await new Promise(r => setTimeout(r, 1500)); remote = await KT.Net.getState(); }
@@ -150,8 +149,7 @@
 
   // Modo Neon: conta no Neon Auth, save na tabela mv_saves (Data API). O jogo roda no navegador.
   async function resolveNeon() {
-    let user = await KT.Neon.currentUser();
-    if (!user) user = await KT.Auth.show('login', 'neon');
+    const user = await KT.Auth.show('login', 'neon');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:neon:${user.id}`);
     await KT.Neon.syncClock().catch(() => false);
     const data = await KT.Neon.loadSave();

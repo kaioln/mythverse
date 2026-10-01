@@ -4,7 +4,7 @@
 
   // Tela de entrada: Entrar · Criar conta · Recuperar acesso.
   const Auth = {
-    el:null, mode:'login', resolve:null,
+    el:null, mode:'login', resolve:null, loginSound:null, soundEnabled:true,
     show(mode = 'login', provider = 'server') {
       this.el = document.querySelector('#auth');
       this.mode = mode; this.provider = provider;
@@ -37,6 +37,7 @@
           <label class="field"><span>${neon ? 'E-mail' : 'Usuário ou e-mail'}</span><input name="login" ${neon ? 'type="email" autocomplete="email"' : 'autocomplete="username"'} required maxlength="254" autofocus></label>
           ${pw('password', 'Senha', 'current-password')}
           <button class="action primary big" type="submit">Entrar</button>
+          <button type="button" class="link auth-sound" data-login-sound aria-pressed="${this.soundEnabled}">Som de entrada: ${this.soundEnabled ? 'ligado' : 'desligado'}</button>
           ${neon ? '' : '<p class="auth-alt">Esqueceu a senha? <button type="button" class="link" data-auth-mode="recover">Recuperar acesso</button></p>'}
         </form>`;
       if (m === 'register') form = `<form data-auth-form="register" novalidate>
@@ -59,13 +60,14 @@
         <div class="auth-tabs">${tab('login', 'Entrar')}${tab('register', 'Criar conta')}</div>
         <div class="auth-msg ${message ? 'show' : ''}" role="alert">${message}</div>
         ${form}
-        <p class="auth-foot">Seu progresso fica salvo na nuvem e pode ser acessado de qualquer dispositivo.</p>
+        <p class="auth-foot">Seu progresso fica salvo na nuvem. Por segurança, entre novamente a cada abertura do site. O navegador pode preencher seus dados, mas não entra automaticamente.</p>
       </section>`;
       this.bind();
     },
     bind() {
       this.el.querySelectorAll('[data-auth-mode]').forEach(b => b.addEventListener('click', () => { this.mode = b.dataset.authMode; this.render(); }));
       this.el.querySelectorAll('[data-pw-toggle]').forEach(b => b.addEventListener('click', () => { const i = b.previousElementSibling; i.type = i.type === 'password' ? 'text' : 'password'; }));
+      this.el.querySelector('[data-login-sound]')?.addEventListener('click', e => { this.soundEnabled = !this.soundEnabled; if (!this.soundEnabled) this.loginSound?.pause(); e.currentTarget.setAttribute('aria-pressed', String(this.soundEnabled)); e.currentTarget.textContent = `Som de entrada: ${this.soundEnabled ? 'ligado' : 'desligado'}`; });
       const form = this.el.querySelector('form');
       form?.addEventListener('submit', e => { e.preventDefault(); this.submit(form); });
       setTimeout(() => form?.querySelector('input')?.focus(), 50);
@@ -75,6 +77,10 @@
       const d = Object.fromEntries(new FormData(form).entries()); d.acceptTerms = !!d.acceptTerms;
       const btn = form.querySelector('button[type=submit]'); const label = btn.textContent;
       const kind = form.dataset.authForm;
+      if (kind === 'login' && this.soundEnabled) {
+        if (!this.loginSound) { this.loginSound = new Audio('assets/audio/sfx/login.mp3'); this.loginSound.volume = .35; }
+        this.loginSound.currentTime = 0; this.loginSound.play().catch(() => {});
+      }
       if (kind === 'register') {
         if (!d.username || d.username.length < 3) return this.error('Escolha um nome de usuário com pelo menos 3 caracteres.');
         if ((d.password || '').length < 8) return this.error('A senha precisa ter pelo menos 8 caracteres.');

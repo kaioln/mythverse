@@ -46,7 +46,7 @@
       return r.ok ? { ok:true, user:await this.currentUser() } : r;
     },
     async signIn({ login, password }) {
-      const r = await this.auth('/sign-in/email', { method:'POST', body:{ email:String(login || '').trim(), password } });
+      const r = await this.auth('/sign-in/email', { method:'POST', body:{ email:String(login || '').trim(), password, rememberMe:false } });
       return r.ok ? { ok:true, user:await this.currentUser() } : r;
     },
     async signOut() { await this.flush(); await this.auth('/sign-out', { method:'POST', body:{} }); this.jwt = null; this.user = null; },

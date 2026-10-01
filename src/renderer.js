@@ -551,9 +551,23 @@
         c.beginPath(); c.moveTo(x1,y1); c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+18,x2,y2); c.stroke();
         for (let i=1;i<n;i++) { const u=i/n, x=x1+(x2-x1)*u, y=y1+(y2-y1)*u+Math.sin(u*Math.PI)*18, sway=Math.sin(t*1.4+i)*1.4;
           c.fillStyle=i%3===0?'rgba(255,225,155,.88)':i%2?'rgba(255,150,185,.86)':'rgba(245,235,220,.86)';
-          c.beginPath(); c.moveTo(x-4+sway,y+1); c.lineTo(x+4+sway,y+1); c.lineTo(x+sway,y+10); c.closePath(); c.fill();
-          c.fillStyle='rgba(255,190,105,.18)'; c.beginPath(); c.arc(x,y+5,12,0,Math.PI*2); c.fill();
+          this.roundRect(x-6+sway,y+2,12,17,5); c.fill();
+          c.strokeStyle='rgba(92,42,45,.55)'; c.stroke(); c.fillStyle='#9f484a'; c.fillRect(x-4+sway,y+1,8,2); c.fillRect(x-4+sway,y+18,8,2);
+          c.fillStyle='rgba(255,246,221,.78)'; c.beginPath(); c.arc(x+sway,y+10,2.4,0,Math.PI*2); c.fill();
+          c.fillStyle='rgba(255,190,105,.18)'; c.beginPath(); c.arc(x,y+10,15,0,Math.PI*2); c.fill();
         }
+      }
+      // Pétalas e fitas pintadas no chão: não introduzem obstáculos falsos nas ruas.
+      for (const [x,y] of [[560,424],[605,439],[668,682],[213,650]]) {
+        c.save(); c.translate(x,y); c.scale(1,.48); c.fillStyle='rgba(248,170,198,.38)';
+        for(let i=0;i<5;i++){c.save();c.rotate(i*Math.PI*2/5);c.beginPath();c.ellipse(0,-11,5,9,0,0,Math.PI*2);c.fill();c.restore();}
+        c.restore();
+      }
+      const phase = t % 14;
+      if (phase < 1.8) {
+        const p=phase/1.8, x=880+(Math.floor(t/14)%3)*90, y=92;
+        c.globalAlpha=(1-p)*.6; c.strokeStyle='#efb4cf'; c.lineWidth=1.3;
+        for(let i=0;i<16;i++){const a=i*Math.PI/8, r=10+p*35;c.beginPath();c.moveTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r+p*p*10);c.stroke();}
       }
       c.restore();
     }
@@ -629,6 +643,7 @@
           this.townHits.push({ uid:a.uid, x:a.x, y:a.y, h });
         } else {
           this.drawTownFolk(a, h, F);
+          if (a.def.festival) this.drawFestivalAccessory(a, h);
           this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h });
         }
       }
@@ -715,6 +730,21 @@
       }
       if (a.moving && this.drawnFolk.ready) { this.drawSheetWalk(this.drawnFolk, a.f, a, h); return; }
       this.drawWalker(this.folk.img, this.folk.walk, { ...F, cx:F.frameW / 2 }, a.f, a, h, a.moving ? 1 : 0);
+    }
+    drawFestivalAccessory(a,h) {
+      const c=this.ctx, sway=Math.sin(a.animT*2.4+a.id), k=h/34;
+      c.save(); c.translate(a.x,a.y); c.scale(k,k);
+      if(a.def.festival==='fan') {
+        c.translate(a.face*9,-18+sway*1.5);c.rotate(a.face*.3+sway*.14);
+        c.fillStyle='#efadc5';c.beginPath();c.moveTo(0,3);c.arc(0,3,8,-Math.PI*.85,-Math.PI*.15);c.closePath();c.fill();
+        c.strokeStyle='#9d574e';c.lineWidth=.8;for(let i=0;i<5;i++){const angle=-Math.PI*.85+i*Math.PI*.175;c.beginPath();c.moveTo(0,3);c.lineTo(Math.cos(angle)*8,3+Math.sin(angle)*8);c.stroke();}
+      } else if(a.def.festival==='lantern') {
+        c.strokeStyle='#795138';c.beginPath();c.moveTo(a.face*9,-18);c.lineTo(a.face*11,-10+sway);c.stroke();
+        c.fillStyle='#efb784';this.roundRect(a.face*11-3,-10+sway,6,8,2);c.fill();c.fillStyle='#b6594f';c.fillRect(a.face*11-2,-10+sway,4,1);
+      } else {
+        c.strokeStyle='#f0abc8';c.lineWidth=2;c.beginPath();c.moveTo(a.face*9,-18);c.quadraticCurveTo(a.face*14,-12,a.face*(12+sway*2),-7);c.stroke();
+      }
+      c.restore();
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     townFolkAt(x, y) { if (this.engine.zone.kind !== 'village') return null; return (this.townHits || []).filter(o => o.folk && Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]?.actor; }
