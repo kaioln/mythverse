@@ -61,7 +61,7 @@
     if (!this.state.settings.afk) return;
     const e = this.engine; if (e.phase === 'fight' && e.zone?.kind !== 'village' && e.enemies?.some(x => x.alive)) { this._afkPending = true; return; }
     const heroes = [...e.heroes];
-    (async () => { let n = 0; for (const h of heroes) n += Number(await this.cmd('autoEquip', h.uid)) || 0; if (n) { this.renderParty?.(); this.renderResources(); this.toast(`<b>AFK:</b> ${n} equipamento(s) melhor(es) equipado(s).`); } })();
+    (async () => { let n = 0; for (const h of heroes) n += Number(await this.cmd('autoEquip', h.uid)) || 0; if (n) { this.renderParty?.(); this.renderResources(); this.toast(`<b>AFK:</b> ${U.count(n, 'equipamento')} ${n === 1 ? 'melhor equipado' : 'melhores equipados'}.`); } })();
     this._afkPending = false;
   };
 
@@ -100,8 +100,8 @@
     }
     const op = { items:'autoEquip', attr:'autoAttr', talents:'autoTalents' }[choice]; let n = 0;
     for (const h of [...this.engine.heroes]) n += Number(await this.cmd(op, h.uid)) || 0;
-    const label = { items:'equipamento(s)', attr:'ponto(s) de atributo', talents:'talento(s)' }[choice];
-    this.toast(n ? `<b>Preparação concluída:</b> ${n} ${label}.` : 'Nada disponível para essa tarefa.', n ? 'gold' : '');
+    const label = { items:k => U.count(k, 'equipamento'), attr:k => `${U.count(k, 'ponto')} de atributo`, talents:k => U.count(k, 'talento') }[choice];
+    this.toast(n ? `<b>Preparação concluída:</b> ${label(n)}.` : 'Nada disponível para essa tarefa.', n ? 'gold' : '');
     if (n) this.callbacks.reward?.(); this.renderParty?.(); this.renderResources(); if (this.view?.panel) this.refreshPanel();
     this.coachEvent?.('optimized');
   };

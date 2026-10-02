@@ -8,7 +8,7 @@
 
   // target: seletor (ou função) do elemento destacado · done: condição para avançar sozinho · btn: texto do botão (passo só de leitura).
   const STEPS = [
-    { title:'Bem-vindo(a) a Mythverse!', text:'Aqui você <b>coleciona heróis</b> de vários mundos, monta uma <b>equipe de 4</b> e eles <b>lutam sozinhos</b>. Seu papel é escolher, fortalecer e avançar pelo mapa. Vamos fazer tudo juntos, passo a passo.', btn:'Vamos lá!' },
+    { title:'Você chegou a Tsukimori', text:'Aqui você <b>coleciona heróis</b> de vários mundos, monta uma <b>equipe de 4</b> e eles <b>lutam sozinhos</b>. Seu papel é escolher, fortalecer e avançar pelo mapa. Vamos fazer tudo juntos, passo a passo.', btn:'Começar' },
     { title:'1 · Seus primeiros heróis', text:'Toque em <b>Heróis</b>. As primeiras <b>10 convocações são grátis</b>.', target:'.nav[data-panel="collection"]', done:ui => ui.view.panel === 'collection' || ui.state.collection.length >= 10 },
     { title:'Convoque grátis', text:'Toque em <b>Convocar 10× grátis</b>. Cada herói tem classe (função na luta) e elemento (fraquezas e vantagens).', target:'[data-open-box="worlds"]', ensure:ui => { if (ui.view.panel !== 'collection') ui.openPanel('collection', 'summon'); }, done:ui => ui.state.collection.length >= 10 },
     { title:'2 · Monte a equipe', text:'Toque em <b>Montar melhor equipe</b>. O jogo escolhe 4 heróis: <b>frente</b> (vagas 1 e 2, quem aguenta dano) e <b>retaguarda</b> (vagas 3 e 4, quem cura e causa dano de longe).', target:'[data-auto-team]', ensure:ui => { if (ui.view.panel !== 'party') ui.openPanel('party'); }, done:ui => ui.engine.heroes.length >= 4 },

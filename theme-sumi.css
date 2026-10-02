@@ -14,7 +14,7 @@
   --text:#efe7d8; --muted:#b4ab9c; --dim:#9b9284;
   --gold:#d8b062; --gold2:#b98c3c; --sakura:#c9472d; --cyan:#86b6c4; --green:#86c095; --red:#d9574b; --violet:#9d90c9;
   --shu:#c9472d; --shu2:#a8361f; --washi:#efe7d8; --ink:#0d0c12;
-  --display:"Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif; --ui:Outfit,"Segoe UI",system-ui,sans-serif;
+  --display:"Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif; --ui:"Zen Kaku Gothic New","Segoe UI",system-ui,sans-serif;
   --radius:10px; --shadow:0 14px 34px rgba(0,0,0,.45);
   --card-bg:linear-gradient(180deg,#1a1723,#15131c);
 }
@@ -267,7 +267,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 }
 
 /* Recuperação da caçada ao voltar do segundo plano */
-#catchup{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:90;display:grid;gap:6px;min-width:220px;padding:10px 14px;background:var(--sumi-panel,#191722);border:1px solid rgba(216,176,98,.35);border-radius:3px;font:600 13px/1.2 Outfit,sans-serif;color:#efe6d4}
+#catchup{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:90;display:grid;gap:6px;min-width:220px;padding:10px 14px;background:var(--sumi-panel,#191722);border:1px solid rgba(216,176,98,.35);border-radius:3px;font:600 13px/1.2 var(--ui);color:#efe6d4}
 #catchup i{display:block;height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden}
 #catchup s{display:block;height:100%;width:0;background:#d8b062;text-decoration:none}
 
@@ -275,7 +275,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 .class-path{flex:1 1 100%;display:grid;gap:10px;padding:12px 14px;border:1px solid rgba(216,176,98,.22);border-radius:4px;background:rgba(255,255,255,.02)}
 .class-path ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none;counter-reset:cp}
 .class-path li{position:relative;padding:8px 10px 8px 34px;border-radius:3px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06);counter-increment:cp;min-width:0}
-.class-path li::before{content:counter(cp);position:absolute;left:10px;top:9px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 Outfit,sans-serif;color:#a79f90;border:1px solid rgba(255,255,255,.18)}
+.class-path li::before{content:counter(cp);position:absolute;left:10px;top:9px;width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font:700 10px/1 var(--ui);color:#a79f90;border:1px solid rgba(255,255,255,.18)}
 .class-path li.on{border-color:rgba(216,176,98,.45)}
 .class-path li.on::before{background:#d8b062;color:#1b1712;border-color:#d8b062}
 .class-path li b{display:block;font:700 14px/1.2 "Shippori Mincho B1",serif;color:#efe6d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -283,7 +283,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 .branch-pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .branch{display:grid;gap:4px;padding:10px 12px;border-radius:3px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.2)}
 .branch.ready{border-color:rgba(216,176,98,.4)}
-.branch small{font:700 10.5px/1 Outfit,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#d8b062}
+.branch small{font:700 10.5px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:#d8b062}
 .branch b{font:700 16px/1.2 "Shippori Mincho B1",serif;color:#efe6d4}
 .branch p{margin:0;font-size:12.5px;color:#cfc6b6}
 .branch em{font-style:normal;font-size:11.5px;color:#a79f90}
@@ -300,7 +300,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 
 /* Mapa no celular: bloqueados viram um ponto; rotas de cada capítulo empilhadas */
 @media (max-width:760px){
-  .illustrated-map .map-pin{font:600 10.5px/1.1 Outfit,sans-serif;padding:3px 6px;min-width:0;white-space:nowrap}
+  .illustrated-map .map-pin{font:600 10.5px/1.1 var(--ui);padding:3px 6px;min-width:0;white-space:nowrap}
   .illustrated-map .map-pin small{display:none}
   .illustrated-map .map-pin.locked{width:9px;height:9px;padding:0;font-size:0;border-radius:50%;background:rgba(20,18,26,.85);border:1.5px solid rgba(239,230,212,.45)}
   .illustrated-map .map-pin.focus small,.illustrated-map .map-pin.current small{display:none}
@@ -337,7 +337,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 .illustrated-map{border:1px solid rgba(216,176,98,.28);border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
 .map-pin{gap:1px;padding:5px 11px 6px;border-radius:3px;background:rgba(16,14,22,.9);border:1px solid rgba(216,176,98,.45);box-shadow:0 4px 12px rgba(0,0,0,.5);color:#efe6d4;animation:none}
 .map-pin .pin-name{font:800 14px/1.1 "Shippori Mincho B1",serif}
-.map-pin small{font:600 10.5px/1.2 Outfit,sans-serif;color:#b9b0a0;letter-spacing:.01em}
+.map-pin small{font:600 10.5px/1.2 var(--ui);color:#b9b0a0;letter-spacing:.01em}
 .map-pin:hover{transform:translate(-50%,-50%) scale(1.05)}
 .map-pin.done{border-color:rgba(127,190,140,.6)}
 .map-pin.done small{color:#9fd3a8}
@@ -351,7 +351,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 .map-pin.locked .pin-name,.map-pin.locked small{display:none}
 .map-pin.locked:hover{transform:translate(-50%,-50%) scale(1.3)}
 .map-pin.locked.focus .pin-name{display:block;position:absolute;top:16px;left:50%;transform:translateX(-50%);padding:2px 7px;border-radius:3px;background:rgba(16,14,22,.92);font-size:12px;white-space:nowrap}
-.map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:-8px 2px 0;font:600 12px Outfit,sans-serif;color:#a79f90}
+.map-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:-8px 2px 0;font:600 12px var(--ui);color:#a79f90}
 .map-legend span{display:inline-flex;align-items:center;gap:6px}
 .map-legend .lg{display:inline-block;width:10px;height:10px;border-radius:3px;border:1.5px solid}
 .lg.current{background:#d8b062;border-color:#d8b062}.lg.next{border-color:#c9472d;background:rgba(201,71,45,.3)}.lg.open{border-color:rgba(216,176,98,.6)}.lg.done{border-color:rgba(127,190,140,.8)}.lg.locked{border-radius:50%;border-color:rgba(239,230,212,.4)}
@@ -361,7 +361,7 @@ body.in-combat .zone-meta span{font-size:11px!important}
 .chapter-head h4{margin:0;flex:1;min-width:0;font:800 16px "Shippori Mincho B1",serif;color:#efe6d4}
 .chapter-prog{width:80px;height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
 .chapter-prog i{display:block;height:100%;background:#d8b062}
-.chapter-head small{font:700 12px Outfit,sans-serif;color:#a79f90;min-width:30px;text-align:right}
+.chapter-head small{font:700 12px var(--ui);color:#a79f90;min-width:30px;text-align:right}
 @media (max-width:760px){.map-legend{font-size:11px;gap:4px 10px;margin-top:-10px}.map-pin .pin-name{font-size:11px}.map-pin{padding:3px 7px}.map-pin.locked{width:9px;height:9px;padding:0}}
 
 /* Legibilidade mínima no HUD (auditoria: nada abaixo de ~11 px, contraste AA). Prefixo body vence as regras antigas. */

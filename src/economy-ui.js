@@ -45,7 +45,7 @@
     const v = I.salvageValue({ rarity:id === 'mythic' || id === 'set' ? 'legendary' : id, ilvl:il, plus:0 }), base = v.gold + v.ore * 150 + v.dust * 80;
     return Math.round(base * ({ rare:3, epic:12, legendary:60, mythic:150, set:40 }[id] || 3) * px);
   };
-  const quote = (sold, ask, bid, est) => sold ? { v:sold.median, src:`mediana de ${sold.n} venda(s) em 7 dias`, cls:'q-sold' } : ask ? { v:ask, src:'menor anúncio aberto', cls:'q-ask' } : bid ? { v:bid, src:'maior ordem de compra', cls:'q-bid' } : { v:est, src:'estimativa do Banco (custo de produção)', cls:'q-est' };
+  const quote = (sold, ask, bid, est) => sold ? { v:sold.median, src:`mediana de ${U.count(sold.n, 'venda')} em 7 dias`, cls:'q-sold' } : ask ? { v:ask, src:'menor anúncio aberto', cls:'q-ask' } : bid ? { v:bid, src:'maior ordem de compra', cls:'q-bid' } : { v:est, src:'estimativa do Banco (custo de produção)', cls:'q-est' };
 
   P.bankPanel = function(_, tab) {
     if (tab === 'wallet') return this.walletPanel();
@@ -86,7 +86,7 @@
       const sold = eco.rarity?.[r] && typeof eco.rarity[r] === 'object' ? eco.rarity[r] : eco.rarity?.[r] ? { median:eco.rarity[r], n:'?' } : null;
       const q = quote(sold, eco.rarityAsk?.[r], null, this.bankEstimate('item', r));
       return `<div class="bank-quote ${q.cls}"><b class="rtext rarity-${r}">${esc(KT.Data.rarities.find(x => x.id === r)?.label || r)}</b><em>${U.fmt(Math.round(q.v))}</em><small>${q.src}</small></div>`; }).join('');
-    const top = Object.entries(eco.prices || {}).filter(([k]) => !k.startsWith('m:')).slice(0, 12).map(([k, p]) => `<div class="order-row"><b>${esc(k.replace(/^[a-z]:/, '').replace(/_/g, ' '))}</b><span><b class="price"><span class="coin-ic" aria-hidden="true"></span> ${U.fmt(p.median)}</b></span><small>${p.n} venda(s)</small></div>`).join('');
+    const top = Object.entries(eco.prices || {}).filter(([k]) => !k.startsWith('m:')).slice(0, 12).map(([k, p]) => `<div class="order-row"><b>${esc(k.replace(/^[a-z]:/, '').replace(/_/g, ' '))}</b><span><b class="price"><span class="coin-ic" aria-hidden="true"></span> ${U.fmt(p.median)}</b></span><small>${U.count(p.n, 'venda')}</small></div>`).join('');
     return `<p class="note">Cotação em ouro por unidade. Ordem de confiança: <b>vendas reais</b> → menor anúncio → maior ordem de compra → <b>estimativa</b> do Banco pelo custo de produção (nível da sua melhor caçada).</p>
       <div class="guild-grid"><div><h4 class="sub-title">Materiais raros</h4><div class="bank-quotes">${mats}</div></div><div><h4 class="sub-title">Equipamentos por raridade</h4><div class="bank-quotes">${rar}</div></div></div>
       <h4 class="sub-title">Mais negociados (7 dias)</h4><div class="order-list">${top || '<p class="empty-note">Nenhum item ou carta vendido nos últimos 7 dias. Anuncie no Mercado de Jogadores (Loja) para abrir as cotações.</p>'}</div>

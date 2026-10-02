@@ -345,7 +345,7 @@
           : `<button class="lobby-go" data-go="party" type="button"><span><small>EQUIPE ${e.heroes.length}/4</small><b>Montar a equipe</b></span><em>4 vagas</em></button>`)
         : `<button class="lobby-go" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button" data-tip="Volta para a jornada de onde você parou."><span><small>CONTINUAR A JORNADA</small><b>${esc(hz.title)}</b></span><em>Estágio ${stage}</em></button>`;
       const goal = g ? `<div class="lobby-goal ${gDone ? 'done' : ''}" data-tip="<b>Objetivo</b><br>${esc(g.title)}"><i class="ic ic-target"></i><span><small>OBJETIVO</small><b>${esc(g.title)}</b></span>${gDone ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>` : '<div class="lobby-goal empty"></div>';
-      const todo = `<button class="lobby-btn todo ${pending ? 'has' : ''}" data-go="adventure" type="button" data-tip="${pending ? `${pending} recompensa(s) esperando: expedições, contratos, missões do dia.` : 'O que dá para fazer agora: invasão, expedições, eventos, chefes.'}"><i class="ic ic-${pending ? 'chest' : 'lantern'}"></i><b>${pending ? 'Resgatar' : 'Agora'}</b>${pending ? `<em>${pending > 9 ? '9+' : pending}</em>` : ''}</button>`;
+      const todo = `<button class="lobby-btn todo ${pending ? 'has' : ''}" data-go="adventure" type="button" data-tip="${pending ? `${U.count(pending, 'recompensa')} esperando: expedições, contratos, missões do dia.` : 'O que dá para fazer agora: invasão, expedições, eventos, chefes.'}"><i class="ic ic-${pending ? 'chest' : 'lantern'}"></i><b>${pending ? 'Resgatar' : 'Agora'}</b>${pending ? `<em>${pending > 9 ? '9+' : pending}</em>` : ''}</button>`;
       el.innerHTML = `<div class="lobby-team"><div class="lt-heroes">${slots}</div><button class="lt-power" data-go="party" type="button" data-tip="Poder total da equipe. Clique para ver a formação e as sinergias."><small>PODER</small><b>${compact(e.getPower())}</b></button></div>
         ${goal}
         <div class="lobby-cta">${todo}${cta}
@@ -442,14 +442,14 @@
       if (html !== this.eventHtml) { this.eventHtml = html; this.el.event.innerHTML = html; this.el.event.style.setProperty('--ec', ev.color); this.el.event.querySelector('details')?.addEventListener('toggle', e2 => { this.eventOpen = e2.target.open; }); }
     }
     rewardPills(r) {
-      const names = { gold:['ouro','gold'], crystal:['cristais','crystal'], dust:['Éter','dust'], ore:['Tamahagane','ore'], keys:['chave(s)','key'], key:['chave(s)','key'], potion:['poção(ões)','potion'], elixir:['elixir(es)','potion'], item:['item','item'] };
-      return Object.entries(r || {}).map(([k, v]) => { const [n, c] = names[k] || [k, '']; return `<span class="rw rw-${c}">${k === 'item' ? `Item ${D.rarities.find(x => x.id === v)?.label || v}` : `${U.fmt(v)} ${n}`}</span>`; }).join('');
+      const names = { gold:['ouro','ouro','gold'], crystal:['cristal','cristais','crystal'], dust:['Éter','Éter','dust'], ore:['Tamahagane','Tamahagane','ore'], keys:['chave','chaves','key'], key:['chave','chaves','key'], potion:['poção','poções','potion'], elixir:['elixir','elixires','potion'], item:['item','itens','item'] };
+      return Object.entries(r || {}).map(([k, v]) => { const [n1, n2, c] = names[k] || [k, k, '']; return `<span class="rw rw-${c}">${k === 'item' ? `Item ${D.rarities.find(x => x.id === v)?.label || v}` : U.count(v, n1, n2)}</span>`; }).join('');
     }
     renderContracts() {
       const key = JSON.stringify(this.state.contracts);
       if (key === this.contractKey) return; this.contractKey = key;
       this.el.rightObjectives.innerHTML = this.state.contracts.map((c, i) => {
-        const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n, tip = `${def.text.replace('{n}', c.n)}<br>${this.rewardPills(this.engine.contractReward(c))}`;
+        const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n, tip = `${U.fill(def.text, c.n)}<br>${this.rewardPills(this.engine.contractReward(c))}`;
         return `<article class="objective ${done ? 'done' : ''} ${c.legendary ? 'legendary' : ''}" data-tip="${esc(tip)}"><header><b>${def.title}</b><span>${c.progress}/${c.n}</span></header><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div>${done ? `<button class="action primary small" data-claim-contract="${i}" type="button">Resgatar</button>` : ''}</article>`;
       }).join('') + '<button class="action small ghost pane-more" data-go="quests:contracts" type="button">Ver contratos e recompensas</button>';
     }
@@ -571,7 +571,7 @@
       if (!line) { this.el.dialog.hidden = true; this.engine.paused = false; return; }
       const sp = D.speakers[line.who] || { color:'#fff', title:'' };
       this.engine.paused = true;
-      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(line.by || sp.title)}</small></span><p>${esc(line.text)}</p>${line.book ? `<button class="action small ghost" data-story-book="${esc(line.book)}" type="button">Ler o capítulo completo</button>` : ''}<small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
+      this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(line.by || sp.title)}</small></span><p>${esc(line.text)}</p>${line.book ? `<button class="action small ghost" data-story-book="${esc(line.book)}" type="button">Ler o capítulo completo</button>` : ''}<small class="dlg-next${this.dialogQueue.length ? '' : ' last'}" aria-label="${this.dialogQueue.length ? 'continuar' : 'fechar'}">${this.dialogQueue.length ? '' : 'fechar'}</small></div>`;
       this.el.dialog.hidden = false;
       const p = this.el.dialog.querySelector('p'); p.classList.remove('typing'); void p.offsetWidth; p.classList.add('typing');
       // No AUTO (ou sem ninguém mexendo há 25 s) a fala passa sozinha: 3,5 s mais o tempo de ler o texto.
@@ -619,7 +619,7 @@
       if (!ctx.clsCount.Suporte) tips.push('Sua equipe não tem <b>Suporte</b>: sem cura, chefes vencem pelo cansaço.');
       if (!ctx.clsCount.Vanguarda) tips.push('Sem <b>Vanguarda</b> na frente, o dano cai nos heróis frágeis.');
       if (this.engine.heroes.some(r => e.freeAttr(r) > 0)) tips.push('Há <b>pontos de atributo</b> não distribuídos (Equipe → ficha do herói).');
-      if (e.talentPoints() > 0) tips.push(`Você tem <b>${e.talentPoints()} ponto(s) de talento</b> livres.`);
+      if (e.talentPoints() > 0) tips.push(`Você tem <b>${U.count(e.talentPoints(), 'ponto')} de talento</b> ${e.talentPoints() === 1 ? 'livre' : 'livres'}.`);
       tips.push('Aprimore equipamentos na <b>Forja</b> e treine a equipe no <b>Dojo</b>.');
       tips.push('Desligue o AUTO e guarde ultimates de escudo/cura para quando o inimigo mostrar 危.');
       return tips.slice(0, 4);

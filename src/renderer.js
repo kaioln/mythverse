@@ -5,7 +5,7 @@
   const VIEW_L = { x:0, w:W }, VIEW_P = { x:180, w:920 };
   const DISPLAY_FONT = '"Shippori Mincho B1", "Shippori Mincho", serif'; // mesma serifa da marca (faixas, ultimates, Elo)
   const DISPLAY_FONT_W = DISPLAY_FONT;
-  const UI_FONT = 'Outfit, "Segoe UI", system-ui, sans-serif';
+  const UI_FONT = '"Zen Kaku Gothic New", "Segoe UI", system-ui, sans-serif';
 
   // Vagas 1 e 2 = linha de frente (mais perto dos inimigos); 3 e 4 = retaguarda.
   // Formação em zigue-zague: cada herói numa coluna própria (linha de trás mais alta), sem um cobrir o outro.

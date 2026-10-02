@@ -9,7 +9,7 @@
   --gold:#ffcf6b; --gold2:#f2a13b; --sakura:#ff7eb6; --cyan:#6fe3ff; --green:#5fe39a; --red:#ff5d6c; --violet:#a98bff;
   --common:#b9c2d6; --rare:#4fb3ff; --epic:#c07dff; --legendary:#ffb938; --mythic:#ff5d8f; --set:#5fe39a;
   --radius:14px; --shadow:0 18px 50px rgba(0,0,0,.45);
-  --display:"Lilita One","Arial Black",Impact,sans-serif; --ui:Outfit,"Segoe UI",system-ui,-apple-system,sans-serif; --kanji:"Shippori Mincho","Yu Mincho",serif;
+  --display:"Shippori Mincho B1","Shippori Mincho","Yu Mincho",serif; --ui:"Zen Kaku Gothic New","Segoe UI",system-ui,-apple-system,sans-serif; --kanji:"Shippori Mincho","Yu Mincho",serif;
   --top-h:64px; --nav-w:84px; --panel-w:320px; --dock-h:124px;
 }
 *{box-sizing:border-box}

@@ -60,7 +60,7 @@
         const fn = m.kind === 'gvg' ? 'mv_gvg_finish' : 'mv_pvp_finish';
         const r = await this.rpc(fn, { p_match:m.id, p_won:!!rec.won, p_inputs:rec.inputs.slice(0, 800), p_end_tick:rec.endTick });
         this.lastResult = { ...r, kind:m.kind, foe:m.name };
-        if (m.kind === 'gvg') this.ui.toast(r.won ? `Vitória na Guerra de Guildas: <b>+${r.points} ponto(s)</b>.` : 'Investida perdida. A guilda conta com você na próxima.', r.won ? 'gold' : '');
+        if (m.kind === 'gvg') this.ui.toast(r.won ? `Vitória na Guerra de Guildas: <b>+${KT.Utils.count(r.points, 'ponto')}</b>.` : 'Investida perdida. A guilda conta com você na próxima.', r.won ? 'gold' : '');
         else this.ui.toast(`${r.won ? 'Vitória' : 'Derrota'} na Arena: <b>${r.delta >= 0 ? '+' : ''}${r.delta} MMR</b>, +${r.honor} de Honra.${r.note ? ` ${r.note}` : ''}`, r.won ? 'gold' : '');
         this.ui.onArenaResult?.(this.lastResult);
       } catch (err) { this.fail(err); }

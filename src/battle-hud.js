@@ -85,7 +85,7 @@
       btn:Object.fromEntries([...hud.querySelectorAll('.ab')].map(b => [b.dataset.ab, b])) };
     this.bh.sp.dataset.tip = TIPS.sp;
     ['attack', 'defend', 'guard', 'potion', 'elixir'].forEach(k => { this.bh.btn[k].dataset.tip = TIPS[k]; });
-    this.bh.target.dataset.tip = 'O alvo dos golpes da equipe. Clique aqui ou num inimigo (tecla <b>X</b>) para trocar.';
+    this.bh.target.dataset.tip = `Alvo da equipe. Para trocar, ${TOUCH ? 'toque num inimigo' : 'clique num inimigo ou aperte <b>X</b>'}.`;
     this.bh.allout.dataset.tip = '<b>Assalto Total</b><br>Todos os inimigos estão quebrados: cada herói golpeia cada inimigo de uma vez. Não gasta a vez de ninguém.';
     hud.addEventListener('click', ev => {
       const b = ev.target.closest('[data-ab]'); if (b) { if (!b.disabled || b.classList.contains('why')) this.bhAct(b.dataset.ab); return; }

@@ -2627,7 +2627,7 @@
       const cur = this.chronicleValue(def);
       const target = def.type === 'power' ? Math.ceil(cur * 1.12 / 50) * 50 : def.type === 'rift' ? Math.max(5, cur + 3) : def.type === 'kills' ? cur + 400 + k * 120
         : def.type === 'upgrade' ? cur + 3 + Math.floor(k / 3) : def.type === 'bossKills' ? cur + 1 + Math.floor(k / 8) : cur + 2;
-      s.chronicle = { k, type:def.type, title:`${def.title} ${k}`, text:def.text.replace('{n}', U.fmt(def.type === 'kills' || def.type === 'upgrade' || def.type === 'bossKills' ? target - cur : target)), start:cur, target };
+      s.chronicle = { k, type:def.type, title:`${def.title} ${k}`, text:U.fill(def.text, def.type === 'kills' || def.type === 'upgrade' || def.type === 'bossKills' ? target - cur : target), start:cur, target };
     }
     chronicleReward(c) { return { gold:Math.round(800 * this.farmPower() * (1 + c.k * .05)), ore:10 + c.k * 2, crystal:Math.min(25, 4 + Math.floor(c.k / 2)), ...(c.k % 10 === 0 ? { keys:1 } : {}) }; }
     claimChronicle() {
@@ -2727,8 +2727,8 @@
       const ctx = this.ctx(), zone = this.zone.kind !== 'village' ? this.zone : D.zones[s.lastHunt || 'hunt'];
       this.heroes.forEach(r => {
         const name = esc(this.template(r.id).name), fa = this.freeAttr(r), tp = this.usableTalentPoints(r);
-        if (fa > 0) add(10, `<b>${name}</b> tem ${fa} ponto(s) de atributo livres.`, 'autoAttr', { uid:r.uid, label:'Distribuir (build recomendada)' });
-        if (tp > 0) add(9, `<b>${name}</b> tem ${tp} ponto(s) de talento livres.`, 'autoTalents', { uid:r.uid, label:'Aprender (build recomendada)' });
+        if (fa > 0) add(10, `<b>${name}</b> tem ${U.count(fa, 'ponto')} de atributo ${fa === 1 ? 'livre' : 'livres'}.`, 'autoAttr', { uid:r.uid, label:'Distribuir (build recomendada)' });
+        if (tp > 0) add(9, `<b>${name}</b> tem ${U.count(tp, 'ponto')} de talento ${tp === 1 ? 'livre' : 'livres'}.`, 'autoTalents', { uid:r.uid, label:'Aprender (build recomendada)' });
         if (this.canJobChange(r)) add(8, `<b>${name}</b> pode mudar de classe (+10% atributos e Círculo III).`, 'open', { go:'hero', uid:r.uid, label:'Ver ficha' });
         const aw = awakenCost(r.stars, s.buildings.shrine);
         if (r.stars < HERO_MAX_STARS && (s.shards[r.id] || 0) >= aw.shards && s.player.gold >= aw.gold) add(8, `<b>${name}</b> pode elevar a qualidade para ${r.stars + 1}★.`, 'awaken', { uid:r.uid, label:'Elevar qualidade' });
@@ -2741,7 +2741,7 @@
       const cheapTrain = Object.keys(PR.training).filter(k => (s.training[k] || 0) < PR.trainingCap(s.buildings.dojo) && s.player.gold >= PR.trainingCost(s.training[k] || 0));
       if (cheapTrain.length) add(6, `Dá para treinar a equipe no Dojo agora (${cheapTrain.map(k => PR.training[k].name).join(', ')}).`, 'open', { go:'city:dojo', label:'Ir ao Dojo' });
       const up = this.heroes.flatMap(r => Object.values(r.equipped)).map(uid => s.inventory.find(x => x.uid === uid)).filter(it => it && (it.plus || 0) < I.maxPlus(s.buildings.forge) && (() => { const c = I.upgradeCost(it, s.buildings.forge); return s.player.gold >= c.gold && s.player.ore >= c.ore; })());
-      if (up.length) add(5, `${up.length} equipamento(s) da equipe podem ser aprimorados na Forja agora.`, 'open', { go:'city:forge', label:'Ir à Forja' });
+      if (up.length) add(5, `${U.count(up.length, 'equipamento')} da equipe ${up.length === 1 ? 'pode ser aprimorado' : 'podem ser aprimorados'} na Forja agora.`, 'open', { go:'city:forge', label:'Ir à Forja' });
       // Onde treinar com segurança.
       const hz = D.zones[s.lastHunt || 'hunt'], pow = this.getPower();
       if (hz?.kind === 'hunt') { let safe = 1; for (let n = 1; n <= Math.min(hz.stages, (s.progress[hz.id]?.best || 0) + 1); n++) if (this.recommendedPower(hz.id, { stage:n }) <= pow * 1.05) safe = n; add(4, `Treine no <b>estágio ${safe}</b> de ${esc(hz.title)} (poder seguro) com o Avanço desligado para juntar EXP, ouro e itens.`, 'farm', { zone:hz.id, stage:safe, label:`Treinar no ${safe}` }); }

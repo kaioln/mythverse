@@ -582,7 +582,7 @@
       boss_tide:[{ who:'Mizuchi', text:'O mar lembra de tudo que afoga. Vocês serão lembrados... por pouco tempo.' }, { who:'Sayo', text:'O Tsunami de Mizuchi atinge todos. Na fase final, ele afoga a retaguarda, proteja seus Suportes!' }],
       boss_event:[{ who:'Kitsune', text:'Hihihi... Vieram brincar no meu festival? As lanternas adoram novos amigos.' }],
       hunt_swamp:[{ who:'Sayo', text:'O Pântano dos Vaga-lumes. Não olhe muito para as luzes, elas atordoam. A Bruxa do Brejo cura seus servos: derrube-a primeiro.' }],
-      dungeon_crypt:[{ who:'Sayo', text:'A Cripta de Jade. Os Sacerdotes ressuscitam os mortos, clique neles para focar a equipe!' }, { who:'Sayo', text:'O Rei Sem Túmulo silencia todos com a Coroa das Almas. Tenha escudos prontos antes que ela caia.' }],
+      dungeon_crypt:[{ who:'Sayo', text:'A Cripta de Jade. Os Sacerdotes levantam os mortos. Foque a equipe neles primeiro.' }, { who:'Sayo', text:'O Rei Sem Túmulo silencia todos com a Coroa das Almas. Tenha escudos prontos antes que ela caia.' }],
       hunt_frost:[{ who:'Sayo', text:'O Planalto Congelado. Aqui a energia das ultimates congela junto com o vento. Heróis de Fogo e Terra aquecem o caminho.' }],
       dungeon_forge:[{ who:'Sayo', text:'A Forja Abissal... Ren chorou quando soube. Os Autômatos de Ferro protegem a forja inteira, quebre a blindagem com perfuração.' }],
       hunt_desert:[{ who:'Sayo', text:'As Areias do Tempo. Um dia aqui dura um segundo lá fora. Chacais saltam na retaguarda, proteja seus curandeiros.' }, { who:'Apep', text:'Sssss... mais horas para devorar. Venham, pequenos. O deserto é paciente.' }],
@@ -676,23 +676,23 @@
     { id:'c_ult', title:'Poder Liberado', text:'Use {n} ultimates.', type:'ults', n:[10, 20, 35], reward:{ crystal:12, potion:1 } },
     { id:'c_loot', title:'Coleta', text:'Obtenha {n} itens.', type:'loot', n:[10, 20, 30], reward:{ gold:1, dust:15 } },
     { id:'c_salvage', title:'Reciclagem', text:'Desmonte {n} itens na Forja.', type:'salvage', n:[5, 10, 15], reward:{ ore:10, dust:10 } },
-    { id:'c_dungeon', title:'Exploração', text:'Conclua {n} andar(es) de dungeon.', type:'floors', n:[1, 2, 3], reward:{ crystal:20, ore:8 } },
+    { id:'c_dungeon', title:'Exploração', text:'Conclua {n|andar|andares} de dungeon.', type:'floors', n:[1, 2, 3], reward:{ crystal:20, ore:8 } },
     { id:'c_encounter', title:'Aventureiro', text:'Resolva {n} encontros especiais.', type:'encounters', n:[1, 2, 3], reward:{ crystal:15, gold:1 } }
   ];
 
   // Conquistas, metas longas com recompensas.
   const achievements = [
     ...[50, 250, 1000, 5000, 20000].map((n, i) => ({ id:`a_kills_${n}`, title:`Caçador ${['I','II','III','IV','V'][i]}`, text:`Derrote ${n.toLocaleString('pt-BR')} inimigos.`, stat:'kills', n, reward:{ crystal:10 * (i + 1) } })),
-    ...[1, 5, 20, 50].map((n, i) => ({ id:`a_boss_${n}`, title:`Matador de Chefes ${['I','II','III','IV'][i]}`, text:`Derrote ${n} chefe(s).`, stat:'bossKills', n, reward:{ key:1 + i } })),
+    ...[1, 5, 20, 50].map((n, i) => ({ id:`a_boss_${n}`, title:`Matador de Chefes ${['I','II','III','IV'][i]}`, text:`Derrote ${n} ${n === 1 ? 'chefe' : 'chefes'}.`, stat:'bossKills', n, reward:{ key:1 + i } })),
     ...[10, 20, 35, 50, 60].map((n, i) => ({ id:`a_col_${n}`, title:`Colecionador ${['I','II','III','IV','V'][i]}`, text:`Descubra ${n} heróis diferentes.`, stat:'unique', n, reward:{ crystal:25 * (i + 1) } })),
     ...[10, 50, 200].map((n, i) => ({ id:`a_ult_${n}`, title:`Mestre das Ultimates ${['I','II','III'][i]}`, text:`Use ${n} ultimates.`, stat:'ults', n, reward:{ crystal:15 * (i + 1) } })),
     ...[5, 10, 20, 30].map((n, i) => ({ id:`a_lvl_${n}`, title:`Veterano ${['I','II','III','IV'][i]}`, text:`Leve um herói ao nível ${n}.`, stat:'maxLevel', n, reward:{ ore:10 * (i + 1), gold:1000 * (i + 1) } })),
     ...[1, 5, 10].map((n, i) => ({ id:`a_up_${n}`, title:`Ferreiro ${['I','II','III'][i]}`, text:`Aprimore um item até +${n}.`, stat:'maxUpgrade', n, reward:{ ore:15 * (i + 1) } })),
-    ...[1, 5, 15].map((n, i) => ({ id:`a_leg_${n}`, title:`Lendário ${['I','II','III'][i]}`, text:`Obtenha ${n} item(ns) lendário(s) ou mítico(s).`, stat:'legendaries', n, reward:{ crystal:30 * (i + 1) } })),
+    ...[1, 5, 15].map((n, i) => ({ id:`a_leg_${n}`, title:`Lendário ${['I','II','III'][i]}`, text:`Obtenha ${n} ${n === 1 ? 'item lendário ou mítico' : 'itens lendários ou míticos'}.`, stat:'legendaries', n, reward:{ crystal:30 * (i + 1) } })),
     ...[10, 25, 50, 100, 200].map((n, i) => ({ id:`a_rift_${n}`, title:`Abismo ${['I','II','III','IV','V'][i]}`, text:`Alcance o andar ${n} da Fenda Abissal.`, stat:'riftBest', n, reward:{ crystal:20 * (i + 1), ore:20 * (i + 1) } })),
     ...[10, 40, 120].map((n, i) => ({ id:`a_res_${n}`, title:`Pesquisador ${['I','II','III'][i]}`, text:`Alcance ${n} níveis de pesquisa no Bestiário.`, stat:'research', n, reward:{ dust:40 * (i + 1) } })),
-    ...[1, 10, 30].map((n, i) => ({ id:`a_card_${n}`, title:`Colecionador de Cartas ${['I','II','III'][i]}`, text:`Obtenha ${n} carta(s) de monstros.`, stat:'cards', n, reward:{ crystal:15 * (i + 1) } })),
-    ...[1, 10, 50].map((n, i) => ({ id:`a_alpha_${n}`, title:`Caçador de Alfas ${['I','II','III'][i]}`, text:`Derrote ${n} monstro(s) Alfa.`, stat:'alphas', n, reward:{ ore:25 * (i + 1) } })),
+    ...[1, 10, 30].map((n, i) => ({ id:`a_card_${n}`, title:`Colecionador de Cartas ${['I','II','III'][i]}`, text:`Obtenha ${n} ${n === 1 ? 'carta' : 'cartas'} de monstros.`, stat:'cards', n, reward:{ crystal:15 * (i + 1) } })),
+    ...[1, 10, 50].map((n, i) => ({ id:`a_alpha_${n}`, title:`Caçador de Alfas ${['I','II','III'][i]}`, text:`Derrote ${n} ${n === 1 ? 'monstro' : 'monstros'} Alfa.`, stat:'alphas', n, reward:{ ore:25 * (i + 1) } })),
     { id:'a_star5', title:'Qualidade Máxima', text:'Eleve um herói até 6★.', stat:'maxStars', n:6, reward:{ key:3 } },
     { id:'a_bonds', title:'Laços Verdadeiros', text:'Ative 2 laços na mesma equipe.', stat:'bondsActive', n:2, reward:{ key:1 } }
   ];

@@ -27,7 +27,7 @@ description: Padrões de UI/UX de jogos (HUB, HUD de combate, painéis, mobile) 
 ## Visual (identidade Sumi)
 - Tinta índigo, papel, **um** acento vermelho-laca (#c9472d) para ação, ouro só para recompensa/valor.
 - Sem gradiente decorativo, sem brilho/neon, sem emoji (use kanji `.kj` ou ícones `.ic`).
-- Serifa Shippori Mincho B1 em títulos; Outfit em texto/números (peso 600-700; 800 só em números grandes).
+- Serifa Shippori Mincho B1 em títulos; Zen Kaku Gothic New em texto e números (peso 500-700; 900 só em números grandes). Nada de Outfit, Inter, Poppins: são as fontes de todo site gerado.
 
 ## Layout e responsividade (obrigatório conferir)
 - Larguras: 320, 375, 425, 768, 1024, 1440 e 2560 px. Sem rolagem lateral, sem texto cortado no meio da palavra.

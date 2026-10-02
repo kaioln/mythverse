@@ -150,6 +150,6 @@
   // Resultado da luta de arena na tela de combate.
   P.onArenaResult = function(r) {
     const card = this.el.result.querySelector('.arena-result-line'); if (!card) return;
-    card.innerHTML = r.kind === 'gvg' ? (r.won ? `+${r.points} ponto(s) para a guilda` : 'Nenhum ponto nesta investida') : `${r.delta >= 0 ? '+' : ''}${r.delta} MMR · +${r.honor} Honra · ${tierOf(r.tier)[1]}`;
+    card.innerHTML = r.kind === 'gvg' ? (r.won ? `+${U.count(r.points, 'ponto')} para a guilda` : 'Nenhum ponto nesta investida') : `${r.delta >= 0 ? '+' : ''}${r.delta} MMR · +${r.honor} Honra · ${tierOf(r.tier)[1]}`;
   };
 })();

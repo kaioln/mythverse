@@ -27,6 +27,11 @@
     uid: (p = 'id') => Rng.cur ? `${p}_${B36(Rng.next() * 2821109907456)}${B36(Rng.next() * 2821109907456)}` : `${p}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`,
     deep: value => JSON.parse(JSON.stringify(value)),
     fmt: n => Math.round(n).toLocaleString('pt-BR'),
+    // Plural certo no texto que o jogador lê: nunca "ponto(s)".
+    plural: (n, one, many) => n === 1 ? one : (many || one + 's'),
+    count: (n, one, many) => `${Math.round(n).toLocaleString('pt-BR')} ${n === 1 ? one : (many || one + 's')}`,
+    // Modelos de texto: "{n}" vira o número; "{n|andar|andares}" vira número e palavra no plural certo.
+    fill: (text, n) => String(text).replace(/\{n(?:\|([^|}]+)\|([^}]+))?\}/g, (_, one, many) => one ? U.count(n, one, many) : U.fmt(n)),
     weighted(items, getWeight) {
       const total = items.reduce((s, item) => s + Math.max(0, getWeight(item)), 0);
       if (total <= 0) return items[0];
