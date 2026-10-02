@@ -5,9 +5,9 @@
   // Quem comanda a luta: [rótulo, aviso ao trocar].
   const TOUCH = !!globalThis.matchMedia?.('(hover:none)').matches;   // sem teclado: os avisos falam dos botões, não das teclas
   const MODES = {
-    auto:['AUTO', 'Comando <b>AUTO</b>: a equipe decide tudo sozinha, uma ação por vez.'],
-    semi:['SEMI', TOUCH ? 'Comando <b>SEMI</b>: habilidades automáticas; toque na <b>ultimate</b> de cada herói quando encher (+25%).' : 'Comando <b>SEMI</b>: habilidades automáticas; as ultimates são suas (<b>Q W E R</b>, +25%).'],
-    manual:['MANUAL', TOUCH ? 'Comando <b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem: <b>Atacar</b>, <b>Habilidade</b> (+15%), <b>Ultimate</b> (+25%) ou <b>Defender</b>.' : 'Comando <b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem: <b>Espaço</b> ataca, <b>A S D F</b> habilidade (+15%), <b>Q W E R</b> ultimate (+25%), <b>G</b> defende.']
+    auto:['AUTO', '<b>Comando AUTO</b><br>A equipe decide tudo sozinha.'],
+    semi:['SEMI', TOUCH ? '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: toque nelas quando acenderem.' : '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd>'],
+    manual:['MANUAL', '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem.']
   };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const portrait = id => KT.portraitUrl(id);
@@ -191,7 +191,7 @@
       if (!MODES[mode]) return;
       if (this.state.settings.afk) { this.toast('O <b>AFK</b> está no comando. Saia do AFK para lutar você mesmo.'); return; }
       if (this.engine.seg) this.engine.input('mode', mode); else { this.engine.setMode(mode); this.cmd('setSetting', 'mode', mode); }
-      this.renderControls(); this.renderParty(); this.toast(MODES[mode][1]);
+      this.renderControls(); this.renderParty(); this.toast(MODES[mode][1], '', 'mode');
     }
     cycleMode() { const order = ['auto', 'semi', 'manual']; this.setMode(order[(order.indexOf(this.engine.mode) + 1) % order.length]); }
     // Próximo alvo em foco (os golpes e as habilidades de alvo único vão nele).
@@ -663,7 +663,15 @@
       tips.push('Desligue o AUTO e guarde ultimates de escudo/cura para quando o inimigo mostrar 危.');
       return tips.slice(0, 4);
     }
-    toast(text, tone = '') { const t = document.createElement('div'); t.className = `toast ${tone}`; t.innerHTML = text; this.el.toastStack.appendChild(t); while (this.el.toastStack.children.length > 4) this.el.toastStack.firstChild.remove(); setTimeout(() => t.remove(), 4200); }
+    // Aviso curto no alto do palco (embaixo, com um painel aberto). key: avisos do mesmo assunto se substituem em vez de empilhar.
+    toast(text, tone = '', key = '') {
+      const stack = this.el.toastStack;
+      if (key) stack.querySelectorAll(`.toast[data-key="${key}"]`).forEach(x => x.remove());
+      const t = document.createElement('div'); t.className = `toast ${tone}`; if (key) t.dataset.key = key;
+      t.innerHTML = `<span class="toast-msg">${text}</span>`; stack.appendChild(t);
+      while (stack.children.length > 3) stack.firstChild.remove();
+      setTimeout(() => t.remove(), 4200);
+    }
 
     // ======================= REVELAÇÃO DE CONVOCAÇÃO =======================
     showReveal(results) {

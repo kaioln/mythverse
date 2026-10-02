@@ -89,6 +89,13 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--gold);bo
 /* ---------- retorno: avisos e dicas ---------- */
 .tooltip{border-radius:10px!important;background:linear-gradient(180deg,#201c2a,#15131c)!important;border:1px solid var(--edge-gold)!important;border-top:2px solid var(--gold)!important;box-shadow:0 14px 34px rgba(0,0,0,.65)!important;font-size:12.5px;line-height:1.5}
 .toast{display:flex;align-items:center;gap:10px;padding:11px 18px 11px 14px!important;border-radius:11px!important;background:linear-gradient(180deg,#221e2c,#16141d)!important;border:1px solid rgba(236,226,208,.16)!important;border-left:4px solid var(--cyan)!important;box-shadow:0 14px 34px rgba(0,0,0,.6)!important;font-size:13.5px}
+/* o texto do aviso é um bloco só: negritos e teclas correm na mesma linha */
+.toast-msg{flex:1 1 auto;min-width:0;text-align:left;line-height:1.4}
+.toast kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin:0 1px;border-radius:5px;font:700 11px var(--ui);color:#1c1508;background:linear-gradient(180deg,#f3dfae,#cfa75a);box-shadow:inset 0 -2px 0 rgba(0,0,0,.28),0 1px 2px rgba(0,0,0,.5);vertical-align:1px}
+/* jogando: os avisos ficam no alto do palco (não cobrem a equipe nem a barra de comando); com painel aberto, no pé da tela */
+.toast-stack{top:calc(var(--top-h,64px) + 78px);bottom:auto;flex-direction:column}
+body:has(#modal:not([hidden])) .toast-stack,body:has(#summon-reveal:not([hidden])) .toast-stack{top:auto;bottom:22px;flex-direction:column-reverse}
+@media(max-width:900px){.toast-stack{top:calc(var(--top-h,56px) + 56px)}body:has(#modal:not([hidden])) .toast-stack{bottom:76px}}
 .toast.gold{border-left-color:var(--gold)!important}
 .toast.red{border-left-color:var(--shu)!important}
 .toast::before{content:"";flex:none;width:18px;height:18px;background:var(--cyan);-webkit-mask:url(assets/ui/ic-lantern.svg) center/contain no-repeat;mask:url(assets/ui/ic-lantern.svg) center/contain no-repeat}
