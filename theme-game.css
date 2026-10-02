@@ -260,3 +260,11 @@ body:not(.in-combat) .stage-controls{display:none!important}
   .map-pin .pin-name{font-size:12px}.map-pin small{display:block!important;font-size:9.5px}
 }
 @media(prefers-reduced-motion:reduce){.scroll-hint i,.illustrated-map .map-pin.next{animation:none}}
+
+/* mesa de som das Configurações */
+.vol-rows{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:8px 14px;align-items:end;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.22);border:1px solid rgba(236,226,208,.1)}
+.vol-rows .vol{display:grid;grid-template-columns:1fr auto;gap:4px 8px;align-items:center;margin:0}
+.vol-rows .vol span{font:700 11px/1 var(--ui);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.vol-rows .vol em{font:800 12px/1 var(--ui);font-style:normal;color:var(--gold-hi);text-align:right}
+.vol-rows .vol input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--gold);height:22px}
+@media (max-width:760px){.vol-rows{grid-template-columns:1fr}}

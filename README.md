@@ -190,6 +190,16 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Ícones vetoriais autorais** para recursos, atividades e golpes (`python tools/build_icons.py`), e efeitos de combate com textura (brilho suave, cortes em crescente, estrelas de impacto, raios com núcleo).
 - **Wiki completa** dentro do jogo, gerada a partir dos dados reais: combate, classes, elementos, laços, os 60 kits, builds, armas, itens, cartas, monstros, mundo, eventos, progressão, refino, atividades, economia, mercado e segurança.
 
+## Som
+
+- **Efeitos de combate e de interface** (`assets/audio/combat`, 642 arquivos): só gravações, cortadas, empilhadas e niveladas por
+  `python tools/sfx_pack.py` (nada sintetizado). Cada herói tem golpe, habilidade e ultimate da arma e do elemento dele; cada uma
+  das 115 criaturas tem voz, dor e morte próprias, e os chefes têm rugido.
+- **Fontes**: *Fantasy SFX Pack Vol 1* de **JC Sounds** (CC BY 4.0, crédito obrigatório), *RPG Sound Pack* de **artisticdude** (CC0)
+  e *Impact Sounds*, *RPG Audio* e *Sci-Fi Sounds* de **Kenney** (CC0). Detalhes em `assets/audio/combat/LICENSE.txt`.
+- **Para ouvir e marcar o que estiver ruim**: abra `tools/dev/sounds.html` (mesa de audição com todos os sons).
+- **Volumes** (geral, música e efeitos) em Perfil → Configurações, guardados em cada aparelho.
+
 ## Controles
 
 | Tecla | Ação |

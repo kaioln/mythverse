@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mesa de audição · Mythverse</title>
+<base href="../../">
+<style>
+  :root{color-scheme:dark;--bg:#12101a;--card:#1b1826;--line:#34304a;--txt:#ece2d0;--dim:#9a93a8;--gold:#d8b062;--red:#c9472d}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 system-ui,Segoe UI,Roboto,sans-serif}
+  header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:12px 16px;background:#17141f;border-bottom:1px solid var(--line)}
+  h1{font-size:18px;margin:0}
+  h2{font-size:15px;margin:22px 0 8px;color:var(--gold);letter-spacing:.04em}
+  main{padding:8px 16px 60px;max-width:1280px;margin:0 auto}
+  p.note{color:var(--dim);margin:6px 0 0;max-width:820px}
+  label{display:inline-flex;align-items:center;gap:8px;color:var(--dim)}
+  input[type=range]{accent-color:var(--gold)}
+  input[type=search]{background:#0e0c14;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 10px;min-width:180px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+  .card b{display:block;font-size:13px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card small{color:var(--dim);font-weight:400}
+  .row{display:flex;flex-wrap:wrap;gap:6px}
+  button{font:inherit;color:var(--txt);background:#262236;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;min-height:34px}
+  button:hover{border-color:var(--gold)}
+  button.playing{background:#3a3050;border-color:var(--gold)}
+  button.flag{padding:6px 8px;color:var(--dim)}
+  button.flag.on{background:var(--red);border-color:#f0a48f;color:#fff}
+  .pair{display:inline-flex}
+  .pair button:first-child{border-radius:8px 0 0 8px}
+  .pair button:last-child{border-radius:0 8px 8px 0;border-left:0}
+  #marked{width:100%;min-height:54px;background:#0e0c14;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font:12px/1.4 ui-monospace,Consolas,monospace}
+</style>
+<body>
+<header>
+  <h1>Mesa de audição</h1>
+  <label>Volume <input id="vol" type="range" min="0" max="100" value="70"></label>
+  <input id="q" type="search" placeholder="Filtrar (nome, arma, família…)">
+  <button id="stop" type="button">Parar tudo</button>
+  <span id="count" style="color:var(--dim)"></span>
+</header>
+<main>
+  <p class="note">Clique para ouvir cada som do jogo. O botão <b>⚑</b> marca o que estiver ruim: a lista abaixo guarda as marcações neste navegador,
+    pronta para copiar e mandar. Os sons são gravações (RPG Sound Pack, JC Sounds e Kenney) montadas por <code>tools/sfx_pack.py</code>.</p>
+  <h2>Marcados como ruins</h2>
+  <textarea id="marked" readonly placeholder="Nada marcado ainda."></textarea>
+  <div id="out"></div>
+</main>
+<script>
+(async () => {
+  const M = await (await fetch('assets/audio/combat/index.json?t=' + Date.now())).json();
+  const out = document.getElementById('out'), vol = document.getElementById('vol'), q = document.getElementById('q'), marked = document.getElementById('marked');
+  const KEY = 'mv_sound_flags', flags = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+  const playing = new Set();
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  const showFlags = () => { marked.value = [...flags].sort().join('\n'); localStorage.setItem(KEY, JSON.stringify([...flags])); };
+  const btn = (label, file) => file ? `<span class="pair"><button type="button" data-file="${esc(file)}">${esc(label)}</button><button type="button" class="flag ${flags.has(file) ? 'on' : ''}" data-flag="${esc(file)}" title="Marcar como ruim">⚑</button></span>` : '';
+  const card = (title, sub, buttons, tags) => `<div class="card" data-tags="${esc((title + ' ' + sub + ' ' + tags).toLowerCase())}"><b>${esc(title)} <small>${esc(sub)}</small></b><div class="row">${buttons.join('')}</div></div>`;
+  const section = (title, cards) => `<h2>${esc(title)} <small style="color:var(--dim)">(${cards.length})</small></h2><div class="grid">${cards.join('')}</div>`;
+  const EV = { guard:'Guarda', guardHit:'Golpe na guarda', parry:'Aparo', dodge:'Esquiva', break:'Quebra', defend:'Defender', turn:'Sua vez', strike:'Bote do inimigo', bossWindup:'Chefe preparando', bossBurst:'Explosão do chefe', burst:'Especial de monstro',
+    damage:'Dano no herói', damagePlate:'Dano em armadura', crit:'Crítico', heal:'Cura', shield:'Escudo', heroDown:'Herói caído', revive:'Reviver', levelUp:'Subiu de nível', reward:'Recompensa', loot:'Saque', victory:'Vitória', defeat:'Derrota',
+    spawn:'Onda chegando', death:'Monstro morre (genérico)', potion:'Poção', elixir:'Elixir', chain:'Corrente', finale:'Golpe final', step0:'Passo 1', step1:'Passo 2', step2:'Passo 3', step3:'Passo 4',
+    uiClick:'Toque', uiConfirm:'Confirmar', uiDeny:'Recusar', uiOpen:'Abrir painel', uiClose:'Fechar painel', summon:'Convocação', enemyAttack:'Golpe inimigo (genérico)', enemyCast:'Magia inimiga (genérica)' };
+  let html = section('Eventos da luta e da interface', Object.entries(M.events || {}).map(([k, f]) => card(EV[k] || k, k, [btn('Ouvir', f)], 'evento')));
+  html += section('Heróis: golpe, habilidade e ultimate', Object.entries(M.heroes || {}).map(([id, h]) => card(h.name || id, `${h.weapon} · ${h.element}`, [btn('Golpe', h.attack), btn('Habilidade', h.skill), btn('Ultimate', h.ult)], id)));
+  html += section('Famílias de criaturas: golpe e magia', Object.entries(M.families || {}).map(([f, r]) => card(f, 'família', [btn('Golpe', r.attack), btn('Magia', r.cast)], 'familia')));
+  html += section('Criaturas: voz, dor, morte e rugido', Object.entries(M.creatures || {}).map(([id, c]) => card(id, c.f, [btn('Voz', c.v), btn('Dor', c.h), btn('Morte', c.d), btn('Rugido', c.r)], c.f)));
+  out.innerHTML = html;
+  document.getElementById('count').textContent = `${(M.files || []).length} arquivos · conjunto ${M.mix}`;
+  showFlags();
+  document.addEventListener('click', e => {
+    const f = e.target.closest('[data-flag]');
+    if (f) { const k = f.dataset.flag; if (flags.has(k)) flags.delete(k); else flags.add(k); f.classList.toggle('on', flags.has(k)); showFlags(); return; }
+    const b = e.target.closest('[data-file]'); if (!b) return;
+    const a = new Audio('assets/audio/combat/' + b.dataset.file); a.volume = vol.value / 100; playing.add(a); b.classList.add('playing');
+    a.onended = a.onerror = () => { playing.delete(a); b.classList.remove('playing'); };
+    a.play().catch(() => b.classList.remove('playing'));
+  });
+  document.getElementById('stop').onclick = () => { playing.forEach(a => a.pause()); playing.clear(); document.querySelectorAll('.playing').forEach(b => b.classList.remove('playing')); };
+  q.oninput = () => { const t = q.value.trim().toLowerCase(); document.querySelectorAll('.card').forEach(c => { c.hidden = !!t && !c.dataset.tags.includes(t); }); };
+})();
+</script>
+</body>
+</html>

@@ -13,7 +13,9 @@ class Context {
   decodeAudioData(){return deferDecode ? new Promise(r=>{deferDecode.resolve=r;}) : Promise.resolve({duration:90});}
 }
 // Sorteios fixos: as vozes opcionais (que tocam só de vez em quando) ficam de fora e as contas dos testes não variam.
+const stored=new Map();
 const sandbox={KT:{},Math:Object.assign(Object.create(Math),{random:()=>.99}),AudioContext:Context,performance:{now:()=>30000},setTimeout:()=>1,clearTimeout(){},
+  localStorage:{getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)},
   fetch:async url=>{requests.push(url);return {ok:true,json:async()=>url.includes('/combat/')?combatManifest:['hero-akira-ult'],arrayBuffer:async()=>new ArrayBuffer(8)};}};
 vm.runInNewContext(main.slice(0,main.indexOf('  // Caixa de diálogo'))+'globalThis.Sound=SoundEngine;})();',sandbox);
 const tick=()=>new Promise(setImmediate);
@@ -38,20 +40,23 @@ const tick=()=>new Promise(setImmediate);
   sound.setScene({kind:'village',theme:'forest'}); await tick(); assert.equal(sound.scene,'city');
   const citySources=[...sound.musicSources]; sound.setScene({kind:'hunt',theme:'forest'});await tick();
   assert.ok(citySources.every(s=>s.stopped),'cidade não toca fora da cidade');
-  const before=requests.length;await sound.voice('npc-renji-0');assert.equal(requests.length,before,'não requisitar fala de morador');
-  await sound.voice('hero-akira-ult');assert.ok(sound.speaker?.started);
-  const voices=[],playVoice=sound.voice;sound.voice=id=>voices.push(id);
-  sound.fx({type:'cast'},{sprite:'akira',side:'hero',uid:'skill-without-voice'});
-  sound.fx({type:'cast',ult:true},{sprite:'erik',side:'hero',uid:'ult-without-voice'});
-  await tick();assert.equal(voices.length,0,'skills e ultimates mantêm efeitos sem vozes');sound.voice=playVoice;sound.stopFx();
+  // Nenhuma fala: o jogo só toca gravações de efeitos (sem vozes sintéticas de herói, chefe ou morador).
+  assert.equal(typeof sound.voice,'undefined','sem falas geradas');assert.ok(!requests.some(u=>u.includes('/voices/')),'nenhuma fala requisitada');
+  sound.fx({type:'cast'},{sprite:'akira',side:'hero',uid:'skill'});sound.fx({type:'cast',ult:true},{sprite:'erik',side:'hero',uid:'ult'});await tick();
+  assert.ok(!requests.some(u=>/voice-/.test(u)),'habilidades e ultimates sem voz por cima');sound.stopFx();
+  // Mesa de volumes: geral, música e efeitos, guardados no aparelho.
+  sound.setVolume('music',.5);assert.equal(sound.music.gain.value,.16*.5,'música obedece ao volume');
+  sound.setVolume('sfx',.25);assert.equal(sound.sfx.gain.value,.25);sound.setVolume('master',.5);assert.equal(sound.master.gain.value,.25);
+  assert.deepEqual(JSON.parse(stored.get('mv_audio')),{master:.5,music:.5,sfx:.25},'volumes guardados');
+  assert.deepEqual({...new sandbox.Sound().vol},{master:.5,music:.5,sfx:.25},'volumes voltam ao reabrir');
+  sound.setVolume('music',1);sound.setVolume('sfx',1);sound.setVolume('master',1);
   await sound.combat({type:'attack'},{sprite:'mob',side:'enemy'});assert.equal(sound.fxSources.size,1);
   sound.stopFx();
   await sound.prepare([{sprite:'erik'},{sprite:'akira'},{sprite:'aurelia'},{sprite:'warden'}]);
   const ready=[...sound.buffers.keys()].filter(k=>k.includes('/combat/')&&!k.includes('/event-'));
   for(const sprite of ['erik','akira','aurelia','warden'])for(const event of ['attack','skill','ult'])assert.ok(ready.includes(`assets/audio/combat/${sprite}-${event}.mp3`),`${sprite} ${event} na memória`);
-  assert.ok(ready.some(k=>k.includes('/voice-erik-')),'vozes da equipe na memória');
   await sound.prepare([{sprite:'erik'},{sprite:'fox_bog',side:'enemy'},{sprite:'eclipse',side:'enemy'}]);
-  const field=[...sound.buffers.keys()];assert.ok(field.includes('assets/audio/combat/fam-fox-attack.mp3')&&field.includes('assets/audio/combat/boss-eclipse-roar.mp3'),'sons da família do monstro e do chefe em campo');
+  const field=[...sound.buffers.keys()];assert.ok(field.includes('assets/audio/combat/fam-fox-attack.mp3')&&field.includes('assets/audio/combat/mob-fox_bog-v.mp3')&&field.includes('assets/audio/combat/mob-eclipse-r.mp3'),'golpe da família, voz da criatura e rugido do chefe em campo');
   assert.ok(!field.includes('assets/audio/combat/akira-attack.mp3'),'quem saiu de campo sai da memória');
   sound.tone=sound.noise=sound.chord=()=>{throw new Error('Combate não pode usar bipes sintéticos');};
   for(const [fx,event]of [[{type:'attack'},'enemyAttack'],[{type:'cast',enemy:true},'enemyCast'],[{type:'damage',side:'hero'},'damage'],[{type:'damage',side:'enemy',crit:true},'crit'],...['burst','heal','death','bossWindup','bossBurst','levelUp','reward'].map(type=>[{type},type])]){
@@ -70,25 +75,25 @@ const tick=()=>new Promise(setImmediate);
   await sound.combat({type:'attack'},{sprite:'akira',uid:'overflow'});assert.equal(sound.fxSources.size,10);
   const beforeUlt=[...sound.fxSources];await sound.combat({type:'cast',ult:true},{sprite:'akira',uid:'priority'});await tick();
   assert.equal(sound.fxSources.size,10);assert.ok(beforeUlt.some(s=>s.stopped),'ultimate tem prioridade sobre ataques');
-  // Monstro conhecido: golpe da família, no tom da criatura.
-  sound.stopFx();const nSrc=sources.length;await sound.combat({type:'enemyAttack'},{sprite:'golem_elder',side:'enemy',uid:'g1'});
-  assert.ok(requests.includes('assets/audio/combat/fam-golem-attack.mp3'));assert.ok(Math.abs(sources[nSrc].playbackRate.value-combatManifest.creatures.golem_elder[1])<.08,'tom próprio da criatura');
+  // Monstro conhecido: golpe da família; a dor e a morte são as gravações da própria criatura.
+  sound.stopFx();await sound.combat({type:'enemyAttack'},{sprite:'golem_elder',side:'enemy',uid:'g1'});
+  assert.ok(requests.includes('assets/audio/combat/fam-golem-attack.mp3'));
+  sound.fx({type:'damage',side:'enemy',crit:true},{sprite:'golem_elder',side:'enemy',uid:'g2'});sound.fx({type:'death'},{sprite:'golem_elder',side:'enemy',uid:'g3'});await tick();
+  assert.ok(requests.includes('assets/audio/combat/mob-golem_elder-h.mp3')&&requests.includes('assets/audio/combat/mob-golem_elder-d.mp3'),'dor e morte da criatura');
   // Eventos novos da luta e a interface.
   for(const type of ['guard','guardHit','parry','dodge','break','defend','turn','strike','shield','heroDown','revive','chain','finale','potion']){sound.fx({type},{sprite:'erik',side:'hero',uid:type});await tick();assert.ok(requests.includes(`assets/audio/combat/${combatManifest.events[type]}`),`som de ${type}`);}
   sound.stopFx();
   sound.setScene({kind:'village'});await tick();assert.equal(sound.fxSources.size,0);
   await sound.combat({type:'attack'},{sprite:'erik',uid:'city'});assert.equal(sound.fxSources.size,0,'nenhum efeito de combate na cidade');
   sound.ui('uiClick');await tick();assert.equal(sound.fxSources.size,1,'a interface tem som também na cidade');sound.stopFx();
-  await sound.enable(false);assert.equal(sound.master.gain.value,0);assert.equal(sound.musicSources.size,0);assert.equal(sound.speaker,null);
+  await sound.enable(false);assert.equal(sound.master.gain.value,0);assert.equal(sound.musicSources.size,0);
   assert.equal(sound.fxSources.size,0);
   // Um carregamento atrasado nunca volta a tocar depois de silenciar.
   sound.buffers.clear();deferDecode={};
   await sound.enable(true);await tick();const pending=deferDecode;
   await sound.enable(false);pending.resolve({duration:90});await tick();
   assert.equal(sound.musicSources.size,0);assert.equal(sound.master.gain.value,0);
-  const ids=JSON.parse(fs.readFileSync(require('node:path').join(__dirname,'../assets/audio/voices/index.json'),'utf8'));
-  assert.ok(ids.every(id=>/^(hero|boss)-/.test(id)));
-  for(const id of ids)assert.ok(fs.statSync(require('node:path').join(__dirname,'../assets/audio/voices',id+'.mp3')).size>1000);
+  assert.ok(!fs.existsSync(require('node:path').join(__dirname,'../assets/audio/voices')),'falas antigas removidas');
   const manifest=JSON.parse(fs.readFileSync(require('node:path').join(__dirname,'../assets/audio/index.json'),'utf8'));
   for(const type of ['music','sfx'])for(const id of manifest[type])assert.ok(fs.statSync(require('node:path').join(__dirname,'../assets/audio',type,id+'.mp3')).size>1000);
   const crypto=require('node:crypto');const hashes=new Set();
@@ -100,17 +105,23 @@ const tick=()=>new Promise(setImmediate);
     assert.ok(file.length>3000);assert.ok(!hashes.has(hash),'efeito não pode ser cópia idêntica de outro herói');hashes.add(hash);
     assert.equal(combatManifest.files.find(f=>f.name===combatManifest.heroes[h.id][event]).sha256,hash);
   }
-  assert.equal(hashes.size,216);assert.equal(combatManifest.mix,'studio-v3');
-  // Cada criatura do jogo tem família de som e tom próprio; cada família tem golpe, magia e voz; cada herói tem voz.
-  const dir=require('node:path').join(__dirname,'../assets/audio/combat');
-  for(const e of Object.values(roster.KT.Data.enemies)){const c=combatManifest.creatures[e.sprite];assert.ok(c&&combatManifest.families[c[0]]?.attack&&c[1]>.5&&c[1]<1.3,`${e.sprite} sem som`);}
+  assert.equal(hashes.size,216);assert.equal(combatManifest.mix,'recorded-v1');assert.ok(!combatManifest.voices,'sem vozes de herói');
+  // Cada criatura do jogo tem voz, dor e morte só dela (os chefes, também rugido); cada família tem golpe e magia.
+  const dir=require('node:path').join(__dirname,'../assets/audio/combat'),own=new Set();
+  for(const e of Object.values(roster.KT.Data.enemies)){
+    const c=combatManifest.creatures[e.sprite];assert.ok(c&&combatManifest.families[c.f]?.attack&&c.v&&c.h&&c.d,`${e.sprite} sem som`);
+    if(e.boss)assert.ok(c.r,`${e.sprite} sem rugido`);
+    for(const k of ['v','h','d','r'])if(c[k])assert.ok(fs.statSync(require('node:path').join(dir,c[k])).size>1500,`${e.sprite} ${k}`);
+  }
+  for(const [sprite,c] of Object.entries(combatManifest.creatures)){const hash=combatManifest.files.find(f=>f.name===c.v).sha256;assert.ok(!own.has(hash),`voz de ${sprite} repetida de outra criatura`);own.add(hash);}
   for(const [fam,f] of Object.entries(combatManifest.families))for(const k of ['attack','cast'])assert.ok(fs.statSync(require('node:path').join(dir,f[k])).size>3000,`${fam} ${k}`);
-  for(const h of roster.KT.Data.roster){const v=combatManifest.voices[h.id];assert.ok(v&&v.a&&v.b&&v.h&&v.u,`${h.id} sem voz`);for(const f of Object.values(v))assert.ok(fs.statSync(require('node:path').join(dir,f)).size>2000);}
+  assert.ok(fs.readdirSync(dir).filter(f=>f.endsWith('.mp3')).every(f=>combatManifest.files.some(x=>x.name===f)),'nenhum arquivo solto na pasta');
+  assert.ok(/CC BY 4\.0/.test(fs.readFileSync(require('node:path').join(dir,'LICENSE.txt'),'utf8'))&&/JC Sounds/.test(fs.readFileSync(require('node:path').join(dir,'LICENSE.txt'),'utf8')),'crédito obrigatório da biblioteca CC-BY');
   for(const ev of ['uiClick','uiOpen','uiClose','summon','victory','defeat','step0'])assert.ok(combatManifest.events[ev],`evento ${ev}`);
   for(const file of combatManifest.files){
     assert.equal(file.channels,2,'efeitos em estéreo');
     const bytes=fs.readFileSync(require('node:path').join(__dirname,'../assets/audio/combat',file.name));
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),file.sha256);
   }
-  console.log('AUDIO_OK: trilhas por cena, golpes e vozes por herói, família e tom por criatura, eventos da luta e da interface');
+  console.log('AUDIO_OK: trilhas por cena, golpes gravados por herói, voz própria por criatura, eventos da luta e da interface, volumes');
 })().catch(e=>{console.error(e);process.exitCode=1;});

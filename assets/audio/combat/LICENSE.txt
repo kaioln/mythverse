@@ -1,12 +1,25 @@
-Sons de combate do Mythverse (assets/audio/combat)
+Sons de combate e de interface do Mythverse (assets/audio/combat)
 
-Todos os arquivos desta pasta foram produzidos para o projeto. Nenhuma gravação ou biblioteca de sons de terceiros
-é usada.
+Todos os arquivos desta pasta são GRAVAÇÕES de bibliotecas de uso livre, cortadas, empilhadas e niveladas por
+tools/sfx_pack.py. Não há som sintetizado nem voz gerada por inteligência artificial nesta pasta.
 
-- Efeitos (golpes, magias, impactos, guarda, aparo, interface, passos): síntese própria em camadas, feita por
-  tools/sfx_lab.py (numpy + FFmpeg).
-- Vozes (gritos de golpe, de dano e de especial dos heróis; rugidos e sons das criaturas e dos chefes): geradas por
-  inteligência artificial com a API de voz da OpenAI (tools/voice_gen.py) e tratadas em tools/sfx_lab.py.
-  Não são gravações de pessoas.
+Fontes e licenças
 
-O manifesto index.json lista cada arquivo com o SHA-256, a duração e o conjunto a que pertence.
+1. Fantasy SFX Pack Vol 1, de JC Sounds
+   Licença: Creative Commons Atribuição 4.0 (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/
+   Origem: https://opengameart.org/content/jc-sounds-fantasy-sfx-pack-vol-1
+   Crédito obrigatório: "JC Sounds". Os sons foram cortados, misturados com outros e tiveram a velocidade alterada.
+   Usado em: magias de fogo, gelo e raio, espadas, adagas, arco, cura, escudo mágico, teletransporte.
+
+2. RPG Sound Pack, de artisticdude
+   Licença: CC0 1.0 (domínio público), https://creativecommons.org/publicdomain/zero/1.0/
+   Origem: https://opengameart.org/content/rpg-sound-pack
+   Usado em: vozes das criaturas (ogro, gigante, fera, sombra, gosma, besouro), golpes no ar, moedas, frascos,
+   tecido, cota de malha, sons de interface.
+
+3. Impact Sounds, RPG Audio e Sci-Fi Sounds, de Kenney (www.kenney.nl)
+   Licença: CC0 1.0 (domínio público), https://creativecommons.org/publicdomain/zero/1.0/
+   Usado em: impactos (soco, placa, madeira, pedra, vidro), passos, facas, livros, lasers, explosões.
+
+O manifesto index.json lista cada arquivo com o SHA-256, a duração e o conjunto a que pertence. As gravações originais
+não ficam no repositório (pasta data/, ignorada pelo git); para refazer os sons, baixe os pacotes nas origens acima.
