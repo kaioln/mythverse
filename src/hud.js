@@ -44,7 +44,6 @@
       // Guarda e poções: no canto do palco no PC; no celular numa faixa larga logo abaixo dele (a Guarda pede um botão grande, ao alcance do polegar).
       const cons = document.querySelector('#consumables'); if (cons) { if (mob) vp?.after(cons); else if (cons.parentElement !== vp) vp?.appendChild(cons); cons.classList.toggle('below-stage', mob); }
       // Comando da vez do herói: no PC flutua no meio do palco, entre as duas equipes; no celular fica logo abaixo dele.
-      const lobby = document.querySelector('#lobby-bar'); if (lobby) { if (mob) vp?.after(lobby); else if (lobby.parentElement !== vp) vp?.appendChild(lobby); }
       const turn = document.querySelector('#turn-cmd'); if (turn) { if (mob) vp?.after(turn); else if (turn.parentElement !== vp) vp?.appendChild(turn); turn.classList.toggle('below-stage', mob); } };
     placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
     // Combate só com o essencial: PREPARAR, COMANDO, VEL e CIDADE à vista; AFK e AVANÇO no botão "Mais".
