@@ -18,7 +18,7 @@ Este documento explica como o ouro, os itens, os materiais e as cartas entram e 
 | Caçada (inimigo comum) | ouro, EXP, item (Comum 86% · Raro 13,9% · Épico 0,1% · Lendário 0,004%) | Capítulo I: teto Épico |
 | Elite / Guardião | item melhor (Épico ~0,5%, Lendário 0,02%), Aço Estelar raro | variantes Alfa garantem item |
 | Chefe de andar | Raro/Épico (5%)/Lendário (0,3%), Aço Estelar 12%, Oricalco 1% | |
-| Chefe de região | Épico 27%, Lendário 2,5%, 1 a 2 Aço Estelar, Oricalco 12% + 8% por dificuldade, Adamantina no Pesadelo+ | carta MVP 1 em 900 |
+| Chefe de região | troféu: Épico garantido, Lendário 5% (garantido na 1ª vitória de cada dificuldade); mais 1 item (+1 por dificuldade) com Épico 27% e Lendário 2,5%; 2 a 3 Aço Estelar, Oricalco 25% + 10% por dificuldade, Adamantina no Pesadelo+ | carta MVP 1 em 900 |
 | Invasão Mundial | ouro, cristais, 1 item garantido (chance de Lendário), Aço Estelar, Oricalco, chance de Adamantina, de mítico e da carta do chefe; tudo escala com a dificuldade e com a derrubada do chefe | 2 janelas por dia, 1 tentativa por dia |
 | Fenda Abissal | Aço Estelar; Oricalco do andar 10; Adamantina do andar 25 | mutação por andar |
 | Expedições | ouro, Tamahagane, Éter, itens comuns/raros, EXP | heróis fora da equipe; correm no servidor |
@@ -50,17 +50,27 @@ Este documento explica como o ouro, os itens, os materiais e as cartas entram e 
 - **Painel `/admin/`**: ouro total em circulação e maiores estoques, Gemas em circulação, depósitos, saques e taxas da semana, volume do mercado por moeda (24 h e 7 dias), itens mais negociados e a lista de alertas. Com esses números dá para ajustar taxas e drops antes que a economia desande.
 - Todos os valores acima são configuráveis por variável de ambiente (`.env.example`).
 
-## Números do simulador (10 h, semente 7, jogador atento)
+## Números do simulador (10 h, semente 7)
+
+Medição de 2026-10-02 (`node tools/sim.js 10 7`). O jogador do simulador é cauteloso: só avança de estágio quando o Poder
+da equipe alcança o recomendado, não reinvoca heróis melhores e joga tudo no AUTO. Um jogador de verdade avança antes.
 
 | Hora | Ouro por hora | Abates por hora | Onde |
 |---|---|---|---|
-| 1 | ~55 mil | ~1.230 | Bosque 12 |
-| 3 | ~194 mil | ~2.020 | Templo |
-| 6 | ~322 mil | ~3.470 | chefe do Capítulo I vencido |
-| 8 | ~492 mil | ~1.600 | Costa das Marés |
-| 10 | ~736 mil | ~2.100 | Costa das Marés 7 |
+| 1 | ~34 mil | ~1.080 | Bosque 6 |
+| 3 | ~51 mil | ~1.560 | Bosque 7, Templo andar I |
+| 6 | ~80 mil | ~1.920 | Bosque 9, Templo andar II |
+| 8 | ~99 mil | ~1.740 | Bosque 9 |
+| 10 | ~92 mil | ~1.640 | Bosque 10 a 11 (equipe no nível 27) |
 
-Itens em 10 h: ~1.000 comuns, ~290 raros, ~8 épicos, 2 conjuntos e ~1 lendário, vindo do chefe. **Nenhum mítico** nos mapas iniciais: míticos só caem onde a fonte já permite Lendário (chefes e Capítulo II em diante). **0 a 1 carta** em 10 h. **~48 Aço Estelar** e **1 Oricalco**. Só a equipe ganha EXP de combate; o banco evolui apenas em Expedições.
+Itens em 10 h: ~690 comuns, ~210 raros, 4 épicos, 3 peças de conjunto e nenhum lendário (o chefe do Capítulo I ainda não
+foi alcançado). **Nenhum mítico** nos mapas iniciais: míticos só caem onde a fonte já permite Lendário (chefes e Capítulo II
+em diante). **Nenhuma carta** em 10 h. **~31 Aço Estelar** e **2 Oricalco**. Só a equipe ganha EXP de combate; o banco
+evolui apenas em Expedições.
+
+A tabela antiga (Bosque 12 na primeira hora, chefe do Capítulo I na sexta) era de antes da calibração dos inimigos por
+combate real (2026-09-28): desde então cada estágio do Bosque sobe ~3 níveis de inimigo e a equipe precisa acompanhar.
+O ritmo é o mesmo antes e depois do combate por turnos (medido nas duas versões).
 
 **223 mil de ouro depois de algumas horas está dentro do esperado**: no fim do Capítulo I o jogo rende de 250 a 320 mil por hora, e a maior parte vai para construções, treino e refino.
 

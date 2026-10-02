@@ -32,7 +32,7 @@ pickTeam();
 const talentPath = ['root','b1','b1','b1','a1','a1','g1','g1','g2','g2','b2','b2','b4','b4','b3','b3','bN1','a2','a2','g3','g3','b5','b5','bN2','b6','e1','e1','g4','g4','gN1'];
 function manage() {
   const ctx = engine.ctx();
-  engine.heroes.forEach(r => { engine.autoBuild(r.uid); engine.autoEquip(r.uid); }); // o simulador escolhe equipamentos como um jogador atento
+  engine.heroes.forEach(r => { engine.autoAttr(r.uid); engine.autoEquip(r.uid); }); // o simulador escolhe equipamentos como um jogador atento
   // Desmontar lixo.
   engine.salvageMany('rare');
   // Gastar ouro.

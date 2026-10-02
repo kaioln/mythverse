@@ -33,6 +33,10 @@
   const BEAT = { attack:.36, enemyAttack:.34, skill:.72, ult:1.1, enemySkill:.62, windup:.85, strike:.9, burst:.7, spawn:.6, defend:.35 };
   // Defender (comando na vez do herói, modo MANUAL): abre mão do golpe, corta o dano recebido até a próxima vez dele e ganha energia.
   const DEFEND = { cut:.5, energy:15 };
+  // Dano que um inimigo devolve a quem bateu (espinhos, escamas): por golpe, no máximo esta fração da vida do herói, e
+  // nunca nocauteia. Sem o teto, a soma devolvida era uma fração fixa da vida do INIMIGO (num chefe, várias vezes a vida
+  // da equipe inteira) e crescia com o dano do jogador: quanto mais forte o time, mais depressa ele se matava.
+  const THORN_CAP = .005;
   // Economia: chefes dão espólio completo só nas primeiras vitórias do dia (como o bloqueio de raide do WoW);
   // Oricalco e Adamantina de fontes repetíveis (Fenda, masmorras, guardiões) têm teto diário.
   const BOSS_LOOT_PER_DAY = 3;
@@ -1230,8 +1234,9 @@
       const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em, broken:tg.broken > 0 });
       this.addBreak(src, tg, final, o.kind, em);
       if (parry) this.onParry(src); else if (guarded) this.emit('onFx', { type:'guardHit', uid:tg.uid });
-      if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) this.applyRawDamage(src, Math.max(1, Math.round(final * tg.thorns)), tg, { kind:'thorns', color:'#d8ad6a' });
-      if (inn?.reflect && src.side === 'hero' && o.kind !== 'dot' && src.alive && final > 0) this.applyRawDamage(src, Math.max(1, Math.round(final * inn.reflect)), tg, { kind:'thorns', color:'#4fb3ff' });
+      const back = frac => { const v = Math.max(1, Math.round(final * frac)); return src.side === 'hero' ? Math.min(v, Math.max(1, Math.round(src.maxHp * THORN_CAP)), Math.max(0, Math.ceil(src.hp + src.shield) - 1)) : v; };
+      if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) { const v = back(tg.thorns); if (v > 0) this.applyRawDamage(src, v, tg, { kind:'thorns', color:'#d8ad6a' }); }
+      if (inn?.reflect && src.side === 'hero' && o.kind !== 'dot' && src.alive && final > 0) { const v = back(inn.reflect); if (v > 0) this.applyRawDamage(src, v, tg, { kind:'thorns', color:'#4fb3ff' }); }
       const ls = this.stat(src, 'lifesteal');
       if (ls > 0 && o.kind !== 'dot') this.heal(src, src, final * ls, true);
       if (crit) this.fire(src, 'onCrit', { target:tg });
@@ -1403,13 +1408,18 @@
     }
     bossClear() {
       const z = this.zone, p = this.state.progress[z.id], tier = this.opts.tier || 0, tr = D.bossTiers[tier];
-      const firstKill = (p.kills || 0) === 0, loot = firstKill || this.bossLootLeft(z.id, tier) > 0;
+      const firstKill = (p.kills || 0) === 0, firstTier = !(p.tierKills[tier] > 0), loot = firstKill || this.bossLootLeft(z.id, tier) > 0;
       p.kills = (p.kills || 0) + 1; p.tierKills[tier] = (p.tierKills[tier] || 0) + 1;
       this.state.stats.bossKills++;
       if (loot) this.state.bossLoot.n[`${z.id}:${tier}`] = (this.state.bossLoot.n[`${z.id}:${tier}`] || 0) + 1;
       const ilvl = itemLevelFor(z, this.opts);
-      const items = loot ? [this.drop('boss', z, ilvl, this.mod('drop') + tier * .5)] : [];
-      if (loot && tier > 0) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
+      // Espólio: o troféu (épico garantido; lendário na primeira vitória de cada dificuldade) e mais 1 item, +1 por
+      // dificuldade. Antes era um item só no Normal, 70% das vezes raro: a luta mais difícil do jogo não pagava o esforço.
+      const items = [];
+      if (loot) {
+        items.push(firstTier ? I.makeItem({ ilvl, rarity:'legendary', prefer:this.preferWT() }) : this.drop('trophy', z, ilvl, this.mod('drop') + tier * .5));
+        for (let k = 0; k <= tier; k++) items.push(this.drop('boss', z, ilvl, .5 + tier * .5));
+      }
       if (loot) this.dropMats('boss');
       else this.emit('onToast', `<b>Espólio de hoje esgotado</b> contra ${esc(D.enemies[z.enemy].name.split(',')[0])}: a vitória rende só ouro e EXP até a meia-noite (Brasília).`);
       const rewards = { gold:Math.round(2000 * goldPow(zonePower(z, this.opts), 1) / 3 * tr.reward * (loot ? 1 : .4)), crystal:loot ? Math.round((firstKill ? 80 : 6) * tr.reward) : 0, keys:!loot ? 0 : z.id === 'boss_event' ? (U.random() < .5 ? 1 : 0) : firstKill ? 1 : (U.random() < .08 * tr.reward ? 1 : 0), items };
@@ -1542,7 +1552,7 @@
       if (src === 'guardian' && r() < (alpha ? .12 : .008)) give('star', 1);
       if (src === 'guardian' && r() < .0005) give('ori', 1);
       if (src === 'floorBoss') { if (r() < .12) give('star', 1); if (r() < .01) give('ori', 1); }
-      if (src === 'boss') { give('star', 1 + (r() < .5 ? 1 : 0)); if (r() < .12 + tier * .08) give('ori', 1); if (tier >= 1 && r() < .02 * tier) give('adam', 1); }
+      if (src === 'boss') { give('star', 2 + (r() < .5 ? 1 : 0)); if (r() < .25 + tier * .10) give('ori', 1); if (tier >= 1 && r() < .02 * tier) give('adam', 1); }
       if (src === 'chest' && r() < .03) give('star', 1);
       if (src === 'rift') { if (r() < .06) give('star', 1); if (deep >= 10 && r() < .02) give('ori', 1); if (deep >= 25 && r() < .004) give('adam', 1); }
       Object.entries(got).forEach(([k, n]) => this.emit('onToast', `Material raro: <b>+${n} ${esc(Object.values(I.materials).find(x => x.key === k)?.name || k)}</b>!`));
@@ -2567,6 +2577,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { GUARD, MANUAL, BEAT, DEFEND, guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { GUARD, MANUAL, BEAT, DEFEND, THORN_CAP, guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

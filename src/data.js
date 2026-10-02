@@ -282,7 +282,7 @@
         { at:.35, text:'Fúria do Eclipse, ataques acelerados', buff:{ spd:.35, atk:.2 }, specials:[{ name:'Eclipse Total', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.6, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Marca da Lua Negra', cd:10, windup:1.2, eff:[{ k:'st', s:'mark', d:8, v:.4, ch:1, to:'back' }, { k:'dmg', m:3.0, to:'back' }] }] }
       ] }),
     boss_tide:    E({ name:'Mizuchi, Dragão Abissal', sprite:'dragon', el:'Água', role:'Chefe', boss:true, hp:180000, atk:175, def:130, spd:.8, crit:.1, xp:2600, gold:[2600, 3400], enrage:160,
-      innate:{ reflect:.12, text:'Escamas da Maré: devolve 12% do dano de cada golpe direto a quem bateu. Dano contínuo (queimadura, veneno, sangramento) não é refletido.' }, desc:'O dragão das marés. Seu Tsunami atinge todos, sua Maré Curativa o regenera e, no fim, ele afoga a retaguarda.',
+      innate:{ reflect:.12, text:'Escamas da Maré: devolve 12% do dano de cada golpe direto a quem bateu (no máximo 0,5% da vida do herói por golpe, e nunca nocauteia). Dano contínuo (queimadura, veneno, sangramento) não é refletido.' }, desc:'O dragão das marés. Seu Tsunami atinge todos, sua Maré Curativa o regenera e, no fim, ele afoga a retaguarda.',
       skill:{ name:'Mordida Abissal', cd:6, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'armorBreak', d:6, v:.3, ch:1, to:'tgt' }] },
       phases:[
         { at:1,  text:'Maré baixa', specials:[{ name:'Tsunami', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.2, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }] },

@@ -518,9 +518,12 @@
   }
   // Tabela de drops, POR ITEM que cai (a chance de cair algum item fica no motor).
   // Resultado por abate de monstro comum (3% de item): raro ~0,42%, épico ~0,003%, lendário ~0,0001% (só capítulo II+).
-  const DROP_TABLES = { normal:[86, 13.9, .1, .004], elite:[74, 25.5, .5, .02], guardian:[72, 27.5, .5, .02], floorBoss:[0, 94.7, 5, .3], boss:[0, 70.5, 27, 2.5], chest:[50, 47.9, 2, .1] };
+  const DROP_TABLES = { normal:[86, 13.9, .1, .004], elite:[74, 25.5, .5, .02], guardian:[72, 27.5, .5, .02], floorBoss:[0, 94.7, 5, .3], boss:[0, 70.5, 27, 2.5], trophy:[0, 0, 95, 5], chest:[50, 47.9, 2, .1] };
+  // source 'trophy': o troféu do chefe (o primeiro item de cada vitória com espólio), épico garantido. Em todo o resto
+  // (teto de raridade, míticos, peças de conjunto) ele vale como a fonte 'boss'.
   function rollDrop(source, zone, ilvl, luck = 0, prefer = null) {
     const w = (DROP_TABLES[source] || DROP_TABLES.normal).slice();
+    if (source === 'trophy') source = 'boss';
     luck = Math.min(luck, 3);
     if (luck) { w[1] *= 1 + luck * .3; w[2] *= 1 + luck * .5; w[3] *= 1 + luck * .6; }
     const cap = RAR_ORDER.indexOf(rarityCap(zone, source, ilvl));

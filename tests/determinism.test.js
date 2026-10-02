@@ -130,6 +130,12 @@ ok(out.ok && st.stats.ults < 20, 'ultimates forjadas sem energia são ignoradas'
   ok(late > parried * 1.8 && (gs.stats.parries || 0) === before + 1, 'guarda atrasada não vira aparo');
   g.guardT = 0; const open = avg({ kind:'skill', special:true });
   ok(open > late * 1.6, 'sem guarda o golpe preparado entra inteiro');
+  // Dano devolvido por inimigos (espinhos, escamas de chefe): teto por golpe e nunca nocauteia.
+  { const th = foe.thorns; foe.thorns = 50; hero.hp = hero.maxHp; hero.shield = 0; foe.hp = foe.maxHp; foe.alive = true;
+    g.hit(hero, foe, .2, { kind:'skill' });
+    ok(hero.maxHp - hero.hp <= Math.round(hero.maxHp * client.State.THORN_CAP) && hero.hp < hero.maxHp, `dano devolvido limitado a 0,5% da vida por golpe (${hero.maxHp - hero.hp} de ${hero.maxHp})`);
+    hero.hp = 1; foe.hp = foe.maxHp; foe.alive = true; g.hit(hero, foe, .2, { kind:'skill' });
+    ok(hero.alive && hero.hp >= 1, 'dano devolvido nunca nocauteia'); foe.thorns = th; hero.hp = hero.maxHp; foe.hp = foe.maxHp; foe.alive = true; }
   // Vez do herói no comando MANUAL: com técnica pronta a luta espera a ordem; atacar segue, defender corta o dano.
   g.guardCd = 0; g.awaiting = null; g.party.forEach(u => { u.skillCd = 0; u.atkCd = 5; u.go = false; u.hp = u.maxHp; }); g.enemies.forEach(e => { e.hp = e.maxHp; e.alive = true; e.atkCd = 50; e.skillCd = 50; });
   hero.atkCd = 0; g.tick();
