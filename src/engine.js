@@ -24,8 +24,8 @@
   // hora de um ataque preparado (os de ⚠), vira APARO: corta 80% do dano, anula atordoamento/congelamento/silêncio
   // daquele golpe, abala a postura de quem atacou e devolve energia. O modo AUTO não usa a guarda.
   const GUARD = { time:1.1, perfect:.4, cd:6, cut:.5, perfectCut:.8, breakHit:30, energy:10 };
-  // Habilidade ou ultimate comandada à mão rende mais que a automática.
-  const MANUAL = { ult:1.25, skill:1.15 };
+  // Ultimate comandada à mão rende mais que a automática; nas habilidades e nos golpes o bônus vem do golpe cronometrado (TIMED).
+  const MANUAL = { ult:1.25, skill:1 };
   // Ritmo de RPG: a luta é uma fila de ações, uma por vez. Ao vivo, depois de cada ação o relógio da luta espera a
   // animação dela (BEAT: segundos reais na velocidade x1; o bote de um golpe preparado tem tempo fixo, é a janela do
   // Aparo) e o tempo em que ninguém age corre depressa. No AFK, no TURBO, no servidor e nas simulações não há espera:
@@ -37,6 +37,20 @@
   // nunca nocauteia. Sem o teto, a soma devolvida era uma fração fixa da vida do INIMIGO (num chefe, várias vezes a vida
   // da equipe inteira) e crescia com o dano do jogador: quanto mais forte o time, mais depressa ele se matava.
   const THORN_CAP = .005;
+  // Pontos de Técnica (PT): reserva da equipe, de 0 a SP.max. Começa a luta com SP.start; ganha 1 por onda nova, por
+  // golpe básico, por defesa, por Quebra e por Aparo. Habilidade gasta o custo dela. worth: quanto 1 PT vale para a
+  // escolha do AUTO (em golpes); thrift: teto da chance do atributo Economia devolver 1 PT.
+  const SP = { max:6, start:3, worth:.4, thrift:.6 };
+  const TURN = 1.5;          // espera entre uma vez e a próxima (dividida pela velocidade de quem age)
+  // Resistência: todo inimigo tem pontos (pelo porte); cada ação tira pontos uma vez por alvo (kind), em dobro na
+  // fraqueza e pela metade no elemento resistido. Zerou: QUEBRA (atordoado TOUGH.time s, +35% de dano recebido, dano de
+  // quebra de burst × vida, +1 PT). Ao se recompor, o total cresce (grow).
+  const TOUGH = { normal:4, elite:10, mini:16, boss:30, world:40, rival:10, grow:1.3, time:4, kind:{ basic:1, skill:2, ult:3 }, weak:2, resist:.5, parry:3, burst:{ base:.06, mini:.03, boss:.02, world:.01 } };
+  // Golpe cronometrado (comando MANUAL): a ordem confirmada na faixa dourada (2) ou perto dela (1) rende mais.
+  const TIMED = { good:1.12, perfect:1.3 };
+  const REACT = { time:8 };                       // duração da marca elemental
+  const ALLOUT = { mult:1, pierce:.2 };           // Assalto Total: cada herói golpeia cada inimigo
+  const NO_COUNTER = new Set(['dot', 'thorns', 'reaction', 'break', 'counter']);
   // Economia: chefes dão espólio completo só nas primeiras vitórias do dia (como o bloqueio de raide do WoW);
   // Oricalco e Adamantina de fontes repetíveis (Fenda, masmorras, guardiões) têm teto diário.
   const BOSS_LOOT_PER_DAY = 3;
@@ -493,7 +507,7 @@
     applyInput(inp) {
       switch (inp.k) {
         case 'ult': return this.castUlt(Number(inp.a), true);
-        case 'skill': return this.castSkillManual(Number(inp.a));
+        case 'skill': return this.castSkillManual(inp.a);
         case 'guard': return this.guard(inp.a);
         case 'act': return this.command(String(inp.a));
         case 'mode': return this.setMode(String(inp.a));
@@ -501,7 +515,7 @@
         case 'elixir': return this.useElixir();
         case 'focus': return this.setFocus(String(inp.a || '')) !== undefined;
         case 'choice': { const c = this.pendingChoice; if (!c || !c.options.some(o => o.id === inp.a)) return false; this.resolveChoice(c, inp.a, false); return true; }
-        case 'auto': this.state.settings.auto = !!inp.a; return true;
+        case 'auto': this.state.settings.auto = !!inp.a; if (!this.manualTurn()) this.awaiting = null; return true;
         case 'advance': this.state.settings.autoAdvance = !!inp.a; return true;
         case 'afk': this.setAfk(!!inp.a); return true;
       }
@@ -535,6 +549,7 @@
       this.wave = 0; this.room = 0; this.bossPhase = 0; this.ultChain = 0; this.lastUltAt = -99; this.lastUltHero = -1; this.chainBonus = 0; this.stageMods = {}; this.encounterUsed = false; this.potionCd = 0; this.elixirCd = 0;
       this.guardT = 0; this.guardAge = 0; this.guardCd = 0; this.lastParry = -1; this.parryNow = false;
       this.holdT = 0; this.awaiting = null; this.acted = false;
+      this.sp = SP.start; this.allOut = false; this.allOutSpent = false;
       if (this.zone.kind === 'arena') this.party.forEach(u => { u.maxHp = Math.round(u.maxHp * D.PVP.hpParty); u.hp = u.maxHp; });
       this.nextWave();
     }
@@ -544,7 +559,7 @@
       const hooks = {}; const addHooks = h => Object.entries(h || {}).forEach(([k, v]) => { (hooks[k] = hooks[k] || []).push(v); });
       addHooks(t.passive.hooks); st.hooks.forEach(addHooks);
       return { uid:rec.uid, recUid:rec.uid, side:'hero', slot, row:slot < 2 ? 'front' : 'back', name:t.name, sprite:t.sprite, el:t.el, cls:t.cls, color:t.color, template:t,
-        st, hooks, maxHp:st.maxHp, hp:st.maxHp, shield:0, shieldT:0, energy:Math.min(ULT_COST, st.startNrg), atkCd:U.rand(.2, .7), skillCd:t.skill.cd * .45, skillHeld:0, ultHeld:0,
+        st, hooks, maxHp:st.maxHp, hp:st.maxHp, shield:0, shieldT:0, energy:Math.min(ULT_COST, st.startNrg), atkCd:U.rand(.2, .7), skills:t.skills.map((def, k) => ({ k, def, tcd:0, locked:rec.level < def.lv })), inTurn:false, ultHeld:0,
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:(st.thorns || 0) + (hooks.thorns ? hooks.thorns.reduce((a, b) => a + b, 0) : 0), cleave:hooks.cleave ? Math.max(...hooks.cleave) : 0, level:rec.level };
     }
 
@@ -555,9 +570,11 @@
       if (!this.state.codex.enemies.includes(id)) this.state.codex.enemies.push(id);
       const u = { uid:U.uid('en'), side:'enemy', id, name:t.name, sprite:t.sprite, el:t.el, cls:t.role, color:D.elements[t.el].color, t,
         st:{ atk:t.atk * (t.atkMul || 1) * P * atkMod, baseAtk:t.atk * P, def:t.def * P, spd:t.spd, crit:t.crit || .05, critDmg:1.5, dodge:t.dodge || 0, lifesteal:t.lifesteal || 0, dr:0, regen:t.regen || 0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, elem:0, ultDmg:0 },
-        maxHp:Math.round(t.hp * (t.hpMul || 1) * P), hp:Math.round(t.hp * (t.hpMul || 1) * P), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
+        maxHp:Math.round(t.hp * (t.hpMul || 1) * P * D.ENEMY_HP), hp:Math.round(t.hp * (t.hpMul || 1) * P * D.ENEMY_HP), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:t.thorns || 0, elite:!!t.elite, boss:!!t.boss, miniboss:!!t.miniboss, treasure:!!t.treasure, level:lvl, P,
-        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, innate:t.innate || null, ...extra };
+        specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, tough:0, toughMax:0, broken:0, breaks:0, elMark:null, nextTgt:null, innate:t.innate || null, ...extra };
+      u.toughMax = u.tough = t.treasure ? 0 : u.worldBoss ? TOUGH.world : t.boss ? TOUGH.boss : t.miniboss ? TOUGH.mini : t.elite || u.guardian ? TOUGH.elite : TOUGH.normal;
+      u.weakCls = t.weak || D.FAMILY_WEAK[D.familyOf(id)] || null;
       const zk = this.zone?.kind;
       if ((zk === 'hunt' || zk === 'dungeon') && !t.treasure && !t.boss) { const th = D.threat(lvl, zk), zm = this.zone.threat || 1; u.maxHp = u.hp = Math.round(u.maxHp * th.hp * zm); u.st.atk *= th.atk * zm; u.st.baseAtk *= th.atk * zm; }
       if (t.specials) u.specials = t.specials.map(s => ({ ...s, t:s.cd * .6 }));
@@ -639,8 +656,9 @@
         this.bossTimer = 0; this.enrageStacks = 0;
         this.emit('onWave', { label:this.enemies[0].name, detail:`Dificuldade: ${D.bossTiers[this.opts.tier || 0].name}`, boss:true });
       }
-      this.phase = 'fight';
-      this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; u.go = false; u.defend = false; if (u.alive) this.fire(u, 'start', {}); });
+      this.phase = 'fight'; this.allOut = false; this.allOutSpent = false;
+      if ((z.kind === 'hunt' && this.wave > 1) || ((z.kind === 'dungeon' || z.kind === 'rift') && this.room > 1)) this.addSp(1);   // fôlego de onda nova
+      this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; u.inTurn = false; u.defend = false; if (u.alive) this.fire(u, 'start', {}); });
       this.beat('spawn');   // os inimigos entram em campo antes da primeira ação
     }
 
@@ -652,11 +670,11 @@
       const st = { atk:num(h.st.atk, 100), baseAtk:num(h.st.atk, 100), def:num(h.st.def), spd:num(h.st.spd, 1), crit:U.clamp(num(h.st.crit, .05), 0, .85), critDmg:num(h.st.critDmg, 1.5), dodge:U.clamp(num(h.st.dodge), 0, .6),
         lifesteal:num(h.st.lifesteal), dr:U.clamp(num(h.st.dr), -.5, .6), regen:num(h.st.regen), healPow:num(h.st.healPow), dot:num(h.st.dot), boss:0, pierce:num(h.st.pierce), skill:num(h.st.skill), nrg:0, cdr:num(h.st.cdr), elem:num(h.st.elem), ultDmg:num(h.st.ultDmg), breakPow:0, chainPow:0 };
       const hp = Math.max(1, Math.round(num(h.maxHp, 1000) * D.PVP.hpRival));
-      const pseudo = { name:t.name, role:t.cls, skill:{ name:t.skill.name, cd:t.skill.cd, eff:t.skill.eff }, specials:[{ name:t.ult.name, cd:D.PVP.ultCd + slot * 1.5, windup:D.PVP.ultWindup, eff:t.ult.eff }] };
+      const pseudo = { name:t.name, role:t.cls, skill:{ name:t.skill.name, cd:t.skill.cd, eff:t.skill.eff }, skills:t.skills.filter(k => num(h.level, 1) >= k.lv).map(k => ({ name:k.name, cd:k.cd, eff:k.eff })), specials:[{ name:t.ult.name, cd:D.PVP.ultCd + slot * 1.5, windup:D.PVP.ultWindup, eff:t.ult.eff }] };
       const hooks = {}; [t.passive.hooks, ...(Array.isArray(h.hooks) ? h.hooks : [])].forEach(hk => Object.entries(hk || {}).forEach(([k, v]) => { if (k !== 'stats' && k !== 'aura') (hooks[k] = hooks[k] || []).push(v); }));
       const u = { uid:`rv_${slot}_${t.id}`, side:'enemy', id:t.id, name:t.name, sprite:t.sprite, el:t.el, cls:t.cls, color:t.color, t:pseudo, st, maxHp:hp, hp, shield:0, shieldT:0, energy:0,
         atkCd:U.rand(.3, .8), skillCd:t.skill.cd * .5, effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:num(h.st.thorns), level:num(h.level, 1), P:1,
-        specials:pseudo.specials.map(s => ({ ...s, t:s.cd * .7 })), windup:0, windupMax:0, windupSpecial:null, hooks, spawnT:0, breakG:0, breakMax:BREAK.max, broken:0, rival:true, stars:num(h.stars, 1) };
+        specials:pseudo.specials.map(s => ({ ...s, t:s.cd * .7 })), windup:0, windupMax:0, windupSpecial:null, hooks, spawnT:0, tough:TOUGH.rival, toughMax:TOUGH.rival, broken:0, breaks:0, elMark:null, nextTgt:null, weakCls:null, rival:true, stars:num(h.stars, 1) };
       return u;
     }
     // Instantâneo da equipe para a defesa no PvP (só números e efeitos, sem funções).
@@ -681,7 +699,7 @@
     riftZones(floor) { return ['rift']; }
     spawnEnemy(id, P, extra = {}) {
       const u = this.makeEnemyUnit(id, P, extra);
-      if (extra.alpha) { u.maxHp = Math.round(u.maxHp * D.ALPHA.hp); u.hp = u.maxHp; u.st.atk *= D.ALPHA.atk; u.name = `${u.name} ${D.ALPHA.prefix}`; u.elite = true; }
+      if (extra.alpha) { u.maxHp = Math.round(u.maxHp * D.ALPHA.hp); u.hp = u.maxHp; u.st.atk *= D.ALPHA.atk; u.name = `${u.name} ${D.ALPHA.prefix}`; u.elite = true; u.toughMax = u.tough = TOUGH.elite; }
       return u;
     }
 
@@ -787,6 +805,7 @@
       all.forEach(u => this.tickEffects(u, dt));
       this.acted = false;
       if (this.awaiting !== null) { const w = this.party[this.awaiting]; if (!w || !this.canAct(w) || this.state.settings.auto || this.state.settings.autoSkill !== false) this.awaiting = null; }
+      this.checkAllOut();
       this.party.forEach((u, i) => this.actHero(u, i, dt));
       this.enemies.forEach(u => this.actEnemy(u, dt));
       this.enemies.forEach(e => { if (e.treasure && e.alive) { e.fleeT = (e.fleeT || 0) + dt; if (e.fleeT > 12) { e.alive = false; e.fled = true; this.emit('onFx', { type:'text', uid:e.uid, text:'FUGIU!', color:'#ffd76a' }); this.emit('onLog', { text:'A Raposa Dourada fugiu!', type:'system' }); } } });
@@ -845,7 +864,8 @@
 
     tickEffects(u, dt) {
       if (!u.alive) return;
-      if (u.broken > 0) { u.broken -= dt; if (u.broken <= 0) { u.broken = 0; this.emit('onFx', { type:'text', uid:u.uid, text:'RECOMPOSTO', color:'#c9c4e6' }); } }
+      if (u.broken > 0) { u.broken -= dt; if (u.broken <= 0) { u.broken = 0; if (u.toughMax > 0) { u.toughMax = Math.round(u.toughMax * TOUGH.grow * 10) / 10; u.tough = u.toughMax; } this.emit('onFx', { type:'text', uid:u.uid, text:'RECOMPOSTO', color:'#c9c4e6' }); } }
+      if (u.elMark) { u.elMark.d -= dt; if (u.elMark.d <= 0) u.elMark = null; }
       if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
       let regen = u.st.regen + this.eff(u, 'regen');
       if (u.hooks?.lowRegen && u.hp / u.maxHp < .5) regen += Math.max(...u.hooks.lowRegen);
@@ -866,46 +886,140 @@
 
     // ---------- ações ----------
     canAct(u) { return u.alive && !(u.broken > 0) && !u.effects.some(e => CC.has(e.s)); }
+    // Pontos de Técnica da equipe (ver SP).
+    addSp(v) {
+      if (!v) return;
+      const before = this.sp || 0; this.sp = U.clamp(before + v, 0, SP.max);
+      if (this.sp !== before) this.emit('onFx', { type:'sp', value:this.sp, delta:this.sp - before });
+    }
+    // Estado de uma habilidade do herói: 'ready' ou o motivo de não poder usar agora.
+    skillState(u, k) {
+      const s = u?.skills?.[k]; if (!s) return 'none';
+      if (!u.alive) return 'dead';
+      if (s.locked) return 'locked';
+      if (this.has(u, 'silence')) return 'silence';
+      if (s.tcd > 0) return 'rest';
+      if ((this.sp || 0) < s.def.cost) return 'sp';
+      return 'ready';
+    }
     actHero(u, i, dt) {
       if (!this.canAct(u)) return;
       const living = this.enemies.filter(e => e.alive); if (!living.length) return;
       u.atkCd -= dt * this.stat(u, 'spd');
-      u.skillCd -= dt * (1 + u.st.cdr);
       if (this.acted) return;                                                      // uma ação por vez: quem ficou pronto age no passo seguinte
-      const silenced = this.has(u, 'silence');
-      const st = this.state.settings;
+      const st = this.state.settings, silenced = this.has(u, 'silence');
+      // Assalto Total: com todos os inimigos quebrados, no AUTO e no SEMI a equipe ataca junta na hora.
+      if (this.allOut && (st.auto || st.autoSkill !== false)) { this.allOutAttack(false); return; }
       if (!silenced && u.energy >= ULT_COST && st.auto && this.shouldUlt(u)) { this.castUlt(i, false); return; }
-      if (!silenced && u.skillCd <= 0 && (st.auto || st.autoSkill !== false)) { if (this.shouldSkill(u, dt)) { this.castSkill(u); return; } }
-      if (u.atkCd <= 0) {
-        u.defend = false;
-        // Comando MANUAL: é a vez do herói e ele tem uma técnica pronta. A luta espera a ordem do jogador
-        // (atacar, habilidade, ultimate ou defender); sem técnica pronta, ele ataca sozinho.
-        if (!u.go && this.manualTurn(u, silenced)) {
-          if (this.awaiting !== i) { this.awaiting = i; this.acted = true; this.emit('onFx', { type:'turn', uid:u.uid, heroIndex:i }); }
-          return;
-        }
-        u.go = false;
-        this.basicAttack(u); u.atkCd = 1.5;
+      if (u.atkCd > 0) return;
+      // É a vez dele: UMA ação (golpe, habilidade ou defesa). As habilidades descansam em vezes do próprio herói.
+      if (!u.inTurn) { u.inTurn = true; u.defend = false; u.skills.forEach(s => { if (s.tcd > 0) s.tcd--; }); }
+      // Comando MANUAL: a luta espera a ordem do jogador.
+      if (this.manualTurn()) {
+        if (this.awaiting === null) { this.awaiting = i; this.acted = true; this.emit('onFx', { type:'turn', uid:u.uid, heroIndex:i }); }
+        return;
       }
+      const act = this.aiAction(u);
+      if (act.kind === 'skill') this.castSkill(u, act.k);
+      else if (act.kind === 'defend') this.defendTurn(u);
+      else this.basicAttack(u);
     }
-    manualTurn(u, silenced) {
-      const st = this.state.settings;
-      if (st.auto || st.autoSkill !== false || st.afk) return false;
-      return !silenced && (u.skillCd <= 0 || u.energy >= ULT_COST);
-    }
-    // Ordem dada na vez do herói (modo MANUAL): 'attack' segue com o golpe básico; 'defend' troca o golpe pela defesa.
+    manualTurn() { const st = this.state.settings; return !st.auto && st.autoSkill === false && !st.afk; }
+    // Ordem dada na vez do herói (comando MANUAL): 'attack[:q]' (q = golpe cronometrado: 2 perfeito, 1 bom), 'defend' ou
+    // 'allout' (Assalto Total, quando todos os inimigos estão quebrados; não gasta a vez).
     command(what) {
+      const [verb, qs] = String(what).split(':'), q = U.clamp(Math.floor(Number(qs) || 0), 0, 2);
+      if (verb === 'allout') return this.allOutAttack(true);
       const i = this.awaiting, u = i === null || i === undefined ? null : this.party[i];
       if (!u || !u.alive || this.phase !== 'fight') { this.awaiting = null; return false; }
-      if (what === 'attack') { u.go = true; this.awaiting = null; return true; }
-      if (what === 'defend') {
-        u.defend = true; u.atkCd = 1.5; this.awaiting = null;
-        this.gainEnergy(u, DEFEND.energy);
-        this.state.stats.defends = (this.state.stats.defends || 0) + 1;
-        this.emit('onFx', { type:'defend', uid:u.uid, color:u.color }); this.beat('defend');
-        return true;
-      }
+      if (verb === 'attack') { this.awaiting = null; this.basicAttack(u, q); return true; }
+      if (verb === 'defend') { this.awaiting = null; this.defendTurn(u); return true; }
       return false;
+    }
+    // Defender: abre mão do golpe, corta o dano recebido até a próxima vez dele, ganha energia e 1 PT.
+    defendTurn(u) {
+      u.defend = true; u.inTurn = false; u.atkCd = TURN;
+      this.gainEnergy(u, DEFEND.energy); this.addSp(1);
+      this.state.stats.defends = (this.state.stats.defends || 0) + 1;
+      this.emit('onFx', { type:'defend', uid:u.uid, color:u.color }); this.beat('defend');
+    }
+    // ---------- escolha da ação no AUTO e no SEMI ----------
+    // Cada habilidade vale um tanto em "golpes" (múltiplos do ATK), pelo que ela faz na situação de agora; o golpe básico
+    // vale 1 e ainda rende 1 PT. A habilidade sai quando paga o custo. Com a reserva cheia, gasta (PT parado é PT perdido).
+    aiAction(u) {
+      const sp = this.sp || 0, full = sp >= SP.max - 1, worth = full ? .1 : SP.worth;
+      let best = null, bestV = -Infinity;
+      u.skills.forEach((s, k) => {
+        if (this.skillState(u, k) !== 'ready') return;
+        const v = this.skillValue(u, s.def) - (s.def.cost + 1) * worth;
+        if (v > bestV) { bestV = v; best = k; }
+      });
+      if (best !== null && bestV >= 1 && (full || sp - u.skills[best].def.cost >= this.spReserve(u))) return { kind:'skill', k:best };
+      if (u.hp / u.maxHp < .28 && this.intentOn(u)) return { kind:'defend' };
+      return { kind:'attack' };
+    }
+    // PT guardados para quem cura: com alguém ferido, os outros não gastam o que a cura mais barata do apoio custa.
+    spReserve(u) {
+      if (!this.party.some(h => h.alive && h.hp / h.maxHp < .6)) return 0;
+      let need = 0;
+      this.party.forEach(h => { if (h === u || !h.alive) return; h.skills.forEach(s => { if (!s.locked && s.tcd <= 1 && s.def.eff.some(e => e.k === 'heal' || e.k === 'revive')) need = need ? Math.min(need, s.def.cost) : s.def.cost; }); });
+      return need;
+    }
+    // Algum inimigo vai golpear este herói na próxima ação (ou prepara um golpe em área)?
+    intentOn(u) { return this.enemies.some(e => e.alive && (e.windup > 0 || e.striking || (e.nextTgt === u.uid && e.atkCd < .6))); }
+    skillValue(u, def) {
+      const foes = this.opponents(u), allies = this.allies(u), tgt = this.pickTarget(u);
+      if (!tgt) return 0;
+      const n = foes.length, count = to => (to === 'all' ? n : to === 'front' ? Math.min(2, n) : 1);
+      const allyN = to => (to === 'allies' || to === 'all' ? allies.length : to === 'front' ? Math.min(2, allies.length) : 1);
+      const frac = h => h.hp / h.maxHp, worst = allies.reduce((a, h) => Math.max(a, 1 - frac(h)), 0);
+      const danger = this.enemies.some(e => e.alive && (e.windup > 0 || e.striking)) || worst > .35;
+      const low = allies.slice().sort((a, b) => frac(a) - frac(b))[0], atk = Math.max(1, this.stat(u, 'atk'));
+      const debuffs = h => h.effects.filter(x => DEBUFFS.has(x.s)).length;
+      let v = 0;
+      for (const e of def.eff) {
+        switch (e.k) {
+          case 'dmg': {
+            let m = e.m * (e.hits || 1) * (e.to === 'randEach' ? 1 : count(e.to));
+            if (e.hpm) m += e.hpm * u.maxHp / atk * count(e.to);
+            if (e.pierce) m *= 1 + e.pierce * .3;
+            if (e.crit) m *= 1 + Math.min(1, e.crit) * .4;
+            if (e.exec) m *= 1 + e.exec * (1 - frac(tgt)) * .8;
+            if (e.vsBroken && tgt.broken > 0) m *= 1 + e.vsBroken;
+            if (e.vs && this.has(tgt, e.vs.s)) m *= 1 + e.vs.v;
+            if (e.perDebuff) m *= 1 + e.perDebuff * Math.min(5, debuffs(tgt));
+            if (e.spScale) m *= 1 + e.spScale * Math.max(0, Math.floor(this.sp || 0) - def.cost);
+            if (e.lowSelf) m *= 1 + e.lowSelf * (1 - frac(u));
+            v += m; break;
+          }
+          case 'chain': v += e.m * (1 + (e.fall || .7) * Math.min(n - 1, (e.n || 3) - 1) * .8); break;
+          case 'st': v += count(e.to) * (e.ch ?? 1) * (CC.has(e.s) ? .35 * e.d : DOTS.has(e.s) ? e.v * e.d * .7 : e.s === 'silence' ? .12 * e.d : (e.v || .2) * e.d * .22); break;
+          case 'heal': (e.to === 'allies' || e.to === 'all' ? allies : e.to === 'self' ? [u] : [low]).forEach(h => { if (h) v += Math.min(e.p ? e.p : e.m * atk / h.maxHp, 1 - frac(h)) * 9; }); break;
+          case 'shield': v += allyN(e.to) * Math.min(.3, e.p ? e.p : e.m * atk / u.maxHp) * (danger ? 5 : 1.6); break;
+          case 'buff':
+            if (e.s === 'stealth') v += .3;
+            else if (e.s === 'counter') v += danger ? .8 : .45;
+            else if (e.v < 0) v += e.v * 1.2;
+            else v += allyN(e.to) * e.v * e.d * (e.s === 'regen' ? 6 : e.s === 'dr' ? (danger ? .5 : .22) : .26);
+            break;
+          case 'nrg': v += (e.to === 'allies' ? allies.length : 1) * e.v / 100 * 2.5; break;
+          case 'cleanse': v += (e.to === 'allies' ? allies : [allies.slice().sort((a, b) => debuffs(b) - debuffs(a))[0]]).reduce((a, h) => a + (h ? Math.min(2, debuffs(h)) * .6 : 0), 0); break;
+          case 'taunt': v += frac(u) > .45 ? (allies.some(h => h !== u && frac(h) < .6) ? .9 : .35) : -.3; break;
+          case 'drain': v += frac(u) < .7 ? .4 : .1; break;
+          case 'revive': v += this.party.some(h => !h.alive) ? 6 : -9; break;
+          case 'sp': v += e.v * SP.worth; break;
+          case 'cdr': v += e.v / 3 * SP.worth; break;
+          case 'brk': v += tgt.broken > 0 || !(tgt.toughMax > 0) ? 0 : count(e.to) * (tgt.tough <= e.v ? 1.2 : .25 * e.v); break;
+          case 'adv': v += allyN(e.to) * e.v * 1.1; break;
+          case 'execute': v += !tgt.boss && !tgt.miniboss && frac(tgt) <= e.th ? 3 : .1; break;
+          case 'dispel': v += foes.some(x => x.shield > 0 || x.effects.some(y => !DEBUFFS.has(y.s))) ? .9 : .05; break;
+          case 'delay': v += count(e.to) * Math.min(.5, e.v * .15); break;
+          case 'hp': v += e.p * 3; break;
+        }
+      }
+      // Quebra: vale mais a habilidade que derruba a Resistência de quem está por um fio.
+      if (def.eff.some(e => OFFENSIVE.has(e.k)) && tgt.toughMax > 0 && !(tgt.broken > 0) && tgt.tough <= TOUGH.kind.skill * this.weakness(u, tgt)) v += .8;
+      return v;
     }
     // Próximas ações, da mais próxima para a mais distante (a linha do tempo da luta).
     turnOrder(n = 8) {
@@ -913,26 +1027,55 @@
       this.party.forEach((u, i) => {
         if (!u.alive) return;
         const spd = Math.max(.25, this.stat(u, 'spd')), t = cc(u) + Math.max(0, u.atkCd) / spd;
-        out.push({ uid:u.uid, t:this.awaiting === i ? -1 : t, kind:'hero' }, { uid:u.uid, t:t + 1.5 / spd, kind:'hero' });
+        out.push({ uid:u.uid, t:this.awaiting === i ? -1 : t, kind:'hero' }, { uid:u.uid, t:t + TURN / spd, kind:'hero' });
       });
       this.enemies.forEach(u => {
         if (!u.alive || u.treasure) return;
         const spd = Math.max(.25, this.stat(u, 'spd')), wait = cc(u) + Math.max(0, .5 - u.spawnT);
         if (u.windup > 0 || u.striking) { out.push({ uid:u.uid, t:wait + Math.max(0, u.windup), kind:'special' }); return; }
         const t = wait + Math.max(0, u.atkCd) / spd;
-        out.push({ uid:u.uid, t, kind:'enemy' }, { uid:u.uid, t:t + 1.5 / spd, kind:'enemy' });
+        out.push({ uid:u.uid, t, kind:'enemy' }, { uid:u.uid, t:t + TURN / spd, kind:'enemy' });
         const sp = (u.specials || []).slice().sort((a, b) => a.t - b.t)[0];
         if (sp && sp.t < 6) out.push({ uid:u.uid, t:wait + Math.max(0, sp.t) + (sp.windup || 0), kind:'special' });
       });
       return out.sort((a, b) => a.t - b.t).slice(0, n);
     }
+    // Intenção do inimigo: o alvo do próximo golpe é escolhido assim que o anterior termina. Provocar e furtividade
+    // continuam valendo na hora do golpe (o alvo é trocado se ele já não pode ser atingido).
+    rollIntent(u) { const t = this.pickTarget(u); u.nextTgt = t ? t.uid : null; }
+    intentTarget(u) {
+      const opp = this.opponents(u); if (!opp.length) return null;
+      const taunters = opp.filter(x => this.has(x, 'taunt')), t = opp.find(x => x.uid === u.nextTgt);
+      return t && (!taunters.length || taunters.includes(t)) ? t : this.pickTarget(u);
+    }
+    // O que o inimigo fará em seguida (para a interface): golpe em quem, habilidade ou golpe preparado.
+    intentOf(e) {
+      if (!e?.alive || e.treasure) return null;
+      if (e.broken > 0) return { kind:'broken', t:e.broken };
+      const wait = e.effects.filter(x => CC.has(x.s)).reduce((a, x) => Math.max(a, x.d), 0);
+      if (e.windup > 0 || e.striking) return { kind:'special', name:e.windupSpecial?.name || '', t:Math.max(0, e.windup), wait };
+      const silenced = this.has(e, 'silence'), spd = Math.max(.25, this.stat(e, 'spd')), tAtk = Math.max(0, e.atkCd) / spd;
+      const sp = silenced ? null : (e.specials || []).slice().sort((a, b) => a.t - b.t)[0];
+      const tSkill = e.t.skill && !silenced ? Math.max(0, e.skillCd) : Infinity, tSp = sp ? Math.max(0, sp.t) : Infinity;
+      if (tSp <= Math.min(tAtk, tSkill)) return { kind:'windup', name:sp.name, t:tSp, wait };
+      if (tSkill <= tAtk) { const sk = this.enemySkill(e, true); return { kind:'skill', name:sk.name, t:tSkill, wait, to:(sk.eff.find(x => OFFENSIVE.has(x.k)) || sk.eff[0] || {}).to || 'tgt' }; }
+      const tgt = this.party.find(h => h.uid === e.nextTgt && h.alive);
+      return { kind:'attack', target:tgt ? tgt.uid : null, t:tAtk, wait };
+    }
+    // Habilidade que o inimigo usa agora. Heróis rivais (Arena) revezam as três do kit; peek só espia a próxima.
+    enemySkill(u, peek = false) {
+      const list = u.t.skills; if (!list?.length) return u.t.skill;
+      const sk = list[(u.skillRot || 0) % list.length]; if (!peek) u.skillRot = (u.skillRot || 0) + 1;
+      return sk;
+    }
     actEnemy(u, dt) {
       if (!this.canAct(u)) return;
       if (u.spawnT < .5) { u.spawnT += dt; return; }
       const living = this.party.filter(h => h.alive); if (!living.length) return;
+      if (u.nextTgt === null && !u.treasure) this.rollIntent(u);
       if (u.windup > 0 || u.striking) {
         if (u.windup > 0) { u.windup -= dt; if (u.windup > 0) return; }
-        if (!u.windupSpecial) { u.striking = false; u.windup = 0; return; }          // o preparo foi cancelado (postura quebrada)
+        if (!u.windupSpecial) { u.striking = false; u.windup = 0; return; }          // o preparo foi cancelado (Quebra)
         if (this.acted) return;
         // O golpe preparado sai em dois tempos: primeiro o bote (ao vivo, a janela do Aparo), depois o impacto.
         if (!u.striking) { u.striking = true; u.windup = 0; this.emit('onFx', { type:'strike', uid:u.uid, color:u.color, name:u.windupSpecial.name }); this.beat('strike'); return; }
@@ -946,18 +1089,10 @@
       if (this.acted) return;
       const ready = (u.specials || []).find(sp => sp.t <= 0);
       if (ready && !this.has(u, 'silence')) { ready.t = ready.cd; u.windup = ready.windup; u.windupMax = ready.windup; u.windupSpecial = ready; this.emit('onFx', { type:'bossWindup', uid:u.uid, time:ready.windup, name:ready.name }); this.emit('onWarn', `${u.name.split(',')[0]} prepara ${ready.name}!`); this.beat('windup'); return; }
-      if (u.t.skill && u.skillCd <= 0 && !this.has(u, 'silence')) { u.skillCd = u.t.skill.cd; this.emit('onFx', { type:'cast', source:u.uid, name:u.t.skill.name, color:u.color, enemy:true }); this.execute(u, u.t.skill.eff, { isSkill:true }); this.beat('enemySkill'); return; }
-      if (u.atkCd <= 0 && !u.treasure) { u.atkCd = 1.5; const tgt = this.pickTarget(u); if (!tgt) return; this.emit('onFx', { type:'enemyAttack', source:u.uid, target:tgt.uid }); this.hit(u, tgt, 1, { kind:'basic', dodgeable:true }); this.beat('enemyAttack'); }
+      if (u.t.skill && u.skillCd <= 0 && !this.has(u, 'silence')) { const sk = this.enemySkill(u); u.skillCd = sk.cd; this.emit('onFx', { type:'cast', source:u.uid, name:sk.name, color:u.color, enemy:true }); this.execute(u, sk.eff, { isSkill:true }); this.beat('enemySkill'); return; }
+      if (u.atkCd <= 0 && !u.treasure) { u.atkCd = TURN; const tgt = this.intentTarget(u); if (!tgt) return; this.emit('onFx', { type:'enemyAttack', source:u.uid, target:tgt.uid }); this.hit(u, tgt, 1, { kind:'basic', dodgeable:true }); this.rollIntent(u); this.beat('enemyAttack'); }
     }
 
-    shouldSkill(u, dt) {
-      const effs = u.template.skill.eff, offensive = effs.some(e => OFFENSIVE.has(e.k));
-      if (offensive) return true;
-      const hurt = this.party.some(h => h.alive && h.hp / h.maxHp < .85) || this.enemies.some(e => e.windup > 0);
-      u.skillHeld += dt;
-      if (hurt || u.skillHeld > 6) { u.skillHeld = 0; return true; }
-      return false;
-    }
     shouldUlt(u) {
       const effs = u.template.ult.eff, offensive = effs.some(e => OFFENSIVE.has(e.k));
       if (effs.some(e => e.k === 'revive')) return this.party.some(h => !h.alive) || this.party.some(h => h.alive && h.hp / h.maxHp < .4);
@@ -965,43 +1100,54 @@
       return true;
     }
 
-    basicAttack(u) {
-      const tgt = this.pickTarget(u); if (!tgt) return;
+    // Golpe básico: a ação da vez. Rende 10 de energia e 1 PT. q: golpe cronometrado (ver TIMED).
+    basicAttack(u, q = 0) {
+      const tgt = this.pickTarget(u); u.inTurn = false; u.atkCd = TURN;
+      if (!tgt) return;
       u.counters.atk++;
-      this.emit('onFx', { type:'attack', source:u.uid, target:tgt.uid, role:u.cls, color:u.color });
+      if (q === 2) this.state.stats.perfects = (this.state.stats.perfects || 0) + 1;
+      this.emit('onFx', { type:'attack', source:u.uid, target:tgt.uid, role:u.cls, color:u.color, q });
       this.beat('attack');
-      const dealt = this.hit(u, tgt, 1, { kind:'basic', dodgeable:true });
+      const dealt = this.hit(u, tgt, 1, { kind:'basic', dodgeable:true, act:{ kind:'basic', q } });
       if (u.cleave) this.enemies.filter(e => e.alive && e !== tgt).forEach(e => this.hit(u, e, u.cleave, { kind:'proc' }));
-      this.gainEnergy(u, 10);
+      this.gainEnergy(u, 10); this.addSp(1);
       if (dealt >= 0 && tgt) {
         this.fire(u, 'onAtk', { target:tgt });
         (u.hooks.every || []).forEach(h => { if (u.counters.atk % h.n === 0) this.execute(u, h.eff, { target:tgt, proc:true }); });
       }
     }
-    castSkill(u, manual = false) {
-      const t = u.template;
-      u.skillCd = t.skill.cd; u.skillHeld = 0;
-      this.emit('onFx', { type:'cast', source:u.uid, name:t.skill.name, color:u.color, kind:t.skill.fx, manual });
+    // Habilidade k do herói: a ação da vez. Gasta os PT dela e entra em descanso (em vezes do próprio herói).
+    castSkill(u, k = 0, manual = false, q = 0) {
+      const s = u.skills[k], def = s.def;
+      u.inTurn = false; u.atkCd = TURN; s.tcd = def.tcd || 0;
+      this.addSp(-def.cost);
+      // Economia (o antigo atributo de recarga): chance de a habilidade devolver 1 PT.
+      if ((u.st.cdr || 0) > 0 && U.random() < Math.min(SP.thrift, u.st.cdr)) { this.addSp(1); this.emit('onFx', { type:'text', uid:u.uid, text:'ECONOMIA', color:'#9fe6ff' }); }
+      if (q === 2) this.state.stats.perfects = (this.state.stats.perfects || 0) + 1;
+      this.emit('onFx', { type:'cast', source:u.uid, name:def.name, color:u.color, kind:def.fx, manual, skill:k, q });
       this.beat('skill');
-      this.execute(u, t.skill.eff, { isSkill:true, manual });
+      this.execute(u, def.eff, { isSkill:true, manual, act:{ kind:'skill', q } });
+      this.gainEnergy(u, 10);
       this.fire(u, 'onSkill', {});
       this.emit('onState');
     }
-    // Habilidade comandada pelo jogador (rende +15% e mira o alvo em foco).
-    castSkillManual(i) {
-      const u = this.party[i];
-      if (!u || !u.alive || !this.active || this.phase !== 'fight' || this.pendingRoute || this.pendingEncounter || u.skillCd > 0 || this.has(u, 'silence') || !this.canAct(u)) return false;
-      if (!this.enemies.some(e => e.alive)) return false;
+    // Habilidade comandada pelo jogador na vez do herói: 'herói:habilidade[:q]'.
+    castSkillManual(arg) {
+      const [i, k, q] = String(arg).split(':').map(v => Math.floor(Number(v) || 0)), u = this.party[i];
+      if (!u || this.awaiting !== i || !this.active || this.phase !== 'fight' || this.pendingRoute || this.pendingEncounter || !this.canAct(u)) return false;
+      if (this.skillState(u, k) !== 'ready' || !this.enemies.some(e => e.alive)) return false;
       this.state.stats.manualSkills = (this.state.stats.manualSkills || 0) + 1;
-      this.castSkill(u, true);
-      if (this.awaiting === i) { u.go = true; this.awaiting = null; }                // a técnica foi a ordem da vez: o golpe básico segue
+      this.awaiting = null;
+      this.castSkill(u, k, true, U.clamp(q, 0, 2));
       return true;
     }
-    // Modo de comando: 'auto' (a equipe decide tudo), 'semi' (habilidades sozinhas, ultimates à mão) ou 'manual' (tudo à mão).
+    // Modo de comando: 'auto' (a equipe decide tudo), 'semi' (a equipe age sozinha, ultimates à mão) ou 'manual' (tudo à mão).
     get mode() { const st = this.state.settings; return st.auto ? 'auto' : st.autoSkill === false ? 'manual' : 'semi'; }
     setMode(mode) {
       if (!['auto', 'semi', 'manual'].includes(mode)) return false;
-      const st = this.state.settings; st.auto = mode === 'auto'; st.autoSkill = mode !== 'manual'; return true;
+      const st = this.state.settings; st.auto = mode === 'auto'; st.autoSkill = mode !== 'manual';
+      if (!this.manualTurn()) this.awaiting = null;
+      return true;
     }
     // Guarda ativa da equipe (ver GUARD).
     // quality: no ritmo de RPG quem julga o tempo é o desafio de tela (1 = no anel dourado, 0 = fora dele); sem ele
@@ -1018,10 +1164,12 @@
       this.lastParry = this.zoneElapsed;
       this.state.stats.parries = (this.state.stats.parries || 0) + 1;
       this.party.forEach(u => this.gainEnergy(u, GUARD.energy / (1 + (u.st.nrg || 0))));
+      this.addSp(1);
       this.emit('onFx', { type:'parry', uid:src.uid, color:src.color });
       this.emit('onLog', { text:`APARO! A equipe bloqueou ${src.name.split(',')[0]} no instante certo.`, type:'skill' });
-      if (src.alive && (src.elite || src.boss || src.miniboss || src.guardian) && !(src.broken > 0)) this.breakAdd(src, GUARD.breakHit);
+      if (src.alive && !(src.broken > 0)) this.toughAdd(src, TOUGH.parry, null);
     }
+    // Ultimate: fora da vez (energia cheia). No comando MANUAL não gasta a vez do herói.
     castUlt(i, manual = true) {
       const u = this.party[i];
       if (!u || !u.alive || !this.active || this.phase !== 'fight' || this.pendingRoute || this.pendingEncounter || u.energy < ULT_COST || this.has(u, 'silence') || !this.canAct(u)) return false;
@@ -1031,12 +1179,11 @@
       if (manual) { this.state.stats.manualUlts++; }
       this.emit('onFx', { type:'cast', source:u.uid, heroIndex:i, manual, ult:true, name:u.template.ult.name, color:u.color, kind:'ult' });
       this.beat('ult');
-      if (this.awaiting === i) { u.go = true; this.awaiting = null; }
       // Elo Kizuna: ultimates de heróis diferentes em sequência rápida se fortalecem.
       this.ultChain = this.zoneElapsed - this.lastUltAt <= CHAIN.window + 1e-6 && this.lastUltHero !== i ? this.ultChain + 1 : 1;
       this.lastUltAt = this.zoneElapsed; this.lastUltHero = i; this.chainBonus = (this.ultChain - 1) * (CHAIN.per + (u.st.chainPow || 0));
       if (this.ultChain > 1) { this.emit('onFx', { type:'chain', n:this.ultChain, uid:u.uid, color:u.color }); this.state.stats.chains = Math.max(this.state.stats.chains || 0, this.ultChain); }
-      this.execute(u, u.template.ult.eff, { isUlt:true, manual });
+      this.execute(u, u.template.ult.eff, { isUlt:true, manual, act:{ kind:'ult' } });
       this.chainBonus = 0;
       if (this.ultChain >= CHAIN.finale) this.kizunaFinale();
       this.fire(u, 'onUlt', {});
@@ -1052,19 +1199,77 @@
       this.party.filter(h => h.alive).forEach(h => this.enemies.filter(e => e.alive).forEach(e => this.hit(h, e, CHAIN.finaleMult, { kind:'ult', pierce:.3 })));
       this.emit('onFx', { type:'hitstop', time:.18 });
     }
-    // Quebra de postura: dano em elites/chefes enche a barra; cheia, o inimigo fica atordoado e vulnerável.
-    addBreak(src, tg, final, kind, em) {
-      if (src.side !== 'hero' || tg.side !== 'enemy' || !(tg.elite || tg.boss || tg.miniboss || tg.guardian) || tg.broken > 0 || !tg.alive) return;
-      this.breakAdd(tg, final / tg.maxHp * 100 * BREAK.gain * (BREAK.kindMult[kind] || 1) * (em === 1.3 ? 1.5 : 1) * (1 + (src.st.breakPow || 0)));
+    // ---------- Resistência e Quebra (todos os inimigos) ----------
+    // Fraqueza: o elemento do herói é forte contra o do inimigo, ou a classe dele é a fraqueza da família (D.FAMILY_WEAK).
+    // Tira Resistência em dobro; elemento resistido tira a metade.
+    weakness(src, tg) {
+      if (src.side !== 'hero' || tg.side !== 'enemy') return 1;
+      if (D.elements[src.el]?.strong.includes(tg.el) || (tg.weakCls && tg.weakCls === src.cls)) return TOUGH.weak;
+      if (D.elements[tg.el]?.strong.includes(src.el)) return TOUGH.resist;
+      return 1;
     }
-    breakAdd(tg, amount) {
-      tg.breakG += amount;
-      if (tg.breakG < tg.breakMax) return;
-      tg.breakG = 0; tg.breakMax *= BREAK.grow; tg.broken = BREAK.time;
+    // Cada ação (golpe 1, habilidade 2, ultimate 3; golpe cronometrado perfeito +1) tira Resistência uma vez por alvo.
+    toughHit(src, tg, o) {
+      const act = o.act;
+      if (!act || src.side !== 'hero' || tg.side !== 'enemy' || !tg.alive || tg.broken > 0 || !(tg.toughMax > 0)) return;
+      const seen = act.tough || (act.tough = new Set()); if (seen.has(tg.uid)) return; seen.add(tg.uid);
+      const base = (TOUGH.kind[o.kind] || 0) + (act.q === 2 ? 1 : 0); if (base <= 0) return;
+      this.toughAdd(tg, base * this.weakness(src, tg) * (1 + (src.st.breakPow || 0)), src);
+    }
+    // Resistência zerada: QUEBRA. Atordoado, sem o golpe preparado, +35% de dano recebido, um dano de quebra e +1 PT.
+    toughAdd(tg, amount, src) {
+      if (!tg.alive || tg.broken > 0 || !(tg.toughMax > 0) || !(amount > 0)) return;
+      tg.tough = Math.max(0, tg.tough - amount);
+      if (tg.tough > 0) return;
+      tg.broken = TOUGH.time; tg.breaks = (tg.breaks || 0) + 1;
       const canceled = !!tg.windupSpecial; tg.windup = 0; tg.windupSpecial = null; tg.striking = false;
       this.state.stats.breaks = (this.state.stats.breaks || 0) + 1;
+      this.addSp(1);
       this.emit('onFx', { type:'break', uid:tg.uid, canceled, color:tg.color });
-      this.emit('onLog', { text:`${tg.name.split(',')[0]} teve a postura QUEBRADA${canceled ? ' e perdeu o ataque preparado' : ''}!`, type:'skill' });
+      this.emit('onLog', { text:`${tg.name.split(',')[0]} foi QUEBRADO${canceled ? ' e perdeu o ataque preparado' : ''}!`, type:'skill' });
+      const B = TOUGH.burst, burst = tg.maxHp * (tg.worldBoss ? B.world : tg.boss ? B.boss : tg.miniboss ? B.mini : B.base);
+      this.applyRawDamage(tg, Math.max(1, Math.round(burst)), src, { kind:'break', color:'#ffe28a' });
+    }
+    // Assalto Total: todos os inimigos vivos quebrados ao mesmo tempo. Uma vez por janela (volta quando alguém se recompõe
+    // e é quebrado de novo). No AUTO e no SEMI sai sozinho; no MANUAL é uma ordem ('act allout').
+    checkAllOut() {
+      const live = this.enemies.filter(e => e.alive && !e.treasure), all = live.length > 0 && live.every(e => e.broken > 0);
+      if (!all) { this.allOut = false; this.allOutSpent = false; return; }
+      if (!this.allOut && !this.allOutSpent) { this.allOut = true; this.emit('onFx', { type:'allOutReady' }); }
+    }
+    allOutAttack(manual = false) {
+      if (!this.allOut || this.phase !== 'fight' || !this.active) return false;
+      this.allOut = false; this.allOutSpent = true;
+      this.state.stats.allOuts = (this.state.stats.allOuts || 0) + 1;
+      this.emit('onFx', { type:'allOut', manual }); this.emit('onLog', { text:'ASSALTO TOTAL! Com todos os inimigos quebrados, a equipe inteira ataca.', type:'skill' });
+      this.beat('ult');
+      this.party.filter(h => this.canAct(h)).forEach(h => this.enemies.filter(e => e.alive).forEach(e => this.hit(h, e, ALLOUT.mult, { kind:'skill', pierce:ALLOUT.pierce })));
+      this.emit('onState');
+      return true;
+    }
+    // Marca elemental e reações (heróis contra inimigos; uma reação por alvo por ação). Habilidade ou ultimate deixa a
+    // marca do elemento do herói; um golpe de OUTRO elemento a consome e dispara a reação do par (D.reaction).
+    elemental(src, tg, o, final) {
+      const act = o.act;
+      if (!act || src.side !== 'hero' || tg.side !== 'enemy') return;
+      const done = act.react || (act.react = new Set()); if (done.has(tg.uid)) return;
+      const mk = tg.elMark;
+      if (mk && mk.el !== src.el) { done.add(tg.uid); tg.elMark = null; this.react(src, tg, mk.el, final); return; }
+      if ((o.kind === 'skill' || o.kind === 'ult') && tg.alive) tg.elMark = { el:src.el, d:REACT.time };
+    }
+    react(src, tg, other, final) {
+      const R = D.reaction(src.el, other); if (!R) return;
+      this.state.stats.reactions = (this.state.stats.reactions || 0) + 1;
+      this.emit('onFx', { type:'reaction', uid:tg.uid, name:R.name, color:R.color, id:R.id });
+      const foes = () => this.enemies.filter(e => e.alive), o = { kind:'reaction', color:R.color };
+      if (R.bonus) this.applyRawDamage(tg, Math.max(1, Math.round(final * R.bonus)), src, o);
+      if (R.spread) foes().forEach(e => { if (e !== tg) this.applyRawDamage(e, Math.max(1, Math.round(final * R.spread)), src, o); });
+      if (R.aoe) foes().forEach(e => this.hit(src, e, R.aoe, { kind:'proc' }));
+      if (R.st && tg.alive) this.applyStatus(src, tg, { s:R.st[0], d:R.st[1], v:R.st[2] || 0, ch:1 });
+      if (R.stAll) foes().forEach(e => this.applyStatus(src, e, { s:R.stAll[0], d:R.stAll[1], v:R.stAll[2] || 0, ch:1 }));
+      if (R.heal) { const low = this.party.filter(h => h.alive).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp)[0]; if (low) this.heal(src, low, low.maxHp * R.heal, true); }
+      if (R.nrg) this.gainEnergy(src, R.nrg);
+      if (R.brk && tg.alive) this.toughAdd(tg, R.brk * (1 + (src.st.breakPow || 0)), src);
     }
 
     // ---------- alvos ----------
@@ -1103,7 +1308,8 @@
     }
 
     // ---------- execução de efeitos ----------
-    manualMult(ctx) { return ctx.manual ? (ctx.isUlt ? MANUAL.ult : ctx.isSkill ? MANUAL.skill : 1) : 1; }
+    // Curas e escudos: a ultimate à mão e o golpe cronometrado também rendem mais.
+    manualMult(ctx) { const q = ctx.act?.q; return (ctx.manual && ctx.isUlt ? MANUAL.ult : 1) * (q === 2 ? TIMED.perfect : q === 1 ? TIMED.good : 1); }
     execute(u, effs, ctx = {}) {
       // Ataque preparado caindo com a guarda recém-erguida: o Aparo também anula o controle (atordoar, congelar, silenciar).
       const outer = this.parryNow; this.parryNow = !!ctx.special && this.guardT > 0 && this.guardAge <= GUARD.perfect;
@@ -1114,18 +1320,19 @@
       const kind = ctx.isUlt ? 'ult' : ctx.isSkill ? 'skill' : 'proc';
       for (const e of effs || []) {
         if (!u.alive && e.k !== 'revive') break;
-        const supportive = !(e.k === 'dmg' || e.k === 'st' || e.k === 'dispel' || e.k === 'delay' || e.k === 'execute' || e.k === 'chain' || (e.k === 'nrg' && e.v < 0));
+        const supportive = !(e.k === 'dmg' || e.k === 'st' || e.k === 'dispel' || e.k === 'delay' || e.k === 'execute' || e.k === 'chain' || e.k === 'brk' || (e.k === 'nrg' && e.v < 0));
         if (e.k === 'dmg') {
           const hits = e.hits || 1;
           for (let h = 0; h < hits; h++) {
             const targets = this.resolve(u, e.to, ctx, false);
-            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m, { kind, manual:ctx.manual, special:ctx.special, pierce:e.pierce, crit:e.crit, exec:e.exec, dodgeable:e.to !== 'all' && kind === 'proc' })); });
+            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m, { kind, manual:ctx.manual, special:ctx.special, act:ctx.act, pierce:e.pierce, crit:e.crit, exec:e.exec, vsBroken:e.vsBroken, vs:e.vs, perDebuff:e.perDebuff, spScale:e.spScale, lowSelf:e.lowSelf, hpm:e.hpm, dodgeable:e.to !== 'all' && kind === 'proc' })); });
             if (targets.length) ctx.target = ctx.target || targets[0];
           }
           if (kind !== 'proc') this.emit('onFx', { type:e.to === 'all' ? 'aoe' : 'burst', source:u.uid, target:(ctx.target || {}).uid, color:u.color });
           continue;
         }
         const targets = this.resolve(u, e.to || 'self', ctx, supportive);
+        if (!supportive && e.to === 'tgt' && targets.length) ctx.target = ctx.target || targets[0];     // os efeitos seguintes da mesma ação vão no mesmo alvo
         switch (e.k) {
           case 'st': targets.forEach(tg => this.applyStatus(u, tg, e)); break;
           case 'heal': targets.forEach(tg => this.heal(u, tg, (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (ctx.isSkill ? 1 + (u.st.skillMastery || 0) : 1) * this.manualMult(ctx))); break;
@@ -1136,16 +1343,22 @@
           case 'taunt': this.addEffect(u, { s:'taunt', v:1, d:e.d, src:u }); break;
           case 'drain': if (dealt > 0) this.heal(u, u, dealt * e.v, true); break;
           case 'revive': { const dead = (u.side === 'hero' ? this.party : this.enemies).find(x => !x.alive && !x.fled); if (dead) { dead.alive = true; dead.hp = Math.round(dead.maxHp * e.p); dead.effects = []; this.emit('onFx', { type:'revive', uid:dead.uid }); this.emit('onLog', { text:`${dead.name} foi revivido!`, type:'skill' }); } break; }
-          case 'cdr': targets.forEach(tg => { tg.skillCd = Math.max(0, tg.skillCd - e.v); }); break;
-          case 'cdreset': u.skillCd = 0; break;
+          // Heróis não têm mais recarga em segundos: cada 3 s de recarga devolvidos viram 1 Ponto de Técnica.
+          case 'cdr': if (u.side === 'hero') this.addSp(e.v / 3); else targets.forEach(tg => { tg.skillCd = Math.max(0, tg.skillCd - e.v); }); break;
+          case 'cdreset': if (u.side === 'hero') { (u.skills || []).forEach(k => { k.tcd = 0; }); this.addSp(1); } else u.skillCd = 0; break;
+          case 'sp': if (u.side === 'hero') this.addSp(e.v); break;
+          case 'brk': targets.forEach(tg => this.toughAdd(tg, e.v * this.weakness(u, tg) * (1 + (u.st.breakPow || 0)), u)); break;
+          case 'adv': targets.forEach(tg => { tg.atkCd = Math.max(0, tg.atkCd - TURN * e.v); }); break;
           // Remove escudos e bônus do alvo.
           case 'dispel': targets.forEach(tg => { tg.shield = 0; tg.effects = tg.effects.filter(x => DEBUFFS.has(x.s)); this.emit('onFx', { type:'text', uid:tg.uid, text:'DISSIPADO', color:'#bff4ff' }); }); break;
           // Atrasa as habilidades (e ataques preparados) do alvo.
-          case 'delay': targets.forEach(tg => { tg.skillCd = (tg.skillCd || 0) + e.v; (tg.specials || []).forEach(sp => { sp.t += e.v; }); if (tg.windup > 0) tg.windup += e.v * .5; }); break;
+          // Atrasa o alvo: habilidade, golpe preparado e a próxima vez dele. Contra heróis, atrasa a vez e tira 1 PT da equipe.
+          case 'delay': targets.forEach(tg => { tg.atkCd += e.v * .5; if (tg.side !== 'hero') { tg.skillCd = (tg.skillCd || 0) + e.v; (tg.specials || []).forEach(sp => { sp.t += e.v; }); if (tg.windup > 0) tg.windup += e.v * .5; } });
+            if (u.side !== 'hero' && targets.some(tg => tg.side === 'hero')) this.addSp(-1); break;
           // Finaliza quem está abaixo do limite de HP (chefes e chefes de andar resistem).
           case 'execute': targets.forEach(tg => { if (!tg.boss && !tg.miniboss && tg.alive && tg.hp / tg.maxHp <= e.th) { this.emit('onFx', { type:'text', uid:tg.uid, text:'EXECUTADO', color:'#ff5d6c' }); this.applyRawDamage(tg, tg.hp + tg.shield + 1, u, { kind:'skill' }); } }); break;
           // Dano que salta entre inimigos, perdendo força a cada salto.
-          case 'chain': { let m = e.m, last = null; const pool = this.opponents(u); for (let j = 0; j < (e.n || 3) && pool.some(x => x.alive); j++) { const opts = pool.filter(x => x.alive && x !== last); const tg = j === 0 && ctx.target?.alive ? ctx.target : opts.length ? U.pick(opts) : null; if (!tg) break; dealt += Math.max(0, this.hit(u, tg, m, { kind, manual:ctx.manual, special:ctx.special })); last = tg; m *= (e.fall || .7); } break; }
+          case 'chain': { let m = e.m, last = null; const pool = this.opponents(u); for (let j = 0; j < (e.n || 3) && pool.some(x => x.alive); j++) { const opts = pool.filter(x => x.alive && x !== last); const tg = j === 0 && ctx.target?.alive ? ctx.target : opts.length ? U.pick(opts) : null; if (!tg) break; dealt += Math.max(0, this.hit(u, tg, m, { kind, manual:ctx.manual, special:ctx.special, act:ctx.act })); last = tg; m *= (e.fall || .7); } break; }
           case 'hp': u.hp = Math.max(1, u.hp + u.maxHp * e.p); this.emit('onFx', { type:'damage', uid:u.uid, value:Math.round(-u.maxHp * e.p), side:u.side, color:'#ff9aa4' }); break;
         }
       }
@@ -1192,12 +1405,18 @@
         return -1;
       }
       let raw = this.stat(src, 'atk') * mult;
+      if (o.hpm) raw += src.maxHp * o.hpm;
       if (o.kind === 'skill' || o.kind === 'ult') raw *= 1 + (src.st.skill || 0);
       if (o.kind === 'skill') raw *= 1 + (src.st.skillMastery || 0);
       if (o.kind === 'ult') raw *= 1 + (src.st.ultDmg || 0);
-      if (o.manual && (o.kind === 'ult' || o.kind === 'skill')) raw *= o.kind === 'ult' ? MANUAL.ult : MANUAL.skill; // comando do jogador rende mais
+      if (o.manual && o.kind === 'ult') raw *= MANUAL.ult;                        // ultimate comandada pelo jogador rende mais
+      if (o.act?.q) raw *= o.act.q === 2 ? TIMED.perfect : TIMED.good;            // golpe cronometrado
       if (o.kind === 'ult' && this.chainBonus) raw *= 1 + this.chainBonus;
-      if (tg.broken > 0) raw *= 1 + BREAK.dmg;
+      if (tg.broken > 0) raw *= (1 + BREAK.dmg) * (1 + (o.vsBroken || 0));
+      if (o.vs && this.has(tg, o.vs.s)) raw *= 1 + o.vs.v;
+      if (o.perDebuff) raw *= 1 + o.perDebuff * Math.min(5, new Set(tg.effects.filter(e => DEBUFFS.has(e.s)).map(e => e.s)).size);
+      if (o.spScale) raw *= 1 + o.spScale * Math.floor(this.sp || 0);
+      if (o.lowSelf) raw *= 1 + o.lowSelf * (1 - src.hp / src.maxHp);
       if (src.side === 'hero' && tg.worldBoss && this.opts.ally) raw *= 1 + Math.min(.5, this.opts.ally * .02); // Bênção da Aliança
       const critChance = this.stat(src, 'crit') + (o.crit || 0);
       const crit = U.random() < critChance;
@@ -1232,7 +1451,8 @@
       raw *= U.rand(.92, 1.08);
       const dmg = Math.max(1, Math.round(raw));
       const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em, broken:tg.broken > 0 });
-      this.addBreak(src, tg, final, o.kind, em);
+      this.toughHit(src, tg, o);
+      this.elemental(src, tg, o, final);
       if (parry) this.onParry(src); else if (guarded) this.emit('onFx', { type:'guardHit', uid:tg.uid });
       const back = frac => { const v = Math.max(1, Math.round(final * frac)); return src.side === 'hero' ? Math.min(v, Math.max(1, Math.round(src.maxHp * THORN_CAP)), Math.max(0, Math.ceil(src.hp + src.shield) - 1)) : v; };
       if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) { const v = back(tg.thorns); if (v > 0) this.applyRawDamage(src, v, tg, { kind:'thorns', color:'#d8ad6a' }); }
@@ -1257,6 +1477,8 @@
       else {
         (tg.hooks?.low || []).forEach((h, idx) => { const key = `low${idx}`; if (tg.hp / tg.maxHp < h.th && !tg.flags[key] && !(h.once && tg.flags[`${key}once`])) { tg.flags[key] = true; if (h.once) tg.flags[`${key}once`] = true; this.execute(tg, h.eff, {}); this.emit('onFx', { type:'text', uid:tg.uid, text:'DESPERTAR!', color:'#ffd76a' }); } });
         if (tg.side === 'hero') this.party.forEach(al => { if (al === tg || !al.alive) return; (al.hooks.allyLow || []).forEach(h => { if (tg.hp / tg.maxHp < h.th && !al.flags.allyLowWave) { al.flags.allyLowWave = true; this.execute(al, h.eff, { target:tg }); } }); });
+        // Contra-ataque (bônus 'counter'): devolve o golpe direto, uma vez por passo.
+        if (src && src.alive && src.side !== tg.side && !NO_COUNTER.has(o.kind) && tg.counterAt !== this.zoneElapsed) { const cv = this.eff(tg, 'counter'); if (cv > 0) { tg.counterAt = this.zoneElapsed; this.emit('onFx', { type:'text', uid:tg.uid, text:'CONTRA-ATAQUE', color:'#ffd9a8' }); this.hit(tg, src, cv, { kind:'counter' }); } }
       }
       return dmg;
     }
@@ -1295,7 +1517,7 @@
     // ---------- consumíveis em combate ----------
     // ---------- Modo AFK Total ----------
     // AFK Total = FARM: fica no estágio atual repetindo (nunca avança sozinho). Se perder, recua um estágio e farma ali.
-    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoSkill = true; st.autoAdvance = false; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
+    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) this.awaiting = null; if (on) { st.auto = true; st.autoSkill = true; st.autoAdvance = false; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
     // Durante a luta: poção quando a equipe está mal, elixir contra chefes com a energia baixa.
     afkTick() {
       const alive = this.party.filter(u => u.alive); if (!alive.length) return;
@@ -2577,6 +2799,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { GUARD, MANUAL, BEAT, DEFEND, THORN_CAP, guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { GUARD, MANUAL, BEAT, DEFEND, THORN_CAP, SP, TURN, TOUGH, TIMED, REACT, ALLOUT, guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

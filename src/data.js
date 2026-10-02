@@ -28,7 +28,7 @@
     Executor:  { icon:'刃', title:'Lâmina Jurada', promise:'Caça alvos prioritários e converte leitura de risco em explosões de dano.', tradeoff:'Brilha com precisão; posicionamento ruim é punido depressa.', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
       trait:'Duelista: base de ATK e dano crítico altas, pouca defesa.', baseBonus:{ critDmg:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe +12% dano crítico', stats:{ critDmg:.12 } }, { n:3, text:'Equipe +12% dano crítico e +5% crítico', stats:{ critDmg:.12, crit:.05 } }] },
-    Arcanista: { icon:'術', title:'Tecedor da Fenda', promise:'Manipula elementos, recargas e efeitos para mudar o ritmo da batalha.', tradeoff:'Grande impacto por habilidade, pouca tolerância a foco inimigo.', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
+    Arcanista: { icon:'術', title:'Tecedor da Fenda', promise:'Manipula elementos, Pontos de Técnica e efeitos para mudar o ritmo da batalha.', tradeoff:'Grande impacto por habilidade, pouca tolerância a foco inimigo.', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
       trait:'Canalizador: base de dano de habilidade alta, corpo frágil.', baseBonus:{ skill:.20 }, threat:1,
       synergy:[{ n:2, text:'Equipe +10% dano de habilidade', stats:{ skill:.10 } }, { n:3, text:'Equipe +10% dano de habilidade e +10% energia', stats:{ skill:.10, nrg:.10 } }] },
     Atirador:  { icon:'弓', title:'Vigia das Rotas', promise:'Mantém dano constante, explora marcas e desmonta ameaças antes que se aproximem.', tradeoff:'Precisa de tempo e cobertura para alcançar sua melhor cadência.', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
@@ -297,7 +297,7 @@
         { at:.6, text:'Ilusões, esquiva elevada', buff:{ dodge:.15 }, specials:[{ name:'Nove Caudas', cd:15, windup:2.4, eff:[{ k:'dmg', m:2.3, to:'all' }, { k:'st', s:'burn', d:6, v:.5, ch:1, to:'all' }] }, { name:'Encanto', cd:12, windup:1.2, eff:[{ k:'st', s:'stun', d:2.5, ch:1, to:'high' }, { k:'dmg', m:2.4, to:'high' }] }] },
         { at:.3, text:'Chama eterna', buff:{ spd:.3, atk:.2 }, specials:[{ name:'Nove Caudas', cd:11, windup:2.2, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'burn', d:6, v:.6, ch:1, to:'all' }] }] }
       ] }),
-    boss_sand:    E({ name:'Apep, Serpente do Tempo', sprite:'dragon_amber', el:'Terra', role:'Chefe', boss:true, hp:260000, atk:200, def:150, spd:.8, crit:.12, xp:4200, gold:[4200, 5400], enrage:170,
+    boss_sand:    E({ name:'Apep, Serpente do Tempo', sprite:'dragon_amber', el:'Terra', role:'Chefe', boss:true, weak:'Executor', hp:260000, atk:200, def:150, spd:.8, crit:.12, xp:4200, gold:[4200, 5400], enrage:170,
       innate:{ drain:{ every:16, min:60, nrg:60, atk:.12, max:5 }, text:'Devorador de Horas: a cada 16s rouba 60 de energia do herói mais carregado e ganha +12% de ATK (até 5×). Gaste as ultimates; quebrar a postura dele apaga os acúmulos.' }, desc:'A serpente que devora as horas. Engole o herói mais forte, invoca guerreiros de areia e, no fim, quebra a Ampulheta.',
       skill:{ name:'Presas de Âmbar', cd:6, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'poison', d:6, v:.3, ch:1, to:'tgt' }] },
       phases:[
@@ -305,7 +305,7 @@
         { at:.66, text:'Servos de âmbar despertam', summon:{ id:'sand_servant', n:2, every:26 }, specials:[{ name:'Tempestade do Deserto', cd:15, windup:2.6, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:13, windup:1.6, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.0, to:'high' }] }] },
         { at:.33, text:'A Ampulheta se quebra', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Ampulheta Quebrada', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.8, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:11, windup:1.4, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.2, to:'high' }] }] }
       ] }),
-    boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, hp:215000, atk:208, def:150, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
+    boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, weak:'Vanguarda', hp:215000, atk:208, def:150, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
       innate:{ immune:'Raio', absorb:.2, text:'Condutor Divino: imune a heróis de Raio, e 20% desse dano o cura. Monte a equipe sem Raio; Terra é o elemento forte contra ele.' }, desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
       skill:{ name:'Rufar dos Tambores', cd:6, eff:[{ k:'chain', m:1.6, n:4, fall:.8 }] },
       phases:[
@@ -314,6 +314,41 @@
         { at:.33, text:'Tempestade sem fim', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Chuva de Raios', cd:11, windup:2.2, eff:[{ k:'dmg', m:.9, to:'randEach', hits:5 }, { k:'nrg', v:-25, to:'all' }] }, { name:'Relâmpago Certeiro', cd:10, windup:1.2, eff:[{ k:'dmg', m:3.3, to:'high', pierce:.4 }] }] }
       ] })
   };
+
+  // Família de cada criatura (a base do desenho) e a classe de herói contra a qual ela é fraca: fraqueza tira
+  // Resistência em dobro (ver TOUGH em src/engine.js). Um inimigo pode fixar a própria com `weak`.
+  const FAMILY_FIX = { rift_colossus:'golem', mimic:'mimic', wb_titan:'golem', sand_servant:'oni', storm_servant:'oni', golem_fujin:'oni', rift_devourer:'oni', rift_hound:'fox',
+    eclipse_shade:'fox', archive_sentinel:'revenant', rift_herald:'revenant', rift_weaver:'spider', rift_eye:'wisp', rift_wyrm:'dragon', mizuchi_spawn:'dragon', wb_frost_dragon:'dragon',
+    wb_storm_kitsune:'fox', wb_blood_moon:'revenant', boss:'revenant', boss_tide:'dragon', boss_event:'fox', boss_sand:'dragon', boss_sky:'oni' };
+  const familyOf = id => FAMILY_FIX[id] || String(id).split('_')[0];
+  const FAMILY_WEAK = { golem:'Vanguarda', oni:'Executor', spider:'Atirador', fox:'Atirador', wisp:'Arcanista', dragon:'Arcanista', revenant:'Suporte', mimic:'Executor' };
+  // Reações elementais: habilidade ou ultimate deixa no inimigo a marca do elemento do herói; um golpe de OUTRO elemento
+  // consome a marca e dispara a reação do par. bonus/spread: fração do dano do golpe (no alvo / nos outros inimigos);
+  // aoe: golpe extra em todos (× ATK); st/stAll: efeito no alvo / em todos [efeito, duração, valor]; heal: cura do
+  // aliado mais ferido (fração do HP); nrg: energia para quem disparou; brk: Resistência tirada.
+  const RX = (id, name, color, o) => ({ id, name, color, ...o });
+  const REACTIONS = {
+    'Fogo+Gelo':RX('melt', 'Derretimento', '#ffb07a', { bonus:.5 }),
+    'Fogo+Água':RX('vapor', 'Vapor', '#cfe9ff', { bonus:.4 }),
+    'Raio+Água':RX('shock', 'Eletrochoque', '#c9a4ff', { bonus:.15, st:['stun', 1], spread:.3 }),
+    'Gelo+Raio':RX('supercond', 'Supercondução', '#b8d8ff', { bonus:.15, st:['armorBreak', 6, .3] }),
+    'Fogo+Raio':RX('overload', 'Sobrecarga', '#ff8a5c', { aoe:.6 }),
+    'Fogo+Vento':RX('wildfire', 'Incêndio', '#ff9a4f', { stAll:['burn', 5, .35] }),
+    'Fogo+Natureza':RX('burnoff', 'Queimada', '#ff7a4f', { bonus:.15, st:['burn', 6, .7] }),
+    'Gelo+Vento':RX('blizzard', 'Nevasca', '#bfefff', { stAll:['slow', 4, .35] }),
+    'Gelo+Água':RX('frozen', 'Congelamento', '#91dfff', { st:['freeze', 1.5] }),
+    'Natureza+Água':RX('bloom', 'Florescer', '#7dffa8', { bonus:.1, heal:.08 }),
+    'Natureza+Raio':RX('catalyze', 'Catalisar', '#b6f27a', { bonus:.35, nrg:8 }),
+    'Luz+Sombra':RX('eclipse', 'Eclipse', '#e7c9ff', { bonus:.2, st:['mark', 6, .2] })
+  };
+  const RX_EARTH = RX('shatter', 'Estilhaço', '#d8ad6a', { bonus:.1, brk:3 }), RX_WIND = RX('swirl', 'Redemoinho', '#9ce9cc', { spread:.4 }), RX_ANY = RX('resonance', 'Ressonância', '#ffe19a', { bonus:.25 });
+  const reaction = (a, b) => (a === b ? null : REACTIONS[`${a}+${b}`] || REACTIONS[`${b}+${a}`] || (a === 'Terra' || b === 'Terra' ? RX_EARTH : a === 'Vento' || b === 'Vento' ? RX_WIND : RX_ANY));
+  const reactionList = [...Object.entries(REACTIONS).map(([k, r]) => ({ ...r, pair:k.split('+') })), { ...RX_EARTH, pair:['Terra', 'qualquer outro'] }, { ...RX_WIND, pair:['Vento', 'os demais'] }, { ...RX_ANY, pair:['outros pares'] }];
+
+  // Com a Quebra para todos (Resistência, dano de quebra, +35% de dano no inimigo quebrado, Assalto Total) e as reações
+  // elementais, a equipe mata mais rápido do que quando os inimigos foram calibrados. Para o tempo de luta medido
+  // continuar o mesmo (tools/balance.js), a vida de todo inimigo sobe nesta proporção.
+  const ENEMY_HP = 1.35;
 
   // Variantes Alfa, versões raras e nomeadas de monstros comuns (mais fortes, melhor loot).
   const ALPHA = { chance:.012, hp:2.6, atk:1.5, prefix:'Alfa' };
@@ -819,10 +854,11 @@
     dr:{ name:'Barreira', icon:'障', color:'#8fe9ff', text:'Recebe menos dano.', buff:true },
     regen:{ name:'Regeneração', icon:'✚', color:'#5fe39a', text:'Recupera HP por segundo.', buff:true },
     stealth:{ name:'Furtividade', icon:'影', color:'#aaa5d0', text:'Não pode ser alvo de ataques diretos.', buff:true },
-    taunt:{ name:'Provocação', icon:'挑', color:'#ff9a6b', text:'Inimigos são forçados a atacá-lo.', buff:true }
+    taunt:{ name:'Provocação', icon:'挑', color:'#ff9a6b', text:'Inimigos são forçados a atacá-lo.', buff:true },
+    counter:{ name:'Contra-ataque', icon:'剣', color:'#ffd9a8', text:'Devolve o golpe a quem o atingir.', buff:true }
   };
 
-  const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Recarga de habilidade', startNrg:'Energia inicial', elem:'Dano elemental' };
+  const statNames = { breakPow:'Poder de quebra', chainPow:'Bônus por elo', atk:'ATK', hp:'HP', def:'DEF', spd:'Velocidade', crit:'Crítico', critDmg:'Dano crítico', dodge:'Esquiva', lifesteal:'Roubo de vida', dr:'Redução de dano', regen:'Regeneração', healPow:'Cura e escudos', dot:'Dano contínuo', boss:'Dano contra chefes', pierce:'Perfuração de DEF', skill:'Dano de habilidade', nrg:'Ganho de energia', cdr:'Economia de técnica', startNrg:'Energia inicial', elem:'Dano elemental' };
 
-  KT.Data = { GUILD_RANKS, levelPower, levelOfPower, THREAT, threat, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
+  KT.Data = { ENEMY_HP, familyOf, FAMILY_WEAK, REACTIONS, reaction, reactionList, GUILD_RANKS, levelPower, levelOfPower, THREAT, threat, STORAGE, SEASON, BOXES, PROF, PROF_MATS, PROF_RECIPES, ECON, PVP, PVP_SHOP, GUILD, HOUSE, PARAGON, worldBoss, expeditions, bountyShop, riftMutations, elements, classes, elementSynergy, bonds, enemies, zones, bossTiers, STAGE_GROWTH, RIFT, ALPHA, worldEvents, calmEvent, eventSchedule, EVENT_TZ_OFFSET_MIN, EVENT_BLOCK_MS, chronicles, dailies, loginRewards, RESEARCH, encounters, blessings, story, speakers, guide, contracts, achievements, buildings, rarities, heroRarities, statusInfo, statNames };
 })();

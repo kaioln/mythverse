@@ -1,5 +1,5 @@
 {
- "total_usd": 12.3762,
+ "total_usd": 13.3208,
  "calls": [
   {
    "hero": "sora",
@@ -12054,6 +12054,762 @@
     "total_tokens": 2181
    },
    "at": "2026-10-01 23:31:24"
+  },
+  {
+   "hero": "icons:kit-00",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0173,
+   "usage": {
+    "input_tokens": 1406,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 1406
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 1749
+   },
+   "at": "2026-10-02 01:49:51"
+  },
+  {
+   "hero": "icons:kit-01",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0299,
+   "usage": {
+    "input_tokens": 3000,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1464
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3343
+   },
+   "at": "2026-10-02 01:51:33"
+  },
+  {
+   "hero": "icons:kit-13",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0294,
+   "usage": {
+    "input_tokens": 2901,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1365
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3244
+   },
+   "at": "2026-10-02 01:51:34"
+  },
+  {
+   "hero": "icons:kit-07",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.03,
+   "usage": {
+    "input_tokens": 3014,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1478
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3357
+   },
+   "at": "2026-10-02 01:51:35"
+  },
+  {
+   "hero": "icons:kit-02",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0298,
+   "usage": {
+    "input_tokens": 2984,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1448
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3327
+   },
+   "at": "2026-10-02 01:52:18"
+  },
+  {
+   "hero": "icons:kit-14",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0295,
+   "usage": {
+    "input_tokens": 2920,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1384
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3263
+   },
+   "at": "2026-10-02 01:52:19"
+  },
+  {
+   "hero": "icons:kit-08",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0296,
+   "usage": {
+    "input_tokens": 2936,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1400
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3279
+   },
+   "at": "2026-10-02 01:52:21"
+  },
+  {
+   "hero": "icons:kit-03",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0299,
+   "usage": {
+    "input_tokens": 2991,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1455
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3334
+   },
+   "at": "2026-10-02 01:53:03"
+  },
+  {
+   "hero": "icons:kit-15",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0299,
+   "usage": {
+    "input_tokens": 2999,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1463
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3342
+   },
+   "at": "2026-10-02 01:53:05"
+  },
+  {
+   "hero": "icons:kit-09",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0297,
+   "usage": {
+    "input_tokens": 2966,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1430
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3309
+   },
+   "at": "2026-10-02 01:53:07"
+  },
+  {
+   "hero": "icons:ui-battle-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0161,
+   "usage": {
+    "input_tokens": 587,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 587
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1026
+   },
+   "at": "2026-10-02 01:53:19"
+  },
+  {
+   "hero": "icons:ui-battle-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0161,
+   "usage": {
+    "input_tokens": 587,
+    "input_tokens_details": {
+     "image_tokens": 0,
+     "text_tokens": 587
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1026
+   },
+   "at": "2026-10-02 01:53:40"
+  },
+  {
+   "hero": "icons:kit-16",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.03,
+   "usage": {
+    "input_tokens": 3012,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1476
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3355
+   },
+   "at": "2026-10-02 01:53:49"
+  },
+  {
+   "hero": "icons:kit-04",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0297,
+   "usage": {
+    "input_tokens": 2963,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1427
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3306
+   },
+   "at": "2026-10-02 01:53:51"
+  },
+  {
+   "hero": "icons:kit-10",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0294,
+   "usage": {
+    "input_tokens": 2906,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1370
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3249
+   },
+   "at": "2026-10-02 01:53:52"
+  },
+  {
+   "hero": "icons:kit-10",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0294,
+   "usage": {
+    "input_tokens": 2906,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1370
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3249
+   },
+   "at": "2026-10-02 01:54:14"
+  },
+  {
+   "hero": "icons:kit-17",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0297,
+   "usage": {
+    "input_tokens": 2960,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1424
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3303
+   },
+   "at": "2026-10-02 01:54:36"
+  },
+  {
+   "hero": "icons:kit-05",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0297,
+   "usage": {
+    "input_tokens": 2961,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1425
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3304
+   },
+   "at": "2026-10-02 01:54:43"
+  },
+  {
+   "hero": "icons:kit-11",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0296,
+   "usage": {
+    "input_tokens": 2944,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1408
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3287
+   },
+   "at": "2026-10-02 01:54:57"
+  },
+  {
+   "hero": "icons:ui-res-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1577,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 553
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2016
+   },
+   "at": "2026-10-02 01:55:19"
+  },
+  {
+   "hero": "icons:ui-status-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0242,
+   "usage": {
+    "input_tokens": 1585,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 561
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2024
+   },
+   "at": "2026-10-02 01:55:21"
+  },
+  {
+   "hero": "icons:kit-06",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0299,
+   "usage": {
+    "input_tokens": 3000,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1464
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3343
+   },
+   "at": "2026-10-02 01:55:25"
+  },
+  {
+   "hero": "icons:kit-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0296,
+   "usage": {
+    "input_tokens": 2934,
+    "input_tokens_details": {
+     "image_tokens": 1536,
+     "text_tokens": 1398
+    },
+    "output_tokens": 343,
+    "output_tokens_details": {
+     "image_tokens": 343,
+     "text_tokens": 0
+    },
+    "total_tokens": 3277
+   },
+   "at": "2026-10-02 01:55:41"
+  },
+  {
+   "hero": "icons:ui-city-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0242,
+   "usage": {
+    "input_tokens": 1596,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 572
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2035
+   },
+   "at": "2026-10-02 01:55:57"
+  },
+  {
+   "hero": "icons:ui-status-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1563,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 539
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2002
+   },
+   "at": "2026-10-02 01:56:01"
+  },
+  {
+   "hero": "icons:ui-kind-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0242,
+   "usage": {
+    "input_tokens": 1587,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 563
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2026
+   },
+   "at": "2026-10-02 01:56:36"
+  },
+  {
+   "hero": "icons:ui-stat-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1559,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 535
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1998
+   },
+   "at": "2026-10-02 01:56:40"
+  },
+  {
+   "hero": "icons:ui-stat-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1553,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 529
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1992
+   },
+   "at": "2026-10-02 01:57:18"
+  },
+  {
+   "hero": "icons:ui-nav-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0243,
+   "usage": {
+    "input_tokens": 1613,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 589
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2052
+   },
+   "at": "2026-10-02 01:57:21"
+  },
+  {
+   "hero": "icons:ui-misc-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0238,
+   "usage": {
+    "input_tokens": 1504,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 480
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1943
+   },
+   "at": "2026-10-02 01:57:56"
+  },
+  {
+   "hero": "icons:ui-nav-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1564,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 540
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2003
+   },
+   "at": "2026-10-02 01:58:01"
+  },
+  {
+   "hero": "icons:ui-misc-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0238,
+   "usage": {
+    "input_tokens": 1504,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 480
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1943
+   },
+   "at": "2026-10-02 01:58:19"
+  },
+  {
+   "hero": "icons:ui-nav-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1564,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 540
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2003
+   },
+   "at": "2026-10-02 01:58:26"
+  },
+  {
+   "hero": "icons:ui-misc-0",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0238,
+   "usage": {
+    "input_tokens": 1504,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 480
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1943
+   },
+   "at": "2026-10-02 01:58:40"
+  },
+  {
+   "hero": "icons:ui-nav-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1564,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 540
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2003
+   },
+   "at": "2026-10-02 01:58:46"
+  },
+  {
+   "hero": "icons:ui-misc-1",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0236,
+   "usage": {
+    "input_tokens": 1469,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 445
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1908
+   },
+   "at": "2026-10-02 01:59:20"
   }
  ]
 }

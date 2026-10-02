@@ -48,6 +48,28 @@ Abaixo do palco, o **console de batalha** (largura do palco), em duas linhas:
 - Implementação: `src/battle-hud.js` (módulo novo sobre `UIController`), `theme-battle.css`, marcação em `index.html`.
   O cartão antigo de cada herói (`#party-strip`) deixa de existir em luta.
 
+### Como ficou (medido no navegador, 2026-10-02)
+
+O desenho acima custava palco: com o console inteiro embaixo, a 1366×657 (janela de notebook) o palco caía de 851 para
+688 px de largura. O que foi construído:
+
+- **PC, janela larga e baixa** (quase todo notebook e monitor): os heróis vão para uma **coluna à esquerda do palco**
+  (250 px; retrato, nome, classe e elemento, vida atual / máxima, energia, efeitos, ultimate) e embaixo fica só o
+  **comando** (106 px): equipe (AUTO/SEMI/MANUAL, Guarda, poção, elixir) · Pontos de Técnica e barra de ações · alvo.
+  Palco a 1366×657: 820×461. `battle-hud.js` põe `body.bh-l` quando a coluna cabe e o palco fica maior assim.
+- **PC, janela estreita ou painel lateral aberto**: console inteiro embaixo (normal a partir de 890 px de palco; abaixo
+  disso a equipe sobe para a linha dos heróis, com molduras compactas).
+- **Celular**: alvo (uma faixa: vida e Resistência | fraquezas e intenção) · heróis · comando, com a Guarda grande na
+  linha dos Pontos de Técnica. Em tela baixa a página desce sozinha o que falta para a barra ficar à vista; abaixo de
+  680 px de altura o painel do alvo sai (a placa do inimigo no palco já mostra o mesmo).
+- A barra de ações é **só ícones** (72 heróis × 4 nomes não cabem em legenda sem cortar): o nome, o custo e a descrição
+  aparecem na **linha de informação** do console ao apontar; a dica flutuante ficou só para o toque (dedo segurado),
+  porque com mouse ela cobria os heróis.
+- O **Assalto Total** toma o lugar da linha de informação (não cobre a barra nem o palco).
+- O retrato grande de "quem age" saiu: a moldura do herói ganha um entalhe apontando para o comando (ou para o palco).
+- Conferência: `tests` não cobrem tela; os tamanhos (320 a 2560), o uso (cursor, golpe cronometrado, efeitos, Assalto
+  Total, AUTO), o estouro e a varredura de painéis foram feitos em Chrome headless pelo protocolo DevTools.
+
 ## 3. Ícones pintados
 
 - Todos os ícones do site passam a ser pinturas feitas para o jogo, no mesmo traço da arte (nanquim grosso, cores

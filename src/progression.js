@@ -95,7 +95,7 @@
     Atirador:{ a:{ name:'Olho do Vendaval', role:'Cadência de tiro', text:'+6% velocidade de ataque e +3% crítico.', stats:{ spd:.06, crit:.03 }, trans:'Tempestade Viva' },
                b:{ name:'Caçador de Relíquias', role:'Caça a chefes', text:'+10% dano em chefes e +5% perfuração.', stats:{ boss:.10, pierce:.05 }, trans:'Arqueiro do Fim' } },
     Suporte:{ a:{ name:'Tecelão de Almas', role:'Cura e escudos', text:'+10% cura/escudos e +5% HP.', stats:{ healPow:.10, hp:.05 }, trans:'Guardião das Almas' },
-              b:{ name:'Sacerdote da Aurora', role:'Apoio e recarga', text:'+6% dano de habilidade e +5% recarga.', stats:{ skill:.06, cdr:.05 }, trans:'Profeta da Aurora' } }
+              b:{ name:'Sacerdote da Aurora', role:'Apoio e economia', text:'+6% dano de habilidade e +5% de Economia de técnica.', stats:{ skill:.06, cdr:.05 }, trans:'Profeta da Aurora' } }
   };
   // Compatibilidade: PR.jobs[cls].name continua sendo o caminho A.
   Object.values(jobs).forEach(j => { j.name = j.a.name; j.text = j.a.text; });
@@ -158,12 +158,12 @@
       T('a2', 0, 290, 'Fluxo de Mana', 'battery', 5, { nrg:.03 }, 'Mais energia para ultimates.'),
       T('a3', 0, 470, 'Afinidade Elemental', 'star', 5, { elem:.03 }, 'Mais dano com vantagem elemental.'),
       T('a4', 0, 650, 'Chama Interior', 'flame', 5, { dot:.05 }, 'Queimaduras e venenos mais fortes.'),
-      T('a5', 1, 110, 'Canalização', 'hourglass', 5, { cdr:.03 }, 'Habilidades recarregam mais rápido.', { req:['a1'] }),
+      T('a5', 1, 110, 'Canalização', 'hourglass', 5, { cdr:.03 }, 'Economia de técnica: chance de a habilidade devolver 1 PT.', { req:['a1'] }),
       T('a6', 1, 290, 'Sobrecarga', 'bolt', 5, { ultDmg:.05 }, 'Ultimates mais fortes.', { req:['a2'] }),
       T('a7', 1, 470, 'Despertar Rápido', 'sparkle', 5, { startNrg:4 }, 'Começa com energia.', { req:['a3'] }),
       T('a8', 1, 650, 'Precisão Arcana', 'target', 5, { crit:.01 }, 'Mais críticos.', { req:['a4'] }),
       T('aN', 1, 470, 'Mente Arcana', 'book', 1, { skill:.10, nrg:.10 }, 'NOTÁVEL: poder e energia.', { req:['a6|a7'], notable:true, y:1.5 }),
-      T('a9', 2, 110, 'Eco Arcano', 'orb', 5, {}, 'Ultimates recarregam a habilidade.', { req:['a5'], hook:r => ({ onUlt:{ eff:[{ k:'cdr', v:1.2 * r, to:'self' }] } }), hookText:r => `Ao usar a ultimate: −${(1.2 * r).toFixed(1).replace('.', ',')}s na recarga da habilidade.` }),
+      T('a9', 2, 110, 'Eco Arcano', 'orb', 5, {}, 'Ultimates devolvem Pontos de Técnica.', { req:['a5'], hook:r => ({ onUlt:{ eff:[{ k:'cdr', v:1.2 * r, to:'self' }] } }), hookText:r => `Ao usar a ultimate: devolve ${(.4 * r).toFixed(1).replace('.', ',')} PT.` }),
       T('a10', 2, 290, 'Poder Bruto', 'sword', 5, { atk:.03 }, 'Mais ATK.', { req:['aN'] }),
       T('a11', 2, 650, 'Penetração Mística', 'spear', 5, { pierce:.03 }, 'Ignora DEF.', { req:['a8'] }),
       T('aK', 2, 470, 'Singularidade', 'moon', 1, { ultDmg:.40, hp:-.15 }, 'PEDRA-CHAVE: +40% dano de ultimate. −15% HP.', { req:['aN'], keystone:true })
@@ -190,7 +190,7 @@
       T('s4', 0, 650, 'Inspiração', 'battery', 5, { nrg:.03 }, 'Mais energia.'),
       T('s5', 1, 110, 'Bênção Inicial', 'wings', 5, {}, 'Protege a equipe no início da onda.', { req:['s1'], hook:r => ({ start:{ eff:[{ k:'shield', p:.012 * r, to:'allies', d:8 }] } }), hookText:r => `No início de cada onda: escudo de ${(1.2 * r).toFixed(1).replace('.', ',')}% do HP em toda a equipe.` }),
       T('s6', 1, 290, 'Guarda Sagrada', 'shield', 5, { def:.03 }, 'Mais DEF.', { req:['s2'] }),
-      T('s7', 1, 470, 'Prece Rápida', 'hourglass', 5, { cdr:.03 }, 'Habilidades recarregam mais rápido.', { req:['s3'] }),
+      T('s7', 1, 470, 'Prece Rápida', 'hourglass', 5, { cdr:.03 }, 'Economia de técnica: chance de a habilidade devolver 1 PT.', { req:['s3'] }),
       T('s8', 1, 650, 'Purificação', 'sparkle', 1, {}, 'A habilidade também purifica o aliado mais ferido.', { req:['s4'], hook:() => ({ onSkill:{ eff:[{ k:'cleanse', to:'lowAlly' }] } }) }),
       T('sN', 1, 470, 'Luz Guia', 'star', 1, { healPow:.12, regen:.003 }, 'NOTÁVEL: presença curadora.', { req:['s6|s7'], notable:true, y:1.5 }),
       T('s9', 2, 110, 'Aura Vital', 'drop', 5, {}, 'Regeneração para toda a equipe.', { req:['s5'], hook:r => ({ start:{ eff:[{ k:'buff', s:'regen', v:.003 * r, d:12, to:'allies' }] } }), hookText:r => `No início de cada onda: equipe regenera ${(.3 * r).toFixed(1).replace('.', ',')}% HP/s por 12s.` }),
@@ -227,7 +227,7 @@
     ],
     Suporte:[
       T('s12', 3, 150, 'Graça Profunda', 'cross', 5, { healPow:.04, hp:.02 }, 'Curas mais fortes.', { req:['s9|s10'] }),
-      T('s13', 3, 810, 'Hino Sagrado', 'orb', 5, { skill:.03, cdr:.02 }, 'Habilidades mais frequentes.', { req:['s11'] }),
+      T('s13', 3, 810, 'Hino Sagrado', 'orb', 5, { skill:.03, cdr:.02 }, 'Habilidades mais fortes e mais econômicas.', { req:['s11'] }),
       T('sA', 3, 370, 'Santuário de Almas', 'wings', 1, { healPow:.20, dr:.04 }, 'PEDRA-ANGULAR (Guardião das Almas): no início de cada onda, escudo de 6% do HP para a equipe.', { req:['s12|s13'], capstone:true, branch:'a', hook:() => ({ start:{ eff:[{ k:'shield', p:.06, to:'allies', d:10 }] } }) }),
       T('sB', 3, 590, 'Alvorada', 'sparkle', 1, { skill:.12, nrg:.08 }, 'PEDRA-ANGULAR (Profeta da Aurora): a habilidade também dá 10 de energia à equipe.', { req:['s12|s13'], capstone:true, branch:'b', hook:() => ({ onSkill:{ eff:[{ k:'nrg', v:10, to:'allies' }] } }) })
     ]

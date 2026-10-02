@@ -138,6 +138,7 @@
       if (t === 'hitstop') { if (this.intense) this.hitstop = Math.max(this.hitstop, fx.time || .05); return; }
       if (t === 'attack') {
         const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
+        if (fx.q) this.later(.14, () => this.text(b.x, b.y - b.h - 30, fx.q === 2 ? 'PERFEITO!' : 'BOM', fx.q === 2 ? '#ffe28a' : '#fff1dc', fx.q === 2 ? 22 : 16, 1));
         const ranged = RANGED.has(fx.role), sv = this.v(fx.source);
         this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][sv.combo++ % 3]);
         if (ranged) { sv.lunge = { t:0, dur:.34, dx:16, dy:-6, hop:true }; this.launch(a, b, a.u); return; }
@@ -197,6 +198,7 @@
       if (t === 'cast') {
         const p = this.posOf(fx.source); if (!p) return;
         const s = this.v(fx.source); s.cast = fx.ult ? 1 : .6; s.castColor = fx.color; this.lastCaster = fx.source;
+        if (fx.q) this.later(.1, () => this.text(p.x, p.y - p.h - 58, fx.q === 2 ? 'PERFEITO!' : 'BOM', fx.q === 2 ? '#ffe28a' : '#fff1dc', fx.q === 2 ? 22 : 16, 1));
         this.playClip(fx.source, fx.ult ? 'ult' : 'cast');
         this.ring(p.x, p.y, fx.color, fx.ult ? 150 : 90);
         this.text(p.x, p.y - p.h - 34, fx.name, fx.enemy ? '#ffb0b8' : fx.color, fx.ult ? 22 : 18, 1.1);
@@ -261,14 +263,29 @@
       // Quebra de postura: estilhaços, anel duplo e aviso grande.
       if (t === 'break') {
         const p = this.posOf(fx.uid); if (!p) return;
-        this.v(fx.uid).broken = 1; this.hitstop = Math.max(this.hitstop, .16); this.shake = Math.max(this.shake, 12); this.freeze = Math.max(this.freeze, .09);
-        this.punch(1.05, p.x - 120, p.y - p.h * .4, .6);
-        this.screenFlash = { color:'#fff1c9', t:.22, max:.22 };
+        const big = p.u.boss || p.u.elite || p.u.miniboss;
+        this.v(fx.uid).broken = 1; this.hitstop = Math.max(this.hitstop, big ? .16 : .06); this.shake = Math.max(this.shake, big ? 12 : 5); if (big) this.freeze = Math.max(this.freeze, .09);
+        if (big) { this.punch(1.05, p.x - 120, p.y - p.h * .4, .6); this.screenFlash = { color:'#fff1c9', t:.22, max:.22 }; }
         this.ring(p.x, p.y - p.h * .45, '#ffe28a', 150, true); this.later(.08, () => this.ring(p.x, p.y - p.h * .45, '#ffffff', 220));
         for (let i = 0; i < 26; i++) { const a = U.rand(0, Math.PI * 2), sp = U.rand(220, 520); this.particles.push({ kind:'shard', x:p.x, y:p.y - p.h * .5, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 120, rot:U.rand(0, 6), vr:U.rand(-12, 12), color:i % 3 ? '#ffe9b0' : fx.color || '#ffb35c', life:U.rand(.5, .9), max:.9, size:U.rand(5, 11) }); }
-        this.text(p.x, p.y - p.h - 40, fx.canceled ? 'QUEBRA! ATAQUE CANCELADO' : 'QUEBRA!', '#ffe28a', fx.canceled ? 26 : 34, 1.6);
+        this.text(p.x, p.y - p.h - 40, fx.canceled ? 'QUEBRA! ATAQUE CANCELADO' : 'QUEBRA!', '#ffe28a', fx.canceled ? 26 : p.u.boss || p.u.elite ? 34 : 26, 1.6);
         return;
       }
+      // Reação elemental: o nome da reação sobe do alvo, na cor dela, com um anel duplo.
+      if (t === 'reaction') {
+        const p = this.posOf(fx.uid); if (!p) return;
+        this.later(.12, () => { this.text(p.x, p.y - p.h - 46, fx.name.toUpperCase(), fx.color || '#ffe19a', 19, 1.3); this.ring(p.x, p.y - p.h * .45, fx.color || '#ffe19a', 120, true); this.sparks(p.x, p.y - p.h * .5, 12, fx.color || '#ffe19a', 320); });
+        return;
+      }
+      // Assalto Total: faixa, clarão e um impacto em cada inimigo.
+      if (t === 'allOut') {
+        this.showBanner('ASSALTO TOTAL', 'todos os inimigos quebrados: a equipe inteira ataca', '#e0603f');
+        this.screenFlash = { color:'#ffd9c4', t:.4, max:.4 }; this.shake = Math.max(this.shake, 16); this.punch(1.07, 760, 520, .7);
+        this.engine.party.forEach(u => { if (u.alive) { this.playClip(u.uid, 'attack1'); this.v(u.uid).lunge = { t:0, dur:.5, dx:150, dy:0, dash:true }; } });
+        this.engine.enemies.forEach(u => { if (!u.alive) return; const q = this.posOf(u.uid); if (q) this.later(.14, () => { this.ring(q.x, q.y - q.h * .4, '#e0603f', 170, true); this.sparks(q.x, q.y - q.h * .5, 22, '#ffe1d0', 460); this.impact(q.x, q.y - q.h * .5, '#ff8a5c', 1.7); }); });
+        return;
+      }
+      if (t === 'allOutReady' || t === 'sp') return;
       if (t === 'chain') {
         const p = this.posOf(fx.uid);
         this.chainFx = { n:fx.n, t:0, dur:1.6, color:fx.color || '#c9472d' };
@@ -500,6 +517,7 @@
       this.worldTime += dt; this.shake = Math.max(0, this.shake - dt * 40); this.hitstop = this.intense ? Math.max(0, this.hitstop - dt) : 0;
       this.freeze = Math.max(0, (this.freeze || 0) - dt);
       if (this.qte) { this.qte.t += dt; if (this.qte.t > this.qte.dur + .45) this.qte = null; }
+      if (this.timing) { const tm = this.timing; if (tm.result === null) tm.t += dt; else { tm.done = (tm.done || 0) + dt; if (tm.done > .5) this.timing = null; } if (this.timing && tm.t > tm.dur + .5) this.timing = null; }
       { const cm = this.cam; cm.hold = Math.max(0, cm.hold - dt); if (cm.hold <= 0) cm.tz = 1;
         cm.z += (cm.tz - cm.z) * Math.min(1, dt * (cm.tz > cm.z ? 9 : 3)); cm.x += (cm.tx - cm.x) * Math.min(1, dt * 8); cm.y += (cm.ty - cm.y) * Math.min(1, dt * 8);
         if (cm.tz === 1 && Math.abs(cm.z - 1) < .0006) cm.z = 1; }
@@ -566,7 +584,7 @@
       if (this.shake > 0 && this.intense) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
       { const cm = this.cam; if (cm.z !== 1 && this.engine.zone.kind !== 'village') { c.translate(cm.x, cm.y); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y); } }
       this.hotspots = [];
-      this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawAmbient(false);
+      this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawTiming(); this.drawAmbient(false);
       c.restore();
       this.drawOverlay(); this.drawCutin(); this.drawBanner(); this.drawChain();
     }
@@ -760,6 +778,31 @@
       label(eng.guardT > 0 ? 'GUARDA ERGUIDA' : 'GOLPE PREPARADO: APARE NO BOTE', 296, 20, eng.guardT > 0 ? '#ffe28a' : '#fff1dc', eng.guardT > 0 ? .9 : .7 + .2 * pulse);
     }
 
+    // Golpe cronometrado: um anel fecha sobre o alvo da ordem. Confirmar com o anel na faixa dourada rende PERFEITO; na
+    // faixa clara, BOM. Quem julga é o console (src/battle-hud.js); aqui é só o desenho.
+    drawTiming() {
+      const tm = this.timing; if (!tm || this.engine.zone.kind === 'village') return;
+      const p = this.posOf(tm.uid); if (!p) return;
+      const c = this.ctx, k = U.clamp(tm.t / tm.dur, 0, 1), R = Math.max(40, Math.min(64, p.h * .26)), mid = (tm.perfect[0] + tm.perfect[1]) / 2, span = R * 2.1;
+      const rad = q => R + (1 - q / mid) * span, cx = p.x, cy = p.y - p.h * .5;
+      c.save(); c.translate(cx, cy);
+      c.globalAlpha = .5; c.fillStyle = 'rgba(14,10,20,.5)'; c.beginPath(); c.arc(0, 0, rad(tm.good[0]) + 6, 0, Math.PI * 2); c.fill();
+      // faixa clara (BOM) e faixa dourada (PERFEITO)
+      const band = (a, b, col, al) => { const r0 = Math.max(2, rad(b)), r1 = rad(a); c.globalAlpha = al; c.strokeStyle = col; c.lineWidth = r1 - r0; c.beginPath(); c.arc(0, 0, (r0 + r1) / 2, 0, Math.PI * 2); c.stroke(); };
+      band(tm.good[0], tm.good[1], '#fff1dc', .16); band(tm.perfect[0], tm.perfect[1], '#ffd76a', .62);
+      if (tm.result === null) {
+        const inGold = k >= tm.perfect[0] && k <= tm.perfect[1];
+        c.globalAlpha = 1; c.strokeStyle = inGold ? '#ffffff' : 'rgba(255,255,255,.85)'; c.lineWidth = inGold ? 5 : 3.5; if (inGold) { c.shadowColor = '#ffe28a'; c.shadowBlur = 14; }
+        c.beginPath(); c.arc(0, 0, Math.max(3, rad(k)), 0, Math.PI * 2); c.stroke();
+      } else {
+        const a = 1 - U.clamp((tm.done || 0) / .5, 0, 1), col = tm.result === 2 ? '#ffe28a' : tm.result === 1 ? '#fff1dc' : '#9b9284';
+        c.globalAlpha = a; c.strokeStyle = col; c.lineWidth = 6; c.beginPath(); c.arc(0, 0, R + (tm.done || 0) * 60, 0, Math.PI * 2); c.stroke();
+        c.shadowBlur = 0; c.font = `800 ${tm.result === 2 ? 26 : 19}px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.lineWidth = 6; c.strokeStyle = 'rgba(14,10,20,.92)';
+        const msg = tm.result === 2 ? 'PERFEITO!' : tm.result === 1 ? 'BOM' : tm.early ? 'CEDO' : 'TARDE';
+        c.strokeText(msg, 0, -R - 26 - (tm.done || 0) * 30); c.fillStyle = col; c.fillText(msg, 0, -R - 26 - (tm.done || 0) * 30);
+      }
+      c.restore();
+    }
     drawActors() {
       const village = this.engine.zone.kind === 'village', list = [];
       if (village && KT.TownLife && this.townReady()) { this.drawTown(); return; }
@@ -1112,8 +1155,9 @@
         this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#ff9a3b' : e.elite ? '#c77dff' : '#ff5d6c', e.shield / e.maxHp);
         this.nameTag(`${e.guardian ? '◆ ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
         this.statusIcons(e, pos.x - bw / 2, top - 30);
-        if (e.elite || e.miniboss || e.guardian) this.thin(pos.x - bw / 2, top + (e.elite ? 13 : 11), bw, e.broken > 0 ? e.broken / 4 : U.clamp(e.breakG / e.breakMax, 0, 1), e.broken > 0 ? '#fff1c9' : '#ffb35c');
-      }
+        this.toughBar(e, pos.x - bw / 2, top + (e.elite ? 13 : 11), bw);
+        this.plateMarks(e, pos.x, top, bw);
+      } else this.plateMarks(e, pos.x, pos.y - height - 26, 150);
       if (e.broken > 0) { this.stunStars(x, y - height - 4); c.save(); c.globalAlpha = .18 + .1 * Math.sin(this.worldTime * 10); c.fillStyle = '#ffe9b0'; c.beginPath(); c.ellipse(x, y - height * .45, height * .36, height * .52, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
       if (e.windup > 0) {
         c.save(); c.font = `800 64px ${DISPLAY_FONT_W}`; c.textAlign = 'center'; c.fillStyle = '#ff4a6a'; c.strokeStyle = '#1a0610'; c.lineWidth = 8; const bob = Math.sin(this.worldTime * 14) * 6;
@@ -1123,13 +1167,38 @@
       }
       this.hotspots.push({ enemy:e.uid, x:pos.x - height * .35, y:pos.y - height, w:height * .7, h:height });
     }
+    // Resistência do inimigo: gomos (um por ponto) ou barra contínua quando são muitos; quebrado, a barra mostra quanto
+    // falta para ele se recompor.
+    toughBar(e, x, y, w) {
+      if (!(e.toughMax > 0)) return;
+      const c = this.ctx, broken = e.broken > 0, T = KT.State.TOUGH, n = Math.ceil(e.toughMax), col = broken ? '#ffe28a' : '#e8dcc0';
+      c.save();
+      if (n > 12) { c.fillStyle = 'rgba(10,8,24,.8)'; this.roundRect(x, y, w, 4, 2); c.fill(); c.fillStyle = col; this.roundRect(x, y, Math.max(0, w * (broken ? e.broken / T.time : e.tough / e.toughMax)), 4, 2); c.fill(); }
+      else { const gap = 2, sw = (w - gap * (n - 1)) / n, on = broken ? Math.ceil(e.broken / T.time * n) : Math.ceil(e.tough - 1e-6); for (let i = 0; i < n; i++) { c.fillStyle = i < on ? col : 'rgba(10,8,24,.8)'; c.fillRect(x + i * (sw + gap), y, sw, 4); } }
+      c.restore();
+    }
+    // Selos ao lado da placa: a marca elemental (o que a próxima reação vai consumir), a seta dourada de FRACO quando o
+    // herói da vez tira Resistência em dobro deste inimigo, e a intenção (em quem ele vai bater).
+    plateMarks(e, x, top, bw) {
+      const c = this.ctx, eng = this.engine, I = KT.Icon; if (!I) return;
+      if (e.elMark) { c.save(); c.globalAlpha = Math.min(1, e.elMark.d / 1.2); c.fillStyle = 'rgba(12,10,20,.82)'; c.beginPath(); c.arc(x + bw / 2 + 13, top + 3, 11, 0, Math.PI * 2); c.fill(); I.draw(c, I.element(e.elMark.el), x + bw / 2 + 13, top + 3, 18); c.restore(); }
+      const w = eng.awaiting !== null && eng.party[eng.awaiting];
+      if (w && !(e.broken > 0) && eng.weakness(w, e) > 1) { const bob = Math.sin(this.worldTime * 6) * 3; I.draw(c, 'weak', x, top - 46 + bob, 26); }
+      if (eng.phase !== 'fight' || e.windup > 0 || e.striking || e.broken > 0) return;
+      const it = eng.intentOf(e); if (!it || it.kind !== 'attack' || !it.target) return;
+      const h = eng.party.find(u => u.uid === it.target); if (!h) return;
+      // bolinha na cor do herói visado, à esquerda da barra de vida (quanto mais perto do golpe, mais cheia)
+      const k = 1 - U.clamp(it.t / 1.5, 0, 1);
+      c.save(); c.fillStyle = 'rgba(12,10,20,.85)'; c.beginPath(); c.arc(x - bw / 2 - 12, top + 3, 9, 0, Math.PI * 2); c.fill();
+      c.fillStyle = h.color || '#fff'; c.globalAlpha = .35 + .65 * k; c.beginPath(); c.arc(x - bw / 2 - 12, top + 3, 5.5, 0, Math.PI * 2); c.fill(); c.restore();
+    }
     statusIcons(u, x, y) {
       const c = this.ctx, seen = new Set(); let ix = x;
       u.effects.forEach(e => { if (seen.has(e.s) || ix > x + 115) return; seen.add(e.s); const info = D.statusInfo[e.s]; if (!info) return;
         // Selo do efeito: fundo escuro, borda na cor (benéfico = contorno cheio, negativo = tracejado) e ícone desenhado.
         c.save(); c.fillStyle = 'rgba(12,10,20,.82)'; this.roundRect(ix - 1, y - 15, 21, 20, 5); c.fill();
         c.strokeStyle = info.color; c.lineWidth = 1.4; if (!info.buff) c.setLineDash([3, 2]); this.roundRect(ix - 1, y - 15, 21, 20, 5); c.stroke(); c.setLineDash([]);
-        if (!KT.Icons?.draw(c, info.icon, ix + 9.5, y - 5, 14, info.color, 2.6)) { c.font = `800 12px ${DISPLAY_FONT}`; c.textAlign = 'center'; c.fillStyle = info.color; c.fillText(info.name[0], ix + 9.5, y); }
+        if (!KT.Icon?.draw(c, `st-${e.s}`, ix + 9.5, y - 5, 18) && !KT.Icons?.draw(c, info.icon, ix + 9.5, y - 5, 14, info.color, 2.6)) { c.font = `800 12px ${DISPLAY_FONT}`; c.textAlign = 'center'; c.fillStyle = info.color; c.fillText(info.name[0], ix + 9.5, y); }
         c.restore(); ix += 23; });
     }
     // ---------- animação por folha de sprites (heróis 3D) ----------

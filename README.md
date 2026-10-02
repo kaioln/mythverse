@@ -110,7 +110,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 ## O que existe no jogo
 
 ### Equipe e heróis
-- **60 heróis originais** de 30 mundos da Fenda, mais **12 formas despertadas** da Temporada I, cada um com kit próprio: **passiva**, **habilidade automática** e **ultimate** (100 de energia; Q/W/E/R ou AUTO). As descrições são geradas a partir dos efeitos reais.
+- **60 heróis originais** de 30 mundos da Fenda, mais **12 formas despertadas** da Temporada I, cada um com kit próprio e único: **passiva**, **três habilidades** (níveis 1, 6 e 16; gastam Pontos de Técnica) e **ultimate** (100 de energia; Q/W/E/R ou AUTO), cada uma com ícone pintado para o herói. As descrições são geradas a partir dos efeitos reais.
 - **5 classes**: Vanguarda, Executor, Arcanista, Atirador e Suporte. Cada uma tem traço próprio, sinergia de equipe e posição ideal.
 - **Formação**: as vagas 1 e 2 são a linha de frente, e os inimigos atacam a frente 3× mais que a retaguarda.
 - **9 elementos**, com vantagens de +30% e desvantagens de −20%, e **sinergia de elemento** (2, 3 ou 4 heróis iguais).
@@ -163,8 +163,12 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Derrota não te tira da luta**: na caçada e na Fenda, a equipe recua um estágio/andar e continua treinando. Em dungeons e chefes, a equipe volta a treinar automaticamente.
 - **Conselheiro**: duas derrotas seguidas no mesmo desafio abrem um plano com o que falta (pontos, itens melhores, formação, elemento, onde treinar), com botões para resolver na hora.
 - **Modo AFK no servidor**: até 12 horas de caça calculadas com o relógio do servidor, mesmo com o PC desligado. Rende menos que jogar ativo.
-- **Manual rende mais que AUTO**: ultimates usadas à mão dão +25% de dano e escudo e +20% de cura.
-- **Quebra de postura**: golpes em elites e chefes enchem uma barra; cheia, o inimigo fica atordoado 4 s, **perde o ataque que estava preparando** e recebe +35% de dano (cada quebra seguinte exige 30% mais).
+- **Uma ação por vez**: na vez do herói ele ataca, usa uma das três habilidades ou defende. As habilidades gastam **Pontos de Técnica** (reserva da equipe, de 0 a 6); golpe básico, defesa, Quebra, Aparo e cada onda nova devolvem 1.
+- **Manual rende mais que AUTO**: ultimates usadas à mão dão +25% de dano e escudo e +20% de cura, e o **golpe cronometrado** (confirmar de novo quando o anel fecha no alvo) rende até +30%.
+- **Resistência e Quebra**: todo inimigo tem uma barra de Resistência; golpe básico tira 1, habilidade 2, ultimate 3, e acertar a **fraqueza** (elemento ou classe) vale o dobro. Zerou: o inimigo fica atordoado 4 s, **perde o ataque que estava preparando**, recebe +35% de dano e a equipe ganha 1 Ponto de Técnica (cada quebra seguinte exige 30% mais).
+- **Assalto Total**: com todos os inimigos quebrados ao mesmo tempo, cada herói golpeia cada inimigo de uma vez, sem gastar a vez.
+- **Reações elementais**: cada golpe marca o alvo com o seu elemento; um elemento diferente em cima da marca dispara a reação do par (15 reações: Derretimento, Vapor, Eletrochoque, Congelamento…).
+- **Intenção do inimigo**: o console mostra quem ele vai golpear ou que habilidade prepara, a tempo de defender ou aparar.
 - **Elo Kizuna**: ultimates de heróis diferentes em até 4 s formam uma corrente (+15% por elo); com 4 elos a equipe inteira golpeia junta.
 
 ### PvP, guildas e guerra
@@ -187,7 +191,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Mercado de Jogadores em ouro** (para todos, sem dinheiro real, com taxa de anúncio e imposto que seguram a inflação) e **em Gemas** (dinheiro real, opcional), com filtros por tipo, espaço, raridade e preço, venda de itens, cartas e materiais raros, histórico de preço por moeda e perfil clicável de cada vendedor. Itens vindos de NPCs são **vinculados**. Também funciona no **modo Neon** (GitHub Pages): anúncios, compra e correio ficam em funções atômicas do banco (veja docs/NEON.md).
 - **Painel `/admin/`** com a saúde da economia (ouro em circulação, Gemas, volume do mercado, itens mais negociados, alertas antifraude) e a fila de saques.
 - **Ranking** com pódio, retrato do herói líder, equipe de cada jogador e barra de comparação com o primeiro colocado.
-- **Ícones vetoriais autorais** para recursos, atividades e golpes (`python tools/build_icons.py`), e efeitos de combate com textura (brilho suave, cortes em crescente, estrelas de impacto, raios com núcleo).
+- **Ícones pintados para o jogo**: os 5 ícones do kit de cada herói (360) e os da interface de luta (comandos, efeitos, elementos, classes), gerados em folhas e recortados por `python tools/icon_gen.py` (`assets/icons/`). Os ícones vetoriais antigos de recursos e atividades continuam (`python tools/build_icons.py`). Efeitos de combate com textura (brilho suave, cortes em crescente, estrelas de impacto, raios com núcleo).
 - **Wiki completa** dentro do jogo, gerada a partir dos dados reais: combate, classes, elementos, laços, os 60 kits, builds, armas, itens, cartas, monstros, mundo, eventos, progressão, refino, atividades, economia, mercado e segurança.
 
 ## Som
@@ -205,13 +209,15 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 | Tecla | Ação |
 |---|---|
 | Q W E R | Ultimate dos heróis 1 a 4 |
-| A S D F | Habilidade dos heróis 1 a 4 |
-| Espaço / Enter | Na vez de um herói: Atacar. Fora dela (só Espaço): Guarda, que apara golpes preparados |
+| 1 2 3 | Habilidades I, II e III do herói da vez |
+| 4 | Ultimate do herói da vez |
+| Espaço / Enter | Na vez de um herói: Atacar (e confirmar o golpe cronometrado). Fora dela (só Espaço): Guarda, que apara golpes preparados |
 | G | Defender (na vez do herói) |
+| T | Assalto Total (todos os inimigos quebrados) |
 | Z | Troca o comando: MANUAL → SEMI → AUTO |
 | X | Próximo alvo |
-| 1 / 2 | Poção de Cura / Elixir de Energia |
-| M · I · T | Mapa · Bolsa · Talentos do herói |
+| F / C | Poção de Cura / Elixir de Energia |
+| M · I · T | Mapa · Bolsa · Talentos do herói (T só fora da luta) |
 | Clique no inimigo | A equipe foca nesse alvo |
 | ESC | Fecha painel ou diálogo |
 
@@ -235,7 +241,10 @@ Sem frameworks nem dependências de runtime. Os scripts são clássicos, carrega
 ## Ferramentas
 
 ```bash
-npm test                    # ~1.370 verificações do jogo, 29 de determinismo (cliente = servidor) e 223 do servidor em SQLite e Postgres
+npm test                    # ~2.150 verificações do jogo, 80 de determinismo (cliente = servidor) e 231 do servidor em SQLite e Postgres
+node tools/ui/cdp.js tools/ui/panels.js    # abre cada painel e aba em Chrome headless e acusa exceção (os testes não abrem a tela)
+node tools/ui/cdp.js tools/ui/overflow.js  # console de batalha em 9 tamanhos: nada passa da borda
+node tools/ui/cdp.js tools/ui/hud.js       # fotos do console de batalha (PC, tablet, celular); play.js exercita o uso
 node tools/sim.js 10 7      # simula 10h de um jogador automático: marcos, ouro por hora, loot por raridade, cartas e materiais
 python tools/build_sprites.py  # regenera sprites, retratos, ícones e variantes a partir dos atlas
 python tools/build_icons.py    # regenera os ícones vetoriais da interface (assets/ui)

@@ -147,10 +147,10 @@
       if (!fx || !this.enabled) return;
       const c = this.manifest.creatures?.[unit?.sprite], who = unit?.uid || 'field';
       switch (fx.type) {
-        case 'attack': case 'enemyAttack': case 'cast': this.combat(fx, unit); break; // a chamada falada da ultimate vai junto com o golpe
+        case 'attack': case 'enemyAttack': case 'cast': this.combat(fx, unit); if (fx.q === 2 && this.throttle('perfect', 250)) this.event('crit', { gain:.2 }); break;   // golpe cronometrado perfeito: um estalo a mais
         case 'damage':
           // Um golpe já soa na arma de quem bate: aqui só o impacto em quem apanha (herói) e o estalo do crítico.
-          if (fx.kind === 'dot' || fx.kind === 'thorns') break;
+          if (fx.kind === 'dot' || fx.kind === 'thorns' || fx.kind === 'reaction' || fx.kind === 'break') break;
           if (fx.side === 'hero') { if (this.throttle('hurt', 260)) this.event(unit?.cls === 'Vanguarda' ? 'damagePlate' : 'damage', { pan:[-.35,-.12,.12,.35][unit?.slot] || 0 }); }
           else if (fx.crit && this.throttle('crit', 450)) this.event('crit', { pan:.3 });
           break;
@@ -162,7 +162,10 @@
         case 'reward': this.event('reward', { key:'reward', every:1800 }); break;
         case 'bossBurst': this.event('bossBurst', { priority:2, key:'bossBurst', every:400, duck:1 }); break;
         case 'parry': this.event('parry', { priority:2, duck:1.2 }); break;
-        case 'break': this.event('break', { priority:2, pan:.3, duck:.9 }); break;
+        // Quebra: a de elite e de chefe soa cheia; a de monstro comum acontece toda hora e fica discreta.
+        case 'break': if (unit?.elite || unit?.boss || unit?.miniboss) this.event('break', { priority:2, pan:.3, duck:.9 }); else this.event('break', { gain:.14, pan:.3, key:'break:small', every:900 }); break;
+        case 'reaction': this.event('chain', { gain:.16, key:'reaction', every:700, vary:0 }); break;
+        case 'allOut': this.event('finale', { priority:2, duck:1.4 }); break;
         case 'finale': this.event('finale', { priority:2, duck:1.6 }); break;
         case 'chain': this.event('chain', { priority:1, rate:1 + Math.min(4, (fx.n || 2) - 2) * .06, vary:0 }); break;
         case 'strike': this.event('strike', { priority:2, key:'strike', every:500 }); break;
@@ -290,11 +293,11 @@
         if (close0) ui.closeModal = (...a) => { if (!ui.el.modal.hidden) sound.ui('uiClose'); return close0(...a); }; }
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
       if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const q = new URLSearchParams(location.search), f = q.get('devfight'); KT.dev = { ui, engine, renderer, awake:q.has('devmode') || q.has('devawake') }; if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.has('devtoast')) setTimeout(() => { ui.setMode('semi'); ui.setMode('manual'); ui.toast('Avanço automático <b>ligado</b>: ao vencer, segue para o próximo estágio.'); ui.toast('<b>Presente:</b> +5 Chaves de Convocação!', 'gold'); }, 2600); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
-      ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
+      ui.initAfk?.(); ui.initHud?.(); ui.initBattleHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); }, onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.loot(); },
-        onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
+        onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); ui.onFx?.(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
         onResult:r => ui.onResult(r), onResultClose:() => ui.onResultClose(),
         onChoice:c => ui.onChoice(c), onChoiceResolved:c => ui.onChoiceResolved(c), onStuck:p => ui.onStuck(p), onDialog:l => ui.onDialog(l),

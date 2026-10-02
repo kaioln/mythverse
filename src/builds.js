@@ -68,7 +68,7 @@
     dana:X('Ervas Misturadas', 'drop', { healPow:.03 }, r => ({ onSkill:{ eff:[buff('dr', .04 * r, 5, 'allies')] } }), r => `Ao usar a habilidade: equipe recebe ${pc(.04 * r)} menos dano por 5s.`),
     wade:X('Olhos da Morte', 'target', { crit:.015 }, r => ({ onCrit:{ ch:.1 * r, eff:[dmg(.8, 'rand')] } }), r => `Críticos têm ${pc(.1 * r)} de chance de disparo extra (80% ATK) num inimigo aleatório.`),
     garrick:X('Óleo de Caçador', 'drop', { boss:.04 }, r => ({ vs:{ s:'burn', v:.06 * r } }), r => `+${pc(.06 * r)} de dano contra alvos em Queimadura.`),
-    zira:X('Sangue Ancestral', 'sparkle', { spd:.03 }, r => ({ onKill:{ eff:[{ k:'cdr', v:1 * r, to:'self' }] } }), r => `Ao abater: −${r}s na recarga da habilidade.`),
+    zira:X('Sangue Ancestral', 'sparkle', { spd:.03 }, r => ({ onKill:{ eff:[{ k:'cdr', v:1 * r, to:'self' }] } }), r => `Ao abater: devolve ${(r / 3).toFixed(2).replace(/\.?0+$/, '').replace('.', ',')} PT (Ponto de Técnica).`),
     n9:X('Drone Tático', 'orb', { skill:.03 }, r => ({ onSkill:{ eff:[dmg(.4 * r, 'rand')] } }), r => `Ao usar a habilidade: laser extra de ${pc(.4 * r)} do ATK num inimigo aleatório.`),
     unit7:X('Núcleo Instável', 'flame', { atk:.02 }, r => ({ low:{ th:.5, eff:[buff('spd', .1 * r, 8)] } }), r => `Abaixo de 50% de HP (1× por onda): +${pc(.1 * r)} de velocidade por 8s.`),
     rex:X('Estilo Guardião Real', 'shield', { dr:.01 }, r => ({ onHurt:{ ch:.06 * r, eff:[shield(.05), nrg(5)] } }), r => `Ao ser atingido (${pc(.06 * r)}): bloqueia (escudo de 5% do HP) e ganha 5 de energia.`),

@@ -7,7 +7,7 @@
   const MODES = {
     auto:['AUTO', '<b>Comando AUTO</b><br>A equipe decide tudo sozinha.'],
     semi:['SEMI', TOUCH ? '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: toque nelas quando acenderem.' : '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd>'],
-    manual:['MANUAL', '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem.']
+    manual:['MANUAL', TOUCH ? '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: atacar, uma das três habilidades ou defender.' : '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: <kbd>ESPAÇO</kbd> ataca, <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> habilidades, <kbd>G</kbd> defende.']
   };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const portrait = id => KT.portraitUrl(id);
@@ -54,8 +54,6 @@
         this.renderer.resize();
       });
       this.el.party.addEventListener('click', e => {
-        const ult = e.target.closest('[data-ult]'); if (ult) { this.castUlt(Number(ult.dataset.ult)); return; }
-        const sk = e.target.closest('[data-skill]'); if (sk) { this.castSkill(Number(sk.dataset.skill)); return; }
         const det = e.target.closest('[data-hero-detail]'); if (det) { this.openPanel('hero', det.dataset.heroDetail); return; }
         const slot = e.target.closest('[data-slot-open]'); if (slot) this.openPanel('party');
       });
@@ -85,26 +83,23 @@
         if (!this.el.modal.hidden) return;
         if (!this.el.dialog.hidden && (e.code === 'Space' || e.code === 'Enter')) { e.preventDefault(); this.advanceDialog(); return; }
         if (e.ctrlKey || e.metaKey || e.altKey) return;
-        // Comandos de luta: Q W E R ultimates · A S D F habilidades · Espaço guarda · 1/2 poção e elixir · Z comando · X alvo.
-        const ult = { KeyQ:0, KeyW:1, KeyE:2, KeyR:3 }, skill = { KeyA:0, KeyS:1, KeyD:2, KeyF:3 }, fight = this.engine.active;
-        if (fight && (ult[e.code] !== undefined || skill[e.code] !== undefined || ['Space', 'Enter', 'KeyG', 'KeyZ', 'KeyX'].includes(e.code))) {
+        // Comandos de luta: Espaço ataca (ou confirma o golpe cronometrado; fora da vez, ergue a Guarda) · 1 2 3 habilidades
+        // do herói da vez · 4 e Q W E R ultimates · G defende · T Assalto Total · F poção · C elixir · Z comando · X alvo.
+        const ult = { KeyQ:0, KeyW:1, KeyE:2, KeyR:3 }, act = { Digit1:'s0', Digit2:'s1', Digit3:'s2', Digit4:'ult', KeyG:'defend', KeyT:'allout', KeyF:'potion', KeyC:'elixir' }, fight = this.engine.active;
+        if (fight && (ult[e.code] !== undefined || act[e.code] || ['Space', 'Enter', 'KeyZ', 'KeyX', 'Tab'].includes(e.code))) {
           // Um botão clicado antes fica com o foco e o Espaço "clicaria" nele de novo: o foco sai e a tecla é só do comando.
           const a = document.activeElement; if (a && a !== document.body && a.matches?.('button')) a.blur();
-          if (e.code === 'Space' || e.code === 'Enter') e.preventDefault();
+          if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Tab') e.preventDefault();
           if (e.repeat) return;
         }
         if (ult[e.code] !== undefined) this.castUlt(ult[e.code]);
-        if (fight && skill[e.code] !== undefined) this.castSkill(skill[e.code]);
-        // Espaço: na vez de um herói é "Atacar"; fora dela, ergue a Guarda (o Aparo dos golpes preparados).
-        if (fight && (e.code === 'Space' || e.code === 'Enter')) { if (this.engine.awaiting !== null) this.command('attack'); else if (e.code === 'Space') this.guard(); }
-        if (fight && e.code === 'KeyG') this.command('defend');
+        if (fight && act[e.code]) this.bhAct(act[e.code]);
+        if (fight && (e.code === 'Space' || e.code === 'Enter')) this.bhAct(this.engine.awaiting !== null || this.bhPending ? 'attack' : e.code === 'Space' ? 'guard' : '');
         if (fight && e.code === 'KeyZ') this.cycleMode();
-        if (fight && e.code === 'KeyX') this.nextTarget();
-        if (e.code === 'Digit1') this.engine.input('potion');
-        if (e.code === 'Digit2') this.engine.input('elixir');
+        if (fight && (e.code === 'KeyX' || e.code === 'Tab')) this.nextTarget();
         if (e.code === 'KeyM') this.openPanel('journey');
         if (e.code === 'KeyI') this.openPanel('inventory');
-        if (e.code === 'KeyT') this.openPanel('talents');
+        if (e.code === 'KeyT' && !fight) this.openPanel('talents');   // na luta, T é o Assalto Total
       });
       this.el.modalBody.addEventListener('click', e => this.handleAction(e));
       // Há mais conteúdo abaixo? Um aviso no pé do painel mostra, e um toque nele rola a página.
@@ -133,11 +128,12 @@
       // Dicas (data-tip). Mouse: aparecem depois de um instante parado em cima (na hora, se outra já estava aberta) e somem
       // ao clicar. Toque: um toque nunca abre dica (ela ficava presa na tela, cobrindo o que se acabou de abrir); só o dedo
       // segurado abre, e ela some sozinha em poucos segundos ou no toque seguinte.
+      // data-tip-touch: a dica é só do toque (com mouse a explicação já aparece em outro lugar e a dica cobriria o palco).
       const tipOf = e => e.target.closest?.('[data-tip]');
       const dropTip = () => { clearTimeout(this.tipTimer); clearTimeout(this.tipAuto); this.tipTimer = this.tipAuto = 0; this.hideTip(); };
       document.addEventListener('mouseover', e => {
         if (this.tipTouch) return;
-        const t = tipOf(e); if (!t || !t.dataset.tip) return;
+        const t = tipOf(e); if (!t || !t.dataset.tip || 'tipTouch' in t.dataset) return;
         clearTimeout(this.tipTimer);
         if (!this.el.tooltip.hidden) { this.showTip(t.dataset.tip, t); return; }
         this.tipTimer = setTimeout(() => { if (t.isConnected && t.matches(':hover')) this.showTip(t.dataset.tip, t); }, 320);
@@ -176,16 +172,9 @@
     castUlt(i) {
       const u = this.engine.party[i];
       const ok = this.engine.input('ult', i);
-      const btn = this.el.party.querySelector(`[data-ult="${i}"]`);
+      const btn = (this.el.bhud || this.el.party).querySelector(`[data-ult="${i}"]`);
       if (ok && btn) { btn.classList.remove('fired'); void btn.offsetWidth; btn.classList.add('fired'); }
       else if (!ok && u && this.engine.active && u.alive && u.energy < 100) this.toast(`${esc(u.name)}: energia ${Math.floor(u.energy)}/100.`);
-      return ok;
-    }
-    // Habilidade comandada (modo MANUAL): rende +15% e vai no alvo em foco.
-    castSkill(i) {
-      const e = this.engine, u = e.party[i], ok = e.input('skill', i), btn = this.el.party.querySelector(`[data-skill="${i}"]`);
-      if (ok && btn) { btn.classList.remove('fired'); void btn.offsetWidth; btn.classList.add('fired'); }
-      else if (!ok && u?.alive && e.phase === 'fight' && e.mode !== 'manual' && !this.skillHintAt) { this.skillHintAt = Date.now(); this.toast(`No comando <b>AUTO</b> ou <b>SEMI</b> as habilidades saem sozinhas. Troque para <b>MANUAL</b> ${TOUCH ? 'no botão COMANDO' : '(tecla Z)'} para escolher a hora de cada uma.`); }
       return ok;
     }
     // Guarda: durante o bote de um golpe preparado quem julga o tempo é o anel na tela (dentro da faixa dourada = Aparo).
@@ -194,13 +183,8 @@
       if (ok && b) { b.classList.remove('fired'); void b.offsetWidth; b.classList.add('fired'); }
       return ok;
     }
-    // Ordem na vez do herói (comando MANUAL): atacar, habilidade, ultimate ou defender.
-    command(what) {
-      const e = this.engine, i = e.awaiting; if (i === null || i === undefined) return false;
-      const ok = what === 'skill' ? this.castSkill(i) : what === 'ult' ? this.castUlt(i) : e.input('act', what);
-      if (ok) { this.turnSince = 0; this.callbacks.click?.(); this.renderParty(); }
-      return ok;
-    }
+    // Ordem na vez do herói: tudo passa pelo console de batalha (src/battle-hud.js).
+    command(what) { return this.bhAct(what === 'skill' ? 's0' : what); }
     // Velocidade: x1 → x2 → x3 → TURBO (só no AUTO: a luta corre em tempo corrido, sem a pausa de cada ação).
     cycleSpeed() {
       const st = this.state.settings, turbo = st.pace === 'turbo' && st.auto;
@@ -343,99 +327,27 @@
           <button class="lobby-btn" data-lobby-prep type="button" data-tip="Preparar a equipe: farm, equipamento, atributos ou talentos."><i class="ic ic-bolt"></i><b>Preparar</b></button></div>`;
     }
 
+    // Em luta quem desenha a equipe e os comandos é o console de batalha; a faixa antiga de cartões não aparece mais
+    // (na cidade a equipe fica na faixa do saguão).
     renderParty() {
-      const e = this.engine, village = !e.active;
-      const units = village ? this.state.formation.map((uid, slot) => { const r = uid && e.record(uid); return r ? { rec:r, slot } : null; }) : [0, 1, 2, 3].map(i => e.party.find(u => u.slot === i) || null);
-      const key = (village ? 'v' : 'b') + units.map(u => u ? (u.uid || u.rec.uid) : '-').join('|');
-      if (key !== this.dockKey) {
-        this.dockKey = key;
-        this.el.party.innerHTML = units.map((u, i) => {
-          if (!u) return `<button class="hero-slot empty" data-slot-open type="button"><div><b>Vaga ${i + 1}</b><small>${i < 2 ? 'Linha de frente' : 'Retaguarda'}</small></div></button>`;
-          const rec = u.rec || e.record(u.recUid), t = e.template(rec.id);
-          const idx = village ? i : e.party.indexOf(u);
-          return `<article class="hero-slot rarity-${rec.rarity}" data-uid="${rec.uid}" style="--hc:${t.color};--rc:var(--${rec.rarity})">
-            <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${KT.glyph(D.classes[t.cls].icon)}</span></button>
-            <div class="hero-info"><header><b>${esc(t.name)}</b><small><i class="kj" style="color:${D.elements[t.el].color}">${KT.glyph(D.elements[t.el].icon)}</i> <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
-              <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div></div>
-            <div class="hero-actions">
-              <button class="skill-btn" data-skill="${idx}" type="button" data-tip="<b>HABILIDADE · ${esc(t.skill.name)}</b><br>${esc(t.skillText)}<br><small>Recarga de ${t.skill.cd}s. No comando MANUAL: tecla ${SKILL_KEYS[idx]}, com +15% de efeito.</small>"><span class="ult-ic sk-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t, 'skill'))}<kbd>${SKILL_KEYS[idx]}</kbd></span><span><b>${esc(t.skill.name)}</b><small>HABILIDADE</small></span><i class="cdw"></i></button>
-              <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia. À mão rende +25%.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>
-            </div>
-          </article>`;
-        }).join('');
-      }
-      units.forEach((u, i) => {
-        const card = this.el.party.children[i]; if (!u || !card?.dataset.uid) return;
-        const hpBar = card.querySelector('.bar.hp'), ult = card.querySelector('.ult-btn'), sk = card.querySelector('.skill-btn');
-        if (village) {
-          const r = u.rec; const st = KT.State.heroStats(this.state, r);
-          hpBar.querySelector('.fill').style.width = '100%'; hpBar.querySelector('em').textContent = U.fmt(st.maxHp);
-          ult.disabled = true; ult.style.setProperty('--nrg', 0); ult.classList.remove('ready'); ult.querySelector('small').textContent = 'ULTIMATE';
-          sk.disabled = true; sk.style.setProperty('--cd', 0); sk.classList.remove('ready', 'auto'); sk.querySelector('small').textContent = 'HABILIDADE';
-          card.querySelector('.lv').textContent = `Nv.${r.level}`;
-          return;
-        }
-        const hp = U.clamp(u.hp / u.maxHp, 0, 1), sh = U.clamp(u.shield / u.maxHp, 0, 1 - hp);
-        hpBar.querySelector('.fill').style.width = `${hp * 100}%`;
-        const shEl = hpBar.querySelector('.shield'); shEl.style.left = `${hp * 100}%`; shEl.style.width = `${sh * 100}%`;
-        hpBar.querySelector('em').textContent = U.fmt(Math.max(0, u.hp)); hpBar.classList.toggle('low', hp < .3);
-        const ready = u.alive && u.energy >= 100 && e.phase === 'fight';
-        ult.disabled = !ready; ult.classList.toggle('ready', ready); ult.style.setProperty('--nrg', U.clamp(u.energy / 100, 0, 1));
-        ult.querySelector('small').textContent = !u.alive ? 'K.O.' : ready ? 'PRONTA!' : `${Math.floor(u.energy)}%`;
-        // Habilidade: recarga em leque e segundos; no comando MANUAL fica "PRONTA!" esperando a tecla.
-        const manual = e.mode === 'manual', cd = Math.max(0, u.skillCd), silenced = u.effects.some(x => x.s === 'silence');
-        const skReady = u.alive && cd <= 0 && e.phase === 'fight' && !silenced && e.canAct(u);
-        sk.disabled = !(manual && skReady); sk.classList.toggle('ready', manual && skReady); sk.classList.toggle('auto', !manual);
-        sk.style.setProperty('--cd', U.clamp(cd / u.template.skill.cd, 0, 1));
-        sk.querySelector('small').textContent = !u.alive ? 'K.O.' : silenced ? 'SILÊNCIO' : cd > 0 ? `${Math.ceil(cd / (1 + (u.st.cdr || 0)))}s` : manual ? 'PRONTA!' : 'AUTO';
-        card.querySelector('.lv').textContent = `Nv.${u.level}`;
-        card.classList.toggle('dead', !u.alive);
-        const prev = this.lastHp.get(u.uid); if (prev !== undefined && u.hp < prev - u.maxHp * .05) { card.classList.remove('hurt'); void card.offsetWidth; card.classList.add('hurt'); }
-        this.lastHp.set(u.uid, u.hp);
-      });
-      // Guarda: recarga, erguida e o chamado quando um inimigo dá o bote de um golpe preparado.
-      const g = this.el.guardBtn;
-      if (g && !village) {
-        const G = KT.State.GUARD, cd = e.guardCd || 0, up = e.guardT > 0, danger = e.enemies.some(x => x.alive && x.striking);
-        g.disabled = e.phase !== 'fight' || cd > 0; g.style.setProperty('--cd', U.clamp(cd / G.cd, 0, 1));
-        g.classList.toggle('up', up); g.classList.toggle('alert', danger && !up && cd <= 0 && e.phase === 'fight');
-      }
+      const village = !this.engine.active;
+      if (!village) this.renderBattleHud?.();
       this.renderTurn(village);
     }
-    // Linha do tempo (quem age em seguida) e a barra de comando da vez do herói.
+    // Linha do tempo: quem age em seguida.
     renderTurn(village) {
-      const e = this.engine, bar = this.el.turnBar, cmd = this.el.turnCmd, fight = !village && e.phase === 'fight';
+      const e = this.engine, bar = this.el.turnBar, fight = !village && e.phase === 'fight';
       const show = fight && e.sequenced?.() !== false && !this.state.settings.afk && !(this.state.settings.pace === 'turbo' && this.state.settings.auto);
       bar.hidden = !show;
-      if (show) {
-        const order = e.turnOrder(7), key = order.map(o => `${o.uid}:${o.kind}`).join('|') + `|${e.awaiting}`;
-        if (key !== this.turnKey) {
-          this.turnKey = key;
-          bar.innerHTML = '<li class="tb-label">ORDEM</li>' + order.map((o, n) => {
-            const u = e.party.find(x => x.uid === o.uid) || e.enemies.find(x => x.uid === o.uid); if (!u) return '';
-            const hero = u.side === 'hero', src = hero ? portrait(u.template.id) : KT.spriteUrl(u.sprite);
-            return `<li class="tb ${hero ? 'hero' : 'foe'} ${o.kind === 'special' ? 'special' : ''} ${n === 0 ? 'now' : ''}" style="--tc:${u.color || '#fff'}" data-tip="${esc(u.name)}${o.kind === 'special' ? ' · golpe preparado' : ''}"><img src="${src}" alt="">${o.kind === 'special' ? '<em>!</em>' : ''}</li>`;
-          }).join('');
-        }
-      } else this.turnKey = '';
-      // Vez de um herói: a luta espera a ordem do jogador.
-      const i = fight ? e.awaiting : null, u = i === null || i === undefined ? null : e.party[i];
-      cmd.hidden = !u;
-      [...this.el.party.children].forEach((card, n) => card.classList.toggle('turn', !!u && n === u.slot));
-      if (!u) { this.turnSince = 0; this.turnHero = null; return; }
-      if (this.turnHero !== u.uid) {
-        this.turnHero = u.uid; this.turnSince = performance.now();
-        const t = u.template; cmd.querySelector('#tc-face').src = portrait(t.id); cmd.querySelector('#tc-name').textContent = t.name;
-        const sk = cmd.querySelector('[data-act="skill"]'), ul = cmd.querySelector('[data-act="ult"]');
-        sk.querySelector('b').textContent = t.skill.name; sk.querySelector('kbd').textContent = SKILL_KEYS[i]; sk.dataset.tip = `<b>${esc(t.skill.name)}</b> (+15% à mão)<br>${esc(t.skillText)}`;
-        ul.querySelector('b').textContent = t.ult.name; ul.querySelector('kbd').textContent = KEYS[i]; ul.dataset.tip = `<b>${esc(t.ult.name)}</b> (+25% à mão)<br>${esc(t.ultText)}`;
-        cmd.style.setProperty('--hc', t.color);
-      }
-      const silenced = u.effects.some(x => x.s === 'silence');
-      cmd.querySelector('[data-act="skill"]').disabled = silenced || u.skillCd > 0;
-      cmd.querySelector('[data-act="ult"]').disabled = silenced || u.energy < 100;
-      // Ninguém no comando há muito tempo: o herói ataca sozinho para a luta não ficar parada.
-      if (this.turnSince && performance.now() - this.turnSince > 40000) { this.command('attack'); if (!this.turnIdleTold) { this.turnIdleTold = true; this.toast('A equipe esperou sua ordem por muito tempo e atacou sozinha. No comando <b>AUTO</b> ou <b>SEMI</b> ela nunca espera.'); } }
+      if (!show) { this.turnKey = ''; return; }
+      const order = e.turnOrder(7), key = order.map(o => `${o.uid}:${o.kind}`).join('|') + `|${e.awaiting}`;
+      if (key === this.turnKey) return;
+      this.turnKey = key;
+      bar.innerHTML = '<li class="tb-label">ORDEM</li>' + order.map((o, n) => {
+        const u = e.party.find(x => x.uid === o.uid) || e.enemies.find(x => x.uid === o.uid); if (!u) return '';
+        const hero = u.side === 'hero', src = hero || u.rival ? portrait(hero ? u.template.id : u.id) : KT.spriteUrl(u.sprite);
+        return `<li class="tb ${hero ? 'hero' : 'foe'} ${o.kind === 'special' ? 'special' : ''} ${n === 0 ? 'now' : ''}" style="--tc:${u.color || '#fff'}" data-tip="${esc(u.name)}${o.kind === 'special' ? ' · golpe preparado' : ''}"><img src="${src}" alt="">${o.kind === 'special' ? '<em>!</em>' : ''}</li>`;
+      }).join('');
     }
 
     renderBoss() {
@@ -450,8 +362,8 @@
       if (phases[1]) this.el.bossMark1.style.left = `${phases[1].at * 100}%`; if (phases[2]) this.el.bossMark2.style.left = `${phases[2].at * 100}%`;
       this.el.bossPhase.textContent = boss.windup > 0 ? `危 Preparando ${boss.windupSpecial?.name || 'ataque'}!` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
       this.el.bossPanel.classList.toggle('danger', boss.windup > 0);
-      const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.BREAK.time : U.clamp(boss.breakG / boss.breakMax, 0, 1);
-      this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'POSTURA QUEBRADA · +35% DE DANO' : 'POSTURA';
+      const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.TOUGH.time : U.clamp(boss.tough / Math.max(1, boss.toughMax), 0, 1);
+      this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'QUEBRADO · +35% DE DANO' : `RESISTÊNCIA ${Math.ceil(boss.tough)}/${Math.ceil(boss.toughMax)}`;
       if (boss.boss) { const left = (boss.t.enrage || 150) - (this.engine.bossTimer || 0); this.el.bossTimer.textContent = left > 0 ? `Fúria em ${fmtTime(left)}` : 'FÚRIA!'; this.el.bossTimer.classList.toggle('enraged', left <= 0); } else this.el.bossTimer.textContent = '';
     }
 
@@ -460,7 +372,7 @@
       const mode = this.engine.mode;
       if (this.el.mode.dataset.mode !== mode || !this.el.mode.dataset.tipSet) {
         this.el.mode.dataset.mode = mode; this.el.mode.dataset.tipSet = '1'; this.el.mode.querySelector('b').textContent = MODES[mode][0]; this.el.mode.classList.toggle('active', mode !== 'auto');
-        this.el.mode.dataset.tip = `<b>Comando: ${MODES[mode][0]}</b> · tecla Z<br><b>AUTO</b>: a equipe decide tudo.<br><b>SEMI</b>: habilidades sozinhas, ultimates suas (Q W E R, +25%).<br><b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem (atacar, habilidade +15%, ultimate +25% ou defender).<br><small>Em qualquer comando, a Guarda (Espaço) apara os golpes preparados.</small>`;
+        this.el.mode.dataset.tip = `<b>Comando: ${MODES[mode][0]}</b> · tecla Z<br><b>AUTO</b>: a equipe decide tudo.<br><b>SEMI</b>: a equipe age sozinha, as ultimates são suas (Q W E R, +25%).<br><b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem (atacar, habilidade I, II ou III, ou defender).<br><small>Em qualquer comando, a Guarda apara os golpes preparados.</small>`;
         document.body.dataset.cmd = mode;
       }
       this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.afk ? 'FARM' : s.autoAdvance ? 'ON' : 'OFF'; this.el.advance.disabled = !!s.afk;

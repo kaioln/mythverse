@@ -82,11 +82,14 @@ ok(engine.heroes.every(r => r.classLevel > 1 || r.classXp > 0), 'equipe ganha EX
   ok(e2.enterZone('hunt', { stage:1 }), 'entra na caçada para testar o combate');
   const boss = e2.makeEnemyUnit('golem_elder', 1), hero = e2.party[0];
   boss.windup = 2; boss.windupSpecial = { name:'Teste', eff:[] };
-  for (let k = 0; k < 400 && !(boss.broken > 0); k++) { boss.hp = boss.maxHp; e2.addBreak(hero, boss, boss.maxHp * .02, 'ult', 1); }
-  ok(boss.broken > 0 && !boss.windupSpecial && boss.windup === 0, 'postura cheia atordoa e cancela o ataque preparado');
-  ok(!e2.canAct(boss) && boss.breakMax > State.BREAK.max, 'inimigo quebrado não age e a próxima quebra exige mais');
-  const minion = e2.makeEnemyUnit('fox', 1); e2.addBreak(hero, minion, minion.maxHp, 'ult', 1.3);
-  ok(!(minion.broken > 0), 'monstros comuns não têm postura');
+  const T = State.TOUGH; ok(boss.toughMax === T.elite && boss.tough === T.elite, 'elite tem 10 de Resistência');
+  for (let k = 0; k < 400 && !(boss.broken > 0); k++) { boss.hp = boss.maxHp; e2.hit(hero, boss, .01, { kind:'ult', act:{ kind:'ult' } }); }
+  ok(boss.broken > 0 && !boss.windupSpecial && boss.windup === 0, 'Resistência zerada atordoa e cancela o ataque preparado');
+  boss.broken = .01; e2.tickEffects(boss, .05);
+  ok(boss.broken === 0 && boss.toughMax > T.elite && boss.tough === boss.toughMax, 'ao se recompor, a próxima quebra exige mais');
+  const minion = e2.makeEnemyUnit('fox', 1); ok(minion.toughMax === T.normal && !!minion.weakCls, 'monstros comuns também têm Resistência e uma classe de fraqueza');
+  minion.maxHp = minion.hp = 1e12; for (let k = 0; k < 8 && !(minion.broken > 0); k++) e2.hit(hero, minion, .01, { kind:'skill', act:{ kind:'skill' } });
+  ok(minion.broken > 0, 'e também quebram');
   e2.enemies = [Object.assign(e2.makeEnemyUnit('golem_elder', 1), { maxHp:1e12, hp:1e12 })]; e2.phase = 'fight'; e2.party.forEach(u => { u.energy = 100; });
   e2.castUlt(0, true); e2.zoneElapsed += 1; e2.castUlt(1, true);
   ok(e2.ultChain === 2, 'duas ultimates seguidas de heróis diferentes formam Elo ×2');

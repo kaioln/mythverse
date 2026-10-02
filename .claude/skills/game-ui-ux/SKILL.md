@@ -34,10 +34,17 @@ description: Padrões de UI/UX de jogos (HUB, HUD de combate, painéis, mobile) 
 - Grades com `minmax(0,1fr)`; textos com `min-width:0` e quebra em até 2 linhas antes de reticências.
 - Alvos de toque ≥ 40 px no celular; nada atrás da barra inferior (padding-bottom com safe-area).
 - Selos/badges sempre acima (z-index) da arte; nunca sobre o nome.
+- Altura também conta: notebook é 1366×657 e celular com a barra do navegador fica em torno de 360×650. O que só cabe
+  em 768 ou 812 de altura não cabe na tela de quem joga.
 - Ferramentas: `tools/dev/panel.html?p=<painel>&overflow=1` e `index.html?devseed=1[&devfight=hunt]` com Chrome headless
   (`--window-size=W,H --screenshot`), e o navegador do app com `resize_window`.
+- `tools/ui/cdp.js` (Chrome headless pelo protocolo DevTools): celular de verdade (toque, 375 de largura), cursor, tempo e
+  recortes ampliados. Cenários prontos: `hud.js` (console de batalha em vários tamanhos), `play.js` (uso), `overflow.js`
+  (estouro) e `panels.js` (abre cada painel e aba e acusa exceção). O navegador do app pausa a animação quando o painel
+  não está à vista: foto de coisa que se mexe só vale por aqui.
 
 ## Antes de dizer "pronto"
-- Screenshot em pelo menos 375, 768 e 1440 px da tela mexida.
-- `?overflow=1` sem elementos passando da borda.
+- Screenshot em pelo menos 375, 768 e 1440 px da tela mexida, e em 1366×657.
+- `?overflow=1` sem elementos passando da borda (console de batalha: `node tools/ui/cdp.js tools/ui/overflow.js`).
+- Mexeu em painel ou em `ui.js`: `node tools/ui/cdp.js tools/ui/panels.js` sem achados.
 - `npm test` verde.
