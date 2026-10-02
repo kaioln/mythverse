@@ -128,11 +128,34 @@
       // Foco em inimigos.
       const cv = this.el.canvas;
       cv.addEventListener('click', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); const th = !uid && this.renderer.townHeroAt?.(p.x, p.y); if (th) { this.openPanel('hero', th); return; } if (!uid && this.renderer.townTalkAt?.(p.x, p.y)) return; if (uid) { this.engine.input('focus', uid); const f = this.engine.focusUid; this.callbacks.click?.(); if (f) this.onLog({ text:`Equipe focando ${this.engine.enemies.find(x => x.uid === f)?.name}.`, type:'system' }); } });
-      cv.addEventListener('mousemove', e => { const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid || !!this.renderer.townHeroAt?.(p.x, p.y) || !!this.renderer.townFolkAt?.(p.x, p.y)); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
+      cv.addEventListener('mousemove', e => { if (this.tipTouch) return; const p = this.renderer.toLogical(e.clientX, e.clientY); const uid = this.renderer.enemyAt(p.x, p.y); this.renderer.hoverEnemy = uid; cv.classList.toggle('can-target', !!uid || !!this.renderer.townHeroAt?.(p.x, p.y) || !!this.renderer.townFolkAt?.(p.x, p.y)); if (uid) this.showEnemyTip(uid, e); else this.hideTip(); });
       cv.addEventListener('mouseleave', () => { this.renderer.hoverEnemy = null; this.hideTip(); });
-      // Tooltips gerais.
-      document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (t) this.showTip(t.dataset.tip, t); });
-      document.addEventListener('mouseout', e => { if (e.target.closest('[data-tip]')) this.hideTip(); });
+      // Dicas (data-tip). Mouse: aparecem depois de um instante parado em cima (na hora, se outra já estava aberta) e somem
+      // ao clicar. Toque: um toque nunca abre dica (ela ficava presa na tela, cobrindo o que se acabou de abrir); só o dedo
+      // segurado abre, e ela some sozinha em poucos segundos ou no toque seguinte.
+      const tipOf = e => e.target.closest?.('[data-tip]');
+      const dropTip = () => { clearTimeout(this.tipTimer); clearTimeout(this.tipAuto); this.tipTimer = this.tipAuto = 0; this.hideTip(); };
+      document.addEventListener('mouseover', e => {
+        if (this.tipTouch) return;
+        const t = tipOf(e); if (!t || !t.dataset.tip) return;
+        clearTimeout(this.tipTimer);
+        if (!this.el.tooltip.hidden) { this.showTip(t.dataset.tip, t); return; }
+        this.tipTimer = setTimeout(() => { if (t.isConnected && t.matches(':hover')) this.showTip(t.dataset.tip, t); }, 320);
+      });
+      document.addEventListener('mouseout', e => { if (tipOf(e)) dropTip(); });
+      document.addEventListener('mousedown', dropTip, true);
+      addEventListener('scroll', dropTip, { passive:true, capture:true });
+      document.addEventListener('touchstart', e => {
+        this.tipTouch = true; clearTimeout(this.tipTouchOff); dropTip();
+        const t = tipOf(e), p = e.touches[0]; if (!t || !t.dataset.tip || !p) return;
+        this.tipAt = { x:p.clientX, y:p.clientY };
+        this.tipTimer = setTimeout(() => { if (!t.isConnected) return; this.showTip(t.dataset.tip, t); this.tipHeld = true; this.tipAuto = setTimeout(dropTip, 3200); }, 480);
+      }, { passive:true, capture:true });
+      document.addEventListener('touchmove', e => { const p = e.touches[0], a = this.tipAt; if (p && a && Math.hypot(p.clientX - a.x, p.clientY - a.y) > 12) { clearTimeout(this.tipTimer); this.tipTimer = 0; } }, { passive:true, capture:true });
+      const touchEnd = () => { clearTimeout(this.tipTimer); this.tipTimer = 0; this.tipTouchOff = setTimeout(() => { this.tipTouch = false; }, 900); if (this.tipHeld) setTimeout(() => { this.tipHeld = false; }, 400); };
+      document.addEventListener('touchend', touchEnd, { passive:true, capture:true }); document.addEventListener('touchcancel', touchEnd, { passive:true, capture:true });
+      // Dedo segurado para ler a dica não conta como clique no botão.
+      document.addEventListener('click', e => { if (this.tipHeld) { this.tipHeld = false; e.stopPropagation(); e.preventDefault(); } }, true);
     }
 
     showTip(html, anchor) {
