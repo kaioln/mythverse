@@ -109,5 +109,7 @@
   KT.portraitUrl = portraitPath;
   KT.spriteUrl = spritePath;
   KT.iconUrl = iconPath;
-  KT.itemIcon = (item, cls = '') => `<img class="item-art ${cls}" src="${iconPath(item.icon, item.hue)}" alt="" loading="lazy" draggable="false">`;
+  // Ícone do item: a pintura própria dele quando existe (KT.Icon.itemId); senão a arte antiga (uma base recolorida).
+  KT.itemArtUrl = (artId, icon, hue) => (KT.Icon?.hasItem(artId) ? KT.Icon.itemUrl(artId) : iconPath(icon, hue));
+  KT.itemIcon = (item, cls = '') => { const art = KT.Icon?.itemId(item); return `<img class="item-art ${cls}" src="${art ? KT.Icon.itemUrl(art) : iconPath(item.icon, item.hue)}" alt="" loading="lazy" draggable="false">`; };
 })();

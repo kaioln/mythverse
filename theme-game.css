@@ -354,3 +354,7 @@ body:not(.in-combat) .stage-controls{display:none!important}
 .tnode.avail .glyph-art{filter:grayscale(.3) brightness(.92)}
 .tdetail-ico .pi{display:block}
 .wiki-ico .pi{display:block}
+
+/* ---------- itens: as quatro peças de um conjunto, lado a lado ---------- */
+.set-art{display:flex;gap:6px;margin:6px 0 2px}
+.set-art .item-art{width:40px;height:40px}

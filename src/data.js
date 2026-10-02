@@ -347,8 +347,10 @@
 
   // Com a Quebra para todos (Resistência, dano de quebra, +35% de dano no inimigo quebrado, Assalto Total) e as reações
   // elementais, a equipe mata mais rápido do que quando os inimigos foram calibrados. Para o tempo de luta medido
-  // continuar o mesmo (tools/balance.js), a vida de todo inimigo sobe nesta proporção.
-  const ENEMY_HP = 1.35;
+  // continuar o mesmo (tools/balance.js), a vida do inimigo sobe nesta proporção. Inimigo comum (4 de Resistência) quebra
+  // a cada dois ou três golpes e sofre mais com as reações em área; chefe (30) quebra poucas vezes por luta: por isso
+  // a proporção é por tipo.
+  const ENEMY_HP = { normal:1.85, elite:1.6, mini:1.45, boss:1.35, world:1.35 };
 
   // Variantes Alfa, versões raras e nomeadas de monstros comuns (mais fortes, melhor loot).
   const ALPHA = { chance:.012, hp:2.6, atk:1.5, prefix:'Alfa' };

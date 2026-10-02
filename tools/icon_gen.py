@@ -4,18 +4,21 @@ kits   cinco ícones por herói (passiva, habilidades I a III, ultimate). Cada f
        4 heróis: uma fileira por herói, cinco ladrilhos por fileira. O texto de cada ladrilho vem do próprio jogo
        (tools/export_kits.js: nome, frase e o que a ação faz), e a aparência do herói, de tools/hero_art.py.
 ui     ícones de interface em folhas 4×4 de 1024×1024: os grupos estão em UI_GROUPS (nome → [(id, descrição)]).
+items  um ícone por item do jogo (bases, míticos e peças de conjunto), em folhas 4×4: a lista está em tools/icon_items.py.
 
 Saída
   assets/original/icons/kit-<n>.webp e ui-<grupo>.webp     as folhas como vieram da API (fonte)
   assets/icons/kit/<herói>.webp                            atlas de 5 ícones de 128 px (p, s0, s1, s2, u)
   assets/icons/ui-a.webp, ui-b.webp, ui-c.webp + ui.css    atlas dos ícones de interface (por uso) e as classes (.pi-<id>, .ic.ic-<nome>)
-  src/icon-index.js                                        índice para o jogo (KT.ICON_ART: ícones, heróis com kit, versão)
+  assets/original/icons/item-<n>.webp → assets/icons/item/<id>.webp   um arquivo de 112 px por item (b-, u-, s-)
+  src/icon-index.js                                        índice para o jogo (KT.ICON_ART: ícones, heróis com kit, itens, versão)
 O custo de cada chamada vai para assets/original/frames-ledger.json (o mesmo livro das outras artes).
 
 Uso
   python tools/icon_gen.py kits [herói ...] [--force] [--quality low|medium|high] [--ref folha.webp]
   python tools/icon_gen.py ui [grupo ...] [--force] [--quality ...] [--ref folha.webp]
-  python tools/icon_gen.py atlas [ui|kits]  só remonta os atlas a partir das folhas já salvas
+  python tools/icon_gen.py items [n ...] [--force] [--check]   folhas de itens (n = número da folha)
+  python tools/icon_gen.py atlas [ui|kits|items]  só remonta os atlas a partir das folhas já salvas
   python tools/icon_gen.py list             mostra o que falta gerar
 A chave vem de OPENAI_API_KEY (ou do .env do projeto). --ref: uma folha já aprovada vai junto como referência de traço.
 """
@@ -39,6 +42,8 @@ from hero_frames import cost_of, log_cost, multipart  # noqa: E402
 SRC = os.path.join(ROOT, 'assets', 'original', 'icons')
 KIT_OUT = os.path.join(ROOT, 'assets', 'icons', 'kit')
 UI_OUT = os.path.join(ROOT, 'assets', 'icons')
+ITEM_OUT = os.path.join(ROOT, 'assets', 'icons', 'item')
+ITEM_CELL = 112    # lado do ícone de item (aparece de 30 a 64 px; 112 dá folga para tela de alta densidade)
 MODEL = 'gpt-image-2.5-sunburst'
 TILE = 128
 CELL = 80          # lado de cada ícone nos atlas da interface
@@ -67,6 +72,16 @@ UI_STYLE = ("Create exactly one square image: a sheet of 16 game interface icons
             "just the object, with a thick dark hand-inked outline, drawn large and centered in its cell, all 16 at the same "
             "visual size. " + INK + " Palette: night indigo, paper cream, red lacquer and antique gold, plus the color each "
             "icon asks for. Icons are read left to right, top to bottom.")
+
+
+ITEM_STYLE = ("Create exactly one square image: a sheet of 16 fantasy RPG equipment icons in a strict grid of 4 rows and 4 columns on a "
+              "fully transparent background, with a clear empty gap between the icons so that they never touch each other or "
+              "the image border. Each icon is a single piece of equipment with NO tile, NO frame and NO background behind it: "
+              "just the object, with a thick dark hand-inked outline, drawn large and centered in its cell, all 16 at the same "
+              "visual size. Long weapons (swords, spears, bows, staves) are drawn on a diagonal so that they fill the cell. "
+              "Each object must be clearly different from the others in silhouette and color. " + INK + " The setting is a "
+              "feudal-Japan-inspired fantasy world (shrines, lanterns, yokai), with some relics from other worlds. Icons are "
+              "read left to right, top to bottom.")
 
 
 def kits():
@@ -315,10 +330,86 @@ def build_ui_atlas():
             os.remove(os.path.join(UI_OUT, old))
     kit_ids = sorted(f[:-5] for f in os.listdir(KIT_OUT) if f.endswith('.webp')) if os.path.isdir(KIT_OUT) else []
     kver = hashlib.md5(''.join(sorted(f"{f}{os.path.getsize(os.path.join(KIT_OUT, f))}" for f in os.listdir(KIT_OUT))).encode()).hexdigest()[:8] if kit_ids else ''
-    js = ("// Gerado por tools/icon_gen.py: índice dos ícones pintados (assets/icons/ui-<pacote>.webp e assets/icons/kit/<herói>.webp).\n"
-          "(globalThis.KT ||= {}).ICON_ART = " + json.dumps({'size': CELL, 'packs': packs, 'kv': kver, 'icons': index, 'kits': kit_ids}, separators=(',', ':')) + ";\n")
+    item_ids = sorted(f[:-5] for f in os.listdir(ITEM_OUT) if f.endswith('.webp')) if os.path.isdir(ITEM_OUT) else []
+    iver = hashlib.md5(''.join(f"{i}{os.path.getsize(os.path.join(ITEM_OUT, i + '.webp'))}" for i in item_ids).encode()).hexdigest()[:8] if item_ids else ''
+    js = ("// Gerado por tools/icon_gen.py: índice dos ícones pintados (assets/icons/ui-<pacote>.webp, kit/<herói>.webp e item/<id>.webp).\n"
+          "(globalThis.KT ||= {}).ICON_ART = " + json.dumps({'size': CELL, 'packs': packs, 'kv': kver, 'icons': index, 'kits': kit_ids, 'iv': iver, 'items': item_ids}, separators=(',', ':')) + ";\n")
     io.open(os.path.join(ROOT, 'src', 'icon-index.js'), 'w', encoding='utf-8', newline='\n').write(js)
     return total
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# itens
+# ----------------------------------------------------------------------------------------------------------------------
+def item_list():
+    from icon_items import ITEMS
+    return ITEMS
+
+
+def item_sheet_path(n):
+    return os.path.join(SRC, f'item-{n:02d}.webp')
+
+
+def item_prompt(items):
+    lines = [f'({i + 1}) {desc}' for i, (_, desc) in enumerate(items)]
+    while len(lines) < 16:
+        lines.append(f'({len(lines) + 1}) a small four-pointed ink star (filler)')
+    return ITEM_STYLE + '\n\nThe 16 icons:\n' + '\n'.join(lines)
+
+
+def check_items():
+    """Confere a lista de tools/icon_items.py com os itens do jogo. Devolve (faltando, sobrando)."""
+    js = ("const vm=require('vm'),fs=require('fs');const ctx={console,globalThis:null};ctx.globalThis=ctx;vm.createContext(ctx);"
+          "for(const f of ['src/data.js','src/utils.js','src/items.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});"
+          "const I=ctx.KT.Items;console.log(JSON.stringify([...Object.values(I.bases).map(b=>'b-'+b.id),...I.uniques.map(q=>'u-'+q.id),"
+          "...I.sets.flatMap(s=>Object.keys(s.pieces).map(k=>'s-'+s.id+'-'+k))]))")
+    out = subprocess.run(['node', '-e', js], capture_output=True, check=True, cwd=ROOT)
+    want, have = set(json.loads(out.stdout.decode('utf-8'))), [i for i, _ in item_list()]
+    dup = sorted({i for i in have if have.count(i) > 1})
+    return sorted(want - set(have)), sorted(set(have) - want) + [f'{d} (repetido)' for d in dup]
+
+
+def build_item_icons():
+    """Recorta as folhas de itens em um arquivo por item. Devolve (quantos, folhas a conferir)."""
+    os.makedirs(ITEM_OUT, exist_ok=True)
+    items, done, bad = item_list(), 0, []
+    for k in range(0, len(items), 16):
+        p = item_sheet_path(k // 16)
+        if not os.path.exists(p):
+            continue
+        tiles, good = cut(Image.open(p).convert('RGBA'), 4, 4)
+        if not good:
+            bad.append(os.path.basename(p))
+        for (iid, _), t in zip(items[k:k + 16], tiles):
+            fit(t, ITEM_CELL, 3).save(os.path.join(ITEM_OUT, f'{iid}.webp'), quality=88, method=4)
+            done += 1
+    return done, bad
+
+
+def gen_items(names, quality, force, ref):
+    os.makedirs(SRC, exist_ok=True)
+    items = item_list()
+    for k in range(0, len(items), 16):
+        n = k // 16
+        if names and str(n) not in names:
+            continue
+        p = item_sheet_path(n)
+        if os.path.exists(p) and not force:
+            print(f'item-{n:02d}     já existe', flush=True)
+            continue
+        for attempt in range(3):
+            img = call(item_prompt(items[k:k + 16]), '1024x1024', quality, f'item-{n:02d}', ref)
+            if img is None:
+                break
+            tiles, good = cut(img, 4, 4)
+            if good or attempt == 2:
+                img.save(p, quality=95, method=6)
+                if not good:
+                    print(f'item-{n:02d}     grade irregular: conferir {os.path.basename(p)}', flush=True)
+                break
+            print(f'item-{n:02d}     grade irregular, tentando de novo', flush=True)
+    done, bad = build_item_icons()
+    print(f'itens: {done} ícones' + (f' · folhas a conferir: {", ".join(bad)}' if bad else ''), flush=True)
 
 
 def gen_ui(names, quality, force, ref):
@@ -357,7 +448,21 @@ def main():
         gen_kits(names, quality, force, ref)
     elif args[0] == 'ui':
         gen_ui(names, quality, force, ref)
+    elif args[0] == 'items':
+        missing, extra = check_items()
+        if missing or extra:
+            print('tools/icon_items.py fora de dia:' + (f' faltam {", ".join(missing)}' if missing else '') + (f' sobram {", ".join(extra)}' if extra else ''))
+            if '--check' not in args:
+                return
+        if '--check' in args:
+            print(f'{len(item_list())} itens, {(len(item_list()) + 15) // 16} folhas' + ('' if missing or extra else ': lista em dia'))
+            return
+        gen_items(names, quality, force, ref)
+        build_ui_atlas()
     elif args[0] == 'atlas':
+        if 'items' in names or not names:
+            done, bad = build_item_icons()
+            print(f'itens: {done} ícones' + (f' · a conferir: {", ".join(bad)}' if bad else ''))
         if 'kits' in names or not names:
             done, bad = build_kit_atlases(kits())
             print(f'kits: {done} heróis' + (f' · a conferir: {", ".join(bad)}' if bad else ''))

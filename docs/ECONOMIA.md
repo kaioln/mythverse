@@ -161,6 +161,34 @@ Medido com `node tools/balance.js [lutas] [níveis extras]`: uma equipe de refer
 - **Ranking no banco**: `neon_setup.js` recalcula o poder de todas as contas com o motor (`tools/neon_recompute.js`); o guarda do save converte jogos antigos em cache; o jogo recarrega sozinho quando sai versão nova (`version.json`).
 - **Sprites**: `src/sprite-meta.js` (gerado) iguala o tamanho aparente dos heróis (Vegeta e outros de arte estreita) e põe as formas despertadas com o pé no chão.
 
+## Combate com kits, Quebra e reações (2026-10-02): vida do inimigo por tipo
+
+O combate novo (três habilidades por herói com Pontos de Técnica, Resistência e Quebra em todo inimigo, reações
+elementais, Assalto Total) mata mais rápido do que o combate para o qual os inimigos foram calibrados. Para a renda por
+hora não mudar, a vida do inimigo sobe por tipo (`D.ENEMY_HP` em `src/data.js`):
+
+| Tipo | Resistência | Vida × | Por quê |
+|---|---|---|---|
+| comum | 4 | 1,85 | quebra a cada dois ou três golpes e sofre mais com as reações em área |
+| elite e guardião | 10 | 1,60 | |
+| mini-chefe | 16 | 1,45 | |
+| chefe e Invasão Mundial | 30 e 40 | 1,35 | quebra poucas vezes por luta |
+
+Medição (`node tools/balance.js 20`, equipe de referência no nível do inimigo, comando AUTO), contra a mesma medição no
+motor de antes da reforma (commit `bbed39a`):
+
+| | Tempo da luta | Vitórias | Vida restante |
+|---|---|---|---|
+| Caçadas (24 pontos) | 99,6% do de antes | 238/240 → 475/480 | 97% → 98% |
+| Masmorras (12 pontos) | 100,4% | 115/120 → 239/240 | 94% → 98% |
+| Chefes (4) | 95,6% | 22/40 → 49/80 | 53% → 58% |
+
+Apep (chefe das Areias) passa de 2/10 para 7/20 e Raijin (chefe final) de 0/10 para 2/20 com a equipe de referência:
+continuam pedindo equipe montada. O comando MANUAL rende mais que essa medição (golpe cronometrado, escolha do alvo
+pela fraqueza, Assalto Total na hora certa): é o prêmio de jogar à mão, não entra na calibração.
+
+Para recalibrar depois de mexer em kits ou reações: medir, ajustar `D.ENEMY_HP` e medir de novo (a medição leva segundos).
+
 ## Economia v3 (2026-09-29): ouro escasso, refino caro, Dojo com teto
 
 Problema medido com `node tools/goldrate.js` (equipe de referência farmando o estágio do próprio nível): o ouro por abate

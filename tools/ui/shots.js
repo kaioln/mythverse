@@ -8,8 +8,10 @@ module.exports = async (p, [size = '1366:800', ...panels]) => {
   await p.inFight(); await p.wait(2000);
   for (const spec of panels) {
     const [name, tab = '', scroll = '0'] = spec.split(':');
-    const ok = await p.eval(`(() => { const ui = KT.dev.ui, e = KT.dev.engine; try { ui.openPanel(${JSON.stringify(name)}, ${JSON.stringify(name)} === 'hero' ? e.party[1].recUid : ${JSON.stringify(name)} === 'destination' ? 'hunt' : null); } catch (err) { return err.message; }
-      const t = ${JSON.stringify(tab)}; if (t) { const b = document.querySelector('#modal [data-tab="' + t + '"]'); if (!b) return 'sem a aba ' + t; b.click(); } return true; })()`);
+    // O segundo argumento de openPanel é a aba; na ficha do herói é o herói (a aba se troca pelo botão dela).
+    const ok = await p.eval(`(() => { const ui = KT.dev.ui, e = KT.dev.engine, name = ${JSON.stringify(name)}, t = ${JSON.stringify(tab)};
+      try { ui.openPanel(name, name === 'hero' ? e.party[1].recUid : name === 'destination' ? 'hunt' : t || null); } catch (err) { return err.message; }
+      if (t && name === 'hero') { const b = document.querySelector('#modal [data-tab="' + t + '"]'); if (!b) return 'sem a aba ' + t; b.click(); } return true; })()`);
     if (ok !== true) { console.log(spec, '→', ok); continue; }
     await p.wait(700);
     if (+scroll) { await p.eval(`(() => { KT.dev.ui.el.modalBody.scrollTop = ${+scroll}; return true; })()`); await p.wait(300); }

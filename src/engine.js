@@ -566,11 +566,11 @@
     makeEnemyUnit(id, P, extra = {}) {
       const t = D.enemies[id] || D.enemies.fox;
       const ev = activeEvent(this.now()); const atkMod = 1 + (ev.mods?.enemyAtk || 0);
-      const lvl = enemyLevel(P);
+      const lvl = enemyLevel(P), hpK = D.ENEMY_HP[extra.worldBoss ? 'world' : t.boss ? 'boss' : t.miniboss ? 'mini' : t.elite || extra.guardian ? 'elite' : 'normal'];
       if (!this.state.codex.enemies.includes(id)) this.state.codex.enemies.push(id);
       const u = { uid:U.uid('en'), side:'enemy', id, name:t.name, sprite:t.sprite, el:t.el, cls:t.role, color:D.elements[t.el].color, t,
         st:{ atk:t.atk * (t.atkMul || 1) * P * atkMod, baseAtk:t.atk * P, def:t.def * P, spd:t.spd, crit:t.crit || .05, critDmg:1.5, dodge:t.dodge || 0, lifesteal:t.lifesteal || 0, dr:0, regen:t.regen || 0, healPow:0, dot:0, boss:0, pierce:0, skill:0, nrg:0, cdr:0, elem:0, ultDmg:0 },
-        maxHp:Math.round(t.hp * (t.hpMul || 1) * P * D.ENEMY_HP), hp:Math.round(t.hp * (t.hpMul || 1) * P * D.ENEMY_HP), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
+        maxHp:Math.round(t.hp * (t.hpMul || 1) * P * hpK), hp:Math.round(t.hp * (t.hpMul || 1) * P * hpK), shield:0, shieldT:0, energy:0, atkCd:U.rand(.5, 1.2), skillCd:(t.skill?.cd || 99) * U.rand(.4, .8),
         effects:[], counters:{ atk:0 }, flags:{}, alive:true, thorns:t.thorns || 0, elite:!!t.elite, boss:!!t.boss, miniboss:!!t.miniboss, treasure:!!t.treasure, level:lvl, P,
         specials:[], windup:0, windupMax:0, windupSpecial:null, hooks:{}, spawnT:0, tough:0, toughMax:0, broken:0, breaks:0, elMark:null, nextTgt:null, innate:t.innate || null, ...extra };
       u.toughMax = u.tough = t.treasure ? 0 : u.worldBoss ? TOUGH.world : t.boss ? TOUGH.boss : t.miniboss ? TOUGH.mini : t.elite || u.guardian ? TOUGH.elite : TOUGH.normal;

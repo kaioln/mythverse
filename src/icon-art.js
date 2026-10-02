@@ -3,11 +3,12 @@
 //   KT.Icon.html('cmd-attack')            <i class="pi pi-cmd-attack">
 //   KT.Icon.kit('akira', 's1')            ícone da habilidade II do Akira (slots: p, s0, s1, s2, u)
 //   KT.Icon.draw(ctx, 'st-burn', x, y, 18)  no canvas, centrado em (x, y)
+//   KT.Icon.itemId(item)                  id da pintura do item (b-<base>, u-<mítico>, s-<conjunto>-<espaço>), ou null
 (() => {
   const KT = globalThis.KT = globalThis.KT || {};
-  const A = KT.ICON_ART || { size:80, packs:{}, kv:'', icons:{}, kits:[] };
+  const A = KT.ICON_ART || { size:80, packs:{}, kv:'', icons:{}, kits:[], iv:'', items:[] };
   const SLOT = { p:0, s0:1, s1:2, s2:3, u:4 };
-  const kits = new Set(A.kits || []);
+  const kits = new Set(A.kits || []), items = new Set(A.items || []);
   // Do nome antigo (kanji dos dados ou nome do traço) para a pintura.
   const EL = { Fogo:'fire', Água:'water', Natureza:'nature', Terra:'earth', Raio:'lightning', Vento:'wind', Gelo:'ice', Luz:'light', Sombra:'shadow' };
   const CLS = { Vanguarda:'vanguarda', Executor:'executor', Arcanista:'arcanista', Atirador:'atirador', Suporte:'suporte' };
@@ -31,6 +32,10 @@
     cls(c) { return `cls-${CLS[c] || c}`; },
     status(s) { return `st-${s}`; },
     html(id, cls = '') { return A.icons[id] ? `<i class="pi pi-${id}${cls ? ` ${cls}` : ''}" aria-hidden="true"></i>` : ''; },
+    // Item: cada base, cada mítico e cada peça de conjunto tem a própria pintura (assets/icons/item). Sem ela, null.
+    itemId(item) { if (!item) return null; const id = item.kind === 'unique' ? `u-${item.uniqueId}` : item.kind === 'set' ? `s-${item.setId}-${item.slot}` : item.baseId ? `b-${item.baseId}` : null; return id && items.has(id) ? id : null; },
+    hasItem(id) { return items.has(id); },
+    itemUrl(id) { return `assets/icons/item/${id}.webp${A.iv ? `?v=${A.iv}` : ''}`; },
     kitUrl(hero) { return `assets/icons/kit/${hero}.webp${A.kv ? `?v=${A.kv}` : ''}`; },
     kitStyle(hero, slot) { return `background-image:url(${this.kitUrl(hero)});background-position:${(SLOT[slot] ?? 0) * 25}% 0`; },
     kit(hero, slot, cls = '') { return kits.has(hero) ? `<i class="pk${cls ? ` ${cls}` : ''}" style="${this.kitStyle(hero, slot)}" aria-hidden="true"></i>` : ''; },

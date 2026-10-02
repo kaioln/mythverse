@@ -1,5 +1,5 @@
 {
- "total_usd": 13.3208,
+ "total_usd": 13.9698,
  "calls": [
   {
    "hero": "sora",
@@ -12810,6 +12810,573 @@
     "total_tokens": 1908
    },
    "at": "2026-10-02 01:59:20"
+  },
+  {
+   "hero": "icons:item-00",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0243,
+   "usage": {
+    "input_tokens": 1609,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 585
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2048
+   },
+   "at": "2026-10-02 04:49:03"
+  },
+  {
+   "hero": "icons:item-01",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1576,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 552
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2015
+   },
+   "at": "2026-10-02 04:50:10"
+  },
+  {
+   "hero": "icons:item-02",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1580,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 556
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2019
+   },
+   "at": "2026-10-02 04:50:51"
+  },
+  {
+   "hero": "icons:item-02",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1580,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 556
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2019
+   },
+   "at": "2026-10-02 04:51:14"
+  },
+  {
+   "hero": "icons:item-03",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1570,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 546
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2009
+   },
+   "at": "2026-10-02 04:52:05"
+  },
+  {
+   "hero": "icons:item-03",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1570,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 546
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2009
+   },
+   "at": "2026-10-02 04:52:35"
+  },
+  {
+   "hero": "icons:item-03",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1570,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 546
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2009
+   },
+   "at": "2026-10-02 04:52:59"
+  },
+  {
+   "hero": "icons:item-04",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1568,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 544
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2007
+   },
+   "at": "2026-10-02 04:53:53"
+  },
+  {
+   "hero": "icons:item-04",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1568,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 544
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2007
+   },
+   "at": "2026-10-02 04:54:17"
+  },
+  {
+   "hero": "icons:item-05",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1564,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 540
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2003
+   },
+   "at": "2026-10-02 04:54:59"
+  },
+  {
+   "hero": "icons:item-06",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1564,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 540
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2003
+   },
+   "at": "2026-10-02 04:55:35"
+  },
+  {
+   "hero": "icons:item-07",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0242,
+   "usage": {
+    "input_tokens": 1586,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 562
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2025
+   },
+   "at": "2026-10-02 04:56:11"
+  },
+  {
+   "hero": "icons:item-08",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1565,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 541
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2004
+   },
+   "at": "2026-10-02 04:57:08"
+  },
+  {
+   "hero": "icons:item-08",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1565,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 541
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2004
+   },
+   "at": "2026-10-02 04:57:32"
+  },
+  {
+   "hero": "icons:item-09",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0241,
+   "usage": {
+    "input_tokens": 1574,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 550
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 2013
+   },
+   "at": "2026-10-02 04:58:21"
+  },
+  {
+   "hero": "icons:item-10",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1550,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 526
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1989
+   },
+   "at": "2026-10-02 04:59:02"
+  },
+  {
+   "hero": "icons:item-11",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1539,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 515
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1978
+   },
+   "at": "2026-10-02 04:59:42"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1524,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 500
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1963
+   },
+   "at": "2026-10-02 05:00:22"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1524,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 500
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1963
+   },
+   "at": "2026-10-02 05:00:44"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1524,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 500
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1963
+   },
+   "at": "2026-10-02 05:01:08"
+  },
+  {
+   "hero": "icons:item-13",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1526,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 502
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1965
+   },
+   "at": "2026-10-02 05:01:49"
+  },
+  {
+   "hero": "icons:item-14",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1552,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 528
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1991
+   },
+   "at": "2026-10-02 05:02:24"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1540,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 516
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1979
+   },
+   "at": "2026-10-02 05:04:03"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1540,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 516
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1979
+   },
+   "at": "2026-10-02 05:04:27"
+  },
+  {
+   "hero": "icons:item-12",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.0239,
+   "usage": {
+    "input_tokens": 1540,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 516
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1979
+   },
+   "at": "2026-10-02 05:04:49"
+  },
+  {
+   "hero": "icons:item-13",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1548,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 524
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1987
+   },
+   "at": "2026-10-02 05:05:27"
+  },
+  {
+   "hero": "icons:item-13",
+   "kind": "icon-sheet",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "medium",
+   "usd": 0.024,
+   "usage": {
+    "input_tokens": 1548,
+    "input_tokens_details": {
+     "image_tokens": 1024,
+     "text_tokens": 524
+    },
+    "output_tokens": 439,
+    "output_tokens_details": {
+     "image_tokens": 439,
+     "text_tokens": 0
+    },
+    "total_tokens": 1987
+   },
+   "at": "2026-10-02 05:05:52"
   }
  ]
 }
