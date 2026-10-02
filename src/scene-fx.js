@@ -16,7 +16,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform sampler2D uScene, uMask, uNoise;
-uniform float uTime, uWind, uAmt, uZoom;
+uniform float uTime, uWind, uAmt;
 uniform vec3 uCloud;
 varying vec2 v;
 void main() {
@@ -35,28 +35,32 @@ void main() {
   float n2 = texture2D(uNoise, v * vec2(7., 21.) - vec2(t * .034, -t * .009)).g - .5;
   uv.x += m.r * (n1 * .0042 + sin(v.y * 260. + t * 1.6 + n2 * 6.) * .0010);
   uv.y += m.r * n2 * .0034;
-  // árvores: a copa inteira vai e volta com o vento (mais no alto), em rajadas que atravessam a cena da esquerda para a
-  // direita, e as folhas tremem por cima. uZoom mantém o balanço do mesmo tamanho na tela quando a cena é desenhada pequena.
-  float gust = texture2D(uNoise, vec2(v.x * .7 - t * .045, v.y * .4 + t * .006)).b - .5;
-  float sway = sin(t * 1.15 + v.x * 6. + v.y * 2.) * .6 + sin(t * 2.3 + v.x * 15. + 1.7) * .25 + gust * 1.7;
-  float flut = texture2D(uNoise, v * vec2(5., 6.) + vec2(t * .09, -t * .06)).r - .5;
-  float lean = (.25 + sway) * uWind;                         // o vento sopra para um lado: a copa pende e volta
-  uv.x -= m.g * (lean * .0050 + flut * .0030 * uWind) * uZoom;
-  uv.y += m.g * (sin(t * 1.9 + v.x * 9.) * .0014 * uWind + flut * .0022) * uZoom;
+  // árvores: brisa. Cada galho vai e volta no seu tempo (a fase vem de um ruído parado no lugar), as folhas tremem por
+  // cima e a copa cede de leve no alto, mais nas rajadas que atravessam a cena. Tronco e pé da copa ficam parados (a
+  // máscara é zero ali). Medido com tools/dev/scenefx.html: ~1 px na brisa comum, ~3 px no vento mais forte. Mais que
+  // isso a copa vira borracha e a distorção aparece.
+  float gust = texture2D(uNoise, vec2(v.x * .7 - t * .03, v.y * .4 + t * .004)).b;
+  float breeze = (.35 + .65 * gust) * uWind;
+  float pb = texture2D(uNoise, v * vec2(3., 4.)).r * 6.283, pl = texture2D(uNoise, v * vec2(10., 12.) + .37).g * 6.283;
+  float sway = sin(t * .9 + v.x * 5. + v.y * 3.);
+  uv.x -= m.g * (sway * .0013 + sin(t * 1.7 + pb) * .0011 + sin(t * 3.1 + pl) * .0005) * breeze;
+  uv.y += m.g * (sin(t * 1.4 + pb + 1.3) * .0008 + sin(t * 2.7 + pl) * .0005) * breeze;
   // fumaça e névoa pintadas: tremulam e pendem para o lado do vento
   float n3 = texture2D(uNoise, v * vec2(4., 6.) + vec2(t * .015, t * .05)).r - .5;
   float n4 = texture2D(uNoise, v * vec2(6., 4.) + vec2(-t * .01, t * .04)).g - .5;
   uv.x += m.b * (n3 * .0075 + .0016 * uWind);
   uv.y += m.b * n4 * .0065;
   vec3 col = texture2D(uScene, uv).rgb;
+  // folhagem: a luz corre pelas copas em ondas, junto com as rajadas (as folhas viram e pegam a luz das lanternas)
+  col *= 1. + m.g * (texture2D(uNoise, vec2(v.x * 2.6 - t * .09, v.y * 2.2 + t * .015)).r - .5) * .34 * breeze;
   // brilho de crista: faixas claras correndo sobre a água
   float crest = smoothstep(.60, .88, texture2D(uNoise, v * vec2(5., 26.) + vec2(t * .05, -t * .02)).b + n1 * .5);
   col += m.r * crest * vec3(.09, .12, .16);
   col += m2.g * smoothstep(.52, .84, f1 * .6 + f2 * .4) * vec3(.15, .19, .23);
   // nuvens passando no céu
   if (m2.r > .012) {
-    float c1 = texture2D(uNoise, v * vec2(.9, 1.6) + vec2(t * .0055 * (.5 + uWind), 0.)).r;
-    float c2 = texture2D(uNoise, v * vec2(2.3, 3.4) + vec2(t * .011 * (.5 + uWind), t * .0012)).g;
+    float c1 = texture2D(uNoise, v * vec2(.9, 1.6) - vec2(t * .0065, 0.)).r;
+    float c2 = texture2D(uNoise, v * vec2(2.3, 3.4) - vec2(t * .0125, t * .0012)).g;
     col = mix(col, uCloud, smoothstep(.50, .78, c1 * .68 + c2 * .32) * m2.r * .44);
   }
   gl_FragColor = vec4(col, 1.);
@@ -105,7 +109,7 @@ void main() {
           else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
         };
         tex(0, scene, false); tex(1, mask, false); tex(2, noiseTexture(), true);
-        this.u = {}; ['uScene', 'uMask', 'uNoise', 'uTime', 'uWind', 'uAmt', 'uZoom', 'uCloud'].forEach(n => { this.u[n] = gl.getUniformLocation(pr, n); });
+        this.u = {}; ['uScene', 'uMask', 'uNoise', 'uTime', 'uWind', 'uAmt', 'uCloud'].forEach(n => { this.u[n] = gl.getUniformLocation(pr, n); });
         gl.uniform1i(this.u.uScene, 0); gl.uniform1i(this.u.uMask, 1); gl.uniform1i(this.u.uNoise, 2);
         this.ok = true;
       } catch (err) { console.warn('SceneFx:', err.message); this.ok = false; }
@@ -119,14 +123,14 @@ void main() {
       if (this.last >= 0 && Math.abs(time - this.last) < 1 / 31) return this.cv;
       this.last = time;
       const t = time % 3600;
-      gl.uniform1f(this.u.uTime, t); gl.uniform1f(this.u.uWind, SceneFx.wind(t)); gl.uniform1f(this.u.uAmt, 1); gl.uniform1f(this.u.uZoom, Math.max(1, Math.min(2.2, 1280 / w)));
+      gl.uniform1f(this.u.uTime, t); gl.uniform1f(this.u.uWind, SceneFx.wind(t)); gl.uniform1f(this.u.uAmt, 1);
       gl.uniform3f(this.u.uCloud, cloud[0], cloud[1], cloud[2]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       return this.cv;
     }
   }
   const SceneFx = {
-    layers: new Map(),
+    layers: new Map(), masks: new Map(), spotsOf: new Map(),
     // Ligado por padrão; desliga com a opção das Configurações ou com "reduzir movimento" do sistema.
     enabled() { const v = store.get(); if (v) return v === 'on'; return !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches; },
     setEnabled(on) { store.set(on ? 'on' : 'off'); },
@@ -139,12 +143,34 @@ void main() {
       if (L === undefined) {
         this.layers.set(key, L = null);
         const mask = new Image(); mask.decoding = 'async';
-        mask.onload = () => { try { this.layers.set(key, new Layer(scene, mask)); } catch (_) { this.layers.set(key, false); } };
+        mask.onload = () => { this.masks.set(key, mask); try { this.layers.set(key, new Layer(scene, mask)); } catch (_) { this.layers.set(key, false); } };
         mask.onerror = () => this.layers.set(key, false);
         mask.src = `assets/scenes/masks/${key}.png${KT.VERSION ? `?v=${KT.VERSION}` : ''}`;
       }
       return L ? L.render(time, w, h, cloud) : null;
     }
+  };
+  // Pontos de copa de um cenário: [x, y, cor] na cena 1280×720, lidos da máscara (onde a copa balança) e da própria
+  // pintura (a cor da folhagem naquele ponto). O jogo solta dali as folhas e pétalas que o vento leva.
+  SceneFx.treeSpots = function(key, scene) {
+    const got = this.spotsOf.get(key); if (got !== undefined) return got;
+    const mask = this.masks.get(key); if (!mask || !scene?.complete || !this.enabled()) return null;
+    let out = [];
+    try {
+      const w = 320, h = 180, cv = document.createElement('canvas'); cv.width = w * 2; cv.height = h;
+      const g = cv.getContext('2d', { willReadFrequently:true });
+      g.drawImage(mask, 0, 0, mask.naturalWidth / 2, mask.naturalHeight, 0, 0, w, h); g.drawImage(scene, w, 0, w, h);
+      const m = g.getImageData(0, 0, w, h).data, c = g.getImageData(w, 0, w, h).data;
+      for (let y = 1; y < h; y += 2) for (let x = 1; x < w; x += 2) {
+        const i = (y * w + x) * 4; if (m[i + 1] < 150) continue;
+        const r = c[i], gg = c[i + 1], b = c[i + 2]; if (r * .3 + gg * .59 + b * .11 < 46) continue;      // vão escuro da copa: não é folha
+        const up = v => Math.round(Math.min(255, v * 1.12 + 26));
+        out.push([x * 4 + 2, y * 4 + 2, `rgb(${up(r)},${up(gg)},${up(b)})`]);
+      }
+      for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+      out = out.slice(0, 420);
+    } catch (_) { out = []; }
+    this.spotsOf.set(key, out); return out;
   };
   KT.SceneFx = SceneFx;
 })();

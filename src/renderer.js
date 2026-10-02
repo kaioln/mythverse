@@ -641,6 +641,19 @@
         e.list = e.list.filter(p => { p.age += dt; if (p.age >= p.life) return false; p.x += (p.vx * (.4 + wind * 1.6) + Math.sin(p.age * 1.4 + p.ph) * 4) * dt; p.y += p.vy * dt; p.vy *= 1 - dt * .1;
           blob(img, p.x, p.y, p.r + p.age * 6.5, alpha * Math.min(1, e.power + .2) * Math.min(1, p.age * 2.5) * (1 - p.age / p.life) ** 1.3); return true; });
       }
+      // Folhas e pétalas que o vento solta das copas, na cor de cada árvore (KT.SceneFx.treeSpots): saem mais nas rajadas
+      // e seguem o vento. É o que mostra o vento na cena sem deformar a pintura.
+      const spots = KT.SceneFx?.treeSpots?.('village', this.assets.scene('village'));
+      if (spots?.length) {
+        this.leaves ||= []; this.leafAcc = Math.min(2, (this.leafAcc || 0) + dt * (1.4 + wind * 3.4));
+        while (this.leafAcc >= 1) { this.leafAcc -= 1; if (this.leaves.length >= 64) break; const sp = spots[Math.floor(Math.random() * spots.length)];
+          this.leaves.push({ x:sp[0] + U.rand(-3, 3), y:sp[1] + U.rand(-2, 2), col:sp[2], vx:U.rand(13, 30), vy:U.rand(4, 12), age:0, life:U.rand(2.8, 4.6), ph:U.rand(0, 6), r:U.rand(1, 1.8), spin:U.rand(3, 7) }); }
+        c.globalCompositeOperation = 'source-over';
+        this.leaves = this.leaves.filter(p => { p.age += dt; if (p.age >= p.life) return false;
+          p.x += (p.vx * (.35 + wind) + Math.sin(p.age * 2.3 + p.ph) * 6) * dt; p.y += (p.vy + Math.sin(p.age * 3.1 + p.ph) * 5) * dt;
+          c.globalAlpha = .9 * Math.min(1, p.age * 3) * Math.min(1, (p.life - p.age) * 1.4); c.fillStyle = p.col;
+          c.beginPath(); c.ellipse(p.x, p.y, p.r * (1.25 + .5 * Math.sin(p.age * p.spin + p.ph)), p.r * .62, p.age * 1.3 + p.ph, 0, Math.PI * 2); c.fill(); return true; });
+      }
       c.globalCompositeOperation = 'lighter';
       // Fornalha da Forja: clarão, labaredas e fagulhas.
       if (L.forge) {

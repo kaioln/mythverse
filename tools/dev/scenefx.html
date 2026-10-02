@@ -14,7 +14,7 @@
 //   ?t1=10&t2=10.8        os dois instantes, em segundos (padrão 10 e 10.8)
 //   ?gain=10              quanto a diferença é ampliada na imagem (padrão 10)
 //   ?x=880&y=300&w=400&h=220   recorte da cena 1280×720 (padrão: tudo)
-//   ?only=diff | a        mostra só a diferença ou só o primeiro instante
+//   ?only=diff | a | b    mostra só a diferença, só o primeiro instante ou só o segundo
 (async () => {
   const q = new URLSearchParams(location.search), num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
   const load = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('falhou: ' + src)); i.src = src; });
@@ -37,8 +37,10 @@
   const only = q.get('only'), k = Math.min(3, Math.floor(1280 / cw)) || 1, panels = only ? 1 : 2;
   const cv = document.getElementById('c'); cv.width = cw * k * panels; cv.height = ch * k; const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
   const tmp = document.createElement('canvas'); tmp.width = cw; tmp.height = ch; const tg = tmp.getContext('2d');
-  if (only !== 'diff') { tg.putImageData(a, 0, 0); g.drawImage(tmp, 0, 0, cw * k, ch * k); }
-  if (only !== 'a') { tg.putImageData(d, 0, 0); g.drawImage(tmp, only ? 0 : cw * k, 0, cw * k, ch * k); }
+  if (only === 'b') { tg.putImageData(b, 0, 0); g.drawImage(tmp, 0, 0, cw * k, ch * k); }
+  else if (only !== 'diff') { tg.putImageData(a, 0, 0); g.drawImage(tmp, 0, 0, cw * k, ch * k); }
+  if (only !== 'a' && only !== 'b') { tg.putImageData(d, 0, 0); g.drawImage(tmp, only ? 0 : cw * k, 0, cw * k, ch * k); }
+  if (q.has('bare')) { out.style.display = 'none'; return; }
   out.textContent = `t ${t1} → ${t2} · diferença média ${(sum / (cw * ch)).toFixed(2)} · pixels que mudaram (>6): ${(moved / (cw * ch) * 100).toFixed(1)}% · vento ${KT.SceneFx.wind(t1).toFixed(2)}`;
   document.title = out.textContent;
 })();
