@@ -198,7 +198,8 @@ ok(out.ok && st.stats.ults < 20, 'ultimates forjadas sem energia são ignoradas'
 
   // Intenção: o alvo do próximo golpe é escolhido antes.
   calm(); foe.nextTgt = null; foe.atkCd = 5; g.tick();
-  { const it = g.intentOf(foe); ok(!!foe.nextTgt && it.kind === 'attack' && it.target === foe.nextTgt, 'o inimigo mostra em quem vai bater'); const want = foe.nextTgt; foe.atkCd = 0; const victim = g.party.find(h => h.uid === want); g.tick(); ok(victim.hp < victim.maxHp, 'e bate em quem mostrou'); }
+  { const it = g.intentOf(foe); ok(!!foe.nextTgt && it.kind === 'attack' && it.target === foe.nextTgt, 'o inimigo mostra em quem vai bater'); const want = foe.nextTgt; foe.atkCd = 0; const victim = g.party.find(h => h.uid === want); victim.st.dodge = 0; victim.shield = 0;   // sem esquiva nem escudo: o teste é sobre o alvo, não sobre o sorteio
+    g.tick(); ok(victim.hp < victim.maxHp, 'e bate em quem mostrou'); }
 
   // Marca elemental e reação.
   calm(); const other = g.party[1]; other.el = hero.el === 'Fogo' ? 'Gelo' : 'Fogo'; foe.el = 'Luz'; hero.el = hero.el === 'Luz' || hero.el === 'Sombra' ? 'Vento' : hero.el;

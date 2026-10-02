@@ -16,9 +16,7 @@ import sys
 
 import cv2
 import numpy as np
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import art_src  # noqa: E402
+from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOWNS = {
@@ -29,7 +27,7 @@ TOWNS = {
         'stars': (590, 0, 1280, 215), 'sea': [(800, 440, 1280, 720)], 'open_sea': True,
         # Feito à mão sobre a arte (x, y em 1280×720).
         'manual': {
-            'forge': [785, 350],                                     # boca da fornalha
+            'forge': [787, 362],                                     # pé do fogo pintado na boca da fornalha (as labaredas sobem daqui)
             'smoke': [[798, 222, 'grey', 1.0], [822, 240, 'grey', .8], [867, 266, 'grey', .7],   # chaminés da Forja
                       [673, 532, 'green', .9], [764, 546, 'violet', 1.0], [655, 524, 'steam', .6],   # alambiques da Oficina
                       [338, 449, 'steam', .5], [379, 453, 'steam', .4], [255, 449, 'steam', .4], [303, 453, 'steam', .3],   # panelas e chaleiras das barracas
@@ -59,9 +57,8 @@ TOWNS = {
 
 def main(key='capital'):
     cfg = TOWNS[key]; MANUAL = cfg['manual']; NOT_LAMPS = cfg['not_lamps']
-    OUT = os.path.join(ROOT, 'src', cfg['out'])
-    # a pintura sem o tratamento de estilo: as chamas são achadas pela cor, e o tratamento muda a cor
-    im = art_src.open_source(f"assets/scenes/web/{cfg['art']}.webp", 'RGB')
+    ART = os.path.join(ROOT, 'assets', 'scenes', 'web', cfg['art'] + '.webp'); OUT = os.path.join(ROOT, 'src', cfg['out'])
+    im = Image.open(ART).convert('RGB')
     W, H = im.size
     kx, ky = 1280 / W, 720 / H
     a = np.asarray(im).astype(np.float32)

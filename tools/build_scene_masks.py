@@ -18,9 +18,6 @@ import cv2
 import numpy as np
 from PIL import Image
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import art_src  # noqa: E402
-
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'assets', 'scenes', 'masks')
 SIZE = (640, 360)
@@ -87,7 +84,7 @@ def poly_mask(shape, polys, k):
 
 def build(name, debug=False):
     cfg = REGIONS[name]
-    im = art_src.open_source(cfg['art'], 'RGB')       # sem o tratamento de estilo: água, copa e céu são achados pela cor
+    im = Image.open(os.path.join(ROOT, cfg['art'])).convert('RGB')
     W, H = im.size
     k = W / 1280
     a = np.asarray(im).astype(np.float32)

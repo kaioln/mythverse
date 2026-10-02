@@ -86,7 +86,7 @@
     shop:{ k:'LOJA', t:'Empório Sakura', tabs:[['gold','Ouro'], ['crystal','Cristais'], ['market','Mercado do Porto'], ['p2p','Mercado de Jogadores']] },
     bank:{ k:'BANCO', t:'Banco Kogane', tabs:[['overview','Panorama','crown'], ['quotes','Cotações','scale'], ['wallet','Carteira','gem']] },
     quests:{ k:'MISSÕES', t:'Missões e Conquistas', tabs:[['guide','Guia'], ['daily','Diárias'], ['contracts','Contratos'], ['achievements','Conquistas'], ['advisor','Conselheiro']] },
-    wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['lore','Lore'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
+    wiki:{ k:'WIKI', t:'Enciclopédia', tabs:[['start','Início'], ['lore','Lore'], ['city','Cidade'], ['combat','Combate'], ['classes','Classes'], ['elements','Elementos'], ['synergy','Sinergias'], ['heroes','Heróis'], ['builds','Builds'], ['trees','Talentos'], ['items','Itens'], ['weapons','Armas'], ['cards','Cartas'], ['monsters','Bestiário'], ['world','Mundo'], ['events','Eventos'], ['progress','Progressão'], ['refine','Refino'], ['systems','Atividades'], ['economy','Economia'], ['market','Mercado']] },
     arena:{ k:'PvP', t:'Coliseu Carmesim', tabs:[['fight','Lutar','swords'], ['shop','Loja de Honra','crown'], ['ranking','Ranking','star'], ['history','Histórico','scroll']] },
     guild:{ k:'GUILDA', t:'Sua Guilda', tabs:[['home','Guilda','shield'], ['war','Guerra de Guildas','flame'], ['list','Encontrar guildas','compass']] },
     chat:{ k:'COMUNIDADE', t:'Chat e perfil', tabs:[['chat','Global','scroll'], ['guild','Guilda','shield'], ['profile','Meu perfil','star']] }, player:{ k:'JOGADOR', t:'Perfil do jogador' },
@@ -1132,10 +1132,29 @@
       <details class="book-appendix"><summary>Apêndice · Os mundos de onde vêm os viajantes</summary><div class="wiki-grid">${worlds}</div></details>
       <details class="book-appendix"><summary>As eras, os pactos e os costumes</summary><div class="wiki-grid">${[...(KT.Lore?.history || []).filter(h => !h.zone || (h.kill ? (s.progress[h.zone]?.kills || 0) > 0 : visitedLoreZone(s, h.zone))), ...(KT.Lore?.customs || [])].map(h => `<div data-wiki-entry><b>${esc(h.title)}</b><small>${esc(h.text)}</small></div>`).join('')}</div></details>`;
   };
-  const WIKI_GROUPS = [['Começar', ['start', 'progress']], ['História', ['lore', 'world', 'events']], ['Combate', ['combat', 'classes', 'elements', 'synergy']],
+  const WIKI_GROUPS = [['Começar', ['start', 'progress']], ['História', ['lore', 'city', 'world', 'events']], ['Combate', ['combat', 'classes', 'elements', 'synergy']],
     ['Heróis', ['heroes', 'builds', 'trees']], ['Equipamento', ['items', 'weapons', 'refine', 'cards']], ['Mundo', ['monsters', 'systems']], ['Economia', ['economy', 'market']]];
-  P.wikiPanel = function(_, tab) {
-    const search = `<input id="wiki-search" type="search" placeholder="Buscar nesta seção…" aria-label="Buscar" value="${esc(this.wikiQuery || '')}">`;
+  // O que cada assunto é, em uma linha, e o ícone dele (página inicial e resultados da busca).
+  const WIKI_INFO = {
+    start:['ic-lantern', 'O ciclo do jogo, os recursos e o modo AFK.'], progress:['res-xp', 'Níveis de conta, de herói e de classe; o que abre em cada um.'],
+    lore:['res-scroll', 'A história de Tsukimori e da Fenda, capítulo a capítulo.'], city:['nav-city', 'A capital e a Cidade Mercado: o que cada casa faz e quando abre.'],
+    world:['nav-journey', 'As regiões, os chefes e os encontros de cada caçada.'], events:['sys-calendar', 'O calendário dos eventos mundiais, pelo horário de Brasília.'],
+    combat:['cmd-attack', 'Turnos, Pontos de Técnica, Quebra, reações, Guarda e Aparo.'], classes:['cls-vanguarda', 'As cinco classes e o papel de cada uma na equipe.'],
+    elements:['el-fire', 'Quem é forte contra quem.'], synergy:['ic-chain', 'Laços entre heróis e bônus de equipe.'],
+    heroes:['nav-collection', 'Os 60 heróis: passiva, três habilidades e ultimate.'], builds:['ic-bulb', 'Equipamento e talentos recomendados para cada herói.'],
+    trees:['nav-talents', 'Árvores de talento e evoluções de classe.'], items:['nav-inventory', 'Raridades, afixos, conjuntos, míticos e bases.'],
+    weapons:['ic-swords', 'Tipos de arma e o que cada um pede.'], refine:['ic-anvil', 'Aprimorar, refinar e os materiais de cada etapa.'],
+    cards:['res-card', 'As cartas de monstro e a Galeria da Casa do Time.'], monsters:['ic-skull', 'O bestiário e a pesquisa de cada criatura.'],
+    systems:['sys-settings', 'Expedições, contratos, arena, guilda e Fenda Abissal.'], economy:['res-gold', 'De onde vem e para onde vai cada recurso.'],
+    market:['ic-scale', 'O Mercado de Jogadores: preço, taxa e limites.']
+  };
+  const WIKI_RULE_ICON = [['A vez', 'turn'], ['Pontos de Técnica', 'sp'], ['Habilidades', 'ic-burst'], ['Ultimate', 'cmd-ult'], ['Comando', 'cmd-manual'], ['Golpe cronometrado', 'cmd-target'],
+    ['Resistência', 'st-broken'], ['Assalto', 'cmd-allout'], ['Reações', 'at-elem'], ['Intenção', 'intent'], ['Guarda', 'cmd-guard'], ['Dano', 'at-atk'], ['Posições', 'cls-vanguarda'],
+    ['Foco', 'cmd-target'], ['Fúria', 'at-boss'], ['Derrota', 'ic-skull'], ['Escolhas', 'ic-compass']];
+  const wikiNorm = t => String(t).toLocaleLowerCase('pt-BR').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const wikiNames = () => Object.fromEntries(PANELS.wiki.tabs.map(([id, n]) => [id, n]));
+
+  P.wikiTabHtml = function(tab) {
     let html = '';
     switch (tab) {
       case 'lore': html = this.loreBookHtml(); break;
@@ -1170,7 +1189,42 @@
       case 'classes': html = `<div class="wiki-grid wide">${Object.entries(D.classes).map(([cls, c]) => `<article class="wiki-card class-concept" data-wiki-entry><span class="eyebrow">${esc(cls)} · ${c.row}</span><h3>${KT.glyph(c.icon)} ${esc(c.title || cls)}</h3><p>${esc(c.promise || c.trait)}</p><p class="tradeoff"><b>Preço da escolha:</b> ${esc(c.tradeoff || '')}</p><p><b>Traço:</b> ${c.trait}</p><p><b>Base:</b> HP ${c.base.hp} · ATK ${c.base.atk} · DEF ${c.base.def} · Vel ×${c.base.spd} · Crit ${pct(c.base.crit)}</p><p><b>Sinergia:</b> ${c.synergy.map(s2 => `(${s2.n}) ${s2.text}`).join(' · ')}</p><p><b>Atributos sugeridos:</b> ${PR.classAttrHint[cls]}</p><p class="dim">${D.roster.filter(h => h.cls === cls).map(h => h.name).join(', ')}</p></article>`).join('')}</div>`; break;
       case 'elements': html = `<article class="wiki-art"><h3>Vantagens elementais</h3><p>Atacar um elemento fraco causa <b>+30%</b> de dano (mais o bônus Elemental dos itens). Atacar quem é forte contra você causa <b>−20%</b>. Luz e Sombra são fortes uma contra a outra.</p><div class="wiki-grid">${Object.entries(D.elements).map(([el, e2]) => `<div data-wiki-entry><b style="color:${e2.color}">${KT.glyph(e2.icon)} ${el}</b><small>Forte contra: ${e2.strong.join(', ')}</small><small>Fraco contra: ${Object.entries(D.elements).filter(([, o]) => o.strong.includes(el)).map(([k]) => k).join(', ') || ', '}</small></div>`).join('')}</div><h4>Sinergia de elemento</h4><ul>${D.elementSynergy.map(s2 => `<li>(${s2.n} heróis) ${s2.text}</li>`).join('')}</ul></article>`; break;
       case 'synergy': html = `<article class="wiki-art"><h3>Laços</h3><p>Heróis com história juntos ganham bônus quando estão na mesma equipe. Um herói pode ativar vários laços.</p><div class="wiki-grid wide">${D.bonds.map(b => `<div class="bond" data-wiki-entry><div class="bond-faces">${b.ids.map(id => `<img src="${portrait(id)}" alt="">`).join('')}</div><div><b>${esc(b.name)}</b><small>${b.ids.map(id => D.roster.find(h => h.id === id).name).join(' + ')}</small><small>${esc(b.text)}</small></div></div>`).join('')}</div></article>`; break;
-      case 'heroes': html = `<div class="wiki-heroes">${D.roster.map(h => `<article class="wiki-hero" data-wiki-entry><img src="${portrait(h.id)}" alt="" loading="lazy"><div><h4>${esc(h.name)} <small>${esc(h.world)}</small></h4><div class="tags">${clsTag(h.cls)} ${elTag(h.el)}</div><p><b>Passiva: ${esc(h.passive.name)}:</b> ${esc(h.passiveText)}</p>${h.skills.map((k, n) => `<p><b>Habilidade ${['I', 'II', 'III'][n]}: ${esc(k.name)}</b> (${k.cost} PT${k.lv > 1 ? ` · nível ${k.lv}` : ''}${k.tcd ? ` · descansa ${k.tcd}` : ''}): ${esc(k.text)}</p>`).join('')}<p><b>Ultimate: ${esc(h.ult.name)}:</b> ${esc(h.ultText)}</p></div></article>`).join('')}</div>`; break;
+      case 'heroes': {
+        const f = this.wikiHero ||= { cls:'', el:'' }, list = D.roster.filter(h => (!f.cls || h.cls === f.cls) && (!f.el || h.el === f.el));
+        const chip = (kind, v, label, on) => `<button type="button" class="${on ? 'active' : ''}" data-wiki-filter="${kind}:${v}">${label}</button>`;
+        const ico = (h, slot) => KT.Icon?.kit(h.id, slot) || '';
+        const line = (h, slot, head, text) => `<p class="wk-skill">${ico(h, slot)}<span><b>${head}</b> ${text}</span></p>`;
+        html = `<div class="wiki-filter"><div>${chip('cls', '', 'Todas as classes', !f.cls)}${Object.keys(D.classes).map(c => chip('cls', c, `${KT.glyph(D.classes[c].icon)} ${c}`, f.cls === c)).join('')}</div><div>${chip('el', '', 'Todos os elementos', !f.el)}${Object.keys(D.elements).map(el => chip('el', el, `${KT.glyph(D.elements[el].icon)} ${el}`, f.el === el)).join('')}</div><small>${list.length} de ${D.roster.length} heróis</small></div>
+          <div class="wiki-heroes">${list.map(h => `<article class="wiki-hero" data-wiki-entry><img src="${portrait(h.id)}" alt="" loading="lazy"><div><h4>${esc(h.name)} <small>${esc(h.world)}</small></h4><div class="tags">${clsTag(h.cls)} ${elTag(h.el)}</div>${line(h, 'p', `Passiva: ${esc(h.passive.name)}:`, esc(h.passiveText))}${h.skills.map((k, n) => line(h, `s${n}`, `Habilidade ${['I', 'II', 'III'][n]}: ${esc(k.name)}`, `(${k.cost} PT${k.lv > 1 ? ` · nível ${k.lv}` : ''}${k.tcd ? ` · descansa ${k.tcd}` : ''}): ${esc(k.text)}`)).join('')}${line(h, 'u', `Ultimate: ${esc(h.ult.name)}:`, esc(h.ultText))}</div></article>`).join('') || '<p class="collection-empty">Nenhum herói com essa classe e esse elemento.</p>'}</div>`; break;
+      }
+      case 'city': {
+        const svc = id => { const g = id && PR.services[id]; return g ? `<em class="wk-lv">Conta nível ${g.level}</em>` : ''; };
+        const row = (ic, name, text, go, lock) => `<div class="wiki-rule" data-wiki-entry><span class="wr-ico"><i class="pi pi-${ic}"></i></span><div><b>${name}</b> ${svc(lock)}<p>${text}</p>${go ? `<button class="action small" data-go="${go}" type="button">Abrir</button>` : ''}</div></div>`;
+        html = `<article class="wiki-art"><h3>Tsukimori, a cidade</h3><p>Tsukimori é o refúgio da equipe entre as caçadas e tem dois bairros. Em cada um, as <b>placas</b> sobre a arte abrem a casa correspondente (no celular elas ficam numa grade abaixo da cena). Os moradores andam pelas ruas, conversam entre si e respondem ao toque; os bichos também.</p>
+          <div class="wiki-quarter"><img src="${KT.sceneUrl('village-expanded', 'thumb')}" alt="" loading="lazy"><div><h4>Grande Cidade de Tsukimori (a capital)</h4><p>O bairro do festival: a praça da lua, o templo, a forja e o cais. É aqui que a equipe treina, convoca e parte para o mundo.</p></div></div>
+          <div class="wiki-rules">${[
+            row('b-summon', 'Templo da Invocação', 'Convocar heróis nas caixas, ver a coleção e o catálogo.', 'collection'),
+            row('b-guild', 'Guilda', 'Contratos da Ordem: caçadas pedidas pelos moradores, com recompensa e experiência de Guilda.', 'city:guild', 'guild'),
+            row('b-forge', 'Forja', 'Aprimorar, refinar e desmontar equipamento.', 'city:forge', 'forge'),
+            row('b-dojo', 'Dojo', 'Treino permanente da equipe com ouro.', 'city:dojo', 'dojo'),
+            row('b-workshop', 'Oficina', 'Receitas de consumíveis e reencantar afixos.', 'city:workshop', 'workshop'),
+            row('b-house', 'Casa do Time', 'Galeria de cartas (parte dos atributos vai para a equipe) e o álbum.', 'city:house', 'house'),
+            row('b-shrine', 'Santuário', 'Elevar a qualidade (estrelas) dos heróis com fragmentos.', 'city:shrine', 'shrine'),
+            row('b-expedition', 'Casa de Expedições', 'Mandar os heróis da reserva em missões de algumas horas.', 'adventure:expeditions', 'expeditions'),
+            row('b-bank', 'Banco Kogane', 'Panorama da economia, cotações e a carteira.', 'bank')
+          ].join('')}</div>
+          <div class="wiki-quarter"><img src="${KT.sceneUrl('market-city', 'thumb')}" alt="" loading="lazy"><div><h4>Cidade Mercado (o bairro dos mercadores)</h4><p>O morro das lanternas que se vê ao fundo da capital. A placa <b>Cidade Mercado</b>, na capital, leva até ele; a placa <b>Capital de Tsukimori</b>, lá, traz de volta. Tudo o que é comprar, vender e negociar fica aqui, e é só em <b>ouro</b>.</p></div></div>
+          <div class="wiki-rules">${[
+            row('b-market', 'Grande Bazar', 'As ofertas rotativas dos comerciantes: mudam todo dia e têm estoque limitado.', 'shop:market', 'market'),
+            row('ic-scale', 'Salão de Trocas', 'O Mercado de Jogadores: você põe o preço, a casa fica com uma taxa pequena. Veja a página <b>Mercado</b>.', 'shop:p2p', 'trade'),
+            row('nav-shop', 'Empório Sakura', 'A loja fixa: poções, chaves, pergaminhos e espaço de bolsa.', 'shop:gold'),
+            row('b-storage', 'Pátio das Caravanas', 'As cotações do dia: quanto o mundo paga por cada material antes de você vender.', 'bank:quotes'),
+            row('nav-chat', 'Casa de Chá', 'O chat da comunidade e o seu perfil.', 'chat'),
+            row('res-chest', 'Casa de Leilões', 'Em breve: um lote raro por vez, lances em ouro, quem der mais leva.', '')
+          ].join('')}</div>
+          <h4>Quando cada casa abre</h4><p>As casas abrem pelo <b>nível da conta</b>, uma de cada vez, sem custo: assim cada sistema é apresentado no seu momento. A placa de uma casa fechada mostra o nível que falta.</p>
+          <div class="wiki-grid">${Object.values(PR.services).sort((a, b) => a.level - b.level).map(g => `<div data-wiki-entry><b>Nível ${g.level} · ${esc(g.name)}</b><small>${esc(g.text)}</small></div>`).join('')}</div></article>`; break;
+      }
       case 'trees': html = `<article class="wiki-art"><h3>Árvores de talento e árvore de classes</h3><p>Cada herói tem sua própria árvore, baseada na classe. Ganha <b>1 ponto por nível</b> (+5 em cada evolução de classe). A árvore tem quatro círculos: o I é livre, o II exige ${PR.TIER_REQ[1]} pontos investidos, o III exige a <b>classe avançada</b> e ${PR.TIER_REQ[2]} pontos, e o IV exige a <b>Transcendência</b> e ${PR.TIER_REQ[3]} pontos. Nós <b>Notáveis</b> dão bônus grandes; <b>Pedras-chave</b> mudam o estilo de jogo com uma desvantagem; cada caminho tem uma <b>Pedra-angular</b> exclusiva no Círculo IV.</p><p><b>Árvore de classes:</b> no nível ${PR.JOB_LEVEL} (classe ${PR.JOB_CLASS_LEVEL}) o herói escolhe um de dois caminhos, por ${U.fmt(PR.jobCost.gold)} ouro e ${PR.jobCost.crystal} cristais. No nível ${PR.JOB2_LEVEL} (classe ${PR.JOB2_CLASS_LEVEL}) ele transcende, por ${U.fmt(PR.job2Cost.gold)} ouro e ${PR.job2Cost.crystal} cristais. Cada grau dá +10% HP/ATK/DEF e o bônus do caminho.</p>
         ${Object.keys(PR.jobs).map(cls => `<p><b>${cls}</b>: ${['a', 'b'].map(k => `${esc(PR.jobs[cls][k].name)} → ${esc(PR.jobs[cls][k].trans)} (${esc(PR.jobs[cls][k].text)})`).join(' · ')}</p>`).join('')}
 
@@ -1250,10 +1304,74 @@
         <h4>Recursos são escassos de propósito</h4><p>Cristais vêm de marcos (primeiras vitórias, conquistas, crônicas, login) em pequenas quantidades; uma chave custa 150 cristais. Fragmentos de herói vêm só de convocações repetidas (2/4/8/16 conforme a raridade) e de ofertas raras do Mercado do Porto. Aprimorar acima de +3 pode falhar, e acima de +10 a falha faz o item perder 1 nível.</p>
         <h4>Rank da Guilda</h4><p>Cada contrato resgatado dá experiência à Guilda. O rank não tem limite: contratos ficam maiores, mais difíceis e mais valiosos a cada rank.</p></article>`; break;
     }
+    return html;
+  };
+  // A página de um assunto, pronta para ler: as regras do combate viram cartões com ícone, e as páginas longas ganham
+  // um índice no alto (um botão por subtítulo).
+  P.wikiPage = function(tab) {
+    let html = this.wikiTabHtml(tab);
+    if (tab === 'start') html = this.wikiHubHtml() + html;
+    if (tab === 'combat') {
+      const cut = html.indexOf('<h4>'), head = html.slice(0, cut), rest = html.slice(cut);
+      const rules = []; const lead = head.replace(/<p><b>([^<]+?):?<\/b>:?\s*([\s\S]*?)<\/p>\s*/g, (_, title, body) => {
+        const ic = (WIKI_RULE_ICON.find(([k]) => title.startsWith(k)) || [0, 'ic-star'])[1];
+        body = body.replace(/^\p{Ll}/u, ch => ch.toLocaleUpperCase('pt-BR'));      // o título saiu da frase: ela volta a começar com maiúscula
+        rules.push(`<div class="wiki-rule" data-wiki-entry><span class="wr-ico"><i class="pi pi-${ic}"></i></span><div><b>${title}</b><p>${body}</p></div></div>`); return ''; });
+      html = `${lead}<div class="wiki-rules">${rules.join('')}</div>${rest}`;
+    }
+    let n = 0; const heads = [];
+    html = html.replace(/<h4>([\s\S]*?)<\/h4>/g, (_, t) => { heads.push(t.replace(/<[^>]+>/g, '')); return `<h4 data-wiki-h="${n++}">${t}</h4>`; });
+    // índice só quando ajuda: de 3 a 14 subtítulos (uma lista de 60 heróis ou de 20 regiões não é índice)
+    if (heads.length > 14) html = html.replace(/ data-wiki-h="\d+"/g, '');
+    else if (heads.length >= 3) html = `<nav class="wiki-toc" aria-label="Nesta página"><small>Nesta página</small>${heads.map((t, i) => `<button type="button" data-wiki-jump="${i}">${t}</button>`).join('')}</nav>${html}`;
+    return html;
+  };
+  // Página inicial: um cartão por assunto, com o que ele responde.
+  P.wikiHubHtml = function() {
+    const names = wikiNames();
+    return `<div class="wiki-hub">${WIKI_GROUPS.map(([g, ids]) => `<section><h4 class="wh">${g}</h4><div class="wiki-hub-grid">${ids.filter(id => names[id] && id !== 'start').map(id => { const [ic, text] = WIKI_INFO[id] || ['ic-star', ''];
+      return `<button class="wiki-hub-card" data-wiki-tab="${id}" type="button"><span class="wr-ico"><i class="pi pi-${ic}"></i></span><span><b>${names[id]}</b><small>${text}</small></span></button>`; }).join('')}</div></section>`).join('')}</div>`;
+  };
+  // Busca em toda a enciclopédia. O índice é montado uma vez por sessão a partir das próprias páginas (cada cartão e cada
+  // parágrafo vira uma entrada, com o subtítulo mais próximo como título).
+  P.wikiIndex = function() {
+    if (this._wikiIndex) return this._wikiIndex;
+    const out = [], names = wikiNames();
+    for (const [tab] of PANELS.wiki.tabs) {
+      let html = ''; try { html = this.wikiTabHtml(tab); } catch (_) { continue; }
+      const box = document.createElement('template'); box.innerHTML = html;
+      const title = el => (el.querySelector('h3, h4, b')?.textContent || '').trim();
+      // o subtítulo mais próximo acima do trecho (na ordem do texto)
+      const near = el => { for (let a = el; a; a = a.parentElement) for (let p = a.previousElementSibling; p; p = p.previousElementSibling) { if (/^H[34]$/.test(p.tagName)) return p.textContent.trim(); const h = p.querySelectorAll('h3, h4'); if (h.length) return h[h.length - 1].textContent.trim(); } return names[tab]; };
+      box.content.querySelectorAll('[data-wiki-entry]').forEach(el => { const text = el.textContent.replace(/\s+/g, ' ').trim(); if (text) out.push({ tab, title:title(el) || near(el), text, norm:wikiNorm(text) }); });
+      box.content.querySelectorAll('p, li').forEach(el => { if (el.closest('[data-wiki-entry]')) return; const text = el.textContent.replace(/\s+/g, ' ').trim(); if (text.length < 12) return;
+        const b = el.querySelector('b'), own = b && el.textContent.trim().startsWith(b.textContent.trim()) ? b.textContent.replace(/:$/, '').trim() : '';
+        out.push({ tab, title:own || near(el), text, norm:wikiNorm(text) }); });
+    }
+    return (this._wikiIndex = out);
+  };
+  P.wikiResultsHtml = function(query) {
+    const terms = wikiNorm(query).split(/\s+/).filter(t => t.length > 1); if (!terms.length) return '';
+    const names = wikiNames(), hits = this.wikiIndex().filter(e => terms.every(t => e.norm.includes(t)));
+    // quem tem o termo no título vem primeiro; depois, na ordem das páginas
+    const score = e => { const t = wikiNorm(e.title); return terms.every(q => t.includes(q)) ? 0 : terms.some(q => t.includes(q)) ? 1 : 2; };
+    hits.sort((a, b) => score(a) - score(b));
+    if (!hits.length) return `<article class="wiki-art"><h3>Nada encontrado</h3><p>Nenhuma página fala de <b>${esc(query)}</b>. Tente uma palavra só (por exemplo: quebra, refino, fragmentos, leilão).</p></article>`;
+    const mark = text => { let i = -1; const n = wikiNorm(text); for (const t of terms) { const k = n.indexOf(t); if (k >= 0 && (i < 0 || k < i)) i = k; }
+      const from = Math.max(0, i - 50), cutTxt = `${from ? '…' : ''}${text.slice(from, from + 190)}${from + 190 < text.length ? '…' : ''}`;
+      let safe = esc(cutTxt); for (const t of terms) { const sn = wikiNorm(safe); let pos = 0, res = ''; for (;;) { const k = sn.indexOf(t, pos); if (k < 0) break; res += `${safe.slice(pos, k)}<mark>${safe.slice(k, k + t.length)}</mark>`; pos = k + t.length; } safe = res + safe.slice(pos); }
+      return safe; };
+    const shown = hits.slice(0, 60);
+    return `<p class="wiki-count">${hits.length} resultado${hits.length > 1 ? 's' : ''} para <b>${esc(query)}</b>${hits.length > shown.length ? ` (os ${shown.length} primeiros)` : ''}</p><div class="wiki-hits">${shown.map(e => { const ic = (WIKI_INFO[e.tab] || ['ic-star'])[0];
+      return `<button class="wiki-hit" type="button" data-wiki-tab="${e.tab}" data-wiki-find="${esc(e.title)}"><span class="wr-ico"><i class="pi pi-${ic}"></i></span><span><small>${names[e.tab] || e.tab}</small><b>${esc(e.title)}</b><span>${mark(e.text)}</span></span></button>`; }).join('')}</div>`;
+  };
+  P.wikiBodyHtml = function(tab) { const q = (this.wikiQuery || '').trim(); return q.length > 1 ? this.wikiResultsHtml(q) : this.wikiPage(tab); };
+  P.wikiPanel = function(_, tab) {
+    const search = `<input id="wiki-search" type="search" placeholder="Buscar em toda a enciclopédia…" aria-label="Buscar em toda a enciclopédia" value="${esc(this.wikiQuery || '')}">`;
     // Índice agrupado por assunto (em vez de 20 abas numa fileira): o leitor acha o tema pelo grupo.
-    const names = Object.fromEntries(PANELS.wiki.tabs.map(([id, n]) => [id, n]));
-    const nav = WIKI_GROUPS.map(([g, ids]) => `<section><small>${g}</small>${ids.filter(id => names[id]).map(id => `<button class="${id === tab ? 'active' : ''}" data-wiki-tab="${id}" type="button">${names[id]}</button>`).join('')}</section>`).join('');
-    return `<div class="wiki-layout"><nav class="wiki-nav" aria-label="Assuntos">${nav}</nav><div class="wiki-main"><div class="wiki-search">${search}</div><div class="wiki-body">${html}</div></div></div>`;
+    const names = wikiNames(), searching = (this.wikiQuery || '').trim().length > 1;
+    const nav = WIKI_GROUPS.map(([g, ids]) => `<section><small>${g}</small>${ids.filter(id => names[id]).map(id => `<button class="${id === tab && !searching ? 'active' : ''}" data-wiki-tab="${id}" type="button">${names[id]}</button>`).join('')}</section>`).join('');
+    return `<div class="wiki-layout"><nav class="wiki-nav" aria-label="Assuntos">${nav}</nav><div class="wiki-main"><div class="wiki-search">${search}</div><div class="wiki-body">${this.wikiBodyHtml(tab)}</div></div></div>`;
   };
 
   // ---------------------------------------------------------------------------
@@ -1264,7 +1382,7 @@
     if (t.id === 'summon-class' && e.type === 'change') { this.summonClass = t.value; this.refreshPanel(); return; }
     if (t.id === 'hf-q') { this.heroFilterState().q = t.value; clearTimeout(this.hfTimer); this.hfTimer = setTimeout(() => { const pos = t.selectionStart; this.refreshPanel(); const n = this.el.modalBody.querySelector('#hf-q'); if (n) { n.focus(); n.setSelectionRange(pos, pos); } }, 180); return; }
     if (['hf-cls', 'hf-el', 'hf-sort', 'hf-free'].includes(t.id) && e.type === 'change') { const f = this.heroFilterState(); f[t.id.slice(3)] = t.type === 'checkbox' ? t.checked : t.value; this.refreshPanel(); return; }
-    if (t.id === 'wiki-search') { this.wikiQuery = t.value; const q = t.value.trim().toLocaleLowerCase('pt-BR'); this.el.modalBody.querySelectorAll('[data-wiki-entry]').forEach(n => { n.hidden = !!q && !n.textContent.toLocaleLowerCase('pt-BR').includes(q); }); }
+    if (t.id === 'wiki-search') { this.wikiQuery = t.value; clearTimeout(this.wikiTimer); this.wikiTimer = setTimeout(() => { const body = this.el.modalBody.querySelector('.wiki-body'); if (!body || this.view.panel !== 'wiki') return; body.innerHTML = this.wikiBodyHtml(this.view.tab); const on = this.wikiQuery.trim().length > 1; this.el.modalBody.querySelectorAll('.wiki-nav button').forEach(b => b.classList.toggle('active', !on && b.dataset.wikiTab === this.view.tab)); }, 140); return; }
     if (t.id === 'auto-salvage' && e.type === 'change') { this.cmd('setSetting', 'autoSalvage', t.value); this.toast(t.value === 'none' ? 'Auto-desmontar desligado.' : `Itens ${t.value === 'common' ? 'comuns' : t.value === 'rare' ? 'comuns e raros' : 'até épicos'} serão desmontados automaticamente.`); }
     if (t.id === 'set-sound' && e.type === 'change') document.querySelector('#sound-btn').click();
     if (t.id === 'set-saver' && e.type === 'change') { try { localStorage.setItem('mythverse-saver', t.checked ? 'on' : 'off'); } catch (_) {} this.callbacks.resize?.(); this.toast(t.checked ? 'Modo econômico ligado: 30 quadros por segundo.' : 'Modo econômico desligado.'); }
@@ -1325,7 +1443,14 @@
       run('openBoxes', [n, box, cls], got => { if (got && got.length) { this.closeModal(); this.showReveal(got); if (!s.story.seen.intro2) c('markSeen', 'intro2'); } else this.toast(esc(e.lastError || 'Chaves insuficientes.')); });
       return;
     }
-    if (d.wikiTab) { this.view.tab = d.wikiTab; this.refreshPanel(); this.el.modalBody.scrollTop = 0; return; }
+    if (d.wikiTab) {
+      // Vindo de um resultado da busca: abre a página e leva até o trecho (o texto procurado fica guardado em data-wiki-find).
+      const find = d.wikiFind; this.wikiQuery = ''; this.view.tab = d.wikiTab; this.refreshPanel(); this.el.modalBody.scrollTop = 0;
+      if (find) { const n = wikiNorm(find), hit = [...this.el.modalBody.querySelectorAll('.wiki-body [data-wiki-entry], .wiki-body h3, .wiki-body h4, .wiki-body p, .wiki-body li')].find(el => wikiNorm(el.textContent).includes(n)); if (hit) { hit.scrollIntoView({ block:'center' }); hit.classList.add('wiki-found'); setTimeout(() => hit.classList.remove('wiki-found'), 2400); } }
+      return;
+    }
+    if (d.wikiJump !== undefined) { this.el.modalBody.querySelector(`[data-wiki-h="${d.wikiJump}"]`)?.scrollIntoView({ block:'start', behavior:'smooth' }); return; }
+    if (d.wikiFilter) { const [k, v] = d.wikiFilter.split(':'); (this.wikiHero ||= { cls:'', el:'' })[k] = v || ''; const top = this.el.modalBody.scrollTop; this.refreshPanel(); this.el.modalBody.scrollTop = top; return; }
     if (d.bookCh !== undefined) { this.bookCh = Number(d.bookCh); this.refreshPanel(); this.el.modal.querySelector('.lore-book')?.scrollIntoView({ block:'start' }); return; }
     if (d.slot !== undefined) { this.selectedSlot = Number(d.slot); refresh(); return; }
     if (d.assign) { run('setParty', [this.selectedSlot, d.assign], ok2 => { if (ok2) { const nx = s.formation.indexOf(null); this.selectedSlot = nx >= 0 ? nx : this.selectedSlot; this.dockKey = ''; if (e.heroes.length === 4) this.callbacks.reward?.(); } }); return; }

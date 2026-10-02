@@ -1,7 +1,7 @@
 /* ============================================================================================================
-   Estampa noturna: a interface na mesma língua da arte (tools/art_style.py).
-   A arte é gravura japonesa de noite com bonecos de papel recortado; a interface é o que fica em volta da estampa:
-   laca escura, papel, tinta e selo vermelho. Mesma carta de cor da arte (PALETTE em tools/art_style.py):
+   Interface de laca, papel, tinta e selo vermelho, no lugar do painel de aplicativo em modo escuro.
+   (O tratamento de "estampa" aplicado à arte em 2026-10-02 foi desfeito no mesmo dia: tirava nitidez da pintura. A
+   arte fica na resolução original; daqui vale só a interface.) Carta de cor:
      sumi #1e1b2c · ai #26345e · hanada #54688e · nezumi #96a0ac · washi #eee5d0 · shu #cb422c · kin #e2aa4e
      sakura #d696a0 · koke #62764e · murasaki #70588c
    Regras: canto quase reto (o arredondado de aplicativo saiu de todas as folhas de estilo); uma só cor de ação (o
@@ -57,3 +57,44 @@ input[type="checkbox"]:focus-visible{outline:2px solid var(--gold);outline-offse
 
 /* ---- superfícies: fio de tinta e filete, sem brilho de vidro ---- */
 .modal-panel{border-radius:4px!important;box-shadow:0 0 0 1px rgba(226,170,78,.22),0 24px 60px rgba(0,0,0,.6)!important}
+
+/* ---- Enciclopédia ---- */
+.wr-ico{flex:none;width:38px;height:38px;display:grid;place-items:center;border-radius:3px;background:rgba(238,229,208,.06);border:1px solid rgba(238,229,208,.14)}
+.wr-ico .pi{width:26px;height:26px}
+.wiki-hub{display:flex;flex-direction:column;gap:14px}
+.wiki-hub h4{margin:0 0 8px;font:700 11px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.wiki-hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.wiki-hub-card,.wiki-hit{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:3px;background:rgba(238,229,208,.035);border:1px solid var(--line2);border-left:3px solid var(--shu);color:var(--text);text-align:left;cursor:pointer;transition:background .15s,border-color .15s}
+.wiki-hub-card:hover,.wiki-hit:hover{background:rgba(238,229,208,.07);border-color:rgba(226,170,78,.5);border-left-color:var(--gold)}
+.wiki-hub-card>span:last-child,.wiki-hit>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.wiki-hub-card b,.wiki-hit b{font:700 15px/1.25 var(--display)}
+.wiki-hub-card small{font:500 12px/1.4 var(--ui);color:var(--muted)}
+.wiki-hits{display:flex;flex-direction:column;gap:6px}
+.wiki-hit small{font:700 10px var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.wiki-hit>span:last-child>span{font:500 12.5px/1.5 var(--ui);color:var(--muted)}
+.wiki-hit mark,.wiki-body mark{background:rgba(226,170,78,.28);color:var(--washi);border-radius:2px;padding:0 1px}
+.wiki-count{margin:0;font:600 13px var(--ui);color:var(--muted)}
+.wiki-rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:8px;margin:4px 0 6px}
+.wiki-rule{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:3px;background:rgba(238,229,208,.035);border:1px solid var(--line)}
+.wiki-rule>div{min-width:0}
+.wiki-rule b{font:700 14px var(--ui);color:var(--washi)}
+.wiki-rule p{margin:3px 0 0!important;font-size:13px!important;line-height:1.55!important;color:var(--muted)}
+.wiki-rule .action{margin-top:8px}
+.wk-lv{font:700 10px var(--ui);font-style:normal;letter-spacing:.06em;color:var(--gold);margin-left:4px}
+.wiki-toc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:3px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+.wiki-toc small{font:700 10px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-right:4px}
+.wiki-toc button,.wiki-filter button{padding:4px 9px;border-radius:3px;border:1px solid var(--line2);background:rgba(238,229,208,.04);color:var(--muted);font:600 12px var(--ui);cursor:pointer;white-space:nowrap}
+.wiki-toc button:hover,.wiki-filter button:hover{color:var(--washi);border-color:rgba(226,170,78,.5)}
+.wiki-filter{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:3px;border:1px solid var(--line);background:rgba(0,0,0,.18)}
+.wiki-filter>div{display:flex;flex-wrap:wrap;gap:5px}
+.wiki-filter button.active{background:var(--gold);border-color:var(--gold-lo);color:#1d1206}
+.wiki-filter small{font:600 12px var(--ui);color:var(--dim)}
+.wk-skill{display:flex;align-items:flex-start;gap:8px}
+.wk-skill .pk{flex:none;width:30px;height:30px;border-radius:3px;margin-top:1px}
+.wk-skill>span{min-width:0}
+.wiki-quarter{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:center;margin:16px 0 8px;padding:10px;border-radius:3px;border:1px solid var(--line2);background:rgba(0,0,0,.2)}
+.wiki-quarter img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:2px}
+.wiki-quarter h4{margin:0 0 4px!important;padding:0!important;border:0!important}
+.wiki-quarter p{margin:0!important}
+.wiki-found{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px;transition:outline-color 1.6s}
+@media (max-width:700px){.wiki-rules{grid-template-columns:minmax(0,1fr)}.wiki-quarter{grid-template-columns:minmax(0,1fr)}.wiki-hub-grid{grid-template-columns:minmax(0,1fr)}}
