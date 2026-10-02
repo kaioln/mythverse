@@ -104,3 +104,85 @@ input[type="checkbox"]:focus-visible{outline:2px solid var(--gold);outline-offse
 .dlg-next{position:absolute;right:2px;bottom:2px;font-size:10px;letter-spacing:.14em;text-transform:uppercase}
 .dlg-next::after{content:"";display:inline-block;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid var(--gold);margin-left:6px;vertical-align:1px}
 .dlg-next.last::after{display:none}
+
+/* ============================================================================================================
+   Revisão de 2026-10-02 com o plugin Mythverse: o que ainda falava "aplicativo" (pílula, vidro, brilho, degradê)
+   passa para a língua da estampa. theme-game.css já desliga todo backdrop-filter; aqui entra só o que chegava à tela.
+   ============================================================================================================ */
+
+/* ---- grupo: pilulas-vidro ---- */
+/* ---- topo e carteira: fichas retangulares de laca, não pílulas de aplicativo (o retrato redondo fica dentro da ficha) ---- */
+.player-chip{border-radius:3px}
+.res{border-radius:3px}
+.stage-res{border-radius:3px;background:rgba(13,12,18,.86);border-color:var(--line2);backdrop-filter:none}
+
+/* ---- seletor de herói (talentos): tira de papel; o escolhido continua marcado em ouro ---- */
+.hero-pick{border-radius:3px}
+
+/* ---- aventuras: o botão secundário é laca chapada sobre a arte, sem vidro; no hover a superfície clareia e o fio vira ouro ---- */
+.adv-cta .action:not(.primary){background:rgba(13,12,18,.9);border-color:rgba(238,229,208,.22);backdrop-filter:none}
+.adv-cta .action:not(.primary):hover:not(:disabled){background:rgba(38,34,53,.96);border-color:rgba(226,170,78,.5)}
+
+/* ---- arena: o brasão de patente é um selo quadrado; a cor da patente fica na borda e na letra, sem brilho nem reflexo de esfera ---- */
+.arena-crest{border-radius:4px;background:rgba(13,12,18,.86);box-shadow:0 0 0 4px rgba(0,0,0,.25),0 2px 0 rgba(0,0,0,.35)}
+
+/* ---- mapa: medalhão redondo sobre plaqueta reta (como a tabuleta dos distritos); o marco bloqueado em repouso é só o anel do cadeado,
+        e no celular todos viram ponto ---- */
+.illustrated-map .map-pin{border-radius:3px}
+.illustrated-map .map-pin.locked:hover,.illustrated-map .map-pin.locked.focus{border-radius:3px}
+@media (max-width:900px){.illustrated-map .map-pin,.illustrated-map .map-pin.locked,.illustrated-map .map-pin.locked:hover,.illustrated-map .map-pin.locked.focus{border-radius:50%}}
+
+/* ---- grupo: glow ---- */
+/* ---- brilho (glow): onde ainda sobrava um halo de cor, entra sombra preta curta; "pronto" e "escolhido" se dizem por
+   borda de ouro ou vermelhão, nunca por luz. ---- */
+/* topo e entrada */
+.player-avatar{box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.auth-card{box-shadow:0 0 0 1px rgba(226,170,78,.22),0 24px 60px rgba(0,0,0,.6)}
+/* chefe em perigo: a moldura fica vermelha (fio duplo) e treme (o shake de styles.css:144 continua), sem halo. Precisa
+   vencer body.in-combat .boss-panel (styles.css:1730 e theme-sumi.css:101), que engole a borda e a sombra do estado.
+   A postura quebrada é fio claro. */
+body.in-combat .boss-panel.danger,.boss-panel.danger{border-color:var(--red);box-shadow:inset 0 0 0 1px var(--red),0 8px 24px rgba(0,0,0,.25)}
+.boss-break.broken{border-color:var(--gold-hi);box-shadow:0 0 0 1px rgba(242,207,134,.5)}
+/* resultado: derrota em vermelhão sólido, como a vitória é ouro sólido */
+.result-card.lose h2{color:var(--red);text-shadow:none}
+.result-card.win h2{filter:none}
+/* escolhido: a fatia escolhida é laca de ouro com relevo, como .action.primary; a vaga escolhida ganha fio de ouro por
+   outline. O !important é para a vaga ocupada: theme-sumi.css:155 põe box-shadow:none!important em .formation-slot.filled */
+.stage-btn.selected{color:#1d1206;border-color:var(--gold-lo);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 0 rgba(0,0,0,.35)}
+.formation-slot.selected{box-shadow:0 2px 0 rgba(0,0,0,.35)!important;outline:2px solid var(--gold);outline-offset:-2px}
+/* contadores, avisos e cartas: o MVP guarda a profundidade do .loot-pop e ganha a moldura de ouro */
+.pts-big.has{color:var(--washi);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.login-card.ready{border-color:var(--shu);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.card-pop.mvp{border-color:var(--gold);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+/* ranking e guerra de guildas: a guerra ao vivo guarda a profundidade do .war-hero e ganha o fio vermelho */
+.rk-pod.p1 .rk-lead{box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.war-score em{text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.war-hero.live{box-shadow:0 0 0 1px rgba(216,85,60,.55),0 16px 40px rgba(0,0,0,.35)}
+
+/* ---- grupo: degrade-a ---- */
+/* ---- ficha do herói: papel tingido de leve com o pigmento do herói e um filete à esquerda, no lugar do degradê ---- */
+.hero-head{background:color-mix(in srgb,var(--hc,#fff) 7%,var(--surf,#16141e));box-shadow:inset 3px 0 0 var(--hc,var(--gold))}
+
+/* ---- kit do herói: a ultimate (quando não há ícone pintado) é um selo de ouro chapado com a letra em tinta ---- */
+.kit-ico.ult{background:var(--gold);color:var(--ink)}
+
+/* ---- grupo: degrade-b ---- */
+/* ---- cabeçalhos de seção: cartas, banco e armazém. Papel escuro chapado com filete; cada casa guarda só o seu pigmento ---- */
+/* coleção de cartas: laca com grão de papel e o filete vermelho do selo (a .house-hero usa a pintura da vila e fica como está) */
+.cards-hero{background:var(--grain),var(--bg1);border:1px solid var(--line2);border-left:3px solid var(--shu)}
+/* Banco Kogane: laca de musgo (o koke da carta, escurecido), chapada; o risco de papel de arroz (90deg) é textura, não degradê */
+.bank-hero{background:repeating-linear-gradient(90deg,rgba(226,170,78,.05) 0 1px,transparent 1px 22px),#222c18}
+/* Armazém do Tanuki: madeira escura chapada (o kin da carta, quase apagado); as tábuas (0deg) continuam */
+.storage-hero{background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 2px,transparent 2px 26px),#2b1d13}
+
+/* ---- aba "Cartas" da bolsa: tira de papel em repouso; ouro só quando escolhida (como as outras abas), com tinta escura legível ---- */
+.inv-tabs button.cards-tab{color:var(--muted);border-color:var(--line2)}
+.inv-tabs button.cards-tab:hover:not(.active){color:var(--washi);border-color:rgba(226,170,78,.5)}
+.inv-tabs button.cards-tab.active{color:#1d1206;background:var(--gold)!important;border-color:var(--gold-lo)}
+
+/* ---- álbum de cartas: marco alcançado vira selo verde com o número em tinta, não um bloco verde com o texto apagado ---- */
+.album-track li.done{background:rgba(143,179,122,.1)!important;border-color:rgba(143,179,122,.5)}
+.album-track li.done b{background:var(--green)!important;color:var(--bg0)!important;border-color:transparent}
+
+/* ---- selo "quente" da aventura: carimbo vermelhão chapado, como os contadores, sem brilho rosa ---- */
+.adv-flag{color:var(--washi);background:var(--shu);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
