@@ -15,7 +15,7 @@
     afk.innerHTML = '<span><i class="ic ic-moon"></i> AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
     boost.dataset.tip = 'Preparação: escolha entre farm, equipamento, atributos ou talentos. Nenhuma build inteira é montada sozinha.'; boost.setAttribute('aria-label', 'Preparar equipe');
-    boost.innerHTML = '<span><i class="ic ic-bolt"></i></span><b>PREPARAR</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
+    boost.innerHTML = '<span><i class="pi pi-cmd-prepare"></i></span><b>PREPARAR</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
     const banner = document.createElement('div'); banner.id = 'afk-banner'; banner.hidden = true; document.querySelector('#viewport')?.appendChild(banner);
     this.el.afk = afk; this.el.boost = boost; this.el.afkBanner = banner;
     afk.addEventListener('click', () => this.toggleAfk());

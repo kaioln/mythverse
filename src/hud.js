@@ -18,7 +18,7 @@
     if (nav && !nav.querySelector('.nav-more')) {
       nav.querySelectorAll('.nav[data-panel]').forEach(b => { if (!MAIN.includes(b.dataset.panel)) b.classList.add('nav-extra'); });
       const more = document.createElement('button'); more.className = 'nav nav-more'; more.type = 'button';
-      more.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
+      more.innerHTML = '<i class="pi pi-nav-menu"></i><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
       more.dataset.tip = 'Todos os outros lugares: Aventuras, Ranking, Arena, Guilda, Talentos, Loja e Wiki.';
       more.addEventListener('click', () => { if (matchMedia('(max-width:900px)').matches) this.toggleMoreSheet(); else nav.classList.toggle('more-open'); });
       nav.addEventListener('click', e => { if (e.target.closest('.nav-extra')) nav.classList.remove('more-open'); });
@@ -66,7 +66,7 @@
       sh.addEventListener('click', e => { const b = e.target.closest('[data-more-panel]'); if (b) { sh.hidden = true; document.querySelector(`.nav[data-panel="${b.dataset.morePanel}"]`)?.click(); } else if (e.target === sh) sh.hidden = true; });
     }
     const open = force ?? sh.hidden;
-    if (open) sh.innerHTML = `<div class="more-grid"><b>Menu</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" data-more-panel="${n.dataset.panel}">${n.querySelector('svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
+    if (open) sh.innerHTML = `<div class="more-grid"><b>Menu</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" data-more-panel="${n.dataset.panel}">${n.querySelector('.pi, svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
     sh.hidden = !open;
   };
   P.applyHud = function() {

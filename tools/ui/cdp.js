@@ -12,7 +12,7 @@
 //   p.out(arquivo)            caminho na pasta de saída (UI_OUT; padrão: pasta temporária do sistema / mythverse-ui)
 //   p.open(url, { w, h, dpr, mobile })   p.until(js, ms)   p.wait(ms)   p.eval(js)
 //   p.shot(arquivo, { clip:[x,y,w,h], scale })   p.rect(seletor)   p.click(seletor)   p.tap(x, y)   p.hover(x, y)
-//   p.key('Space')            p.errors()  → exceções, respostas HTTP ≥ 400 e erros/avisos do console
+//   p.key('Space')            p.errors()  → exceções e arquivos do jogo que faltam (erros); console e serviços de fora (avisos)
 // Chrome: variável CHROME, ou o caminho padrão do Windows.
 const { spawn } = require('node:child_process'), fs = require('node:fs'), path = require('node:path'), os = require('node:os'), http = require('node:http');
 const ROOT = path.resolve(__dirname, '../..');
@@ -52,7 +52,8 @@ async function main() {
     if (m.id && waiting.has(m.id)) { const { ok, no } = waiting.get(m.id); waiting.delete(m.id); m.error ? no(new Error(m.error.message)) : ok(m.result); return; }
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
     if (m.method === 'Runtime.consoleAPICalled' && (m.params.type === 'error' || m.params.type === 'warning')) logs.push(`${m.params.type}: ${m.params.args.map(a => a.value ?? a.description ?? '').join(' ')}`.slice(0, 300));
-    if (m.method === 'Network.responseReceived' && m.params.response.status >= 400) errors.push(`HTTP ${m.params.response.status} ${m.params.response.url}`);
+    // Arquivo do próprio jogo que falta é erro; resposta de serviço de fora (conta não logada no teste, por exemplo) é só aviso.
+    if (m.method === 'Network.responseReceived' && m.params.response.status >= 400) (m.params.response.url.startsWith(base) ? errors : logs).push(`HTTP ${m.params.response.status} ${m.params.response.url}`);
   };
   const send = (method, params = {}) => new Promise((ok, no) => { const id = ++seq; waiting.set(id, { ok, no }); ws.send(JSON.stringify({ id, method, params })); });
   await send('Page.enable'); await send('Runtime.enable'); await send('Network.enable');
