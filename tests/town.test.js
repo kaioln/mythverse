@@ -20,9 +20,15 @@ for (const p of [[350,435],[382,432],[150,245],[770,330],[870,600],[890,615],[60
   assert.equal(TownMap.isWalk(...p), false, `telhado, barraca ou água não é piso: ${p}`);
 }
 const visitor = new TownLife(); visitor.sync([]);
-assert.equal(visitor.agents.length,40,'festival com 40 moradores, visitantes, alunos do dojo e o gato');
-assert.ok(visitor.agents.filter(a=>a.def.act&&/^dojo/.test(a.def.post)).length>=4,'o pátio do dojo tem alunos e mestre treinando');
-assert.ok(visitor.agents.filter(a=>a.def.festival).length>=16,'participantes com atividades do festival');
+const townPeople=visitor.agents.filter(a=>a.kind!=='animal'),townAnimals=visitor.agents.filter(a=>a.kind==='animal');
+assert.equal(townPeople.length,39,'festival com 39 moradores, visitantes e alunos do dojo');
+assert.ok(townPeople.filter(a=>a.def.act&&/^dojo/.test(a.def.post)).length>=4,'o pátio do dojo tem alunos e mestre treinando');
+assert.ok(townPeople.filter(a=>a.def.festival).length>=16,'participantes com atividades do festival');
+// Bichos: várias espécies, nenhuma com rota de morador.
+assert.ok(new Set(townAnimals.map(a=>a.sp)).size>=8,'gato, cachorro, cervo, raposa, galinhas, pardais, patos e carpas');
+assert.ok(townAnimals.length>=18&&townAnimals.every(a=>!a.def),'bicho não é morador: sem rota nem posto');
+const mochi=visitor.agents.find(a=>a.name==='Mochi');assert.equal(mochi.kind,'animal');
+assert.ok(visitor.talk(mochi)&&/Miau|Mrr|Prr/.test(mochi.speech)&&mochi.emote==='♥','a gata responde ao toque do jeito dela');
 const renji = visitor.agents.find(a => a.name === 'Renji');
 assert.ok(renji.y > 460, 'vendedor à frente da barraca, não dentro do telhado');
 assert.ok(visitor.talk(renji)); const firstLine = renji.speech;
@@ -56,6 +62,8 @@ actor.x=50;renderer.view={x:180,w:920};assert.equal(renderer.townBubble(actor,34
 for (const spot of TownMap.SPOTS) assert.ok(TownMap.route(...TownMap.at('plaza'), ...TownMap.at(spot.node)), `rota para ${spot.node}`);
 vm.runInContext('Math.random = () => ((globalThis.__seed = (globalThis.__seed * 1664525 + 1013904223) >>> 0) / 4294967296)', game);
 
+const seen = { emotes:new Set(), poses:new Set(), petLines:new Set(), flew:false, followed:false, heroEmote:false };
+const PET_LINE = /Mochi|Pochi|bichana|cervo|educado|Reverência|raposa|patos|carpas|peixes|galinhas|Xô|Voem|osso|garoto|gatinha|carinho|Dango não|biscoito|flores não/;
 for (const seed of [1, 7, 14, 21, 32, 39, 45, 64]) {
   game.__seed = seed;
   const life = new TownLife();
@@ -63,10 +71,24 @@ for (const seed of [1, 7, 14, 21, 32, 39, 45, 64]) {
   const previous = life.agents.map(a => [a.x, a.y]);
   const idle = new Map(life.agents.map(a => [a, 0]));
   const speakers = new Set();
+  const inWater = (x, y) => { let on = false; const W = TownMap.WATER; for (let i = 0, j = W.length - 1; i < W.length; j = i++) { const [ax, ay] = W[i], [bx, by] = W[j]; if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) on = !on; } return on; };
   for (let frame = 0; frame < 3600; frame++) {
     life.update(1 / 30);
     for (let i = 0; i < life.agents.length; i++) {
       const a = life.agents[i], p = previous[i], moved = Math.hypot(a.x - p[0], a.y - p[1]);
+      if (a.kind === 'animal') {
+        // Bicho: quem nada fica na água, quem anda fica no chão (o pardal em voo passa por cima de tudo), e nada de NaN.
+        assert.ok(Number.isFinite(a.x) && Number.isFinite(a.y), `${a.sp} com posição inválida`);
+        if (TownMap.SPECIES[a.sp].water) assert.ok(inWater(a.x, a.y), `${a.sp} saiu da água no quadro ${frame}`);
+        else if (!a.fly && moved) assert.ok(TownMap.isWalk(a.x, a.y), `${a.sp} saiu do chão no quadro ${frame}`);
+        p[0] = a.x; p[1] = a.y;
+        if (a.emote) seen.emotes.add(a.emote);
+        if (a.pose) seen.poses.add(`${a.sp}:${a.pose}`);
+        if (a.fly) seen.flew = true;
+        if (a.follow) seen.followed = true;
+        continue;
+      }
+      if (a.emote) seen.heroEmote = true;
       if (moved) {
         assert.ok(TownMap.isWalk(a.x, a.y), `${a.name} saiu do caminho no quadro ${frame}`);
         const steps = Math.ceil(moved);
@@ -76,15 +98,23 @@ for (const seed of [1, 7, 14, 21, 32, 39, 45, 64]) {
         idle.set(a, idle.get(a) + 1 / 30);
         assert.ok(idle.get(a) < 11, `${a.name} ficou travado por ${idle.get(a).toFixed(1)}s (cenário ${seed})`);
       }
-      if (a.speechFor > 0) speakers.add(a.name);
+      if (a.speechFor > 0) { speakers.add(a.name); if (PET_LINE.test(a.speech)) seen.petLines.add(a.speech); }
       for (let j = i + 1; j < life.agents.length; j++) {
-        const b = life.agents[j];
+        const b = life.agents[j]; if (b.kind === 'animal') continue;
         // Quem anda cruza com os outros (rua cheia); parados nunca ficam um em cima do outro.
         if (!a.moving && !b.moving && !a.path.length && !b.path.length) assert.ok(Math.hypot(a.x - b.x, (a.y - b.y) * 1.55) >= 11.9, `${a.name} e ${b.name} pararam sobrepostos`);
       }
     }
   }
-  for (const a of life.agents.filter(a => !a.fixed)) assert.ok(a.walkD > 100, `${a.name} não circulou`);
+  for (const a of life.agents.filter(a => !a.fixed && a.kind !== 'animal')) assert.ok(a.walkD > 100, `${a.name} não circulou`);
+  for (const a of life.agents.filter(a => ['cat', 'dog'].includes(a.sp))) assert.ok(a.walkD > 40, `${a.name} não passeou`);
   assert.ok(speakers.size >= 3, 'o festival precisa ter conversas entre moradores');
 }
-console.log('TOWN_OK: chão, colisão, circulação, conversas e ausência segura da máscara');
+// Comportamento de bicho, somando os cenários: poses próprias, sinais, voo do bando, cachorro seguindo gente e
+// pessoas reagindo (fala de morador ou ♥ de herói).
+for (const pose of ['cat:sit', 'cat:groom', 'dog:sit', 'deer:bow', 'deer:graze', 'fox:sit', 'chicken:peck', 'sparrow:fly', 'duck:float']) assert.ok(seen.poses.has(pose), `pose ${pose} nunca apareceu`);
+assert.ok(seen.emotes.has('♥') && seen.emotes.has('!'), 'bichos mostram carinho e susto');
+assert.ok(seen.flew, 'os pardais levantam voo');
+assert.ok(seen.followed, 'o cachorro acompanha alguém');
+assert.ok(seen.petLines.size >= 2 || seen.heroEmote, 'as pessoas reagem aos bichos');
+console.log('TOWN_OK: chão, colisão, circulação, conversas, bichos com comportamento próprio e ausência segura da máscara');

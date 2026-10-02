@@ -66,7 +66,6 @@
     {f:1,name:'Kaede',post:'dojoSword',face:1,verb:'Cortes com o bokken',act:'bokken',beat:.2},
     {f:2,name:'Gensai',post:'dojoMaster',face:-1,verb:'Corrigindo a postura dos alunos',act:'sensei'},
     // Vida solta pelas ruas.
-    {f:6,name:'Mochi',route:['plazaS','garden','templeMid','plazaN','marketE'],speed:21,verb:'Passeando',sheet:'cat',small:true},
     {f:5,name:'Akari',route:['shrineLantern','eastLand','bridgeM','plazaE'],speed:14,verb:'Levando a lanterna ao santuário',sheet:'lanterngirl',festival:'lantern'}
   ];
   const GREETINGS = {
@@ -108,9 +107,47 @@
     Sota:['O boneco de madeira nunca erra o bloqueio. Um dia eu também não vou errar.'],
     Kaede:['O bokken pesa menos que uma lâmina, mas o corte é o mesmo: do ombro, não do pulso.','Treino aqui desde que o Eclipse levou a espada do meu pai. Vou buscá-la.'],
     Gensai:['Postura antes de força. Quem aprende a ficar de pé não precisa aprender a cair.','O Dojo do Eco devolve o que você entrega: pressa vira tropeço, paciência vira técnica.'],
-    Mochi:['Miau.','Mrrrau!','Prrrr…'],
     Akari:['Esta lanterna é para o nome da minha mãe. Hotaru me ensinou a não deixar a chama apagar no caminho.','Se o vento soprar forte, eu canto. A chama gosta de música.']
   };
+
+  // ---- bichos ----
+  // Bicho não é morador: não segue rota, não para em barraca nem conversa. Cada espécie tem o próprio jeito e reage a
+  // quem passa: a gata pede peixe e foge do cachorro; o cachorro segue gente e faz festa; o cervo do jardim
+  // reverencia; a raposa do santuário é arisca e só confia em quem cuida das lanternas; galinhas e pardais se
+  // espalham; patos e carpas vêm para quem para no cais.
+  // poses: nome → [primeiro quadro, último quadro, quadros por segundo] na folha de poses (assets/town-walk/animals.webp).
+  const SPECIES = {
+    cat:     { row:'cat', idle:'cat_idle', speed:22, run:62, size:.36, rest:'sit', poses:{ sit:[0,1,1.1], groom:[2,3,2.6], sleep:[4,5,.6], stretch:[6,6,1], scared:[7,7,1] } },
+    dog:     { row:'dog', idle:'dog_idle', speed:34, run:74, size:.44, rest:'sit', poses:{ sit:[0,0,1], tilt:[1,1,1], bark:[2,3,5], bow:[4,4,1], jump:[5,5,1], lie:[6,6,1], sniff:[7,7,1] } },
+    deer:    { row:'deer', idle:'deer_idle', speed:18, run:66, size:.95, rest:'stand', poses:{ stand:[0,0,1], look:[1,1,1], bow:[2,3,1.5], graze:[4,5,1.1], lie:[6,6,1], alert:[7,7,1] } },
+    fox:     { row:'fox', idle:'fox_idle', speed:26, run:80, size:.48, rest:'sit', poses:{ sit:[0,1,1], alert:[2,2,1], crouch:[3,3,1], pounce:[4,5,2.4], sleep:[6,6,1], yawn:[7,7,1] } },
+    chicken: { row:'chicken', speed:13, run:46, size:.33, walk:[0,3], rest:'stand', poses:{ stand:[0,0,1], peck:[4,5,3.2], flap:[6,7,9] } },
+    sparrow: { row:'sparrow', speed:16, size:.19, rest:'stand', poses:{ stand:[0,0,1], hop:[1,1,1], peck:[2,2,1], look:[3,3,1], fly:[4,7,13] } },
+    duck:    { row:'duck', speed:8, size:.26, water:true, rest:'float', poses:{ float:[0,2,1.1], preen:[3,3,1], dabble:[4,5,1], flap:[6,7,7] } },
+    koi:     { row:'koi', speed:11, size:.2, water:true }
+  };
+  const ANIMALS = [
+    { sp:'cat', name:'Mochi', home:'plazaS', range:170 }, { sp:'dog', name:'Pochi', home:'marketE', range:280 },
+    { sp:'deer', name:'Shika', home:'garden', range:90 }, { sp:'fox', name:'Yuki', home:'shrineLantern', range:80 },
+    { sp:'chicken', home:'marketW', range:44 }, { sp:'chicken', home:'marketW', range:44 }, { sp:'chicken', home:'marketGuest', range:40 },
+    { sp:'sparrow' }, { sp:'sparrow' }, { sp:'sparrow' }, { sp:'sparrow' }, { sp:'sparrow' },
+    { sp:'duck' }, { sp:'duck' }, { sp:'koi', variant:0 }, { sp:'koi', variant:1 }, { sp:'koi', variant:0 }, { sp:'koi', variant:1 }
+  ];
+  // Onde os pardais pousam (o bando escolhe um lugar, é espantado e vai para outro).
+  const PERCHES = ['plazaE', 'plazaW', 'guardSouth', 'marketM', 'templeMid', 'dojoStairs', 'shrineStory', 'workshopGate', 'bankTop', 'guildSteps', 'eastLand'];
+  // Água aberta do porto (1280×720), longe dos barcos: onde nadam os patos e as carpas.
+  const WATER = [[866,638],[948,638],[952,676],[994,704],[988,715],[870,715],[858,694]];
+  // O que as pessoas dizem quando um bicho vem até elas (nome do morador, ou '*' para qualquer um).
+  const PET = {
+    cat: { Goro:['Peixe não, Mochi! …Tá bom, só a cabeça.','De novo você? O freguês vem primeiro.'], Renji:['O caldo é quente, bichana. Sopre antes.'], Aya:['Sem pelo no chá, por favor!'], Yori:['Dango não é comida de gato, Mochi.'], '*':['Olha quem veio pedir carinho.','Quem é a gatinha mais esperta da praça?','Mochi! Cuidado com os meus pés.'] },
+    dog: { Tomo:['Pega o cata-vento, Pochi!','Corre, Pochi, corre!'], Jinbei:['De ronda comigo, Pochi? Então atenção.'], Daigo:['Sai de baixo das caixas, amigo.'], '*':['Bom garoto, Pochi!','Senta. Isso! Quem quer dango?','Hoje não tenho osso, amigo.'] },
+    deer: { Mari:['As flores não são para comer!'], Suzu:['Devagar com os degraus, pequeno.'], '*':['Que educado! Tome um biscoito.','O cervo do jardim cumprimenta todo mundo.','Reverência para você também.'] },
+    fox: { Hotaru:['A raposa branca veio ver as lanternas. Bom presságio.'], Fumi:['Dizem que ela guarda os nomes do santuário.'], Shun:['Não se assuste, pequena. Só vim deixar um nome.'], Akari:['Você gosta da minha lanterna, raposinha?'] },
+    water: { Kai:['Os patos já conhecem a hora do pão.'], Minato:['Olha as carpas! Vieram ver as lanternas.'], Daigo:['Até os peixes querem as oferendas.'], '*':['As carpas vêm sempre que alguém para aqui.'] },
+    chicken: { Natsu:['Xô, xô! Longe das barracas!'], Kenta:['As galinhas daqui não têm medo de ninguém.'], Tomo:['Voem, voem!'] }
+  };
+  const VOICE = { cat:['Miau.', 'Mrrrau!', 'Prrrr…'], dog:['Au, au!', 'Uuuf!'], deer:['…'], fox:['Kon!'], chicken:['Có, có!'], duck:['Quá!'], sparrow:['Piu!'], koi:['…'] };
+  const TRUSTED = new Set(['Hotaru', 'Fumi', 'Akari', 'Shun', 'Rei']);     // de quem a raposa não foge
 
   // ---- chão ----
   // O chão é o desenho de caminhos feito sobre a arte (src/town-walk.js, gerado por tools/build_walkmap.py): ruas,
@@ -221,6 +258,11 @@
   const GAP = 16;             // espaço pessoal (px, com o eixo y achatado pela perspectiva)
   const STAND_GAP = 12, POST_GAP = 9, FOLLOW_GAP = 15;   // distância ao contornar quem está parado / vendedor na banca / fila
   const dist = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55);
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  // Um ponto de chão ao acaso a até r px de c (ou null).
+  const near = (c, r, tries = 10) => { for (let i = 0; i < tries; i++) { const g = Math.random() * 6.283, d = r * (.25 + .75 * Math.random()), x = c[0] + Math.cos(g) * d, y = c[1] + Math.sin(g) * d / 1.55; if (isWalk(x, y)) return [x, y]; } return null; };
+  const inWater = (x, y) => inside(x, y, WATER);
+  const waterPoint = (c = null, r = 30) => { for (let i = 0; i < 24; i++) { const x = c ? c[0] + rnd(-r, r) : rnd(858, 994), y = c ? c[1] + rnd(-r, r) * .6 : rnd(638, 715); if (inWater(x, y)) return [x, y]; } return [905, 672]; };
 
   class TownLife {
     constructor() { this.agents = []; this.key = null; this.dialogueAt = 4; this.dialogue = 0; this.dialogueLine = 0; this.dialoguePair = null; }
@@ -231,7 +273,16 @@
       this.agents = heroes.map((h, i) => { const [x, y] = at(starts[i % starts.length]); return { id:i, kind:'hero', ...h, x, y, path:[], wait:1.5 + i, face:1, speed:28 + i * 1.5, speedNow:0, verb:'', walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; })
         .concat(FOLK.map((f, i) => { const [x, y] = f.post ? N[f.post] : at(f.route[0]); return { id:heroes.length + i, kind:'folk', f:f.f, def:f, name:f.name, x, y, fixed:!!f.post, path:[], wait:1 + Math.random() * 3, face:f.face || 1, speed:f.speed || 0, speedNow:0, verb:f.verb, ri:0, walkT:Math.random(), walkD:0, animT:f.act ? (f.beat || 0) * 4 : Math.random() * 5, speech:'', speechFor:0 }; }));
       const placed = [];
+      this.flock = { perch:'plazaE', relocate:rnd(14, 26) };
+      const base = this.agents.length;
+      ANIMALS.forEach((d, i) => {
+        const S = SPECIES[d.sp], home = d.home ? at(d.home) : d.sp === 'sparrow' ? at(this.flock.perch) : null;
+        const [x, y] = S.water ? waterPoint() : near(home, d.sp === 'sparrow' ? 16 : 30) || home;
+        this.agents.push({ id:base + i, kind:'animal', sp:d.sp, name:d.name || '', variant:d.variant || 0, home, range:d.range || 0, x, y, path:[], wait:rnd(.5, 3), face:Math.random() < .5 ? 1 : -1, pace:S.speed, pose:S.rest || null, moving:false,
+          walkD:0, animT:Math.random() * 5, senseT:Math.random() * .3, cool:0, emote:'', emoteFor:0, speech:'', speechFor:0, heading:0, lift:0 });
+      });
       for (const a of this.agents) {
+        if (a.kind === 'animal') continue;
         if (placed.some(o => dist(a, o) < GAP + 1)) {
           let found = false;
           for (const radius of [20,32,44,60]) {
@@ -246,9 +297,9 @@
       }
     }
     // Destino livre: ninguém parado ali nem a caminho dali (quem só está de passagem não conta).
-    free(a, p) { return this.agents.every(o => o === a || [o.path.length ? null : [o.x, o.y], o.goal].every(q => !q || Math.hypot(q[0] - p[0], (q[1] - p[1]) * 1.55) > GAP + 4)); }
+    free(a, p) { return this.agents.every(o => o === a || o.kind === 'animal' || [o.path.length ? null : [o.x, o.y], o.goal].every(q => !q || Math.hypot(q[0] - p[0], (q[1] - p[1]) * 1.55) > GAP + 4)); }
     // Quem está parado por perto vira obstáculo da rota (vendedor na banca ocupa menos espaço que alguém no meio da rua).
-    standing(a) { return this.agents.filter(o => o !== a && !o.moving && !o.path.length && dist(a, o) < 110).map(o => [o.x, o.y, (o.fixed ? POST_GAP : STAND_GAP) + 2]); }
+    standing(a) { return this.agents.filter(o => o !== a && o.kind !== 'animal' && !o.moving && !o.path.length && dist(a, o) < 110).map(o => [o.x, o.y, (o.fixed ? POST_GAP : STAND_GAP) + 2]); }
     // Um ponto de chão livre perto de p (anéis de 20 a 46 px), para quando o destino está ocupado.
     beside(a, p) {
       const turn = a.id * 2.4;
@@ -268,9 +319,13 @@
     //  · atrás de alguém mais lento no mesmo sentido, acompanha o passo em vez de atravessar;
     //  · sem espaço para contornar (rua estreita), espera um instante e passa rente. Ninguém volta pelo caminho.
     update(dt) {
+      this.petCool = Math.max(0, (this.petCool || 0) - dt);
+      this.updateFlock(dt);
       for (const a of this.agents) {
         a.animT += dt; a.speechFor = Math.max(0, a.speechFor - dt); a.speechAge = (a.speechAge || 0) + dt;
         if (!a.speechFor) { a.speech = ''; a.manualSpeech = false; }
+        if (a.emoteFor > 0 && (a.emoteFor -= dt) <= 0) a.emote = '';
+        if (a.kind === 'animal') { this.updateAnimal(a, dt); continue; }
         a.ghost = Math.max(0, (a.ghost || 0) - dt);
         if (a.path.length) {
           while (a.path.length && Math.hypot(a.path[0][0] - a.x, a.path[0][1] - a.y) < .35) a.path.shift();
@@ -280,14 +335,14 @@
           let pace = Math.min(a.speed * depth(a.y), Math.max(8, remaining * 2.5));
           // Fila natural: alguém andando logo à frente, no mesmo sentido, dita o passo.
           for (const o of this.agents) {
-            if (o === a || !o.moving) continue;
+            if (o === a || !o.moving || o.kind === 'animal') continue;
             const ox = o.x - a.x, oy = (o.y - a.y) * 1.55, od = Math.hypot(ox, oy);
             if (od < FOLLOW_GAP && od > .01 && (ox * ux + oy * uy) / od > .6 && (o.vx || 0) * ux + (o.vy || 0) * uy > 0) pace = Math.min(pace, Math.max(4, (o.speedNow || 0) * .9));
           }
           a.speedNow = Math.min(pace, (a.speedNow || 0) + 105 * dt);
           const step = Math.min(d, a.speedNow * dt), nx = a.x + ux * step, ny = a.y + uy * step;
           const blocker = a.ghost > 0 ? null : this.agents.find(o => {
-            if (o === a || o.moving || o.path.length) return false;
+            if (o === a || o.kind === 'animal' || o.moving || o.path.length) return false;
             const gap = o.fixed ? POST_GAP : STAND_GAP, before = dist(a, o), after = Math.hypot(nx - o.x, (ny - o.y) * 1.55);
             return after < gap && after < before - .01;
           });
@@ -343,6 +398,7 @@
       this.dialoguePair = null; this.dialogueAt = 4;
     }
     talk(a) {
+      if (a.kind === 'animal') return this.poke(a);
       const greeting = GREETINGS[a.name]; if (!greeting) return false;
       const lines = greeting.flatMap(text => text.split(/(?<=[.!?])\s+/));
       this.agents.forEach(o => { o.speechFor = 0; o.manualSpeech = false; });
@@ -352,7 +408,204 @@
     }
     arrive(a) { a.goal = null; a.speedNow = 0; a.vx = a.vy = 0; if (a.kind === 'hero') { a.face = a.spot?.face || a.face; a.verb = a.spot?.verb || ''; a.wait = 2.5 + Math.random() * 4; } else { if (a.routeTarget != null) a.ri = a.routeTarget; a.routeTarget = null; a.wait = 1 + Math.random() * 2; } }
     drawList() { return this.agents.map(a => ({ a, s:depth(a.y), h:34 * depth(a.y) })).sort((p, q) => p.a.y - q.a.y); }
+
+    // ---------- bichos ----------
+    people() { return this.agents.filter(o => o.kind !== 'animal'); }
+    // Um sinal sobre a cabeça (♥ ! ♪ z): é assim que bicho "fala", e como os heróis respondem.
+    emote(a, glyph, time = 2.2) { a.emote = glyph; a.emoteFor = time; }
+    // A pessoa reage ao bicho: morador fala uma frase curta; herói (que não fala em balão) mostra um ♥.
+    react(h, kind, glyph = '♥') {
+      if (!h) return;
+      if (h.kind === 'hero') { this.emote(h, glyph, 2.4); return; }
+      const lines = PET[kind]?.[h.name] || PET[kind]?.['*'];
+      if (!lines || this.petCool > 0 || h.manualSpeech || this.dialoguePair?.includes(h) || this.agents.some(o => o.manualSpeech && o.speechFor > 0)) { this.emote(h, glyph, 2); return; }
+      h.speech = lines[Math.floor(Math.random() * lines.length)]; h.speechFor = 3.6; h.speechAge = 0; h.manualSpeech = false;
+      this.petCool = 9; this.dialogueAt = Math.max(this.dialogueAt, 5);
+    }
+    setPose(a, pose, time) { a.pose = pose; a.wait = time; a.animT = 0; a.path = []; a.moving = false; }
+    goAnimal(a, p, run = false) {
+      if (!p) return false;
+      const S = SPECIES[a.sp];
+      a.path = onGround([a.x, a.y], p) ? [p] : route(a.x, a.y, p[0], p[1]) || [];
+      if (!a.path.length) { a.wait = rnd(.4, 1); return false; }
+      a.pace = run ? S.run || S.speed : S.speed; a.pose = null; return true;
+    }
+    // Ponto de chão para o lado oposto de quem assusta.
+    away(a, from, d) {
+      const g = Math.atan2((a.y - from.y) * 1.55, a.x - from.x);
+      for (const k of [0, .5, -.5, 1, -1, 1.6, -1.6]) { const x = a.x + Math.cos(g + k) * d, y = a.y + Math.sin(g + k) * d / 1.55; if (isWalk(x, y)) return [x, y]; }
+      return a.home;
+    }
+    // Um lugar colado numa pessoa (ao lado, um pouco à frente): onde o bicho senta para pedir carinho.
+    by(h, d = 11) { for (const sx of Math.random() < .5 ? [1, -1] : [-1, 1]) { const x = h.x + sx * d, y = h.y + 3; if (isWalk(x, y)) return [x, y]; } return null; }
+    updateAnimal(a, dt) {
+      const S = SPECIES[a.sp];
+      a.cool = Math.max(0, a.cool - dt);
+      if (S.water) { this.swim(a, S, dt); return; }
+      if (a.fly) {
+        const f = a.fly; f.t += dt;
+        if (f.t < 0) return;                                               // ainda no chão: cada pardal levanta no seu instante
+        const k = Math.min(1, f.t / f.dur), e = k * k * (3 - 2 * k);
+        a.x = f.x0 + (f.x1 - f.x0) * e; a.y = f.y0 + (f.y1 - f.y0) * e; a.lift = Math.sin(k * Math.PI) * f.lift;
+        a.face = f.x1 >= f.x0 ? 1 : -1; a.pose = 'fly'; a.moving = false;
+        if (k >= 1) { a.fly = null; a.lift = 0; this.setPose(a, 'stand', rnd(.3, 1.2)); }
+        return;
+      }
+      if ((a.senseT -= dt) <= 0) { a.senseT = rnd(.16, .28); if (this.sense(a, S)) return; }
+      if (a.path.length) {
+        const [tx, ty] = a.path[0], dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy);
+        if (d < .5) a.path.shift();
+        else {
+          const step = Math.min(d, a.pace * depth(a.y) * dt), nx = a.x + dx / d * step, ny = a.y + dy / d * step;
+          if (!isWalk(nx, ny)) a.path = [];
+          else { a.x = nx; a.y = ny; a.walkD += step; a.moving = true; if (Math.abs(dx) > .3) a.face = dx > 0 ? 1 : -1; }
+        }
+        if (!a.path.length) { a.moving = false; this.animalArrive(a, S); }
+        return;
+      }
+      a.moving = false;
+      if ((a.wait -= dt) <= 0) this.animalThink(a, S);
+    }
+    // O que o bicho percebe em volta (algumas vezes por segundo). Devolve true se largou o que fazia para reagir.
+    sense(a, S) {
+      const people = this.people();
+      if (a.sp === 'cat') {
+        const dog = this.agents.find(o => o.sp === 'dog' && dist(a, o) < 46);
+        if (dog && a.cool <= 0) { a.cool = 5; a.visit = null; this.emote(a, '!', 1.2); this.goAnimal(a, this.away(a, dog, 130), true); return true; }
+        const foot = people.find(o => o.moving && dist(a, o) < 9);          // sai de baixo do pé de quem vem andando
+        if (foot && !a.moving) { this.goAnimal(a, this.away(a, foot, 18), true); return true; }
+      } else if (a.sp === 'dog') {
+        const cat = this.agents.find(o => o.sp === 'cat' && dist(a, o) < 62);
+        if (cat && a.cool <= 0 && !a.moving && Math.random() < .3) { a.cool = 12; a.face = cat.x >= a.x ? 1 : -1; this.setPose(a, 'bark', 1.5); this.emote(a, '!', 1.2); return true; }
+        const l = a.follow;
+        if (l) {
+          const d = dist(a, l);
+          if ((a.followT -= .22) <= 0 || !this.agents.includes(l)) { a.follow = null; a.wait = rnd(.5, 1.5); return false; }
+          if (d > (l.moving ? 22 : 34) && (!a.path.length || Math.hypot(a.path[a.path.length - 1][0] - l.x, a.path[a.path.length - 1][1] - l.y) > 30)) { this.goAnimal(a, this.by(l, 13) || [l.x, l.y], d > 75); return false; }
+          if (!l.moving && d <= 34 && !a.path.length && a.pose !== 'sit' && a.pose !== 'jump') {
+            a.face = l.x >= a.x ? 1 : -1;
+            if (!a.greeted) { a.greeted = true; this.setPose(a, 'jump', 1.1); this.emote(a, '♥', 1.8); l.face = a.x >= l.x ? 1 : -1; this.react(l, 'dog'); }
+            else this.setPose(a, 'sit', 1.2);
+          }
+        }
+      } else if (a.sp === 'deer') {
+        const h = !a.moving && a.cool <= 0 && people.find(o => dist(a, o) < 40);
+        if (h) { a.cool = 11; a.face = h.x >= a.x ? 1 : -1; this.setPose(a, 'bow', 2.6); if (!h.moving) h.face = a.x >= h.x ? 1 : -1; this.react(h, 'deer', '♪'); return true; }
+      } else if (a.sp === 'fox') {
+        const h = people.find(o => o.moving && !TRUSTED.has(o.name) && dist(a, o) < 48);
+        if (h && a.cool <= 0) { a.cool = 4; a.visit = null; this.emote(a, '!', 1); this.goAnimal(a, this.away(a, h, 120), true); return true; }
+      } else if (a.sp === 'chicken') {
+        const t = this.agents.find(o => o !== a && o.sp !== 'chicken' && o.sp !== 'sparrow' && !SPECIES[o.sp]?.water && o.moving && dist(a, o) < 24);
+        if (t && a.cool <= 0) { a.cool = 1.6; if (this.goAnimal(a, this.away(a, t, rnd(34, 60)), true)) a.pose = 'flap'; if (t.kind === 'folk' && Math.random() < .3) this.react(t, 'chicken', '!'); return true; }
+      }
+      return false;
+    }
+    animalArrive(a, S) {
+      if (a.sp === 'chicken') { this.setPose(a, 'stand', rnd(.3, .8)); return; }
+      const h = a.visit; a.visit = null;
+      if (h && this.agents.includes(h) && dist(a, h) < 26) {                // chegou em quem ia visitar
+        a.face = h.x >= a.x ? 1 : -1; if (!h.moving) h.face = a.x >= h.x ? 1 : -1;
+        this.setPose(a, 'sit', rnd(4, 7)); this.emote(a, '♥', 2.4); this.react(h, a.sp);
+        return;
+      }
+      if (a.sniff) { a.sniff = false; this.setPose(a, 'sniff', rnd(1.6, 3)); return; }
+      this.setPose(a, S.rest, rnd(.4, 1.4));
+    }
+    // Decide o que fazer quando fica à toa. Nada de rota: vontades de bicho.
+    animalThink(a, S) {
+      const r = Math.random(), people = this.people();
+      if (a.sp === 'cat') {
+        if (r < .2) this.setPose(a, 'sit', rnd(3, 6));
+        else if (r < .36) this.setPose(a, 'groom', rnd(3, 5));
+        else if (r < .47) { this.setPose(a, 'sleep', rnd(8, 15)); this.emote(a, 'z', a.wait); }
+        else if (r < .52) this.setPose(a, 'stretch', 1.3);
+        else if (r < .76) this.goAnimal(a, near(a.home, a.range));
+        else {      // visita alguém que está parado: o peixeiro primeiro, depois quem cozinha, depois os heróis
+          const still = people.filter(o => !o.moving && !o.path.length && dist(a, o) < 300);
+          const h = still.length && pick(still.map(o => ({ o, w:o.name === 'Goro' ? 5 : o.name === 'Renji' || o.name === 'Yori' ? 2.5 : o.kind === 'hero' ? 2 : 1 }))).o;
+          if (h && this.goAnimal(a, this.by(h))) a.visit = h; else this.setPose(a, 'sit', rnd(2, 4));
+        }
+      } else if (a.sp === 'dog') {
+        if (a.follow) { a.wait = .4; return; }
+        if (r < .42) {     // escolhe alguém para acompanhar: o menino do cata-vento, um herói, o guarda…
+          const who = people.filter(o => o.kind === 'hero' || o.def?.route);
+          const l = who.length && pick(who.map(o => ({ o, w:o.name === 'Tomo' ? 4 : o.kind === 'hero' ? 3 : o.name === 'Jinbei' ? 2 : 1 }))).o;
+          if (l) { a.follow = l; a.followT = rnd(14, 26); a.greeted = false; a.wait = .2; } else a.wait = 1;
+        }
+        else if (r < .62) { if (this.goAnimal(a, near(a.home, a.range))) a.sniff = true; }
+        else if (r < .74) this.setPose(a, Math.random() < .5 ? 'sit' : 'tilt', rnd(2, 4));
+        else if (r < .86) { const h = people.filter(o => dist(a, o) < 90).sort((p, q) => dist(a, p) - dist(a, q))[0]; if (h) { a.face = h.x >= a.x ? 1 : -1; this.setPose(a, 'bow', 1.6); this.emote(a, '♪', 1.6); } else a.wait = 1; }
+        else this.setPose(a, 'lie', rnd(5, 9));
+      } else if (a.sp === 'deer') {
+        if (r < .4) this.setPose(a, 'graze', rnd(4, 8));
+        else if (r < .58) this.setPose(a, Math.random() < .5 ? 'stand' : 'look', rnd(2, 4));
+        else if (r < .9) this.goAnimal(a, near(a.home, a.range));
+        else this.setPose(a, 'lie', rnd(7, 12));
+      } else if (a.sp === 'fox') {
+        const friend = people.find(o => TRUSTED.has(o.name) && !o.moving && dist(a, o) < 130);
+        if (friend && a.cool <= 0 && r < .3) { a.cool = 28; if (this.goAnimal(a, this.by(friend, 14))) a.visit = friend; return; }
+        if (r < .3) this.setPose(a, 'sit', rnd(3, 6));
+        else if (r < .44) { this.setPose(a, 'sleep', rnd(7, 12)); this.emote(a, 'z', a.wait); }
+        else if (r < .52) this.setPose(a, 'yawn', 1.3);
+        else if (r < .66) this.setPose(a, 'pounce', 1.5);
+        else if (r < .78) { const h = people.filter(o => dist(a, o) < 150).sort((p, q) => dist(a, p) - dist(a, q))[0]; if (h) a.face = h.x >= a.x ? 1 : -1; this.setPose(a, 'alert', rnd(1.5, 3)); }
+        else this.goAnimal(a, near(a.home, a.range));
+      } else if (a.sp === 'chicken') {
+        if (r < .55) this.setPose(a, 'peck', rnd(1.5, 3.5));
+        else if (r < .7) this.setPose(a, 'stand', rnd(.6, 1.4));
+        else this.goAnimal(a, near(a.home, a.range, 6));
+      } else if (a.sp === 'sparrow') {
+        if (r < .4) this.setPose(a, 'peck', rnd(.5, 1.2));
+        else if (r < .6) this.setPose(a, 'look', rnd(.5, 1.4));
+        else if (r < .75) this.setPose(a, 'stand', rnd(.4, 1));
+        else { const p = near([a.x, a.y], 12, 5); if (p && this.goAnimal(a, p)) a.pose = 'hop'; else a.wait = .4; }
+      }
+    }
+    // O bando de pardais: cisca num ponto; se alguém chega perto (ou de tempos em tempos), levanta voo junto e pousa noutro.
+    updateFlock(dt) {
+      const birds = this.agents.filter(o => o.sp === 'sparrow'); if (!birds.length || birds.some(b => b.fly)) return;
+      const c = at(this.flock.perch), threat = this.agents.some(o => o.sp !== 'sparrow' && !SPECIES[o.sp]?.water && (o.moving || o.sp === 'cat') && Math.hypot(o.x - c[0], (o.y - c[1]) * 1.55) < 34);
+      if ((this.flock.relocate -= dt) > 0 && !threat) return;
+      const free = PERCHES.filter(n => n !== this.flock.perch && !this.agents.some(o => o.kind !== 'animal' && Math.hypot(o.x - at(n)[0], (o.y - at(n)[1]) * 1.55) < 46));
+      if (!free.length) { this.flock.relocate = 3; return; }
+      this.flock.perch = free[Math.floor(Math.random() * free.length)]; this.flock.relocate = rnd(18, 36);
+      const to = at(this.flock.perch);
+      birds.forEach(b => { const p = near(to, 16) || to, d = Math.hypot(p[0] - b.x, p[1] - b.y); b.path = []; b.fly = { x0:b.x, y0:b.y, x1:p[0], y1:p[1], t:-rnd(0, .4), dur:Math.max(.9, d / 150), lift:Math.min(95, 34 + d * .22) }; });
+    }
+    // Patos e carpas: nadam à toa no porto e se juntam perto de quem para no cais.
+    swim(a, S, dt) {
+      a.swimT = (a.swimT || 0) - dt;
+      if (!a.tgt || a.swimT <= 0 || Math.hypot(a.tgt[0] - a.x, a.tgt[1] - a.y) < 2.5) {
+        const fan = this.people().find(o => !o.moving && o.x > 880 && o.x < 1012 && o.y > 583 && o.y < 626);
+        a.tgt = fan && Math.random() < .75 ? waterPoint([Math.min(944, Math.max(872, fan.x - 20)), 650], 22) : waterPoint();
+        a.swimT = rnd(4, 9);
+        if (a.sp === 'duck') { const r = Math.random(); a.pose = r < .6 ? 'float' : r < .8 ? 'dabble' : r < .92 ? 'preen' : 'flap'; a.hold = a.pose === 'float' ? 0 : rnd(1.2, 3); if (a.pose === 'flap') a.hold = 1; a.animT = 0; }
+        if (fan && this.petCool <= 0 && Math.random() < .12) this.react(fan, 'water', '♪');
+      }
+      if (a.hold > 0) { a.hold -= dt; if (a.hold <= 0) a.pose = 'float'; return; }
+      const dx = a.tgt[0] - a.x, dy = a.tgt[1] - a.y, d = Math.hypot(dx, dy) || 1, v = S.speed * (a.sp === 'koi' ? .7 + .5 * Math.sin(a.animT * 1.3 + a.id) ** 2 : 1) * dt;
+      const nx = a.x + dx / d * v, ny = a.y + dy / d * v;
+      if (inWater(nx, ny)) { a.x = nx; a.y = ny; } else a.tgt = null;
+      if (Math.abs(dx) > .5) a.face = dx > 0 ? 1 : -1;
+      const want = Math.atan2(dy, dx); let dh = want - a.heading; while (dh > Math.PI) dh -= 6.283; while (dh < -Math.PI) dh += 6.283; a.heading += dh * Math.min(1, dt * 3);
+    }
+    // O jogador toca num bicho: cada um responde do seu jeito.
+    poke(a) {
+      const v = VOICE[a.sp] || ['…'];
+      this.agents.forEach(o => { o.speechFor = 0; o.manualSpeech = false; });
+      this.dialoguePair = null; this.dialogueLine = 0; this.dialogueAt = 6;
+      a.speech = v[Math.floor(Math.random() * v.length)]; a.speechFor = 2.4; a.speechAge = 0; a.manualSpeech = true;
+      if (a.sp === 'cat') { this.setPose(a, 'sit', 3); this.emote(a, '♥', 2); }
+      else if (a.sp === 'dog') { a.follow = null; this.setPose(a, 'jump', 1.2); this.emote(a, '♥', 2); }
+      else if (a.sp === 'deer') this.setPose(a, 'bow', 2.4);
+      else if (a.sp === 'fox') { this.emote(a, '!', 1); this.setPose(a, 'crouch', .5); a.cool = 0; }
+      else if (a.sp === 'chicken') { if (this.goAnimal(a, near([a.x, a.y], 40, 6), true)) a.pose = 'flap'; }
+      else if (a.sp === 'sparrow') this.flock.relocate = 0;
+      else if (a.sp === 'duck') { a.pose = 'flap'; a.hold = 1.2; a.animT = 0; }
+      else if (a.sp === 'koi') { a.tgt = null; a.swimT = 0; }
+      return true;
+    }
   }
   KT.TownLife = TownLife;
-  KT.TownMap = { NODES:N, SPOTS, FOLK, route, isWalk, snap, at };
+  KT.TownMap = { NODES:N, SPOTS, FOLK, SPECIES, ANIMALS, WATER, route, isWalk, snap, at };
 })();

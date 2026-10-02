@@ -25,7 +25,9 @@ NOT_LAMPS = [(283, 505, 315, 560), (170, 632, 205, 648)]
 MANUAL = {
     'forge': [785, 350],                                     # boca da fornalha
     'smoke': [[798, 222, 'grey', 1.0], [822, 240, 'grey', .8], [867, 266, 'grey', .7],   # chaminés da Forja
-              [673, 532, 'green', .9], [764, 546, 'violet', 1.0], [655, 524, 'steam', .6]],  # alambiques da Oficina
+              [673, 532, 'green', .9], [764, 546, 'violet', 1.0], [655, 524, 'steam', .6],   # alambiques da Oficina
+              [338, 449, 'steam', .5], [379, 453, 'steam', .4], [255, 449, 'steam', .4], [303, 453, 'steam', .3],   # panelas e chaleiras das barracas
+              [1052, 404, 'steam', .35], [677, 668, 'steam', .35], [139, 164, 'steam', .3]],   # incenso do santuário e chá da Oficina e da Guilda
     'falls': [[413, 438, 78, 132], [438, 468, 168, 198], [721, 747, 222, 268], [319, 328, 346, 386], [336, 348, 358, 398], [356, 364, 371, 400],
               [421, 448, 498, 578], [772, 805, 462, 500], [828, 843, 440, 470], [818, 848, 522, 590], [1164, 1190, 458, 500], [372, 402, 638, 690]],
     'moon': [552, 62, 58],                                   # cúpula do Templo da Invocação (centro e raio)

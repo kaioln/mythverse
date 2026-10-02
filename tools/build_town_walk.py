@@ -8,8 +8,10 @@ Entrada:
 Saída:
   assets/town-walk/<id>.webp              1 linha: 8 quadros de caminhada + 1 parado, células iguais
   assets/town-walk/folk.webp              10 linhas (uma por morador), mesmas 9 colunas
-  assets/town-walk/acts.webp              atividades e bichos (tools/town_frames.py): uma linha de 8 quadros por atividade
-  assets/town-walk/index.json             { heroes:{ id:{ w, h, cx, foot, body, stride } }, folk:{ … rows, strides }, acts:{ … rows:{ nome:{ row, fps, stride, idle } } } }
+  assets/town-walk/acts.webp              atividades (tools/town_frames.py): uma linha de 8 quadros por atividade
+  assets/town-walk/animals.webp           bichos (tools/town_frames.py animals): uma linha de 8 quadros por folha (andar e poses)
+  assets/town-walk/index.json             { heroes:{ id:{ w, h, cx, foot, body, stride } }, folk:{ … rows, strides }, acts:{ … rows:{ nome:{ row, fps, stride, idle } } },
+                                            animals:{ … rows:{ nome:{ row, stride } } } }
 
 Por que recortar pela forma: as folhas desenhadas não seguem uma grade exata. Medir quadro a quadro numa grade uniforme
 deixava entrar um pedaço do vizinho, e o centro do corpo pulava de um quadro para o outro (o personagem tremia).
@@ -59,15 +61,17 @@ def measure(piece, anchor='head'):
     return top, bottom, float(xs[part].mean())
 
 
-def normalize(frames, grounds, idle=None, anchor='head', body=BODY):
+def normalize(frames, grounds, idle=None, anchor='head', body=BODY, scale=None):
     """frames: lista de (imagem, y do topo do recorte na folha); grounds: chão de cada quadro na folha.
-    Devolve (lista de quadros em células iguais, meta). O último quadro é o parado."""
+    Devolve (lista de quadros em células iguais, meta). O último quadro é o parado.
+    scale: fator fixo (px da folha → px da saída) no lugar da altura mediana, para duas folhas do mesmo bicho
+    saírem no mesmo tamanho."""
     info = []
     for (im, oy), ground in zip(frames, grounds):
         top, bottom, cx = measure(im, anchor)
         info.append({'im': im, 'top': top, 'foot': ground - oy if ground is not None else bottom, 'cx': cx})
     heights = sorted(f['foot'] - f['top'] for f in info)
-    k = body / heights[len(heights) // 2]
+    k = scale or body / heights[len(heights) // 2]
     if idle is not None:
         top, bottom, cx = measure(idle)
         ki = BODY / (bottom - top)
@@ -248,6 +252,53 @@ def build_acts():
     return {'w': w, 'h': h, 'cx': round(float(cx), 1), 'foot': round(float(foot), 1), 'body': BODY, 'rows': meta_rows}
 
 
+# Bichos (tools/town_frames.py animals): nome → (folha de origem, altura do bicho andando em relação a um adulto,
+# passos por ciclo em alturas de adulto, folha "irmã" que dita a escala). As poses usam a escala da folha de andar do
+# mesmo bicho, igualando pelo "tamanho" do corpo (raiz da área pintada), para ele não crescer nem encolher ao sentar.
+ANIMALS = {
+    'cat': ('act-cat', .36, .62, None), 'cat_idle': ('animal-cat_idle', .36, 0, 'cat'),
+    'dog': ('animal-dog', .44, .8, None), 'dog_idle': ('animal-dog_idle', .44, 0, 'dog'),
+    'deer': ('animal-deer', .95, 1.3, None), 'deer_idle': ('animal-deer_idle', .95, 0, 'deer'),
+    'fox': ('animal-fox', .48, .85, None), 'fox_idle': ('animal-fox_idle', .48, 0, 'fox'),
+    'chicken': ('animal-chicken', .33, .34, None), 'sparrow': ('animal-sparrow', .19, 0, None),
+    'duck': ('animal-duck', .26, 0, None), 'koi': ('animal-koi', .2, 0, None),
+}
+
+
+def mass(frames):
+    """Tamanho do corpo que não depende da pose: mediana da raiz da área pintada dos quadros."""
+    return float(np.median([np.sqrt((np.array(im.getchannel('A')) > 96).sum()) for im, _ in frames]))
+
+
+def build_animals():
+    folk = os.path.join(ROOT, 'assets', 'original', 'folk')
+    rows, w, h, cx, foot, meta_rows, scales = [], 0, 0, 0, 0, {}, {}
+    for name, (src, size, stride, twin) in ANIMALS.items():
+        path = os.path.join(folk, f'{src}.webp')
+        if not os.path.exists(path) or (twin and twin not in scales):
+            continue
+        frames, grounds = sheet_frames(os.path.relpath(path, ROOT).replace(os.sep, '/'), 8, 2)
+        m = mass(frames)
+        if twin:
+            k = scales[twin][0] * scales[twin][1] / m
+        else:
+            hs = sorted((g - oy) - measure(im, 'box')[0] for (im, oy), g in zip(frames, grounds))
+            k = BODY * size / hs[len(hs) // 2]
+            scales[name] = (k, m)
+        cells, meta = normalize(frames, grounds, anchor='box', body=BODY * size, scale=k)
+        meta_rows[name] = {'row': len(rows), 'stride': stride}
+        rows.append((cells, meta))
+        w, h, cx, foot = max(w, meta['w']), max(h, meta['h']), max(cx, meta['cx']), max(foot, meta['foot'])
+    if not rows:
+        return None
+    sheet = Image.new('RGBA', (w * 8, h * len(rows)), (0, 0, 0, 0))
+    for r, (cells, meta) in enumerate(rows):
+        for i, c in enumerate(cells):
+            sheet.alpha_composite(c, (int(i * w + round(cx - meta['cx'])), int(r * h + round(foot - meta['foot']))))
+    sheet.save(os.path.join(OUT, 'animals.webp'), quality=90, method=6)
+    return {'w': w, 'h': h, 'cx': round(float(cx), 1), 'foot': round(float(foot), 1), 'body': BODY, 'rows': meta_rows}
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     only = [a for a in sys.argv[1:] if not a.startswith('-')]
@@ -269,9 +320,12 @@ def main():
     if not only or 'acts' in only:
         index['acts'] = build_acts()
         print('atividades ok', index['acts'] and list(index['acts']['rows']))
+    if not only or 'animals' in only:
+        index['animals'] = build_animals()
+        print('bichos ok', index['animals'] and list(index['animals']['rows']))
     # Folhas antigas (pose de corrida deformada) de quem ainda não tem ciclo desenhado saem: o jogo usa a pose parada.
     for f in os.listdir(OUT):
-        if f.endswith('.webp') and f not in ('folk.webp', 'acts.webp') and f[:-5] not in index['heroes']:
+        if f.endswith('.webp') and f not in ('folk.webp', 'acts.webp', 'animals.webp') and f[:-5] not in index['heroes']:
             os.remove(os.path.join(OUT, f))
     json.dump(index, open(index_path, 'w', encoding='utf-8'), separators=(',', ':'))
     print(len(index['heroes']), 'heróis com ciclo de caminhada')

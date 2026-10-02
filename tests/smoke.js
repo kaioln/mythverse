@@ -577,9 +577,10 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
   const plaza = TM.at('plaza'); ok(points.every(p => TM.route(plaza[0], plaza[1], ...p) !== null), 'toda a cidade é alcançável a partir da praça');
   const life = new KT.TownLife(); life.sync([{ uid:'a', sprite:'akira', name:'Akira' }, { uid:'b', sprite:'mei', name:'Mei' }]);
   for (let i = 0; i < 3000; i++) life.update(.05);
-  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && (a.fixed || TM.isWalk(a.x, a.y))), 'ninguém sai do piso depois de 2,5 minutos andando');
+  // Quem anda fica no chão; pato e carpa ficam na água e pardal em voo passa por cima (src/town.js, bichos).
+  ok(life.agents.every(a => Number.isFinite(a.x) && Number.isFinite(a.y) && (a.fixed || a.fly || TM.SPECIES[a.sp]?.water || TM.isWalk(a.x, a.y))), 'ninguém sai do piso depois de 2,5 minutos andando');
   // Quem anda pode cruzar o caminho de outro (não fica travado esperando); quem está parado não fica em cima de ninguém.
-  const still = life.agents.filter(a => !a.moving);
+  const still = life.agents.filter(a => !a.moving && a.kind !== 'animal');   // bicho senta colado em gente: não conta
   const gap = Math.min(...still.flatMap((a, i) => still.slice(i + 1).map(b => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55))));
   ok(gap >= 11.9, 'personagens parados mantêm espaço pessoal e não se sobrepõem');
 }

@@ -576,7 +576,9 @@
       const town = z.kind === 'village';
       const zoom = town ? 1 : 1.04 + Math.sin(this.worldTime * .08) * .012 + (moving ? .02 : 0);
       const dx = town ? 0 : Math.sin(this.worldTime * .05) * 10;
-      if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
+      // Pintura viva (src/scene-fx.js): na cidade a própria arte se move (água, copas ao vento, fumaça, nuvens). Sem ela, a pintura parada.
+      const live = town && img ? KT.SceneFx?.frame('village', img, this.worldTime, this.canvas.width, this.canvas.height, this.cloudColor()) : null;
+      if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(live || img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
       if (town) {
         if (!this.festivalHomes) { this.festivalHomes = this.assets.image?.('assets/scenes/festival-homes.png'); if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/festival-homes.png'; } }
         // A ilha das casas do festival é uma camada à parte: sobe e desce devagar, como quem flutua.
@@ -588,6 +590,8 @@
       if (z.kind === 'village') this.drawVillageLife();
       if (this.zoneFade < 1) { c.fillStyle = `rgba(8,6,20,${1 - easeOut(this.zoneFade)})`; c.fillRect(0, 0, W, H); }
     }
+    // Cor das nuvens que passam no céu, pela hora do jogo: claras de dia, rosadas no fim da tarde, azuladas à noite.
+    cloudColor() { const h = new Date(this.engine.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours(); return h >= 7 && h < 17 ? [.93, .94, 1] : (h >= 17 && h < 19) || (h >= 5 && h < 7) ? [1, .74, .66] : [.56, .6, .82]; }
     // Cidade viva. A arte é uma pintura parada; por cima dela o jogo acende o que a pintura mostra, nos lugares medidos
     // em src/town-lights.js: a chama de cada lanterna tremula, a fornalha solta labaredas e fagulhas, as chaminés fumegam,
     // a água das cachoeiras corre, o mar cintila, as estrelas piscam, lanternas sobem ao céu e o festival solta fogos.
@@ -627,13 +631,14 @@
       (L.sea || []).forEach(([x, y], i) => { const a = Math.pow(Math.max(0, Math.sin(t * (1 + (i % 5) * .27) + i * 2.3)), 6); if (a < .02) return; c.globalAlpha = a * .7; c.fillStyle = '#ffdca8'; c.beginPath(); c.ellipse(x, y, 2.6, .8, 0, 0, Math.PI * 2); c.fill(); });
       // Fumaça das chaminés (cinza na Forja, verde e violeta nos alambiques da Oficina).
       this.smoke ||= (L.smoke || []).map(([x, y, kind, power]) => ({ x, y, kind, power, acc:Math.random(), list:[] }));
-      const SMOKE = { grey:['188,186,198', 'source-over', .2], steam:['236,236,246', 'source-over', .16], green:['150,238,160', 'lighter', .24], violet:['205,140,255', 'lighter', .26] };
+      const SMOKE = { grey:['196,194,206', 'source-over', .34], steam:['240,240,248', 'source-over', .22], green:['150,238,160', 'lighter', .3], violet:['205,140,255', 'lighter', .32] };
+      const wind = KT.SceneFx?.wind(t % 3600) ?? .8;       // o mesmo vento das copas e das nuvens
       for (const e of this.smoke) {
-        e.acc += dt * 2.6 * e.power;
-        while (e.acc >= 1) { e.acc -= 1; e.list.push({ x:e.x + U.rand(-1.5, 1.5), y:e.y, vx:U.rand(1, 5), vy:-U.rand(8, 13), age:0, life:U.rand(3.2, 5.2), r:U.rand(2.5, 4), ph:U.rand(0, 6) }); }
+        e.acc += dt * 3.4 * e.power;
+        while (e.acc >= 1) { e.acc -= 1; e.list.push({ x:e.x + U.rand(-1.5, 1.5), y:e.y, vx:U.rand(2, 6), vy:-U.rand(9, 15), age:0, life:U.rand(4.2, 7), r:U.rand(3, 5), ph:U.rand(0, 6) }); }
         const [col, mode, alpha] = SMOKE[e.kind] || SMOKE.grey, img = puff(col); c.globalCompositeOperation = mode;
-        e.list = e.list.filter(p => { p.age += dt; if (p.age >= p.life) return false; p.x += (p.vx + Math.sin(p.age * 1.4 + p.ph) * 3) * dt; p.y += p.vy * dt; p.vy *= 1 - dt * .12;
-          blob(img, p.x, p.y, p.r + p.age * 4.2, alpha * e.power * Math.min(1, p.age * 3) * (1 - p.age / p.life)); return true; });
+        e.list = e.list.filter(p => { p.age += dt; if (p.age >= p.life) return false; p.x += (p.vx * (.4 + wind * 1.6) + Math.sin(p.age * 1.4 + p.ph) * 4) * dt; p.y += p.vy * dt; p.vy *= 1 - dt * .1;
+          blob(img, p.x, p.y, p.r + p.age * 6.5, alpha * Math.min(1, e.power + .2) * Math.min(1, p.age * 2.5) * (1 - p.age / p.life) ** 1.3); return true; });
       }
       c.globalCompositeOperation = 'lighter';
       // Fornalha da Forja: clarão, labaredas e fagulhas.
@@ -777,6 +782,7 @@
           if (!index?.folk) { A.failed = true; return; }
           const img = new Image(); img.onload = () => { A.index = index; A.folk = img; }; img.onerror = () => { A.failed = true; }; img.src = `assets/town-walk/folk.webp${v}`;
           if (index.acts) { const acts = new Image(); acts.onload = () => { A.acts = acts; }; acts.src = `assets/town-walk/acts.webp${v}`; }
+          if (index.animals) { const an = new Image(); an.onload = () => { A.animals = an; }; an.src = `assets/town-walk/animals.webp${v}`; }
         }).catch(() => { A.failed = true; });
       }
       return !!this.townArt.folk;
@@ -838,6 +844,7 @@
       c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
       const drawn = this.town.drawList();
       for (const { a, h } of drawn) {
+        if (a.kind === 'animal') { this.drawTownAnimal(a, h); continue; }
         { const sh = a.def?.small ? .14 : a.def?.act === 'taiko' ? .46 : .3; c.save(); c.fillStyle = 'rgba(12,8,4,.38)'; c.beginPath(); c.ellipse(a.x, a.y + 1, h * sh, h * sh * .3, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
         if (a.kind === 'hero') {
           const sheet = this.townSheet(a.sprite), an = !sheet && this.assets.anim?.(a.sprite);
@@ -856,9 +863,41 @@
       // Uma fala por vez, ancorada no interlocutor e sem cobrir personagens ou serviços.
       this.townBubbleBoxes = [];
       for (const { a, h } of drawn) {
+        if (a.emote) this.townEmote(a, h);
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 4, a.name);
-        else if (a.speechFor > 0 && a.speech && !this.townBubble(a, h) && !a.manualSpeech) { a.speech = ''; a.speechFor = 0; }
+        else if (a.speechFor > 0 && a.speech && !this.townBubble(a, a.kind === 'animal' ? h * Math.max(.5, (KT.TownMap.SPECIES[a.sp]?.size || .4) * 1.5) : h) && !a.manualSpeech) { a.speech = ''; a.speechFor = 0; }
       }
+    }
+    // Bicho da cidade (src/town.js): anda pelo chão percorrido, faz a pose do momento, voa (pardal) ou nada (pato, carpa).
+    drawTownAnimal(a, h) {
+      const c = this.ctx, A = this.townArt, M = A.index?.animals, img = A.animals; if (!img || !M) return;
+      const S = KT.TownMap.SPECIES[a.sp]; let name = S.row, col = 0;
+      if (a.sp === 'koi') {      // vista de cima, debaixo d'água: gira para onde nada, meio transparente
+        const R = M.rows.koi, k = h / M.body; col = a.variant * 4 + Math.floor(a.animT * 5 + a.id) % 4;
+        c.save(); c.globalAlpha = .72; c.translate(a.x, a.y); c.rotate(a.heading || 0);
+        c.drawImage(img, col * M.w, R.row * M.h, M.w, M.h, -M.cx * k, -(M.foot - M.body * S.size * .5) * k, M.w * k, M.h * k); c.restore();
+        this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y + h * .2, h:h * .5 });
+        return;
+      }
+      const pose = a.pose && S.poses?.[a.pose];
+      if (a.moving && a.pose !== 'flap' && a.pose !== 'hop') { const R = M.rows[S.row], w = S.walk || [0, 7], n = w[1] - w[0] + 1; col = w[0] + (((Math.floor((a.walkD || 0) / (h * (R.stride || .5) / n)) % n) + n) % n); }
+      else if (pose) { name = S.idle || S.row; col = pose[0] + Math.floor(a.animT * pose[2]) % (pose[1] - pose[0] + 1); }
+      const R = M.rows[name], size = h * S.size;
+      c.save();
+      if (S.water) { c.strokeStyle = 'rgba(210,235,255,.35)'; c.lineWidth = 1; c.beginPath(); c.ellipse(a.x, a.y + 1, size * .75 + Math.sin(a.animT * 2 + a.id) * 1.5, size * .22, 0, 0, Math.PI * 2); c.stroke(); }
+      else { c.fillStyle = `rgba(12,8,4,${a.lift ? .18 : .34})`; c.beginPath(); c.ellipse(a.x, a.y + 1, size * (a.lift ? .34 : .5), size * .15, 0, 0, Math.PI * 2); c.fill(); }
+      c.restore();
+      const y0 = a.y; a.y -= (a.lift || 0) + (S.water ? Math.sin(a.animT * 2 + a.id) * .6 : 0);
+      this.drawTownActor(img, M, R.row, a, h, col); a.y = y0;
+      this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h:h * Math.max(.5, S.size * 1.5) });
+    }
+    // Sinal sobre a cabeça de um bicho ou de um herói (♥ ! ♪ z).
+    townEmote(a, h) {
+      const c = this.ctx, top = a.kind === 'animal' ? h * (KT.TownMap.SPECIES[a.sp]?.size || .4) + (a.lift || 0) : h, y = a.y - top - 9 - Math.sin((a.emoteFor || 0) * 5) * 1.5, color = { '♥':'#ff7a9c', '!':'#ffd76a', '♪':'#9ce9cc', z:'#cfd6ff' }[a.emote] || '#fff';
+      c.save(); c.globalAlpha = Math.min(1, (a.emoteFor || 0) / .3);
+      c.fillStyle = 'rgba(14,12,20,.82)'; c.beginPath(); c.arc(a.x, y, 6.5, 0, Math.PI * 2); c.fill();
+      c.font = `800 9.5px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = color; c.fillText(a.emote, a.x, y + .5);
+      c.restore();
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     townFolkAt(x, y) { if (this.engine.zone.kind !== 'village') return null; return (this.townHits || []).filter(o => o.folk && Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]?.actor; }
