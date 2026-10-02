@@ -74,7 +74,7 @@
         const hero = index[u.sprite];
         if (hero) { ['attack','skill','ult'].forEach(event => add(hero[event])); return; }
         const c = M.creatures?.[u.sprite];
-        if (c) { ['v','h','d','r'].forEach(k => add(c[k])); Object.values(M.families?.[c.f] || {}).forEach(add); }
+        if (c) { add(c.a); add(c.d); add(M.families?.[c.f]?.cast); }
       });
       Object.values(this.eventIndex).forEach(add);
       for (const key of this.buffers.keys()) if (key.startsWith('assets/audio/combat/') && !urls.has(key)) this.buffers.delete(key);
@@ -87,7 +87,7 @@
       const generation = this.musicGeneration, buffer = await this.buffer(`assets/audio/combat/${file}`);
       if (!buffer || generation !== this.musicGeneration || !this.enabled) return;
       const priority = o.priority || 0;
-      if (this.fxSources.size >= 10) {
+      if (this.fxSources.size >= 6) {
         const victim = [...this.fxSources].find(src => (src.priority || 0) < priority);
         if (!victim) return;
         victim.stop(); this.fxSources.delete(victim);
@@ -118,15 +118,12 @@
       const who = unit?.uid || unit?.sprite || 'field';
       if (hero) {
         const event = fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill', pan = unit.side === 'enemy' ? .3 : ([-.35,-.12,.12,.35][unit?.slot] || 0);
-        return this.play(hero[event], { gain:event === 'attack' ? .3 : event === 'skill' ? .4 : .5, pan, priority:event === 'ult' ? 2 : event === 'skill' ? 1 : 0, key:`combat:${who}:${event}`, every:event === 'attack' ? 130 : 200, duck:event === 'ult' ? 1.1 : 0 });
+        return this.play(hero[event], { gain:event === 'attack' ? .26 : event === 'skill' ? .34 : .44, pan, priority:event === 'ult' ? 2 : event === 'skill' ? 1 : 0, key:`combat:${who}:${event}`, every:event === 'attack' ? 160 : 300, duck:event === 'ult' ? 1.1 : 0 });
       }
+      // Criaturas não têm voz: só o golpe (o de cada uma) e a conjuração da família.
       const c = M.creatures?.[unit?.sprite], fam = c && M.families?.[c.f], pan = unit?.side === 'enemy' ? .3 : 0;
-      if (fx.type === 'attack' || fx.type === 'enemyAttack') {
-        const main = this.play(fam?.attack || this.eventIndex.enemyAttack, { gain:.28, pan, key:`combat:${who}:attack`, every:130 });
-        if (c?.v && Math.random() < .3) this.play(c.v, { gain:.3, pan, vary:.05, key:`voice:${who}`, every:2600 });
-        return main;
-      }
-      if (fx.type === 'cast') { const main = this.play(fam?.cast || this.eventIndex.enemyCast, { gain:.34, pan, priority:1, key:`combat:${who}:cast`, every:200 }); if (c?.v && Math.random() < .5) this.play(c.v, { gain:.3, pan, key:`voice:${who}`, every:2600 }); return main; }
+      if (fx.type === 'attack' || fx.type === 'enemyAttack') return this.play(c?.a || fam?.attack || this.eventIndex.enemyAttack, { gain:.24, pan, key:'enemy:attack', every:160 });
+      if (fx.type === 'cast') return this.play(fam?.cast || this.eventIndex.enemyCast, { gain:.28, pan, priority:1, key:'enemy:cast', every:400 });
       return this.event(fx.type, { key:`combat:${fx.type === 'bossWindup' ? 'field' : who}:${fx.type}`, every:fx.type === 'bossWindup' ? 1200 : 200, priority:['bossBurst','bossWindup'].includes(fx.type) ? 2 : fx.type === 'heal' ? 1 : 0 });
     }
     throttle(key, ms) { const now = performance.now(); if (now - (this.last[key] || 0) < ms) return false; this.last[key] = now; return true; }
@@ -152,21 +149,17 @@
       switch (fx.type) {
         case 'attack': case 'enemyAttack': case 'cast': this.combat(fx, unit); break; // a chamada falada da ultimate vai junto com o golpe
         case 'damage':
-          if (fx.kind === 'dot') break;
-          if (fx.side === 'hero') {
-            if (this.throttle('hurt', 130)) this.event(unit?.cls === 'Vanguarda' ? 'damagePlate' : 'damage', { pan:[-.35,-.12,.12,.35][unit?.slot] || 0 });
-          } else {
-            if (fx.crit && this.throttle('crit', 150)) this.event('crit', { pan:.3 });
-            if (c?.h && (fx.crit || fx.kind === 'ult' || Math.random() < .14)) this.play(c.h, { gain:.26, pan:.3, vary:.05, key:`voice:${who}:hurt`, every:c.r ? 3200 : 1800 });
-          }
+          // Um golpe já soa na arma de quem bate: aqui só o impacto em quem apanha (herói) e o estalo do crítico.
+          if (fx.kind === 'dot' || fx.kind === 'thorns') break;
+          if (fx.side === 'hero') { if (this.throttle('hurt', 260)) this.event(unit?.cls === 'Vanguarda' ? 'damagePlate' : 'damage', { pan:[-.35,-.12,.12,.35][unit?.slot] || 0 }); }
+          else if (fx.crit && this.throttle('crit', 450)) this.event('crit', { pan:.3 });
           break;
-        case 'bossWindup':
-          this.combat(fx, unit);
-          if (c?.r || c?.v) this.play(c.r || c.v, { gain:.46, rate:c.r ? 1 : .9, pan:.3, priority:2, key:`roar:${who}`, every:2500, duck:1 });
-          break;
+        case 'bossWindup': this.combat(fx, unit); break;
         case 'burst': if (unit?.side !== 'hero' && !unit?.template?.base) this.combat(fx, unit); break;
-        case 'death': this.play(c?.d || this.eventIndex.death, { gain:fx.boss ? .5 : .28, pan:.3, priority:fx.boss ? 2 : 0, key:`death:${who}`, every:300, duck:fx.boss ? 1.4 : 0 }); break;
-        case 'heal': case 'levelUp': case 'reward': this.combat(fx, unit); break;
+        case 'death': this.play(c?.d || this.eventIndex.death, { gain:fx.boss ? .42 : .24, pan:.3, priority:fx.boss ? 2 : 0, key:'death', every:320, duck:fx.boss ? 1.4 : 0 }); break;
+        case 'heal': if (this.throttle('heal', 1100)) this.event('heal', { priority:1 }); break;
+        case 'levelUp': this.event('levelUp', { priority:1, key:'levelUp', every:1500 }); break;
+        case 'reward': this.event('reward', { key:'reward', every:1800 }); break;
         case 'bossBurst': this.event('bossBurst', { priority:2, key:'bossBurst', every:400, duck:1 }); break;
         case 'parry': this.event('parry', { priority:2, duck:1.2 }); break;
         case 'break': this.event('break', { priority:2, pan:.3, duck:.9 }); break;
@@ -174,9 +167,7 @@
         case 'chain': this.event('chain', { priority:1, rate:1 + Math.min(4, (fx.n || 2) - 2) * .06, vary:0 }); break;
         case 'strike': this.event('strike', { priority:2, key:'strike', every:500 }); break;
         case 'guard': case 'defend': case 'dodge': case 'shield': case 'revive': case 'heroDown': this.event(fx.type, { priority:1, key:`ev:${fx.type}:${who}`, every:160 }); break;
-        case 'guardHit': this.event('guardHit', { key:'guardHit', every:120 }); break;
-        case 'turn': this.event('turn', { key:'turn', every:300 }); break;
-        case 'spawn': this.event('spawn', { key:'spawn', every:600, pan:.3 }); break;
+        case 'guardHit': this.event('guardHit', { key:'guardHit', every:260 }); break;
         case 'potion': case 'elixir': this.potion(fx.type); break;
       }
     }
@@ -185,10 +176,8 @@
     defeat() { this.event('defeat', { priority:2, key:'defeat', every:1500, duck:1.5 }); }
     warn() { this.combat({type:'bossWindup'}); }
     potion(kind) { this.event(kind === 'elixir' ? 'elixir' : 'potion', { priority:1, key:'potion', every:300 }); }
-    // Passos da equipe indo para a próxima onda.
-    step() { if (this.throttle('step', 285)) this.event(`step${Math.floor(Math.random() * 4)}`, { vary:.06 }); }
     // Interface: toque, confirmação, recusa, painel abrindo e fechando. Toca também na cidade.
-    ui(name) { this.play(this.eventIndex[name], { gain:EVENT_GAIN[name] || .4, ui:true, vary:.02, key:`ui:${name}`, every:90 }); }
+    ui(name) { this.play(this.eventIndex[name], { gain:EVENT_GAIN[name] || .3, ui:true, vary:.02, key:'ui', every:140 }); }
     summon() { this.play(this.eventIndex.summon, { gain:.45, ui:true, vary:0, priority:2, key:'summon', every:800 }); }
     // Amostra para acertar os volumes nas Configurações: o golpe e a habilidade de um herói e um aparo.
     async test(heroId) {
@@ -198,9 +187,9 @@
   }
   // Volume de cada evento na mesa. Os arquivos já saem nivelados por tipo (tools/sfx_pack.py): interface e passos bem
   // baixos, golpes no meio, aparo, quebra e explosões de chefe no alto. Aqui fica só o lugar de cada um na mistura.
-  const EVENT_GAIN = { enemyAttack:.28, enemyCast:.34, damage:.3, damagePlate:.3, crit:.36, heal:.4, death:.28, bossWindup:.4, bossBurst:.46, burst:.34, reward:.36, loot:.4, levelUp:.42, victory:.46, defeat:.42,
-    guard:.4, guardHit:.36, parry:.48, dodge:.36, break:.44, defend:.36, turn:.4, strike:.36, shield:.4, heroDown:.4, revive:.42, spawn:.36, potion:.4, elixir:.4, chain:.3, finale:.5,
-    step0:.4, step1:.4, step2:.4, step3:.4, uiClick:.42, uiConfirm:.42, uiDeny:.42, uiOpen:.42, uiClose:.42, summon:.45 };
+  const EVENT_GAIN = { enemyAttack:.24, enemyCast:.28, damage:.26, damagePlate:.26, crit:.28, heal:.3, death:.24, bossWindup:.34, bossBurst:.4, burst:.28, reward:.26, loot:.32, levelUp:.36, victory:.4, defeat:.36,
+    guard:.34, guardHit:.3, parry:.42, dodge:.3, break:.38, defend:.3, strike:.3, shield:.32, heroDown:.34, revive:.36, potion:.32, elixir:.32, chain:.26, finale:.44,
+    uiClick:.3, uiConfirm:.32, uiDeny:.32, uiOpen:.3, uiClose:.3, summon:.4 };
 
   // Caixa de diálogo simples (também usada antes de a interface existir).
   function askBox(title, text, buttons) {
@@ -287,7 +276,8 @@
       });
       ui.session = session; ui.ask = askBox;
       // Interface com som: todo botão responde ao toque; os painéis abrem e fecham como papel deslizando.
-      document.addEventListener('click', e => { if (e.target.closest?.('button, .action, [data-open], [role="tab"]')) sound.ui('uiClick'); }, true);
+      // Só os botões de ação fazem clique (abas, filtros e ícones ficam em silêncio: som demais cansa).
+      document.addEventListener('click', e => { if (e.target.closest?.('.action, .lobby-go, .tc-btn, .signpost, .nav')) sound.ui('uiClick'); }, true);
       { const open0 = ui.openPanel?.bind(ui), close0 = ui.closeModal?.bind(ui);
         if (open0) ui.openPanel = (...a) => { if (ui.el.modal.hidden) sound.ui('uiOpen'); return open0(...a); };
         if (close0) ui.closeModal = (...a) => { if (!ui.el.modal.hidden) sound.ui('uiClose'); return close0(...a); }; }
@@ -295,7 +285,7 @@
       if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const q = new URLSearchParams(location.search), f = q.get('devfight'); if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
-        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); sound.fx({ type:'spawn' }); }, onPhase:p => ui.onPhase(p),
+        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); }, onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.loot(); },
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
@@ -381,7 +371,6 @@
         if (renderer.hitstop <= 0 && !(renderer.freeze > 0)) engine.update(dt);
         renderer.update(dt); renderer.render();
         uiClock += dt; slowClock += dt; saveClock += dt;
-        if (engine.active && engine.phase === 'between') sound.step();
         if (uiClock > .08) { uiClock = 0; ui.renderParty(); ui.renderBoss(); }
         if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); ui.renderChoiceTimer(); }
         if (saveClock > 5) { saveClock = 0; engine.save(); }

@@ -9,8 +9,13 @@ referência, o próprio morador (a fileira dele na folha antiga) e o GUIA DE MOV
 ciclo que os heróis seguem. Assim todo mundo na cidade anda com a mesma mecânica de pernas e braços.
 Saída: assets/original/folk/walk-<n>.webp. "lanterngirl" também anda pelo guia.
 
+Bichos da cidade (ANIMALS): cachorro, cervo, raposa, galinha, pardal, pato e carpa, mais as poses de descanso do gato.
+Cada bicho de quatro patas tem duas folhas: o ciclo de andar e as poses (sentar, dormir, latir, reverenciar…). A folha
+de poses recebe a de andar do próprio bicho como referência, para o desenho ser o mesmo.
+Saída: assets/original/folk/animal-<nome>.webp.
+
 Uso: python tools/town_frames.py [<nome> ...] [--force] [--model M] [--quality low|medium|high]
-     nomes: as atividades de ACTS, walk0 … walk9, ou "walk" para os dez moradores
+     nomes: as atividades de ACTS, walk0 … walk9, "walk" para os dez moradores, os bichos de ANIMALS ou "animals"
 """
 import base64
 import io
@@ -48,6 +53,39 @@ ACTS = {
     'lanterngirl': "A girl in a light blue festival yukata carrying a glowing paper lantern on a short pole, WALKING to the right at a calm pace, pure side view. The eight frames are one complete smooth walk cycle loop: (1) right foot forward heel strike; (2) weight sinking on the right foot; (3) left leg passing, legs together; (4) pushing off; (5) left foot forward heel strike; (6) weight sinking on the left foot; (7) right leg passing, legs together; (8) pushing off. The lantern is held in front in the same hand in every frame.",
 }
 
+
+# Bichos: nome → (descrição e quadros, folha do próprio bicho que serve de referência ou None).
+ANIMAL_STYLE = (
+    "The FIRST attached image shows the townsfolk of this game: match that art style exactly (storybook chibi drawings of a "
+    "feudal Japanese fantasy town, thick dark ink outline, flat muted colors with light cel shading and paper grain, small "
+    "simple eyes). Draw an ANIMAL of that same world in that same style: no human, nothing the description does not mention. "
+    "Create exactly one landscape image: a sprite sheet with eight frames in 2 rows of 4, read left to right, top to bottom, "
+    "the SAME animal with identical markings, colors and scale in every frame, whole animal visible in every frame, drawn "
+    "large and clear, with wide empty space between frames so they never touch. Transparent background, no text, no labels, "
+    "no numbers, no frame, no scenery, no ground, no grass, no water, no ground shadow, no motion lines."
+)
+SAME = " The SECOND attached image is this very animal walking: keep exactly its design, markings, colors and proportions."
+GAIT = ("pure side view. The eight frames are one complete smooth four-legged {gait} cycle loop, each frame with the legs in the "
+        "next phase of the stride; the body, head and tail keep the same size and the same height in every frame, paws on "
+        "the row's ground line.")
+SIDE = "Pure side view facing RIGHT in every frame, paws on the row's ground line. "
+CAT = "a small calico cat (white, orange and black patches) with a red collar and a tiny bell"
+DOG = "a small Shiba Inu dog with orange-tan fur, cream chest, cheeks and belly, pointed ears, a tightly curled tail and a blue cloth bandana around its neck"
+DEER = "a young sika deer with a light brown coat, white spots on its back, white rump and belly, slender legs, big dark eyes and two small antlers"
+FOX = "a small white fox spirit (kitsune) with snow-white fur, red markings around the eyes and on the forehead, a red tip on its big fluffy tail and a small red shrine bib tied around its neck"
+ANIMALS = {
+    'cat_idle': (f"The animal is {CAT}, NOT walking. {SIDE}Eight different poses: (1) sitting upright, tail curled around its paws; (2) sitting upright, tail tip flicking upward; (3) sitting and licking its raised front paw; (4) sitting and rubbing its cheek with the paw; (5) curled up asleep like a round loaf, eyes closed; (6) the same curled-up sleeping pose, slightly flatter; (7) stretching: front legs extended forward and low, rear end up, yawning; (8) frightened: back arched high, fur puffed up, tail straight up.", 'act-cat'),
+    'dog': (f"The animal is {DOG}, TROTTING to the right, mouth slightly open, happy, " + GAIT.format(gait='trot'), None),
+    'dog_idle': (f"The animal is {DOG}, NOT walking. {SIDE}Eight different poses: (1) sitting upright, mouth open, tongue out, panting happily; (2) sitting upright with the head tilted to one side; (3) standing with the front legs braced, barking, mouth wide open; (4) barking with the head thrown higher; (5) play bow: chest and front legs low on the ground, rear end up, tail up; (6) standing up on its hind legs with both front paws in the air, excited; (7) lying flat on its belly with the head resting on its front paws; (8) standing with the nose down, sniffing the ground.", 'animal-dog'),
+    'deer': (f"The animal is {DEER}, WALKING calmly to the right, " + GAIT.format(gait='walk'), None),
+    'deer_idle': (f"The animal is {DEER}, NOT walking. {SIDE}Eight different poses: (1) standing still, head up, ears forward; (2) standing with the head turned back over its shoulder; (3) bowing politely: front legs straight, neck and head lowered halfway down; (4) bowing deeply: the head lowered almost to the ground; (5) grazing with the muzzle on the ground; (6) head half raised, chewing; (7) lying down with the legs folded under the body, head up; (8) startled: head high, ears straight up, one front leg lifted.", 'animal-deer'),
+    'fox': (f"The animal is {FOX}, TROTTING lightly to the right, " + GAIT.format(gait='trot'), None),
+    'fox_idle': (f"The animal is {FOX}, NOT walking. {SIDE}Eight different poses: (1) sitting upright with the fluffy tail wrapped around its paws; (2) sitting upright with the tail tip raised; (3) standing alert, ears straight up, one front paw lifted, looking ahead; (4) crouching low to the ground, ears back, ready to run away; (5) pouncing: leaping in a high arc with all four paws off the ground and the nose pointing down; (6) landing on its front paws, nose to the ground, rear end and tail up; (7) curled up asleep with the tail over its nose; (8) sitting and yawning with the mouth wide open.", 'animal-fox'),
+    'chicken': (f"The animal is a plump white hen with a red comb and wattle, a yellow beak and yellow legs. {SIDE}Eight frames: (1) to (4) four frames of one walk cycle to the right, the head bobbing forward and back, the legs alternating; (5) pecking: head down at the ground; (6) pecking: head halfway up; (7) startled: jumping with both wings spread wide, feet off the ground; (8) running with the wings half open and the neck stretched forward.", None),
+    'sparrow': ("The animal is a tiny round brown sparrow with a chestnut cap, a black bib, white cheeks and streaked brown wings. Pure side view facing RIGHT in every frame. Eight frames: (1) standing on the ground; (2) hopping, both feet off the ground, wings closed; (3) pecking the ground, tail up; (4) standing and looking up with the head tilted; (5) taking off: wings stretched straight up above the body; (6) flying, wings spread out horizontally; (7) flying, wings fully down below the body; (8) flying, wings half raised. In the four flying frames the legs are tucked in.", None),
+    'duck': ("The animal is a male mandarin duck: orange cheek whiskers, a green and purple crest, a purple chest, cream flanks and two orange sail feathers on its back, FLOATING on water. Draw only the part of the duck ABOVE the waterline: the body ends in a flat horizontal bottom edge at the waterline, with no legs and no feet. Pure side view facing RIGHT in every frame. Eight frames: (1) floating, head upright; (2) floating, head slightly forward; (3) floating, tail wiggling upward; (4) floating with the head turned back, preening its wing; (5) dabbling: head and neck hidden below the waterline, back sloping, tail tilted up; (6) dabbling: only the rear half of the body visible, tail pointing straight up; (7) rising up with both wings spread wide, flapping; (8) wings raised above the back, shaking off water.", None),
+    'koi': ("The animals are koi carp seen from directly ABOVE (top-down view, as if looking down into a pond), each fish drawn horizontally with the head to the RIGHT, with flowing fins and tail. Eight frames: (1) to (4) one smooth swim cycle of a WHITE koi with orange-red patches, the body bending in a gentle S-curve and the tail fin swinging up, center, down, center; (5) to (8) the same four-frame swim cycle of a second koi that is GOLDEN yellow with a few white scales.", None),
+}
 
 # Os dez moradores de folk-walk.png, de cima para baixo: o que cada um veste e carrega.
 FOLK_WALK = [
@@ -176,10 +214,54 @@ def generate(name, model, quality, force=False):
     return False
 
 
+def generate_animal(name, model, quality, force=False):
+    target = os.path.join(FOLK, f'animal-{name}.webp')
+    if os.path.exists(target) and not force:
+        print(f'{name:12s} já existe', flush=True)
+        return True
+    key = api_key()
+    if not key:
+        print('Sem OPENAI_API_KEY.', flush=True)
+        return False
+    text, own = ANIMALS[name]
+    images = [('image[]', ('folk.png', open(os.path.join(FOLK, 'folk1.png'), 'rb').read(), 'image/png'))]
+    if own:
+        ref = os.path.join(FOLK, f'{own}.webp')
+        if not os.path.exists(ref):
+            print(f'{name:12s} falta a folha {own} (gere primeiro)', flush=True)
+            return False
+        buf = io.BytesIO(); Image.open(ref).convert('RGBA').save(buf, 'PNG')
+        images.append(('image[]', ('animal.png', buf.getvalue(), 'image/png')))
+    prompt = f'{ANIMAL_STYLE}{SAME if own else ""}\n{text}'
+    for attempt in range(6):
+        body, ctype = multipart({'model': model, 'prompt': prompt, 'size': '1536x1024', 'quality': quality,
+                                 'background': 'transparent', 'output_format': 'png', 'n': '1'}, images)
+        req = urllib.request.Request('https://api.openai.com/v1/images/edits', data=body, headers={'Authorization': f'Bearer {key}', 'Content-Type': ctype})
+        try:
+            with urllib.request.urlopen(req, timeout=900) as res:
+                data = json.loads(res.read())
+        except urllib.error.HTTPError as e:
+            print(f'{name:12s} API {e.code}: {e.read().decode("utf-8", "replace")[:200]}', flush=True)
+            if e.code in (429, 500, 502, 503) and attempt < 5:
+                time.sleep(15 + attempt * 15); continue
+            return False
+        usd = cost_of(model, data.get('usage') or {})
+        total = log_cost({'hero': f'town:{name}', 'kind': 'animal', 'model': model, 'quality': quality, 'usd': round(usd, 4), 'usage': data.get('usage'), 'at': time.strftime('%Y-%m-%d %H:%M:%S')})
+        png = target[:-5] + '.png'
+        open(png, 'wb').write(base64.b64decode(data['data'][0]['b64_json']))
+        if transparent(png):
+            Image.open(png).save(target, quality=94, method=6); os.remove(png)
+            print(f'{name:12s} ok  US$ {usd:.3f} (total {total:.2f})', flush=True)
+            return True
+        os.remove(png)
+        print(f'{name:12s} fundo opaco, tentando de novo', flush=True)
+    return False
+
+
 def main():
     valued = ('--model', '--quality')
     names = [a for i, a in enumerate(sys.argv[1:], 1) if not a.startswith('--') and sys.argv[i - 1] not in valued] or list(ACTS)
-    names = [w for n in names for w in ([f'walk{r}' for r in range(10)] + ['lanterngirl:walk'] if n == 'walk' else [n])]
+    names = [w for n in names for w in ([f'walk{r}' for r in range(10)] + ['lanterngirl:walk'] if n == 'walk' else list(ANIMALS) if n == 'animals' else [n])]
     opt = lambda n, d: (sys.argv[sys.argv.index(n) + 1] if n in sys.argv else d)  # noqa: E731
     model, quality, force = opt('--model', 'gpt-image-2.5-sunburst'), opt('--quality', 'medium'), '--force' in sys.argv
     for n in names:
@@ -187,6 +269,8 @@ def main():
             generate_walk('lanterngirl', model, quality, force)
         elif n.startswith('walk') and n[4:].isdigit() and int(n[4:]) < 10:
             generate_walk(n, model, quality, force)
+        elif n in ANIMALS:
+            generate_animal(n, model, quality, force)
         elif n in ACTS:
             generate(n, model, quality, force)
 

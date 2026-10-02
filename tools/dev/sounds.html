@@ -57,14 +57,14 @@
   const btn = (label, file) => file ? `<span class="pair"><button type="button" data-file="${esc(file)}">${esc(label)}</button><button type="button" class="flag ${flags.has(file) ? 'on' : ''}" data-flag="${esc(file)}" title="Marcar como ruim">⚑</button></span>` : '';
   const card = (title, sub, buttons, tags) => `<div class="card" data-tags="${esc((title + ' ' + sub + ' ' + tags).toLowerCase())}"><b>${esc(title)} <small>${esc(sub)}</small></b><div class="row">${buttons.join('')}</div></div>`;
   const section = (title, cards) => `<h2>${esc(title)} <small style="color:var(--dim)">(${cards.length})</small></h2><div class="grid">${cards.join('')}</div>`;
-  const EV = { guard:'Guarda', guardHit:'Golpe na guarda', parry:'Aparo', dodge:'Esquiva', break:'Quebra', defend:'Defender', turn:'Sua vez', strike:'Bote do inimigo', bossWindup:'Chefe preparando', bossBurst:'Explosão do chefe', burst:'Especial de monstro',
+  const EV = { guard:'Guarda', guardHit:'Golpe na guarda', parry:'Aparo', dodge:'Esquiva', break:'Quebra', defend:'Defender', strike:'Bote do inimigo', bossWindup:'Chefe preparando', bossBurst:'Explosão do chefe', burst:'Especial de monstro',
     damage:'Dano no herói', damagePlate:'Dano em armadura', crit:'Crítico', heal:'Cura', shield:'Escudo', heroDown:'Herói caído', revive:'Reviver', levelUp:'Subiu de nível', reward:'Recompensa', loot:'Saque', victory:'Vitória', defeat:'Derrota',
-    spawn:'Onda chegando', death:'Monstro morre (genérico)', potion:'Poção', elixir:'Elixir', chain:'Corrente', finale:'Golpe final', step0:'Passo 1', step1:'Passo 2', step2:'Passo 3', step3:'Passo 4',
+    death:'Monstro morre (genérico)', potion:'Poção', elixir:'Elixir', chain:'Corrente', finale:'Golpe final', 
     uiClick:'Toque', uiConfirm:'Confirmar', uiDeny:'Recusar', uiOpen:'Abrir painel', uiClose:'Fechar painel', summon:'Convocação', enemyAttack:'Golpe inimigo (genérico)', enemyCast:'Magia inimiga (genérica)' };
   let html = section('Eventos da luta e da interface', Object.entries(M.events || {}).map(([k, f]) => card(EV[k] || k, k, [btn('Ouvir', f)], 'evento')));
   html += section('Heróis: golpe, habilidade e ultimate', Object.entries(M.heroes || {}).map(([id, h]) => card(h.name || id, `${h.weapon} · ${h.element}`, [btn('Golpe', h.attack), btn('Habilidade', h.skill), btn('Ultimate', h.ult)], id)));
   html += section('Famílias de criaturas: golpe e magia', Object.entries(M.families || {}).map(([f, r]) => card(f, 'família', [btn('Golpe', r.attack), btn('Magia', r.cast)], 'familia')));
-  html += section('Criaturas: voz, dor, morte e rugido', Object.entries(M.creatures || {}).map(([id, c]) => card(id, c.f, [btn('Voz', c.v), btn('Dor', c.h), btn('Morte', c.d), btn('Rugido', c.r)], c.f)));
+  html += section('Criaturas: golpe e queda (sem vozes)', Object.entries(M.creatures || {}).map(([id, c]) => card(id, c.f, [btn('Golpe', c.a), btn('Queda', c.d)], c.f)));
   out.innerHTML = html;
   document.getElementById('count').textContent = `${(M.files || []).length} arquivos · conjunto ${M.mix}`;
   showFlags();

@@ -276,7 +276,7 @@
     // Cidade: painel de boas-vindas e selos vivos nas placas dos distritos.
     renderVillage() {
       const hub = this.el.villageHub, show = !this.el.locations.hidden;
-      hub.hidden = !show; this.el.lobby.hidden = this.engine.zone.kind !== 'village';
+      hub.hidden = true; this.el.lobby.hidden = this.engine.zone.kind !== 'village';
       if (this.engine.zone.kind === 'village' && !show) { const z0 = D.zones[this.state.lastHunt] || D.zones.hunt, p0 = this.state.progress[z0.id] || {}; this.renderLobby(z0, Math.max(1, Math.min(z0.stages || 1, p0.cur || p0.best || 1))); }
       if (!show) { this.villageKey = ''; return; }
       const s = this.state, e = this.engine, ev = e.event(), PRG = KT.Progression;
@@ -290,20 +290,16 @@
       const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
       document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = b.dataset.open.split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta nv ${gate.level}` : lv ? `Nv ${lv}` : ''; });
-      const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
-      const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
-      const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
-      // No alto, só o que pede atenção agora: a saudação, o objetivo e o que há para resgatar.
-      hub.innerHTML = `<span class="eyebrow" data-tip="${esc(`Sua equipe passeia por Tsukimori. ${now.replace(/<[^>]+>/g, '')}`)}">${greet}, ${esc(s.player.name || 'Viajante')}</span>
-        ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
-        <button class="hub-todo ${pending ? 'has' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i><span><b>${pending}</b> para resgatar</span>` : '<i class="ic ic-lantern"></i><span>O que fazer agora</span>'}<em>›</em></button>`;
+      this.lobbyPending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       this.renderLobby(hz, stage);
     }
-    // Barra do saguão, no pé da cidade: a equipe à esquerda e, à direita, a ação principal (continuar a jornada).
+    // Faixa do saguão, abaixo da cidade (nada cobre a arte): a equipe, o objetivo do momento, o que há para resgatar
+    // e a ação principal (continuar a jornada).
     renderLobby(hz, stage) {
       const el = this.el.lobby, e = this.engine, s = this.state;
       const team = s.formation.map(uid => uid && e.record(uid)), full = e.heroes.length >= 4;
-      const key = [hz.id, stage, s.starterRolls, e.getPower(), ...team.map(r => r ? `${r.uid}:${r.level}:${r.stars}` : '-')].join('|');
+      const g = e.guideStep(), gDone = !!g && e.guideDone(g), pending = this.lobbyPending || 0;
+      const key = [hz.id, stage, s.starterRolls, e.getPower(), g?.id, gDone, pending, ...team.map(r => r ? `${r.uid}:${r.level}:${r.stars}` : '-')].join('|');
       if (key === this.lobbyKey) return; this.lobbyKey = key;
       const slots = team.map((r, i) => {
         if (!r) return `<button class="lt-hero empty" data-go="party" type="button" data-tip="Vaga ${i + 1}: escolha um herói"><span>+</span></button>`;
@@ -315,8 +311,11 @@
           ? `<button class="lobby-go" data-go="collection" type="button"><span><small>COMECE AQUI</small><b>Convocar seus heróis</b></span><em>${s.starterRolls} grátis</em></button>`
           : `<button class="lobby-go" data-go="party" type="button"><span><small>EQUIPE ${e.heroes.length}/4</small><b>Montar a equipe</b></span><em>4 vagas</em></button>`)
         : `<button class="lobby-go" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button" data-tip="Volta para a jornada de onde você parou."><span><small>CONTINUAR A JORNADA</small><b>${esc(hz.title)}</b></span><em>Estágio ${stage}</em></button>`;
+      const goal = g ? `<div class="lobby-goal ${gDone ? 'done' : ''}" data-tip="<b>Objetivo</b><br>${esc(g.title)}"><i class="ic ic-target"></i><span><small>OBJETIVO</small><b>${esc(g.title)}</b></span>${gDone ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>` : '<div class="lobby-goal empty"></div>';
+      const todo = `<button class="lobby-btn todo ${pending ? 'has' : ''}" data-go="adventure" type="button" data-tip="${pending ? `${pending} recompensa(s) esperando: expedições, contratos, missões do dia.` : 'O que dá para fazer agora: invasão, expedições, eventos, chefes.'}"><i class="ic ic-${pending ? 'chest' : 'lantern'}"></i><b>${pending ? 'Resgatar' : 'Agora'}</b>${pending ? `<em>${pending > 9 ? '9+' : pending}</em>` : ''}</button>`;
       el.innerHTML = `<div class="lobby-team"><div class="lt-heroes">${slots}</div><button class="lt-power" data-go="party" type="button" data-tip="Poder total da equipe. Clique para ver a formação e as sinergias."><small>PODER</small><b>${compact(e.getPower())}</b></button></div>
-        <div class="lobby-cta">${cta}
+        ${goal}
+        <div class="lobby-cta">${todo}${cta}
           <button class="lobby-btn" data-go="journey" type="button" data-tip="Mapa do mundo (M)"><i class="ic ic-compass"></i><b>Mapa</b></button>
           <button class="lobby-btn" data-lobby-prep type="button" data-tip="Preparar a equipe: farm, equipamento, atributos ou talentos."><i class="ic ic-bolt"></i><b>Preparar</b></button></div>`;
     }

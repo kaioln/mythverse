@@ -1,6 +1,6 @@
 {
  "license": "Gravações CC0 (artisticdude, Kenney) e CC-BY 4.0 (JC Sounds); ver LICENSE.txt",
- "mix": "recorded-v1",
+ "mix": "recorded-v2",
  "heroes": {
   "solen": {
    "name": "Hinata Asahi",
@@ -586,7 +586,6 @@
   "dodge": "event-dodge.mp3",
   "break": "event-break.mp3",
   "defend": "event-defend.mp3",
-  "turn": "event-turn.mp3",
   "strike": "event-strike.mp3",
   "bossWindup": "event-bossWindup.mp3",
   "bossBurst": "event-bossBurst.mp3",
@@ -603,16 +602,11 @@
   "loot": "event-loot.mp3",
   "victory": "event-victory.mp3",
   "defeat": "event-defeat.mp3",
-  "spawn": "event-spawn.mp3",
   "death": "event-death.mp3",
   "potion": "event-potion.mp3",
   "elixir": "event-elixir.mp3",
   "chain": "event-chain.mp3",
   "finale": "event-finale.mp3",
-  "step0": "event-step0.mp3",
-  "step1": "event-step1.mp3",
-  "step2": "event-step2.mp3",
-  "step3": "event-step3.mp3",
   "uiClick": "event-uiClick.mp3",
   "uiConfirm": "event-uiConfirm.mp3",
   "uiDeny": "event-uiDeny.mp3",
@@ -675,709 +669,578 @@
  "creatures": {
   "fox": {
    "f": "fox",
-   "v": "mob-fox-v.mp3",
-   "h": "mob-fox-h.mp3",
+   "a": "mob-fox-a.mp3",
    "d": "mob-fox-d.mp3"
   },
   "golem": {
    "f": "golem",
-   "v": "mob-golem-v.mp3",
-   "h": "mob-golem-h.mp3",
+   "a": "mob-golem-a.mp3",
    "d": "mob-golem-d.mp3"
   },
   "spider_jade": {
    "f": "spider",
-   "v": "mob-spider_jade-v.mp3",
-   "h": "mob-spider_jade-h.mp3",
+   "a": "mob-spider_jade-a.mp3",
    "d": "mob-spider_jade-d.mp3"
   },
   "oni": {
    "f": "oni",
-   "v": "mob-oni-v.mp3",
-   "h": "mob-oni-h.mp3",
+   "a": "mob-oni-a.mp3",
    "d": "mob-oni-d.mp3"
   },
   "golem_elder": {
    "f": "golem",
-   "v": "mob-golem_elder-v.mp3",
-   "h": "mob-golem_elder-h.mp3",
+   "a": "mob-golem_elder-a.mp3",
    "d": "mob-golem_elder-d.mp3"
   },
   "fox_nine": {
    "f": "fox",
-   "v": "mob-fox_nine-v.mp3",
-   "h": "mob-fox_nine-h.mp3",
+   "a": "mob-fox_nine-a.mp3",
    "d": "mob-fox_nine-d.mp3"
   },
   "oni_ash": {
    "f": "oni",
-   "v": "mob-oni_ash-v.mp3",
-   "h": "mob-oni_ash-h.mp3",
+   "a": "mob-oni_ash-a.mp3",
    "d": "mob-oni_ash-d.mp3"
   },
   "spider": {
    "f": "spider",
-   "v": "mob-spider-v.mp3",
-   "h": "mob-spider-h.mp3",
+   "a": "mob-spider-a.mp3",
    "d": "mob-spider-d.mp3"
   },
   "wisp_void": {
    "f": "wisp",
-   "v": "mob-wisp_void-v.mp3",
-   "h": "mob-wisp_void-h.mp3",
+   "a": "mob-wisp_void-a.mp3",
    "d": "mob-wisp_void-d.mp3"
   },
   "golem_obsidian": {
    "f": "golem",
-   "v": "mob-golem_obsidian-v.mp3",
-   "h": "mob-golem_obsidian-h.mp3",
+   "a": "mob-golem_obsidian-a.mp3",
    "d": "mob-golem_obsidian-d.mp3"
   },
   "oni_crimson": {
    "f": "oni",
-   "v": "mob-oni_crimson-v.mp3",
-   "h": "mob-oni_crimson-h.mp3",
+   "a": "mob-oni_crimson-a.mp3",
    "d": "mob-oni_crimson-d.mp3"
   },
   "fox_specter": {
    "f": "fox",
-   "v": "mob-fox_specter-v.mp3",
-   "h": "mob-fox_specter-h.mp3",
+   "a": "mob-fox_specter-a.mp3",
    "d": "mob-fox_specter-d.mp3"
   },
   "golem_lava": {
    "f": "golem",
-   "v": "mob-golem_lava-v.mp3",
-   "h": "mob-golem_lava-h.mp3",
-   "d": "mob-golem_lava-d.mp3",
-   "r": "mob-golem_lava-r.mp3"
+   "a": "mob-golem_lava-a.mp3",
+   "d": "mob-golem_lava-d.mp3"
   },
   "wisp": {
    "f": "wisp",
-   "v": "mob-wisp-v.mp3",
-   "h": "mob-wisp-h.mp3",
+   "a": "mob-wisp-a.mp3",
    "d": "mob-wisp-d.mp3"
   },
   "revenant": {
    "f": "revenant",
-   "v": "mob-revenant-v.mp3",
-   "h": "mob-revenant-h.mp3",
+   "a": "mob-revenant-a.mp3",
    "d": "mob-revenant-d.mp3"
   },
   "fox_foam": {
    "f": "fox",
-   "v": "mob-fox_foam-v.mp3",
-   "h": "mob-fox_foam-h.mp3",
+   "a": "mob-fox_foam-a.mp3",
    "d": "mob-fox_foam-d.mp3"
   },
   "spider_coral": {
    "f": "spider",
-   "v": "mob-spider_coral-v.mp3",
-   "h": "mob-spider_coral-h.mp3",
+   "a": "mob-spider_coral-a.mp3",
    "d": "mob-spider_coral-d.mp3"
   },
   "oni_tide": {
    "f": "oni",
-   "v": "mob-oni_tide-v.mp3",
-   "h": "mob-oni_tide-h.mp3",
+   "a": "mob-oni_tide-a.mp3",
    "d": "mob-oni_tide-d.mp3"
   },
   "revenant_captain": {
    "f": "revenant",
-   "v": "mob-revenant_captain-v.mp3",
-   "h": "mob-revenant_captain-h.mp3",
+   "a": "mob-revenant_captain-a.mp3",
    "d": "mob-revenant_captain-d.mp3"
   },
   "golem_coral": {
    "f": "golem",
-   "v": "mob-golem_coral-v.mp3",
-   "h": "mob-golem_coral-h.mp3",
+   "a": "mob-golem_coral-a.mp3",
    "d": "mob-golem_coral-d.mp3"
   },
   "revenant_scribe": {
    "f": "revenant",
-   "v": "mob-revenant_scribe-v.mp3",
-   "h": "mob-revenant_scribe-h.mp3",
+   "a": "mob-revenant_scribe-a.mp3",
    "d": "mob-revenant_scribe-d.mp3"
   },
   "wisp_arc": {
    "f": "wisp",
-   "v": "mob-wisp_arc-v.mp3",
-   "h": "mob-wisp_arc-h.mp3",
+   "a": "mob-wisp_arc-a.mp3",
    "d": "mob-wisp_arc-d.mp3"
   },
   "spider_ink": {
    "f": "spider",
-   "v": "mob-spider_ink-v.mp3",
-   "h": "mob-spider_ink-h.mp3",
+   "a": "mob-spider_ink-a.mp3",
    "d": "mob-spider_ink-d.mp3"
   },
   "golem_crystal": {
    "f": "golem",
-   "v": "mob-golem_crystal-v.mp3",
-   "h": "mob-golem_crystal-h.mp3",
+   "a": "mob-golem_crystal-a.mp3",
    "d": "mob-golem_crystal-d.mp3"
   },
   "fox_storm": {
    "f": "fox",
-   "v": "mob-fox_storm-v.mp3",
-   "h": "mob-fox_storm-h.mp3",
+   "a": "mob-fox_storm-a.mp3",
    "d": "mob-fox_storm-d.mp3"
   },
   "revenant_crimson": {
    "f": "revenant",
-   "v": "mob-revenant_crimson-v.mp3",
-   "h": "mob-revenant_crimson-h.mp3",
+   "a": "mob-revenant_crimson-a.mp3",
    "d": "mob-revenant_crimson-d.mp3"
   },
   "oni_storm": {
    "f": "oni",
-   "v": "mob-oni_storm-v.mp3",
-   "h": "mob-oni_storm-h.mp3",
-   "d": "mob-oni_storm-d.mp3",
-   "r": "mob-oni_storm-r.mp3"
+   "a": "mob-oni_storm-a.mp3",
+   "d": "mob-oni_storm-d.mp3"
   },
   "fox_bog": {
    "f": "fox",
-   "v": "mob-fox_bog-v.mp3",
-   "h": "mob-fox_bog-h.mp3",
+   "a": "mob-fox_bog-a.mp3",
    "d": "mob-fox_bog-d.mp3"
   },
   "spider_bog": {
    "f": "spider",
-   "v": "mob-spider_bog-v.mp3",
-   "h": "mob-spider_bog-h.mp3",
+   "a": "mob-spider_bog-a.mp3",
    "d": "mob-spider_bog-d.mp3"
   },
   "wisp_bog": {
    "f": "wisp",
-   "v": "mob-wisp_bog-v.mp3",
-   "h": "mob-wisp_bog-h.mp3",
+   "a": "mob-wisp_bog-a.mp3",
    "d": "mob-wisp_bog-d.mp3"
   },
   "oni_moss": {
    "f": "oni",
-   "v": "mob-oni_moss-v.mp3",
-   "h": "mob-oni_moss-h.mp3",
+   "a": "mob-oni_moss-a.mp3",
    "d": "mob-oni_moss-d.mp3"
   },
   "golem_bog": {
    "f": "golem",
-   "v": "mob-golem_bog-v.mp3",
-   "h": "mob-golem_bog-h.mp3",
+   "a": "mob-golem_bog-a.mp3",
    "d": "mob-golem_bog-d.mp3"
   },
   "revenant_bog": {
    "f": "revenant",
-   "v": "mob-revenant_bog-v.mp3",
-   "h": "mob-revenant_bog-h.mp3",
+   "a": "mob-revenant_bog-a.mp3",
    "d": "mob-revenant_bog-d.mp3"
   },
   "spider_bone": {
    "f": "spider",
-   "v": "mob-spider_bone-v.mp3",
-   "h": "mob-spider_bone-h.mp3",
+   "a": "mob-spider_bone-a.mp3",
    "d": "mob-spider_bone-d.mp3"
   },
   "wisp_jade": {
    "f": "wisp",
-   "v": "mob-wisp_jade-v.mp3",
-   "h": "mob-wisp_jade-h.mp3",
+   "a": "mob-wisp_jade-a.mp3",
    "d": "mob-wisp_jade-d.mp3"
   },
   "fox_jade": {
    "f": "fox",
-   "v": "mob-fox_jade-v.mp3",
-   "h": "mob-fox_jade-h.mp3",
+   "a": "mob-fox_jade-a.mp3",
    "d": "mob-fox_jade-d.mp3"
   },
   "golem_emerald": {
    "f": "golem",
-   "v": "mob-golem_emerald-v.mp3",
-   "h": "mob-golem_emerald-h.mp3",
+   "a": "mob-golem_emerald-a.mp3",
    "d": "mob-golem_emerald-d.mp3"
   },
   "revenant_jade": {
    "f": "revenant",
-   "v": "mob-revenant_jade-v.mp3",
-   "h": "mob-revenant_jade-h.mp3",
+   "a": "mob-revenant_jade-a.mp3",
    "d": "mob-revenant_jade-d.mp3"
   },
   "oni_jade": {
    "f": "oni",
-   "v": "mob-oni_jade-v.mp3",
-   "h": "mob-oni_jade-h.mp3",
+   "a": "mob-oni_jade-a.mp3",
    "d": "mob-oni_jade-d.mp3"
   },
   "revenant_king": {
    "f": "revenant",
-   "v": "mob-revenant_king-v.mp3",
-   "h": "mob-revenant_king-h.mp3",
-   "d": "mob-revenant_king-d.mp3",
-   "r": "mob-revenant_king-r.mp3"
+   "a": "mob-revenant_king-a.mp3",
+   "d": "mob-revenant_king-d.mp3"
   },
   "fox_snow": {
    "f": "fox",
-   "v": "mob-fox_snow-v.mp3",
-   "h": "mob-fox_snow-h.mp3",
+   "a": "mob-fox_snow-a.mp3",
    "d": "mob-fox_snow-d.mp3"
   },
   "spider_ice": {
    "f": "spider",
-   "v": "mob-spider_ice-v.mp3",
-   "h": "mob-spider_ice-h.mp3",
+   "a": "mob-spider_ice-a.mp3",
    "d": "mob-spider_ice-d.mp3"
   },
   "wisp_ice": {
    "f": "wisp",
-   "v": "mob-wisp_ice-v.mp3",
-   "h": "mob-wisp_ice-h.mp3",
+   "a": "mob-wisp_ice-a.mp3",
    "d": "mob-wisp_ice-d.mp3"
   },
   "golem_ice": {
    "f": "golem",
-   "v": "mob-golem_ice-v.mp3",
-   "h": "mob-golem_ice-h.mp3",
+   "a": "mob-golem_ice-a.mp3",
    "d": "mob-golem_ice-d.mp3"
   },
   "oni_frost": {
    "f": "oni",
-   "v": "mob-oni_frost-v.mp3",
-   "h": "mob-oni_frost-h.mp3",
+   "a": "mob-oni_frost-a.mp3",
    "d": "mob-oni_frost-d.mp3"
   },
   "revenant_frost": {
    "f": "revenant",
-   "v": "mob-revenant_frost-v.mp3",
-   "h": "mob-revenant_frost-h.mp3",
+   "a": "mob-revenant_frost-a.mp3",
    "d": "mob-revenant_frost-d.mp3"
   },
   "spider_lava": {
    "f": "spider",
-   "v": "mob-spider_lava-v.mp3",
-   "h": "mob-spider_lava-h.mp3",
+   "a": "mob-spider_lava-a.mp3",
    "d": "mob-spider_lava-d.mp3"
   },
   "wisp_lava": {
    "f": "wisp",
-   "v": "mob-wisp_lava-v.mp3",
-   "h": "mob-wisp_lava-h.mp3",
+   "a": "mob-wisp_lava-a.mp3",
    "d": "mob-wisp_lava-d.mp3"
   },
   "fox_fire": {
    "f": "fox",
-   "v": "mob-fox_fire-v.mp3",
-   "h": "mob-fox_fire-h.mp3",
+   "a": "mob-fox_fire-a.mp3",
    "d": "mob-fox_fire-d.mp3"
   },
   "revenant_ash": {
    "f": "revenant",
-   "v": "mob-revenant_ash-v.mp3",
-   "h": "mob-revenant_ash-h.mp3",
+   "a": "mob-revenant_ash-a.mp3",
    "d": "mob-revenant_ash-d.mp3"
   },
   "oni_lava": {
    "f": "oni",
-   "v": "mob-oni_lava-v.mp3",
-   "h": "mob-oni_lava-h.mp3",
+   "a": "mob-oni_lava-a.mp3",
    "d": "mob-oni_lava-d.mp3"
   },
   "golem_iron": {
    "f": "golem",
-   "v": "mob-golem_iron-v.mp3",
-   "h": "mob-golem_iron-h.mp3",
+   "a": "mob-golem_iron-a.mp3",
    "d": "mob-golem_iron-d.mp3"
   },
   "golem_forge": {
    "f": "golem",
-   "v": "mob-golem_forge-v.mp3",
-   "h": "mob-golem_forge-h.mp3",
-   "d": "mob-golem_forge-d.mp3",
-   "r": "mob-golem_forge-r.mp3"
+   "a": "mob-golem_forge-a.mp3",
+   "d": "mob-golem_forge-d.mp3"
   },
   "fox_sand": {
    "f": "fox",
-   "v": "mob-fox_sand-v.mp3",
-   "h": "mob-fox_sand-h.mp3",
+   "a": "mob-fox_sand-a.mp3",
    "d": "mob-fox_sand-d.mp3"
   },
   "spider_sand": {
    "f": "spider",
-   "v": "mob-spider_sand-v.mp3",
-   "h": "mob-spider_sand-h.mp3",
+   "a": "mob-spider_sand-a.mp3",
    "d": "mob-spider_sand-d.mp3"
   },
   "wisp_sand": {
    "f": "wisp",
-   "v": "mob-wisp_sand-v.mp3",
-   "h": "mob-wisp_sand-h.mp3",
+   "a": "mob-wisp_sand-a.mp3",
    "d": "mob-wisp_sand-d.mp3"
   },
   "oni_sand": {
    "f": "oni",
-   "v": "mob-oni_sand-v.mp3",
-   "h": "mob-oni_sand-h.mp3",
+   "a": "mob-oni_sand-a.mp3",
    "d": "mob-oni_sand-d.mp3"
   },
   "golem_sand": {
    "f": "golem",
-   "v": "mob-golem_sand-v.mp3",
-   "h": "mob-golem_sand-h.mp3",
+   "a": "mob-golem_sand-a.mp3",
    "d": "mob-golem_sand-d.mp3"
   },
   "revenant_mummy": {
    "f": "revenant",
-   "v": "mob-revenant_mummy-v.mp3",
-   "h": "mob-revenant_mummy-h.mp3",
+   "a": "mob-revenant_mummy-a.mp3",
    "d": "mob-revenant_mummy-d.mp3"
   },
   "fox_ghost": {
    "f": "fox",
-   "v": "mob-fox_ghost-v.mp3",
-   "h": "mob-fox_ghost-h.mp3",
+   "a": "mob-fox_ghost-a.mp3",
    "d": "mob-fox_ghost-d.mp3"
   },
   "wisp_ghost": {
    "f": "wisp",
-   "v": "mob-wisp_ghost-v.mp3",
-   "h": "mob-wisp_ghost-h.mp3",
+   "a": "mob-wisp_ghost-a.mp3",
    "d": "mob-wisp_ghost-d.mp3"
   },
   "spider_ghost": {
    "f": "spider",
-   "v": "mob-spider_ghost-v.mp3",
-   "h": "mob-spider_ghost-h.mp3",
+   "a": "mob-spider_ghost-a.mp3",
    "d": "mob-spider_ghost-d.mp3"
   },
   "oni_ghost": {
    "f": "oni",
-   "v": "mob-oni_ghost-v.mp3",
-   "h": "mob-oni_ghost-h.mp3",
+   "a": "mob-oni_ghost-a.mp3",
    "d": "mob-oni_ghost-d.mp3"
   },
   "golem_ghost": {
    "f": "golem",
-   "v": "mob-golem_ghost-v.mp3",
-   "h": "mob-golem_ghost-h.mp3",
+   "a": "mob-golem_ghost-a.mp3",
    "d": "mob-golem_ghost-d.mp3"
   },
   "revenant_ghost": {
    "f": "revenant",
-   "v": "mob-revenant_ghost-v.mp3",
-   "h": "mob-revenant_ghost-h.mp3",
+   "a": "mob-revenant_ghost-a.mp3",
    "d": "mob-revenant_ghost-d.mp3"
   },
   "fox_time": {
    "f": "fox",
-   "v": "mob-fox_time-v.mp3",
-   "h": "mob-fox_time-h.mp3",
+   "a": "mob-fox_time-a.mp3",
    "d": "mob-fox_time-d.mp3"
   },
   "wisp_time": {
    "f": "wisp",
-   "v": "mob-wisp_time-v.mp3",
-   "h": "mob-wisp_time-h.mp3",
+   "a": "mob-wisp_time-a.mp3",
    "d": "mob-wisp_time-d.mp3"
   },
   "spider_clock": {
    "f": "spider",
-   "v": "mob-spider_clock-v.mp3",
-   "h": "mob-spider_clock-h.mp3",
+   "a": "mob-spider_clock-a.mp3",
    "d": "mob-spider_clock-d.mp3"
   },
   "oni_time": {
    "f": "oni",
-   "v": "mob-oni_time-v.mp3",
-   "h": "mob-oni_time-h.mp3",
+   "a": "mob-oni_time-a.mp3",
    "d": "mob-oni_time-d.mp3"
   },
   "revenant_time": {
    "f": "revenant",
-   "v": "mob-revenant_time-v.mp3",
-   "h": "mob-revenant_time-h.mp3",
+   "a": "mob-revenant_time-a.mp3",
    "d": "mob-revenant_time-d.mp3"
   },
   "revenant_chrono": {
    "f": "revenant",
-   "v": "mob-revenant_chrono-v.mp3",
-   "h": "mob-revenant_chrono-h.mp3",
+   "a": "mob-revenant_chrono-a.mp3",
    "d": "mob-revenant_chrono-d.mp3"
   },
   "golem_clock": {
    "f": "golem",
-   "v": "mob-golem_clock-v.mp3",
-   "h": "mob-golem_clock-h.mp3",
-   "d": "mob-golem_clock-d.mp3",
-   "r": "mob-golem_clock-r.mp3"
+   "a": "mob-golem_clock-a.mp3",
+   "d": "mob-golem_clock-d.mp3"
   },
   "fox_cloud": {
    "f": "fox",
-   "v": "mob-fox_cloud-v.mp3",
-   "h": "mob-fox_cloud-h.mp3",
+   "a": "mob-fox_cloud-a.mp3",
    "d": "mob-fox_cloud-d.mp3"
   },
   "wisp_storm": {
    "f": "wisp",
-   "v": "mob-wisp_storm-v.mp3",
-   "h": "mob-wisp_storm-h.mp3",
+   "a": "mob-wisp_storm-a.mp3",
    "d": "mob-wisp_storm-d.mp3"
   },
   "spider_wind": {
    "f": "spider",
-   "v": "mob-spider_wind-v.mp3",
-   "h": "mob-spider_wind-h.mp3",
+   "a": "mob-spider_wind-a.mp3",
    "d": "mob-spider_wind-d.mp3"
   },
   "oni_thunder": {
    "f": "oni",
-   "v": "mob-oni_thunder-v.mp3",
-   "h": "mob-oni_thunder-h.mp3",
+   "a": "mob-oni_thunder-a.mp3",
    "d": "mob-oni_thunder-d.mp3"
   },
   "golem_sky": {
    "f": "golem",
-   "v": "mob-golem_sky-v.mp3",
-   "h": "mob-golem_sky-h.mp3",
+   "a": "mob-golem_sky-a.mp3",
    "d": "mob-golem_sky-d.mp3"
   },
   "revenant_sky": {
    "f": "revenant",
-   "v": "mob-revenant_sky-v.mp3",
-   "h": "mob-revenant_sky-h.mp3",
+   "a": "mob-revenant_sky-a.mp3",
    "d": "mob-revenant_sky-d.mp3"
   },
   "fox_sakura": {
    "f": "fox",
-   "v": "mob-fox_sakura-v.mp3",
-   "h": "mob-fox_sakura-h.mp3",
+   "a": "mob-fox_sakura-a.mp3",
    "d": "mob-fox_sakura-d.mp3"
   },
   "wisp_petal": {
    "f": "wisp",
-   "v": "mob-wisp_petal-v.mp3",
-   "h": "mob-wisp_petal-h.mp3",
+   "a": "mob-wisp_petal-a.mp3",
    "d": "mob-wisp_petal-d.mp3"
   },
   "spider_silk": {
    "f": "spider",
-   "v": "mob-spider_silk-v.mp3",
-   "h": "mob-spider_silk-h.mp3",
+   "a": "mob-spider_silk-a.mp3",
    "d": "mob-spider_silk-d.mp3"
   },
   "oni_blossom": {
    "f": "oni",
-   "v": "mob-oni_blossom-v.mp3",
-   "h": "mob-oni_blossom-h.mp3",
+   "a": "mob-oni_blossom-a.mp3",
    "d": "mob-oni_blossom-d.mp3"
   },
   "golem_root": {
    "f": "golem",
-   "v": "mob-golem_root-v.mp3",
-   "h": "mob-golem_root-h.mp3",
+   "a": "mob-golem_root-a.mp3",
    "d": "mob-golem_root-d.mp3"
   },
   "revenant_geisha": {
    "f": "revenant",
-   "v": "mob-revenant_geisha-v.mp3",
-   "h": "mob-revenant_geisha-h.mp3",
+   "a": "mob-revenant_geisha-a.mp3",
    "d": "mob-revenant_geisha-d.mp3"
   },
   "fox_lightning": {
    "f": "fox",
-   "v": "mob-fox_lightning-v.mp3",
-   "h": "mob-fox_lightning-h.mp3",
+   "a": "mob-fox_lightning-a.mp3",
    "d": "mob-fox_lightning-d.mp3"
   },
   "wisp_cloud": {
    "f": "wisp",
-   "v": "mob-wisp_cloud-v.mp3",
-   "h": "mob-wisp_cloud-h.mp3",
+   "a": "mob-wisp_cloud-a.mp3",
    "d": "mob-wisp_cloud-d.mp3"
   },
   "spider_thunder": {
    "f": "spider",
-   "v": "mob-spider_thunder-v.mp3",
-   "h": "mob-spider_thunder-h.mp3",
+   "a": "mob-spider_thunder-a.mp3",
    "d": "mob-spider_thunder-d.mp3"
   },
   "oni_wind": {
    "f": "oni",
-   "v": "mob-oni_wind-v.mp3",
-   "h": "mob-oni_wind-h.mp3",
+   "a": "mob-oni_wind-a.mp3",
    "d": "mob-oni_wind-d.mp3"
   },
   "revenant_monk": {
    "f": "revenant",
-   "v": "mob-revenant_monk-v.mp3",
-   "h": "mob-revenant_monk-h.mp3",
+   "a": "mob-revenant_monk-a.mp3",
    "d": "mob-revenant_monk-d.mp3"
   },
   "golem_bell": {
    "f": "golem",
-   "v": "mob-golem_bell-v.mp3",
-   "h": "mob-golem_bell-h.mp3",
+   "a": "mob-golem_bell-a.mp3",
    "d": "mob-golem_bell-d.mp3"
   },
   "golem_fujin": {
    "f": "oni",
-   "v": "mob-golem_fujin-v.mp3",
-   "h": "mob-golem_fujin-h.mp3",
-   "d": "mob-golem_fujin-d.mp3",
-   "r": "mob-golem_fujin-r.mp3"
+   "a": "mob-golem_fujin-a.mp3",
+   "d": "mob-golem_fujin-d.mp3"
   },
   "rift_hound": {
    "f": "fox",
-   "v": "mob-rift_hound-v.mp3",
-   "h": "mob-rift_hound-h.mp3",
+   "a": "mob-rift_hound-a.mp3",
    "d": "mob-rift_hound-d.mp3"
   },
   "rift_weaver": {
    "f": "spider",
-   "v": "mob-rift_weaver-v.mp3",
-   "h": "mob-rift_weaver-h.mp3",
+   "a": "mob-rift_weaver-a.mp3",
    "d": "mob-rift_weaver-d.mp3"
   },
   "rift_eye": {
    "f": "wisp",
-   "v": "mob-rift_eye-v.mp3",
-   "h": "mob-rift_eye-h.mp3",
+   "a": "mob-rift_eye-a.mp3",
    "d": "mob-rift_eye-d.mp3"
   },
   "rift_devourer": {
    "f": "oni",
-   "v": "mob-rift_devourer-v.mp3",
-   "h": "mob-rift_devourer-h.mp3",
+   "a": "mob-rift_devourer-a.mp3",
    "d": "mob-rift_devourer-d.mp3"
   },
   "rift_colossus": {
    "f": "golem",
-   "v": "mob-rift_colossus-v.mp3",
-   "h": "mob-rift_colossus-h.mp3",
+   "a": "mob-rift_colossus-a.mp3",
    "d": "mob-rift_colossus-d.mp3"
   },
   "rift_herald": {
    "f": "revenant",
-   "v": "mob-rift_herald-v.mp3",
-   "h": "mob-rift_herald-h.mp3",
+   "a": "mob-rift_herald-a.mp3",
    "d": "mob-rift_herald-d.mp3"
   },
   "rift_wyrm": {
    "f": "dragon",
-   "v": "mob-rift_wyrm-v.mp3",
-   "h": "mob-rift_wyrm-h.mp3",
-   "d": "mob-rift_wyrm-d.mp3",
-   "r": "mob-rift_wyrm-r.mp3"
+   "a": "mob-rift_wyrm-a.mp3",
+   "d": "mob-rift_wyrm-d.mp3"
   },
   "eclipse_shade": {
    "f": "fox",
-   "v": "mob-eclipse_shade-v.mp3",
-   "h": "mob-eclipse_shade-h.mp3",
+   "a": "mob-eclipse_shade-a.mp3",
    "d": "mob-eclipse_shade-d.mp3"
   },
   "mizuchi_spawn": {
    "f": "dragon",
-   "v": "mob-mizuchi_spawn-v.mp3",
-   "h": "mob-mizuchi_spawn-h.mp3",
+   "a": "mob-mizuchi_spawn-a.mp3",
    "d": "mob-mizuchi_spawn-d.mp3"
   },
   "sand_servant": {
    "f": "oni",
-   "v": "mob-sand_servant-v.mp3",
-   "h": "mob-sand_servant-h.mp3",
+   "a": "mob-sand_servant-a.mp3",
    "d": "mob-sand_servant-d.mp3"
   },
   "storm_servant": {
    "f": "drum",
-   "v": "mob-storm_servant-v.mp3",
-   "h": "mob-storm_servant-h.mp3",
+   "a": "mob-storm_servant-a.mp3",
    "d": "mob-storm_servant-d.mp3"
   },
   "archive_sentinel": {
    "f": "revenant",
-   "v": "mob-archive_sentinel-v.mp3",
-   "h": "mob-archive_sentinel-h.mp3",
+   "a": "mob-archive_sentinel-a.mp3",
    "d": "mob-archive_sentinel-d.mp3"
   },
   "wb_titan": {
    "f": "golem",
-   "v": "mob-wb_titan-v.mp3",
-   "h": "mob-wb_titan-h.mp3",
-   "d": "mob-wb_titan-d.mp3",
-   "r": "mob-wb_titan-r.mp3"
+   "a": "mob-wb_titan-a.mp3",
+   "d": "mob-wb_titan-d.mp3"
   },
   "wb_frost_dragon": {
    "f": "dragon",
-   "v": "mob-wb_frost_dragon-v.mp3",
-   "h": "mob-wb_frost_dragon-h.mp3",
-   "d": "mob-wb_frost_dragon-d.mp3",
-   "r": "mob-wb_frost_dragon-r.mp3"
+   "a": "mob-wb_frost_dragon-a.mp3",
+   "d": "mob-wb_frost_dragon-d.mp3"
   },
   "wb_storm_kitsune": {
    "f": "kitsune",
-   "v": "mob-wb_storm_kitsune-v.mp3",
-   "h": "mob-wb_storm_kitsune-h.mp3",
-   "d": "mob-wb_storm_kitsune-d.mp3",
-   "r": "mob-wb_storm_kitsune-r.mp3"
+   "a": "mob-wb_storm_kitsune-a.mp3",
+   "d": "mob-wb_storm_kitsune-d.mp3"
   },
   "wb_blood_moon": {
    "f": "armor",
-   "v": "mob-wb_blood_moon-v.mp3",
-   "h": "mob-wb_blood_moon-h.mp3",
-   "d": "mob-wb_blood_moon-d.mp3",
-   "r": "mob-wb_blood_moon-r.mp3"
+   "a": "mob-wb_blood_moon-a.mp3",
+   "d": "mob-wb_blood_moon-d.mp3"
   },
   "wisp_ember": {
    "f": "wisp",
-   "v": "mob-wisp_ember-v.mp3",
-   "h": "mob-wisp_ember-h.mp3",
+   "a": "mob-wisp_ember-a.mp3",
    "d": "mob-wisp_ember-d.mp3"
   },
   "fox_gold": {
    "f": "fox",
-   "v": "mob-fox_gold-v.mp3",
-   "h": "mob-fox_gold-h.mp3",
+   "a": "mob-fox_gold-a.mp3",
    "d": "mob-fox_gold-d.mp3"
   },
   "mimic": {
    "f": "mimic",
-   "v": "mob-mimic-v.mp3",
-   "h": "mob-mimic-h.mp3",
+   "a": "mob-mimic-a.mp3",
    "d": "mob-mimic-d.mp3"
   },
   "eclipse": {
    "f": "armor",
-   "v": "mob-eclipse-v.mp3",
-   "h": "mob-eclipse-h.mp3",
-   "d": "mob-eclipse-d.mp3",
-   "r": "mob-eclipse-r.mp3"
+   "a": "mob-eclipse-a.mp3",
+   "d": "mob-eclipse-d.mp3"
   },
   "dragon": {
    "f": "dragon",
-   "v": "mob-dragon-v.mp3",
-   "h": "mob-dragon-h.mp3",
-   "d": "mob-dragon-d.mp3",
-   "r": "mob-dragon-r.mp3"
+   "a": "mob-dragon-a.mp3",
+   "d": "mob-dragon-d.mp3"
   },
   "lantern_kitsune": {
    "f": "kitsune",
-   "v": "mob-lantern_kitsune-v.mp3",
-   "h": "mob-lantern_kitsune-h.mp3",
-   "d": "mob-lantern_kitsune-d.mp3",
-   "r": "mob-lantern_kitsune-r.mp3"
+   "a": "mob-lantern_kitsune-a.mp3",
+   "d": "mob-lantern_kitsune-d.mp3"
   },
   "dragon_amber": {
    "f": "serpent",
-   "v": "mob-dragon_amber-v.mp3",
-   "h": "mob-dragon_amber-h.mp3",
-   "d": "mob-dragon_amber-d.mp3",
-   "r": "mob-dragon_amber-r.mp3"
+   "a": "mob-dragon_amber-a.mp3",
+   "d": "mob-dragon_amber-d.mp3"
   },
   "raijin": {
    "f": "drum",
-   "v": "mob-raijin-v.mp3",
-   "h": "mob-raijin-h.mp3",
-   "d": "mob-raijin-d.mp3",
-   "r": "mob-raijin-r.mp3"
+   "a": "mob-raijin-a.mp3",
+   "d": "mob-raijin-d.mp3"
   }
  },
  "files": [
@@ -1390,14 +1253,14 @@
   },
   {
    "name": "solen-skill.mp3",
-   "sha256": "8576ca45078da9394ecd66a98b8afc2c78ca0f2b263d07b40a2d370c2f1d660a",
+   "sha256": "1b79a7003958d2031e0f8d7bfb183f8116a290af5abdc6fba24f172c42a76c74",
    "kit": "Onda Solar",
    "duration": 1.41,
    "channels": 2
   },
   {
    "name": "solen-ult.mp3",
-   "sha256": "b2cac62716a89d1a0a91e1531b76ff52c3e3fb7d762f6264b4665e08eba6a2e2",
+   "sha256": "a58c4b620d663ae28882445f62fd87368b2baf0651efc8085c4a05842e7d935a",
    "kit": "Esfera dos Mil Sóis",
    "duration": 2.26,
    "channels": 2
@@ -1411,14 +1274,14 @@
   },
   {
    "name": "varyon-skill.mp3",
-   "sha256": "6302c6391c0efd7d97f91590d2145824a6d3541ae372fef9c00475ee3d8d934b",
+   "sha256": "50d57b4ae3114141a2cbd623ddab2c1019f13fe21a54b207142e8269ebcabb89",
    "kit": "Disparo Violeta",
    "duration": 1.19,
    "channels": 2
   },
   {
    "name": "varyon-ult.mp3",
-   "sha256": "9176ff5392dedc76962bfeec50e770b274aab7ed9daba0a9627148bda4be7685",
+   "sha256": "55df2e98c1daf5219a2a6714304c95123f4efa54a7556276b97ef0b5975608bd",
    "kit": "Raio Real",
    "duration": 2.22,
    "channels": 2
@@ -1432,14 +1295,14 @@
   },
   {
    "name": "hayato-skill.mp3",
-   "sha256": "f232ff78faa4c3a3376c94eb4cede7ce354de203833482be4fa483f40dafdab2",
+   "sha256": "490b3b980141da20c204ec23a91499746833a673a78b0610eeb7e3441db52f9d",
    "kit": "Legião de Sombras",
-   "duration": 1.53,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "hayato-ult.mp3",
-   "sha256": "ced677f2442145c115ea7ef5295c4e1539775184b32f55fe142861b2bd027dd9",
+   "sha256": "e290e08be05f91ba88a7c3e3c138e3a9b20dba5ae257f2d15641d7aa59ca09ee",
    "kit": "Ciclone Cortante",
    "duration": 2.22,
    "channels": 2
@@ -1453,14 +1316,14 @@
   },
   {
    "name": "ren-skill.mp3",
-   "sha256": "785937030b88e00c07fa2b4bd5490295aac747f947617bf28cbdffe58a9d2b4e",
+   "sha256": "821c894a35323a9f3432984f9587d7ed112b196db0359439b0824eab40e8253b",
    "kit": "Lança Trovejante",
    "duration": 1.1,
    "channels": 2
   },
   {
    "name": "ren-ult.mp3",
-   "sha256": "3756579025b2e313e15dd4742018479d1c748adf749b2459571ebe958644ccc5",
+   "sha256": "23aef4b609f8df7e72857d498927bc69dff6568e9dd8af4d1ea260b21bae5f82",
    "kit": "Chama do Eclipse",
    "duration": 2.22,
    "channels": 2
@@ -1474,16 +1337,16 @@
   },
   {
    "name": "tobias-skill.mp3",
-   "sha256": "0749d1ab258c77ea7baa2856f6dfca816655d6959c54181b65006c1c7c48ff66",
+   "sha256": "ac4cbfa44fa9f1a8db800c16710a778c1f89f667eb12d891a53ddf523e4ec8e1",
    "kit": "Rajada de Punhos",
    "duration": 1.46,
    "channels": 2
   },
   {
    "name": "tobias-ult.mp3",
-   "sha256": "b746eaa3c489d8b5fbb3f606f3a524a37738f2f6d5f63d4f30f90fb0ca96b520",
+   "sha256": "b7c5b620e821e97059e16e699e7237b2508480d8ce06245b488d8663a5f894c8",
    "kit": "Maré Gigante",
-   "duration": 3.15,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1495,14 +1358,14 @@
   },
   {
    "name": "kenji-skill.mp3",
-   "sha256": "712dc39365b15b306ae87c84b8dd8288d5461df887939af9c61263c81fc1097a",
+   "sha256": "194a1b437cd706cce1f5b7d0371e7c05e2360335838d2d940fb60966f4247ded",
    "kit": "Corte Cruzado",
    "duration": 1.21,
    "channels": 2
   },
   {
    "name": "kenji-ult.mp3",
-   "sha256": "3a57a70c2586cd348486c5fff1ae44d9d148cdcce348797d5759e7a4db20fdd9",
+   "sha256": "3cd32a2a208de4803959ede8ea9c5e5c4e0ba0bdc94ce84d335c65d78326650e",
    "kit": "Tempestade de Lâminas",
    "duration": 2.22,
    "channels": 2
@@ -1516,16 +1379,16 @@
   },
   {
    "name": "hiro-skill.mp3",
-   "sha256": "bc5d3f121ee944fccee77b6ca6d6a2fa8ee90022de1ac064b232b5a5689ad725",
+   "sha256": "fe775f12078d116b702aace86a6b1a1df2b77da0ffecbc275de0e62a63e35565",
    "kit": "Crescente Cortante",
-   "duration": 2.11,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "hiro-ult.mp3",
-   "sha256": "7ac29ee1c2577e8b3e1fcbeab59b6f3c3f61ffb8b7b0ec211474574d91aa5baa",
+   "sha256": "0496190a9d1671066bb186017d97aa898a09a314fe6b29107171c7c9d0f0221c",
    "kit": "Lua Sem Fim",
-   "duration": 3.02,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1537,14 +1400,14 @@
   },
   {
    "name": "yuki-skill.mp3",
-   "sha256": "cd73e71b1d37736f54d8cf396474b46085ccc50a729c10d1f0da7110bc7e3f23",
+   "sha256": "5a155e01bea46920eb75dd3dc91e7b68746e7a6a976e92548769ae0316705431",
    "kit": "Lótus Branca",
-   "duration": 1.61,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "yuki-ult.mp3",
-   "sha256": "a5f6a257256a691c5f03fd5d35a0e7bc8829271282683c857707cb5982ba2fbc",
+   "sha256": "0bf9e8d8fe6de75c9dd2ea5ce26419df182d2cf8ae1d3f3a09abe0d1bc888a41",
    "kit": "Floresta de Gelo Eterno",
    "duration": 1.83,
    "channels": 2
@@ -1558,14 +1421,14 @@
   },
   {
    "name": "akira-skill.mp3",
-   "sha256": "1f359403c203b8e35bc2d4d0442d41944376d2df842842c9644cd92374388e9d",
+   "sha256": "f0461d8a7577af5ce0563170a0702d8f89d00da9df5986c5579b48aedd005717",
    "kit": "Correnteza Giratória",
-   "duration": 1.63,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "akira-ult.mp3",
-   "sha256": "daa28ca66abddd00c5f9cfb3db4803511ba108f7c017b2cd069d5e6677dd7a51",
+   "sha256": "560a22e1ea3ac8a59fefc2942a718d8a63b3c61f95ecb12fefa49f675f0699b0",
    "kit": "Dança da Brasa",
    "duration": 2.22,
    "channels": 2
@@ -1579,16 +1442,16 @@
   },
   {
    "name": "hana-skill.mp3",
-   "sha256": "9d9662fabfcf546e1e00c4e078a0020011bc98eb67ca94fa5773a2cd61c12042",
+   "sha256": "66fba55a5be2c99cdd332a86fdbdeac0dfe2c8a2d8068fb762426cf679efc847",
    "kit": "Chute Carmesim",
    "duration": 1.42,
    "channels": 2
   },
   {
    "name": "hana-ult.mp3",
-   "sha256": "3f18dbcd392ca751b5b6c6313904f61d677a5b301a27eaa3e6afddea26788b61",
+   "sha256": "4eee91ef0e2e832e54e55fc126be662994675ec46660702443a87cfd2748688a",
    "kit": "Sangue Incandescente",
-   "duration": 3.11,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1600,14 +1463,14 @@
   },
   {
    "name": "sora-skill.mp3",
-   "sha256": "bd8808d1393dfa62c26a767185c8a2854ba496c0c0a28dc250982a3528028cdb",
+   "sha256": "89e58bb3fe68b2b9af5aae23eff64e6636d8e319526b72c58b2db38c86d86478",
    "kit": "Ponto Rubro",
    "duration": 1.37,
    "channels": 2
   },
   {
    "name": "sora-ult.mp3",
-   "sha256": "daa0871a48e3842443e6304e3c7fd9bd13d55395a05a7b21342e4f4604f88544",
+   "sha256": "3e489746f539697b9fdcb5435b2ad32578957748a495ca44b6fc0531f4e0a5f3",
    "kit": "Colapso Índigo",
    "duration": 2.22,
    "channels": 2
@@ -1621,16 +1484,16 @@
   },
   {
    "name": "daichi-skill.mp3",
-   "sha256": "582a96f8ea215e02f4b01e07ae8a839a146db90ccab4b82497f371598928293f",
+   "sha256": "5ff35c4a74e1069ec45361986f4e209a083fe65adde810841bae2e2cfa69effd",
    "kit": "Punho Atrasado",
-   "duration": 2.11,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "daichi-ult.mp3",
-   "sha256": "9580ab5caf13dc870c057c55f8673b1317fb2caf82dc74a44c21ccb1de434077",
+   "sha256": "6836a7e3273a88d8f139d160d8fad732a5077a27596a8092dcb02e48e0dec754",
    "kit": "Despertar Amaldiçoado",
-   "duration": 3.02,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1642,14 +1505,14 @@
   },
   {
    "name": "lucan-skill.mp3",
-   "sha256": "d16ff5e2d5f83a76f40b5923f086ef63714e5b976ef30cbf863d34a38bb7633a",
+   "sha256": "9c0769ae54a5c7b5232ed4d0d30154a6463c416f65bbecf1492c8b9ebd5fd1b6",
    "kit": "Investida Vertical",
    "duration": 1.35,
    "channels": 2
   },
   {
    "name": "lucan-ult.mp3",
-   "sha256": "df07998de1752bc6ef633d651064827ab9bc8a29273ab34de0d7701af8eb87a8",
+   "sha256": "712b0f8ab81f62be48d84f19b7a368791742884154894d670ab4bbec34232579",
    "kit": "Giro Cortante",
    "duration": 2.22,
    "channels": 2
@@ -1663,14 +1526,14 @@
   },
   {
    "name": "mira-skill.mp3",
-   "sha256": "4c6b0b5e8a4c2d60901b79af3516b5b1ca289d0db06bcb57b9d61d647bc1b1ed",
+   "sha256": "c945f9120d82027a2e38e696dfce9993583bfe544ab8d0cdaf939625f6bef447",
    "kit": "Lâminas Gêmeas",
    "duration": 1.34,
    "channels": 2
   },
   {
    "name": "mira-ult.mp3",
-   "sha256": "8e5b0fe3cf979bce82eca60818cfb8c31b362d1b326e7ee2d1a7880e0cbb4e06",
+   "sha256": "ff44ae6634cd7e2617e791a8a2de21a6f9a1870f5ed7707ee7bb3d9ee5478922",
    "kit": "Fúria do Clã",
    "duration": 2.22,
    "channels": 2
@@ -1684,14 +1547,14 @@
   },
   {
    "name": "erik-skill.mp3",
-   "sha256": "d2a806023d21be09ecc2948e4fdd4506d10ef16cc2618d99052720639da0c900",
+   "sha256": "70c97416424df0de1a6a9ae8d4865e30cae9131089ad188332d255f98e16be02",
    "kit": "Soco Colossal",
    "duration": 1.19,
    "channels": 2
   },
   {
    "name": "erik-ult.mp3",
-   "sha256": "a95e33d134d6294766eccada422fd50c32770371272fd143d10d803086a131cb",
+   "sha256": "b5b05175f598e526278d6abdbcd16302ac49936298c6dd0f10a542c35266ffae",
    "kit": "Colosso Primordial",
    "duration": 2.22,
    "channels": 2
@@ -1705,16 +1568,16 @@
   },
   {
    "name": "alden-skill.mp3",
-   "sha256": "5dcce030458222d3bb36b6cefc9a71c6d701c72a3f04638edd5bb32f3ae57462",
+   "sha256": "f34252b3dc1a89e4a58d7180bd959ffb9adec46f10deb12535e03452922f17f3",
    "kit": "Muralha de Aço",
-   "duration": 1.54,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "alden-ult.mp3",
-   "sha256": "2b5bbc6e3f471d18b253c8187ede10a49c7f89940585a9d1a89b2e613f554e38",
+   "sha256": "91764ab165622753bffa136398bfd644f5d719fd34847c3f0579456f71350d8b",
    "kit": "Transmutação Suprema",
-   "duration": 3.24,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1726,14 +1589,14 @@
   },
   {
    "name": "ignis-skill.mp3",
-   "sha256": "3f238641793f20721cab74d65d8c67851cd5f7d5c16de51f9925d154986c1445",
+   "sha256": "4d529bf978205bf6ab522b60e5657588ee21a5f2d01f74dc89227ba867532a1b",
    "kit": "Faísca Alquímica",
-   "duration": 1.53,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "ignis-ult.mp3",
-   "sha256": "28c74486a6db60be3a7af540f4eb034ff231d4f6b555b7ac0d0d9626307337c3",
+   "sha256": "2dc2d98282ff8eb221524a44724e9fe7c398d575e56ed23f9db9784ca3ea3bb0",
    "kit": "Inferno do Deserto",
    "duration": 2.36,
    "channels": 2
@@ -1747,14 +1610,14 @@
   },
   {
    "name": "toma-skill.mp3",
-   "sha256": "3900a3879a768a344be8eabba2fc5885d935aba5fa3e78e03ab56b3f319f9a87",
+   "sha256": "9c1da65aae6bfd9f5a025ee4a05e1ab1bb3457bf4139d8381fdc9c14bbeb0a8f",
    "kit": "Rajada de Dedo",
    "duration": 1.15,
    "channels": 2
   },
   {
    "name": "toma-ult.mp3",
-   "sha256": "2bc1ee2338d641df87c9d25411fec326feeffd71b79d2ff4d1d3c1a6b5ce067e",
+   "sha256": "ff6367609be6eccef92ce189fc82d426aea834c0a20cda6eacc29310a9d57f70",
    "kit": "Soco Supremo",
    "duration": 2.22,
    "channels": 2
@@ -1768,14 +1631,14 @@
   },
   {
    "name": "ryo-skill.mp3",
-   "sha256": "f352482036f776ce49441e9a7f526d87434520381f929447cccb1e35c35d344f",
+   "sha256": "c77313f544cad7ad90430cceef31ee8d0d51e80b9894f6438364c49f1f2bd847",
    "kit": "Tiro Guiado",
-   "duration": 1.52,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "ryo-ult.mp3",
-   "sha256": "cb2121ce70402de9f132f70b2e29465648c47ce861a74c286a47ebb197826f29",
+   "sha256": "a28f7b481308f23997efea231d487cfc8528df6bcf7a0e20e338a9f2ff256b7a",
    "kit": "Impacto Giratório",
    "duration": 2.35,
    "channels": 2
@@ -1789,14 +1652,14 @@
   },
   {
    "name": "grant-skill.mp3",
-   "sha256": "295045d21067d03b470f2de8015ffafcf6056b484408978a6dc3b9151820ac09",
+   "sha256": "f30bb6189349ae7e85e52513e97d65f41464cc33966aadef054e66e6bb5e3186",
    "kit": "Golpe Vendaval",
-   "duration": 1.58,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "grant-ult.mp3",
-   "sha256": "82b84415007757cf8ecaa22c3a1b3732e7c0831e8f45ca4c9371c8ba41cde2bb",
+   "sha256": "9db97819a619729a865aae3917c766053a49619a88bdf6f1409b1e85eb6ae5ed",
    "kit": "Golpe da Nação",
    "duration": 2.33,
    "channels": 2
@@ -1810,14 +1673,14 @@
   },
   {
    "name": "kenta-skill.mp3",
-   "sha256": "e892693bca508c7214c6b5ba0bb5dfd4efe015be4897929ec25d164f9759dc10",
+   "sha256": "b53c71574950e81e604117ddc08726ea211016d21be46736812f9a4e9b20ec6a",
    "kit": "Socos em Série",
    "duration": 1.44,
    "channels": 2
   },
   {
    "name": "kenta-ult.mp3",
-   "sha256": "6b6c2c1c223f2ef145ed018b24674706312bbe02f8375cfabb10a3621b097bac",
+   "sha256": "841ac68240db45e57770c620984d17b704e410156b6e98152632d88c76e4e4a0",
    "kit": "Golpe Definitivo",
    "duration": 2.29,
    "channels": 2
@@ -1831,14 +1694,14 @@
   },
   {
    "name": "volt-skill.mp3",
-   "sha256": "54d75907c96ab9e1cbd8e1c5fd021cd0149dad7df72e2e70fd59a807d3705375",
+   "sha256": "6828abcd3c61d47b9a0ddbcf8fa6ce1e80ac6e15c2f1b835b309caa08ca436f1",
    "kit": "Canhão Térmico",
    "duration": 1.41,
    "channels": 2
   },
   {
    "name": "volt-ult.mp3",
-   "sha256": "b14496db665458c7dfd46572f995ab6a257f2a35d83d8cdce51369f6a6e872ff",
+   "sha256": "24436c2167c892b5572a503a006e889fb9decf2f7cd0a050331f90fd9df5ce2b",
    "kit": "Sobrecarga do Núcleo",
    "duration": 2.26,
    "channels": 2
@@ -1852,14 +1715,14 @@
   },
   {
    "name": "kai-skill.mp3",
-   "sha256": "15579fdff7d817f776a11130d1521f9ae07f5a9deaf7e6a2e64f3b29ddc7cc7b",
+   "sha256": "cdd3dcee4f78f97e40dc8387c300efe902f2136de4336323488258b80729ec5d",
    "kit": "Punho Carregado",
    "duration": 1.19,
    "channels": 2
   },
   {
    "name": "kai-ult.mp3",
-   "sha256": "debfabced41d534056b0d2922cd31d11ebb62c8cbecf1f0c7260c40b9c28590b",
+   "sha256": "bf56453f6c4a25c400d461353ca4e4668222d5853f1a6b9884beeb1becec9cbe",
    "kit": "Forma do Juramento",
    "duration": 2.22,
    "channels": 2
@@ -1873,14 +1736,14 @@
   },
   {
    "name": "riku-skill.mp3",
-   "sha256": "4bd02163238b30167983e890b7dfde9fe7b3593798b7db69a396f7066065997a",
+   "sha256": "b0d6e660d880ed06af51d31475201a18d618487a9a96cf85867e07039001552d",
    "kit": "Coroa Trovejante",
    "duration": 1.15,
    "channels": 2
   },
   {
    "name": "riku-ult.mp3",
-   "sha256": "66fa381bde75b82fec4c9b6dbb2271829c723412c1fa568cb51095d36a745ac1",
+   "sha256": "1d248e4e0e28a2262808e26e0890371428b2e54242cc870d526df383bcfe7468",
    "kit": "Relâmpago Divino",
    "duration": 2.22,
    "channels": 2
@@ -1894,16 +1757,16 @@
   },
   {
    "name": "elian-skill.mp3",
-   "sha256": "45333806b9aed80d5928899fe1773223925505a2771ee54c1f13b8c925a2e789",
+   "sha256": "b2053ee106912dc86563547c5be47aff0cb9e5188913c087b53c9ba864151d49",
    "kit": "Grilhão Restaurador",
-   "duration": 1.58,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "elian-ult.mp3",
-   "sha256": "0ae89f5d2375997316507dbf848d8a127d936efe72aa22cb9aae03c5f1f6e8cd",
+   "sha256": "0c50a9a5b825b728b6a6d4ddc97ac602c517f7e3a94da04adab4a54863753efe",
    "kit": "Sentença Acorrentada",
-   "duration": 3.3,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1915,16 +1778,16 @@
   },
   {
    "name": "aiko-skill.mp3",
-   "sha256": "fd1cc6cf53758e9598fdde3add446c86f88cba6e517ccec93eb67765514d390c",
+   "sha256": "09ef6846353edcca5c7105a34b7baaaec59fd51f525e7204964aeab78585d4ef",
    "kit": "Tiara Lunar",
    "duration": 1.47,
    "channels": 2
   },
   {
    "name": "aiko-ult.mp3",
-   "sha256": "ffccca1dd9675e79d64bfcbcc0df5958a2a97757198357de9d3b4216597c5bac",
+   "sha256": "b80ed58c865b49db5b7211f10af47525192b1fa28d6aa17bd03f3a9eeac674a0",
    "kit": "Cura do Luar",
-   "duration": 3.13,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -1936,14 +1799,14 @@
   },
   {
    "name": "kiba-skill.mp3",
-   "sha256": "c52344c0cd967961812f89e925dc8391dad4e6a11f61ce3eaa509864c8190d64",
+   "sha256": "cdab8dc5f6a33b8914f9a21972846cd92adf7251db20a6d1c047f1f28fe8de2f",
    "kit": "Garras de Aço",
    "duration": 1.22,
    "channels": 2
   },
   {
    "name": "kiba-ult.mp3",
-   "sha256": "256b68d338c70f6ea6e17bf2fac47514451b45c7301ca665c82054475f0ded53",
+   "sha256": "35edfaae177b4ceae2a564934f33039ac1e474d43cfd3a91549426f1c1420bfc",
    "kit": "Fenda do Vendaval",
    "duration": 2.22,
    "channels": 2
@@ -1957,14 +1820,14 @@
   },
   {
    "name": "jin-skill.mp3",
-   "sha256": "d6c23d4c15bb323269600e6554761b944e77e9b21ac5dc5e867d51231c0121f6",
+   "sha256": "dffa1fa1deb03f59ffd99d11baf6344cc0d8c6760c5bc16722693c1a5cae1cf4",
    "kit": "Queda da Garça",
    "duration": 1.37,
    "channels": 2
   },
   {
    "name": "jin-ult.mp3",
-   "sha256": "10e1849eb823d77407403005ea22cb00bb05ec32321837ee8d3846237fb6209b",
+   "sha256": "22f23a2e445bc797838bdf585cc74284baaf3ae24b14278f51b6b6410b761dd0",
    "kit": "Relâmpago do Céu Alto",
    "duration": 2.22,
    "channels": 2
@@ -1978,14 +1841,14 @@
   },
   {
    "name": "drake-skill.mp3",
-   "sha256": "3dacb4802409ec52c3a9e43f8ebea72a4fd5e84a75a3db8e555154a29818d6c6",
+   "sha256": "0819e03e647f1223cc2115ac4053cf843f3b57225e84224ab8526738d19f1db0",
    "kit": "Rugido Flamejante",
    "duration": 1.48,
    "channels": 2
   },
   {
    "name": "drake-ult.mp3",
-   "sha256": "09250de9de16d33c8064ceea960929d1bbd0a5294c4d3b756f54a2baaf8fa0e7",
+   "sha256": "61cf43178e4bb91ce354027690b4e6fe48460e3c6e76285c86671e11e045f30a",
    "kit": "Forma Draconiana",
    "duration": 2.34,
    "channels": 2
@@ -1999,14 +1862,14 @@
   },
   {
    "name": "sienna-skill.mp3",
-   "sha256": "40d982ad9dbd69b4c52ead97fe3d2ddc82a3e6dec8381700ffa88f32b080f23c",
+   "sha256": "af4a574e9d23e0ff8976ec7b268eab7ba23996b3c5f0a63b8a7878c75912aaa0",
    "kit": "Armadura Adamantina",
    "duration": 1.49,
    "channels": 2
   },
   {
    "name": "sienna-ult.mp3",
-   "sha256": "2ee569adbe95fde4d29f84c89162b0dda6ee85e866712f45d66d6f3f0212f73d",
+   "sha256": "54a9f41e1d8602aa010d61ce3121ef22a57649c7171a352eccf37ff48584c9c7",
    "kit": "Armadura do Céu",
    "duration": 2.22,
    "channels": 2
@@ -2020,14 +1883,14 @@
   },
   {
    "name": "daigo-skill.mp3",
-   "sha256": "3ff649ba6afb889d9e2c405ef34914105f33ea78918702539c591f9f592b1b77",
+   "sha256": "23e772fe7bc9c388ee9526cf81b0454d94ba0a7c08ef64898e2bf24dcd670a0d",
    "kit": "Esfera de Ki",
    "duration": 1.47,
    "channels": 2
   },
   {
    "name": "daigo-ult.mp3",
-   "sha256": "1b9ed61f0c9862f329b88ae94f0ed2f07c0ee2a7217d56fd4097f8bba3b2589c",
+   "sha256": "467bbc693228e5eb0519aec10fbfe64b66a14578c2994482ed9b106f2357384b",
    "kit": "Punho Ascendente",
    "duration": 2.33,
    "channels": 2
@@ -2041,14 +1904,14 @@
   },
   {
    "name": "mei-skill.mp3",
-   "sha256": "7c35c0eabcb427b45b27bb79d1606ed2ebc8f3670e4d275647f96b19d939f590",
+   "sha256": "82bde64679871082a2053dcc9d89de3e88f85dbac2ae80c9066e8aa9208b3684",
    "kit": "Tempestade de Chutes",
    "duration": 1.22,
    "channels": 2
   },
   {
    "name": "mei-ult.mp3",
-   "sha256": "73d49220d515e267b9eab8929a033a78c0aeba667c8b14c8dc8efad7619822c1",
+   "sha256": "84accac969a51cb734956eaf5ab6d7251eb8679dedca6154d2da568074d0c1e1",
    "kit": "Giro da Garça",
    "duration": 2.22,
    "channels": 2
@@ -2062,14 +1925,14 @@
   },
   {
    "name": "kael-skill.mp3",
-   "sha256": "35690a5000df6f20954d1078a6fd8b45b864ed286570af2a79756212545c9263",
+   "sha256": "fcef30f2ecaabd4d4da2eded88cf4becf48a4112188a02b2a6223ba4b6a9ac3c",
    "kit": "Corte em X",
    "duration": 1.19,
    "channels": 2
   },
   {
    "name": "kael-ult.mp3",
-   "sha256": "b2b0ead1b59ff20ed0b3d3c0be9ddd164530b943266ae27f809f3022cac96f05",
+   "sha256": "98f2489c8ed809371015d5bf3c6204adfac061a7bedcc36a7c5af7f27d8e5f29",
    "kit": "Nove Golpes Celestes",
    "duration": 2.22,
    "channels": 2
@@ -2083,16 +1946,16 @@
   },
   {
    "name": "sael-skill.mp3",
-   "sha256": "56f1bb6114b02deb4c210c5f3838c5775575c95ca452cecf916f6eb5ec788f15",
+   "sha256": "881c9ce28ff959f8cdfe8e764e3443e6d43735bd58e5c8faf6561dcef29e9cd2",
    "kit": "Oito Cortes",
-   "duration": 2.1,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "sael-ult.mp3",
-   "sha256": "7ed939693d8bf4a1ed9295fad150580736ada6a6f4bdcb00cb651ba297655e22",
+   "sha256": "514ad72786aca66fc1e785c96fff6f4fa487648383d65433c25b56ae604d4578",
    "kit": "Estrela Cadente",
-   "duration": 3.01,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2104,14 +1967,14 @@
   },
   {
    "name": "rina-skill.mp3",
-   "sha256": "a377e1aa79475fba3687b6355fe14dd1bb29552b6f5fec64d70e33bcab9efc4a",
+   "sha256": "56c70cc4301dbf04c096a78e5884ccd7bb0d2a4db669b979237b03630ae02ba5",
    "kit": "Sequência de Golpes",
    "duration": 1.46,
    "channels": 2
   },
   {
    "name": "rina-ult.mp3",
-   "sha256": "b862612d59552b46c774d411e75fcb851f15257cdd7a05a4502b1aaea3467f5f",
+   "sha256": "19bd423d11246154dcebe3ed83edd8e53314965de4e548054d688b462efe0e33",
    "kit": "Golpe do Firmamento",
    "duration": 2.22,
    "channels": 2
@@ -2125,14 +1988,14 @@
   },
   {
    "name": "nadia-skill.mp3",
-   "sha256": "007a16ecabca759add61ad1f8cb15f8d6e643fab487d7f5001d709b9ac9f3017",
+   "sha256": "07b8913c9f4fba9d0380c4061cea8a43d2a43643f63c33f29a408ecf9b2f58d5",
    "kit": "Tiro Preciso",
    "duration": 1.23,
    "channels": 2
   },
   {
    "name": "nadia-ult.mp3",
-   "sha256": "8ea3971fb6e95e13fb41ebee37819057759ff01582bc42e250c8a5b13c9a4020",
+   "sha256": "fc96d4113089d2646e67c064022c82c5330984dc2fb45ef9130dad120ae349e5",
    "kit": "Flechas Explosivas",
    "duration": 2.22,
    "channels": 2
@@ -2146,16 +2009,16 @@
   },
   {
    "name": "thorn-skill.mp3",
-   "sha256": "9c0e7a867a01c1238aae06b3e0985ed6ee7bda798c1d8d74e8efec2cbd96ebaf",
+   "sha256": "581eb5aed5d4d234a7c2228a5f7c59fcc7588f9ba55b884f98f3d488ac2c028a",
    "kit": "Arremesso do Machado Gélido",
    "duration": 1.41,
    "channels": 2
   },
   {
    "name": "thorn-ult.mp3",
-   "sha256": "ae4f132cfcb243aebe95599c759704af4663da4251eb2683a616e911fea214d1",
+   "sha256": "2b1403ea5c95519aa35ad63004f7c94874ca179a8c99cfd192f16b422a57b55a",
    "kit": "Ira do Guerreiro",
-   "duration": 3.17,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2167,14 +2030,14 @@
   },
   {
    "name": "bjorn-skill.mp3",
-   "sha256": "f892b1224624bcc76c2238306e8f9153d453e0447d9e3dd2b321201de280c61c",
+   "sha256": "5b104a34ab4214f3eba914956f53aaa7b9c0106a4dd9717a3242c1b6d953c761",
    "kit": "Flecha de Luz",
    "duration": 1.49,
    "channels": 2
   },
   {
    "name": "bjorn-ult.mp3",
-   "sha256": "9da3a15fea70c20b1a96a8692ffcc869c4740cffdbc6a76b7d643767bad012c8",
+   "sha256": "f317286ffa4b91196926f87ea7dcbb25ba5d209aa8a892b117bf049147c517de",
    "kit": "Invocação Rúnica",
    "duration": 1.38,
    "channels": 2
@@ -2188,14 +2051,14 @@
   },
   {
    "name": "rook-skill.mp3",
-   "sha256": "fcbc75d75ab4bb084aba34b9ed383af60bbbc614813c8c08dc256c6ecf9f43b9",
+   "sha256": "9c19a698c4112bc8dc5bbfebee8d75857f7af7c7b4fff7b592090de6cc8c746a",
    "kit": "Granada de Fragmentação",
    "duration": 1.17,
    "channels": 2
   },
   {
    "name": "rook-ult.mp3",
-   "sha256": "a9099a592e01816bdedc7e0090ae8a4901fe1fd2bef1b567a333fe05e6454885",
+   "sha256": "531a477d2532fe60915b072f451b4804aaf0e7a8cba7da3d0d1977d815b6aa40",
    "kit": "Canhão Orbital",
    "duration": 2.22,
    "channels": 2
@@ -2209,16 +2072,16 @@
   },
   {
    "name": "warden-skill.mp3",
-   "sha256": "1d657d7165310e21a8834e2e12376d966cdba0a00ca0af2f9f873f787a9ab84a",
+   "sha256": "b36359f3b3bc178e69a6b45e117f97aa39d2aa168939d121a9bb66aa0a059336",
    "kit": "Escopeta Dupla",
    "duration": 1.45,
    "channels": 2
   },
   {
    "name": "warden-ult.mp3",
-   "sha256": "c1553d7169b6b91c3f689184d02ee1277fe5cb4e171d59579823edcfff2b826e",
+   "sha256": "7246703a859bb897fdaddb3dd20733d44642f87eb9077e57f894c3e69b4a70bf",
    "kit": "Canhão de Plasma",
-   "duration": 3.14,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2230,14 +2093,14 @@
   },
   {
    "name": "zara-skill.mp3",
-   "sha256": "d093727411fa625dccade5e0e5f11ecbca3ab9078577c0acd28009494fdee3d7",
+   "sha256": "c7d4ca05381244a96d261a59724a6dabcb6e33df84e3ce01b4a0232236d62c4f",
    "kit": "Faísca!",
-   "duration": 1.55,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "zara-ult.mp3",
-   "sha256": "0d75a686fc7a1bfaf6157d0eaf1f84650168d9884b780450fa840f89f5a173fe",
+   "sha256": "24b95df455fdb1138b187cf489e54605f37d6ec72f20b3cf9564f094139c42d3",
    "kit": "Míssil Maluco",
    "duration": 2.41,
    "channels": 2
@@ -2251,14 +2114,14 @@
   },
   {
    "name": "kira-skill.mp3",
-   "sha256": "895e8df2111d3042faaaa41d0e016c1524fe14b8547445f901dd845356d5549b",
+   "sha256": "513a95c9fd870cabad2a4c5c7f8b07d99a68f682916d4a5ea3752e9dfcc3a0de",
    "kit": "Encanto",
    "duration": 1.41,
    "channels": 2
   },
   {
    "name": "kira-ult.mp3",
-   "sha256": "8f3cae557530d8ff153365a12481c7339b1223edecf6bfc7645ab4ab5d59ff19",
+   "sha256": "5ec30f6a29de81db32d7184d79bc94c5956dc9145c9389ab50c18763761ed4a2",
    "kit": "Dança dos Fogos-Fátuos",
    "duration": 2.26,
    "channels": 2
@@ -2272,14 +2135,14 @@
   },
   {
    "name": "haru-skill.mp3",
-   "sha256": "c5fbb40e863f578366a8d9b2fdebe4b2c331eb242d662ca4611adb73610a8c51",
+   "sha256": "cd13421bf9f03a974d5cc356cde5d2c89da92d7916e9ee8ac24d13cd2d96bdc0",
    "kit": "Vórtice de Aço",
    "duration": 1.35,
    "channels": 2
   },
   {
    "name": "haru-ult.mp3",
-   "sha256": "90b2ed48958a58bc2dd5acc2db6c467cc1b9f0b36309e423f3f51164b7764f8f",
+   "sha256": "b8d68417e562c8e821eb1a13a7b845127c7c09aaf96c18d45388ef60c47a08b3",
    "kit": "Vendaval Final",
    "duration": 2.22,
    "channels": 2
@@ -2293,14 +2156,14 @@
   },
   {
    "name": "ivy-skill.mp3",
-   "sha256": "9ce594f5b21687fd5837675b058bcd237f078d05604f8e5305f94a8b421a1090",
+   "sha256": "c79267290186474a5b74b129919cfc6c9efddd38f7fef39db98895b2acb1d1a7",
    "kit": "Retrocesso",
-   "duration": 1.55,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "ivy-ult.mp3",
-   "sha256": "88739ca6da3024bed5cd48a9b65d5e8c388a688dc447d9cde65a4d6befff6816",
+   "sha256": "20c86d7b81c12f6c6bd362728f2cb7347423042ef5e1a689bd2ecfefd261a89d",
    "kit": "Mina Cronal",
    "duration": 2.22,
    "channels": 2
@@ -2314,16 +2177,16 @@
   },
   {
    "name": "nari-skill.mp3",
-   "sha256": "cbd8ac6febd488927a64452fc83ef71be1c873323429a56c08844f92d3c68d13",
+   "sha256": "d72cfccaf48748d5ea74a57f3761b40016f464c1fd85dfa01ed2b6aa2f409016",
    "kit": "Propulsores",
    "duration": 1.48,
    "channels": 2
   },
   {
    "name": "nari-ult.mp3",
-   "sha256": "07e36e89d764ed687e4fb8547634775a611247e84b71609bb92873f3dd61d8da",
+   "sha256": "f4d6e3cfe7bc0480a7956f78b902a3b2a5cf6c383fd43e9412cb81e22ff31b5a",
    "kit": "Autodestruição",
-   "duration": 3.13,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2335,16 +2198,16 @@
   },
   {
    "name": "aurelia-skill.mp3",
-   "sha256": "c729529a0140173bf8a6b4ebfac0cf5cf25cfb27a594f20f02947763dfa0972a",
+   "sha256": "7ba9cd940dcfa9c761a3843300aedc0c740477f51aa8c42750923a28401242e6",
    "kit": "Cajado Curativo",
-   "duration": 1.61,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "aurelia-ult.mp3",
-   "sha256": "e741376de620d93750dfee26fd465cfea7f1fc50990924981ed1c3bca64de9e9",
+   "sha256": "020a9cd093b66d29d15a90e4b378a84c63c7567ca10fc48eca0e63619355be9f",
    "kit": "Ressurreição",
-   "duration": 3.36,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2356,16 +2219,16 @@
   },
   {
    "name": "dario-skill.mp3",
-   "sha256": "04d2733ba3dbcf333a8d3207e4c09a31f8c47d00735af3923275aa2c6075df10",
+   "sha256": "5db8cecbb7241e3208a1b593714a4dc2884cb4f0a5fd4a05f8be5644e3aec938",
    "kit": "Lâmina do Punho",
-   "duration": 2.03,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "dario-ult.mp3",
-   "sha256": "9bfc160e82d963f3e41d1641d2c3b82a40cda8c8ccc1095789d8dc40ceb90f18",
+   "sha256": "092097aae02e7950e1581fe0500aa2edd4efbe87f629a6f3a6b549ae5db20015",
    "kit": "Mergulho do Telhado",
-   "duration": 2.94,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2377,14 +2240,14 @@
   },
   {
    "name": "cole-skill.mp3",
-   "sha256": "f604908baa0f5cae63703a9ccb65a937bb55baf7aaf04180c5f3b74b54e96667",
+   "sha256": "247a5759da99b147587f1f89d3a0b28c206d78170fdf2693ac80e3706dcab481",
    "kit": "Tiro na Cabeça",
    "duration": 1.45,
    "channels": 2
   },
   {
    "name": "cole-ult.mp3",
-   "sha256": "225c54e3b3ac3cd3db3d7b5737830b4359b76fe573888670dda3e8538295b4fe",
+   "sha256": "e950fcfcb42c465846fea1f4b88fa63a367cbc0f81648b46de439cd69fa270fd",
    "kit": "Magnum e Chute",
    "duration": 2.3,
    "channels": 2
@@ -2398,16 +2261,16 @@
   },
   {
    "name": "dana-skill.mp3",
-   "sha256": "1aa1b35aace9d8f73b41124051c83681298afbd930dcbf0c9e82a67037de0ea0",
+   "sha256": "7b98e525079aa2547e4258b9a9da8d299450441ca5751b6aba0bcd6ca0acd6d4",
    "kit": "Spray de Primeiros Socorros",
-   "duration": 1.56,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "dana-ult.mp3",
-   "sha256": "387eedaf5554d5dcce958536ee8a4a9329528e255aca5e4f1f4899ac3367b785",
+   "sha256": "17b31f9a07511c30f2dcc9caf9ad74b434dcc453673c31e81ebdef4d7af3c6f7",
    "kit": "Granada Incendiária",
-   "duration": 3.27,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2419,14 +2282,14 @@
   },
   {
    "name": "wade-skill.mp3",
-   "sha256": "5913cddd9cf28ff9c40d4075eb078545b68f7a3c1d92f42df7b26fcbed068ba8",
+   "sha256": "14317a47c5a5b95435b0e2964570f52116a1d7983b046b76c2f8dcd0dfdefb55",
    "kit": "Revólver de Seis Tiros",
    "duration": 1.31,
    "channels": 2
   },
   {
    "name": "wade-ult.mp3",
-   "sha256": "4ce8b9cdf746ec95ed3678ccb14bf662d6fc091db40a321527190c769d9fa325",
+   "sha256": "6c13e778ff40136c88665e25c4e00d8aa533fd61ad919d7459e7e6b8d569e802",
    "kit": "Mira Lenta",
    "duration": 2.22,
    "channels": 2
@@ -2440,14 +2303,14 @@
   },
   {
    "name": "garrick-skill.mp3",
-   "sha256": "444dbcfe8cfb4707e7d6e288524e2f6f4243bb37d22bf6c815dea69b88ef2ed2",
+   "sha256": "9a538dde709b274911fbd6baf9da03c25254fc9986ef3109611ef32abfcced08",
    "kit": "Runa Ígnea",
    "duration": 1.44,
    "channels": 2
   },
   {
    "name": "garrick-ult.mp3",
-   "sha256": "b83044f66c622bb9fa36e5b47b63d2b419f4d65e7079be1fa4ef7892668a54b0",
+   "sha256": "ad0dbdaee98f30d359d4fc2725eeb612bdc90e82ab258182a9168dbbbe2a45c9",
    "kit": "Runa de Impacto",
    "duration": 2.28,
    "channels": 2
@@ -2461,14 +2324,14 @@
   },
   {
    "name": "zira-skill.mp3",
-   "sha256": "71348bcb6668b3271f2bc08d08dd4fddef427884d4d35892bb5bb6c55007882a",
+   "sha256": "0532959423c96db109de8bc6d5e8cc1b709095a1cc8ba9925d5067832d34bfd8",
    "kit": "Salto entre Mundos",
    "duration": 1.24,
    "channels": 2
   },
   {
    "name": "zira-ult.mp3",
-   "sha256": "4aaf9e8883f3f42b37ff4daa9ff66fc93f514a69a95377e7a1fc471ada8618b6",
+   "sha256": "313b405bbc5cba4eecbafaa7ee4f60c60b80d740dee1fde74ec8d6eb5c01b2a9",
    "kit": "Fúria do Relâmpago Branco",
    "duration": 2.22,
    "channels": 2
@@ -2482,16 +2345,16 @@
   },
   {
    "name": "n9-skill.mp3",
-   "sha256": "b6be9f2e89957d1d6155fc5160a786a91850fe4aae30e1609dc8619c4e361f40",
+   "sha256": "95f89386eec90e9fce06f8e4ff50996efd41d232ed987829bad2b09f03f94dac",
    "kit": "Programa Laser",
-   "duration": 2.14,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "n9-ult.mp3",
-   "sha256": "f33be740ce105a0e0a329706d002a462a76ffe37787e7645ef57e5b9b2dd9604",
+   "sha256": "658a836dcba6da4aa5a61419eebe6796a4f18c25ca9ddd875ae78b25146e4b54",
    "kit": "Programa Supremo",
-   "duration": 3.05,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2503,14 +2366,14 @@
   },
   {
    "name": "unit7-skill.mp3",
-   "sha256": "50bec6428e079b7dc10945e96106551191eb30c11644c6ba2d83ff34bb7337e6",
+   "sha256": "a24d5e07b27b451b32de218f59d7f15e28d739075f8f65cd9cbee8bb14159ab7",
    "kit": "Corte Selvagem",
-   "duration": 1.54,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "unit7-ult.mp3",
-   "sha256": "5bb4245316c8b12acdb91a385ca181c2ae36069376686ffc5e71443954432727",
+   "sha256": "036530a43f5d940fe96a27867965ce2e20234db3279b3416ff5dce760f03c783",
    "kit": "Berserker Total",
    "duration": 2.41,
    "channels": 2
@@ -2524,16 +2387,16 @@
   },
   {
    "name": "rex-skill.mp3",
-   "sha256": "c5a879b8dea2c4b32e36d6188ef4d7f9202617722c3dd83d92810bb3f120b68b",
+   "sha256": "70cd4059d2936d433323fbcb950fdf27c97607795fa2d91df0002318cfbca0e1",
    "kit": "Pistolas Gêmeas",
    "duration": 1.47,
    "channels": 2
   },
   {
    "name": "rex-ult.mp3",
-   "sha256": "15c2e62567ca28e4630e4afb30fa08903e396fb1fa60988755f612a2cf787475",
+   "sha256": "5416625054eb89bc986eadcfb748ecf1e3d4bd7a1354274fb38f3a95c8a6a58c",
    "kit": "Pacto Demoníaco",
-   "duration": 3.23,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2545,16 +2408,16 @@
   },
   {
    "name": "virel-skill.mp3",
-   "sha256": "ab89ebe5f19f4d3af0944eb3ba53aa39d567176573b1ffbbb34e450a25cce39b",
+   "sha256": "e31ddfeed53810a2035badf1f471da1ac6ab15798b884268ed5b945e887debcf",
    "kit": "Espadas Espirituais",
-   "duration": 2.0,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "virel-ult.mp3",
-   "sha256": "acff60b917dc058b3db9dbdb0882449bfc193bcfb00e350a2525f88bc361feba",
+   "sha256": "2bda77c42d665bc29d398659e2ee2068bb8103444aca9c8651edf0e5ecd03ae5",
    "kit": "Corte Dimensional",
-   "duration": 2.9,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2566,16 +2429,16 @@
   },
   {
    "name": "selene-skill.mp3",
-   "sha256": "333c9f46277533395a79e15ea73b4a57e80e1379f7c615082411a80de8e0312e",
+   "sha256": "88890236a6a20be40f571a265d2ef00dc664562f8286b0d745e821d5a794bf4e",
    "kit": "Chuva de Balas",
-   "duration": 2.14,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "selene-ult.mp3",
-   "sha256": "0adef4b71f6322b3586c56b25ad56ba8dd79ce8f558f94ba1dace20acfd88392",
+   "sha256": "334f5800192a61c317315b493217e9fb8b39bdb259ca55ffaa4905a719d9dbe4",
    "kit": "Demônio Infernal",
-   "duration": 3.05,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2587,14 +2450,14 @@
   },
   {
    "name": "tessa-skill.mp3",
-   "sha256": "e738e4c8a5b0754d48d7cb6aac086c0de5f189f432156a8f02ab6baf0f1a0859",
+   "sha256": "e0242fa70109e704266c67ea9e5f0e3ab5d8b636c45b9fab05ffb702e859ef45",
    "kit": "Flecha Elemental",
    "duration": 1.2,
    "channels": 2
   },
   {
    "name": "tessa-ult.mp3",
-   "sha256": "1c75441bc0b61e51d5b04d3dfd869ebcae75026374a11e8b8ea4575ddfa58768",
+   "sha256": "790682906c1ba52405b8faaab11d8009bf4f72ec003649ebb25c7f921f0385c0",
    "kit": "Tempestade de Flechas",
    "duration": 2.22,
    "channels": 2
@@ -2608,14 +2471,14 @@
   },
   {
    "name": "kaji-skill.mp3",
-   "sha256": "2dc093db459a7692678de6ba0ce4dfb32c856da1f663836847fc4ea5ae764050",
+   "sha256": "5980a0ef81007b1627466bd3f0f1637a87e75d0e478c2df251e7548a36b1b15e",
    "kit": "Lança de Corrente",
    "duration": 1.48,
    "channels": 2
   },
   {
    "name": "kaji-ult.mp3",
-   "sha256": "be8f298a9e1e7cfa00a2d37d314aba2f67e9e8275e31cc246c0d5a545ac80792",
+   "sha256": "0b03fdf28442f7dd8c18be248f21bad719fae20a6aae68e6a57246a0cea46266",
    "kit": "Execução",
    "duration": 2.37,
    "channels": 2
@@ -2629,14 +2492,14 @@
   },
   {
    "name": "kori-skill.mp3",
-   "sha256": "4f1f649a8e20372ae7d875bb8d8bbd0a61fc0e259200f231d7c2664edcc13a98",
+   "sha256": "b0b5c9a2e12d147a925766f6837dc4cdf264ce0360ffad09360a8527f06950b2",
    "kit": "Esfera de Gelo",
    "duration": 1.46,
    "channels": 2
   },
   {
    "name": "kori-ult.mp3",
-   "sha256": "784decf1c8ae7bc091bf2f1b681522b0047fa5bd79f08d87edaee82b49ebe943",
+   "sha256": "1bde7cac0d02929e4d463170a176a00ee845e8c68cc9f4aa05e8d87e78d55d77",
    "kit": "Congelamento Profundo",
    "duration": 2.35,
    "channels": 2
@@ -2650,14 +2513,14 @@
   },
   {
    "name": "goku_ui-skill.mp3",
-   "sha256": "f07a506f68c8c8d7a5b99e3bf36ac1c439898dc8d63f1da81a5d072fa95743fe",
+   "sha256": "b9c3cca2d1879ae658663fee540d2850adf0a35a286749e9518e19588a961c1d",
    "kit": "Raio da Aurora",
    "duration": 1.31,
    "channels": 2
   },
   {
    "name": "goku_ui-ult.mp3",
-   "sha256": "532af885ab408381de84825baebec62e8d2ba0187baf8ce178e0589320eafba9",
+   "sha256": "c3de9bb4a4fe726a529e614adf724ad334846a0373a219fc26faa322b1958f66",
    "kit": "Sol Sem Sombra",
    "duration": 2.22,
    "channels": 2
@@ -2671,16 +2534,16 @@
   },
   {
    "name": "sasuke_susanoo-skill.mp3",
-   "sha256": "17229683e168b9ce1b131bf1423799c396d5ec103879f70c1b6c52b30fb196f2",
+   "sha256": "51451357a9e98c4641d6e8189be71893dd3fc1db40152e2e6cb4d17cc6aec8b1",
    "kit": "Flecha do Céu Rachado",
-   "duration": 2.0,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "sasuke_susanoo-ult.mp3",
-   "sha256": "a004ba15f3c96aeec33bfad36bb471e696aba961a3fed94863bf74a6392545c5",
+   "sha256": "7ef01b5099ba19514a7b460b4ba2677059acafa6b66f392cdf674a6a25745c3e",
    "kit": "Chama do Eclipse Eterno",
-   "duration": 2.9,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2692,14 +2555,14 @@
   },
   {
    "name": "gojo_void-skill.mp3",
-   "sha256": "e9672d739a339d7a7e72992896d638515875df62bf4acabd5a44ef4775b73e12",
+   "sha256": "cc6d5d3042d0abf013c2b06e2ebe87a243df81cc661294a51191adadf2df5a57",
    "kit": "Ponto Carmim",
    "duration": 1.43,
    "channels": 2
   },
   {
    "name": "gojo_void-ult.mp3",
-   "sha256": "913b8e0503b0e20ef1368be9fa3f4fabcaf250a429f65606af336f3de86dad0e",
+   "sha256": "a3d375d36328cb9edaaab40ed015aea2b287eedc441a267422f9a2fa2cce5bcd",
    "kit": "Colapso Violeta",
    "duration": 2.28,
    "channels": 2
@@ -2713,14 +2576,14 @@
   },
   {
    "name": "tanjiro_hinokami-skill.mp3",
-   "sha256": "6afceefca1eb172a3f23d5fed04408362e4b6a15e025a98180bcb2bb296297b8",
+   "sha256": "c4c24fc555a39062bdd28dd46027f9fa844cc225df145ce422651828ab492338",
    "kit": "Passos da Brasa",
-   "duration": 1.64,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "tanjiro_hinokami-ult.mp3",
-   "sha256": "2428913353bd61a2323c3a825c8e0e280a6410eb18ab573befa9787c13dcd9e8",
+   "sha256": "1098b62129dd0f0013c587b376ee2ad50d7bff2d86244cc9fb1dba747ed5bf42",
    "kit": "Alvorada Incandescente",
    "duration": 2.47,
    "channels": 2
@@ -2734,16 +2597,16 @@
   },
   {
    "name": "ichigo_bankai-skill.mp3",
-   "sha256": "f0c030e643aa0593b09eb48d69845e7cbd0f5ddb6864606511bcffaa9c26c471",
+   "sha256": "6d7302a5a47615ce0648bc7e1f8b3772362e70bdeea242315ae55be2de7c61ea",
    "kit": "Crescente Negro",
-   "duration": 2.2,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "ichigo_bankai-ult.mp3",
-   "sha256": "7ab05d3ad2902097f9074b1e7943979b86eb7829ee2e6f40acdfb08aba32dab5",
+   "sha256": "0b768ed8b8307eb74be0283092886a924b76b6e7af10ae89490ebca9c362ac29",
    "kit": "Noite Sem Lua",
-   "duration": 3.12,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2755,14 +2618,14 @@
   },
   {
    "name": "vegeta_ego-skill.mp3",
-   "sha256": "62aec5dd3194147f80bc6f9c1cd8bc445ed714e95bc96f7f8b7d651e010ec00f",
+   "sha256": "767c33f47d7f7906152e5d4c374343a22adab59450044b8b1d53b50978224e4d",
    "kit": "Estrela Partida",
    "duration": 1.23,
    "channels": 2
   },
   {
    "name": "vegeta_ego-ult.mp3",
-   "sha256": "d99cbe4abe00a19fd851869111242340074d5a402ef2c1fa1ce49ebc1e9b587d",
+   "sha256": "7b2cf2a57e50a48dec124d25e3b27e41bc27a7c5f2b1debb5a25de2a7ccbff06",
    "kit": "Sentença Real",
    "duration": 2.22,
    "channels": 2
@@ -2776,16 +2639,16 @@
   },
   {
    "name": "luffy_gear5-skill.mp3",
-   "sha256": "766784b4de26f0ed2bb5384c5aaf66091a7f8e50dfd206746a52b183f4dea495",
+   "sha256": "eea0d750876150014d65255b17b4b9537f5f658f348ff9ca3c2eaed0aafcffea",
    "kit": "Punho do Maremoto",
    "duration": 1.46,
    "channels": 2
   },
   {
    "name": "luffy_gear5-ult.mp3",
-   "sha256": "29b667156100a27cfbd8cf5f4d4639603820ec6cf2cbbc2fcc3aa707a69357b2",
+   "sha256": "c2e4073f70512a5892b4749f6ff82c2249eb38ab8593e9538f61ea742cd1bbcb",
    "kit": "Festa da Maré Alta",
-   "duration": 3.28,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2797,14 +2660,14 @@
   },
   {
    "name": "naruto_kurama-skill.mp3",
-   "sha256": "67eecac3250af60e768cdc512ed784c2b88868b0388d86b93a3944e026567abd",
+   "sha256": "19d306d5bf98b0508cf7509bdabf8e8ef9babf524c7c0a3c0951ce160c4f577d",
    "kit": "Esfera da Raposa",
-   "duration": 1.54,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "naruto_kurama-ult.mp3",
-   "sha256": "daeeaf823b2cd762c19e2c15d699dfda442d5420f4838c71e1e29263a2e3d095",
+   "sha256": "2dab802306bc7b2699772928e8c7f8c664f53d29c2021a75a354a7cbb181d137",
    "kit": "Ciclone da Raposa",
    "duration": 2.39,
    "channels": 2
@@ -2818,16 +2681,16 @@
   },
   {
    "name": "mercy_valkyrie-skill.mp3",
-   "sha256": "63c728fbe28f833d862bc4583521d39cff6dcf16aacd5f2a151fd7b841922e83",
+   "sha256": "c028065acd8bb09dac4d6613b04509024c23802f90076b73ff6657e65d58e12c",
    "kit": "Feixe Restaurador",
-   "duration": 1.69,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "mercy_valkyrie-ult.mp3",
-   "sha256": "79acba90d3eb610fe9067a4cc1eaaf3b210220b24a5794fa87d15885cd71ada1",
+   "sha256": "7a8eacbb2c94b4c7545671d5d26402592298bd43f22160d25ae67c682590997d",
    "kit": "Renascer Coletivo",
-   "duration": 3.49,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2839,16 +2702,16 @@
   },
   {
    "name": "sailor_eternal-skill.mp3",
-   "sha256": "60a82363d249027c59d3421535bb77cbc95db0c741c33de4688cc437f98a4fa9",
+   "sha256": "8d65feb320cc8e1e01721500fe25e7c4de00ecb22380aae0621f278868aa272c",
    "kit": "Bênção Estelar",
-   "duration": 1.55,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "sailor_eternal-ult.mp3",
-   "sha256": "6b7bdf95d01a7c689efeed8d24c6bd31558240b93add328c4b4a6fc997b2fe51",
+   "sha256": "ff1837547abbf986aed022192a50473326d6b8b84b30c988f08e21efc7bfe679",
    "kit": "Maré Lunar",
-   "duration": 3.25,
+   "duration": 2.6,
    "channels": 2
   },
   {
@@ -2860,14 +2723,14 @@
   },
   {
    "name": "dante_dt-skill.mp3",
-   "sha256": "e4fdf673b8c05fa16c381c55ecdf1e3b220829c9c364fb55d656546d325a5416",
+   "sha256": "7ed89d80cd5d789ccc9f9f0df280839fe31a5b668ac04df101c091142623028c",
    "kit": "Salva do Pacto",
-   "duration": 1.55,
+   "duration": 1.5,
    "channels": 2
   },
   {
    "name": "dante_dt-ult.mp3",
-   "sha256": "a2875c856167fa8bbcc5f19e6f4c9f94ca7603f8ba5911fa0c6bc320cf165178",
+   "sha256": "84d6c65711dad583253c8e7fad6b4f420c1680cbf90f470f442fcf84c47306e5",
    "kit": "Forma do Pacto",
    "duration": 2.39,
    "channels": 2
@@ -2881,14 +2744,14 @@
   },
   {
    "name": "jinx_arcane-skill.mp3",
-   "sha256": "c531eda809e8d09cfaddfb99504731d00abd66b0742dfffa25b0d5848d252024",
+   "sha256": "47726cdf5ff06baa41890411af1e3b21a9cd6895ad629bab8c898654d73a1268",
    "kit": "Canhão Sobrecarregado",
    "duration": 1.25,
    "channels": 2
   },
   {
    "name": "jinx_arcane-ult.mp3",
-   "sha256": "f9074efd01363b901c57e26f74cf1e42c23f078a3764a7335374e294f238d25a",
+   "sha256": "6da66456812dfc9964f2f072d2565612807b586f56c80a18142767d43968cbd3",
    "kit": "Foguete do Fim da Festa",
    "duration": 2.22,
    "channels": 2
@@ -2936,13 +2799,6 @@
    "channels": 2
   },
   {
-   "name": "event-turn.mp3",
-   "sha256": "29aae2649996bbbd56fb6fa3bca410afab7a64e399fe1c3f0ed89c4ec4251dd8",
-   "kit": "turn",
-   "duration": 0.2,
-   "channels": 2
-  },
-  {
    "name": "event-strike.mp3",
    "sha256": "8b785f18fcd5211f1659c54858ba79ccbcb942044f32b2ed0bed66e8af0774fa",
    "kit": "strike",
@@ -2951,7 +2807,7 @@
   },
   {
    "name": "event-bossWindup.mp3",
-   "sha256": "4c675febcbd6a3697179ff4598805a45202fa24ffc3cb6c13139ce02bda908f0",
+   "sha256": "7e0ae709b3355be3af365f814a31ebeaa657fc0f6c815626f51baaafabe8743d",
    "kit": "bossWindup",
    "duration": 2.01,
    "channels": 2
@@ -2972,14 +2828,14 @@
   },
   {
    "name": "event-damage.mp3",
-   "sha256": "e97ae858fade83fdc8258997c9a5e91a8b793e74445c0ab60e37d7a3c71ce3a5",
+   "sha256": "031dc4093c3dc3cde20b9ed1d5ecab359da3be7b92878a1af42888455e235ab3",
    "kit": "damage",
    "duration": 0.4,
    "channels": 2
   },
   {
    "name": "event-damagePlate.mp3",
-   "sha256": "c3c30a049eaec2e121687717f5eba82008f3e17f64fcad43e113d94c3a7fa642",
+   "sha256": "623ec53b885d47e1aac4a28d837bc8c07372b74da750cd758774455e3ea38412",
    "kit": "damagePlate",
    "duration": 0.62,
    "channels": 2
@@ -3014,14 +2870,14 @@
   },
   {
    "name": "event-revive.mp3",
-   "sha256": "f527ac3bc6c59655a980519eec489ae74ac05cbc55eb2b97aed8428183f763fe",
+   "sha256": "6ccf686f040110dde982fce1d54fed5449426f51ee16886f6a374bbc70d6fd5d",
    "kit": "revive",
    "duration": 1.8,
    "channels": 2
   },
   {
    "name": "event-levelUp.mp3",
-   "sha256": "b761e9a72da25cf54c37907354e71a480e9f89fa628f1567d728928b80605445",
+   "sha256": "541075caa8cbcd26e96042cf0c528f35d507fa4bdd6e12e5c409aad7e0a9793c",
    "kit": "levelUp",
    "duration": 1.8,
    "channels": 2
@@ -3049,23 +2905,16 @@
   },
   {
    "name": "event-defeat.mp3",
-   "sha256": "c0368a25d7bfa8e6047056b126b9b0d52543f396efa14b44e4fb6b9f6ceb91a2",
+   "sha256": "d0569e094673f8205ed8fd71f9b2165d24637126c99b6b9d8a5b19c66e663986",
    "kit": "defeat",
    "duration": 2.39,
    "channels": 2
   },
   {
-   "name": "event-spawn.mp3",
-   "sha256": "bdce3c18d21a3f7b03985c2195de1a9ce7a340718f16ca55f0e2ddb8a2029ce1",
-   "kit": "spawn",
-   "duration": 0.9,
-   "channels": 2
-  },
-  {
    "name": "event-death.mp3",
-   "sha256": "30e553dd926de9d1f4e3472d809627b0e31973dc33ecc12a78d12e58f3f2a50e",
+   "sha256": "5162c5ecfd733837bb92426d6a5b8d1d78c6e8d9484972b044f390082a9908b0",
    "kit": "death",
-   "duration": 0.62,
+   "duration": 0.5,
    "channels": 2
   },
   {
@@ -3097,64 +2946,36 @@
    "channels": 2
   },
   {
-   "name": "event-step0.mp3",
-   "sha256": "6c692890e08413d623dedc53c54461ad166bc5b41b9bd08180fce0be216d34fb",
-   "kit": "step0",
-   "duration": 0.24,
-   "channels": 2
-  },
-  {
-   "name": "event-step1.mp3",
-   "sha256": "8d98708dfd4470f3f1b639a5b9a3884e5d567842c658176d10e15b05a92d3dcf",
-   "kit": "step1",
-   "duration": 0.28,
-   "channels": 2
-  },
-  {
-   "name": "event-step2.mp3",
-   "sha256": "d361a2d33c78f704f43a77964a7c437884f8be40ed1869f5500c80603a1df4c3",
-   "kit": "step2",
-   "duration": 0.23,
-   "channels": 2
-  },
-  {
-   "name": "event-step3.mp3",
-   "sha256": "bbd6a0ff57a6ca694ec0952a550590ada9140b0169bdac5253c7f1070e973f22",
-   "kit": "step3",
-   "duration": 0.26,
-   "channels": 2
-  },
-  {
    "name": "event-uiClick.mp3",
-   "sha256": "6639ed49ed2647008bbd02ac545fa61292ca6de549bdc91963b8ad1c15f0db9b",
+   "sha256": "5a0c344e0174c4c1125e769fdf5b07495db000f98fd395c7b3fe6f6b5d6947d1",
    "kit": "uiClick",
    "duration": 0.13,
    "channels": 2
   },
   {
    "name": "event-uiConfirm.mp3",
-   "sha256": "ff970ac80d862dedae266e632808374a45f39327654fa03defc70f1361c15dcd",
+   "sha256": "ea88dc8b6d54fb76153d8e180c9dddf3c86aa1609a127d81f545236512973e62",
    "kit": "uiConfirm",
    "duration": 0.3,
    "channels": 2
   },
   {
    "name": "event-uiDeny.mp3",
-   "sha256": "6329d43f12ed779a0d5116d0207d1d1021e3eabf0c17b39066db9c59f1f63591",
+   "sha256": "dab9f7dddb28db5fa3b77b1d8b92ed14fdc60cdcf6f78167ff2152a7d53e9ae8",
    "kit": "uiDeny",
    "duration": 0.15,
    "channels": 2
   },
   {
    "name": "event-uiOpen.mp3",
-   "sha256": "c4c4a80db97271d29822427fdabfde2100f4cface24aa009dd80025955f9c52c",
+   "sha256": "c9202cb9fb875b925545ea4e4db76f17851fc9ee5ccd10d677a81d93c450d25d",
    "kit": "uiOpen",
    "duration": 0.5,
    "channels": 2
   },
   {
    "name": "event-uiClose.mp3",
-   "sha256": "92e5726c037f5076d6252d7f2d035f698424a48979c93bf935e747902e1e57b3",
+   "sha256": "adb2a82646e319793463d6eb8103dd06642be7bacd03865c3377dd17a52bc878",
    "kit": "uiClose",
    "duration": 0.23,
    "channels": 2
@@ -3349,2530 +3170,1613 @@
    "channels": 2
   },
   {
-   "name": "mob-fox-v.mp3",
-   "sha256": "1e97a75fc65f6fc78d997c6f99e898f48f6c797833d847e2c9f2a4027001106f",
+   "name": "mob-fox-a.mp3",
+   "sha256": "bcd543a4362347d975c39d801821b49456e6aa70ba2d289fd3aea42065cccae0",
    "kit": "Raposa do Crepúsculo",
-   "duration": 0.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox-h.mp3",
-   "sha256": "e563cc6ee196003c398a58a663b3170add42333b22dc529e6b3bc6cb00d555ef",
-   "kit": "Raposa do Crepúsculo",
-   "duration": 0.3,
+   "duration": 0.54,
    "channels": 2
   },
   {
    "name": "mob-fox-d.mp3",
-   "sha256": "64e9b658a3b9b4e8d7ffb911dad3c0269649cd53844aa82e1456804073841a30",
+   "sha256": "9cb8cceeab79423fe7a9e675708d01243d3885b54440557089620352dbe54133",
    "kit": "Raposa do Crepúsculo",
-   "duration": 0.93,
+   "duration": 0.55,
    "channels": 2
   },
   {
-   "name": "mob-golem-v.mp3",
-   "sha256": "00ef0cc0edee3d54ce348e94b956a76b58c26181da076e11e8eb7b94fbaa30cb",
+   "name": "mob-golem-a.mp3",
+   "sha256": "2a1346cfc8cfc8582b4b6971761e62478ad113e55241f72186a940c225aec517",
    "kit": "Sentinela de Musgo",
-   "duration": 0.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem-h.mp3",
-   "sha256": "7ea8e03fee62cb22382eff28241614aeca4a41d3462b8adbb99c431ae01860b9",
-   "kit": "Sentinela de Musgo",
-   "duration": 0.47,
+   "duration": 1.0,
    "channels": 2
   },
   {
    "name": "mob-golem-d.mp3",
-   "sha256": "36c642dda6e2bb667daabb1d32d7d203322244b7c253b92e6baa0166568a74da",
+   "sha256": "0c15ae5a72911cd6983f13b26c5bd94387acd893db025dc0c9a521d4b63cc1e6",
    "kit": "Sentinela de Musgo",
-   "duration": 0.97,
+   "duration": 1.12,
    "channels": 2
   },
   {
-   "name": "mob-spider_jade-v.mp3",
-   "sha256": "1cd7d4b12a68986183ab3597174029eca7b2476ecbc907cf5c7e4b12847e9b43",
+   "name": "mob-spider_jade-a.mp3",
+   "sha256": "429c345571ffd9700af550dca4a54099f4d09722da88f0d9d7b10e2ca28059e2",
    "kit": "Aranha de Jade",
-   "duration": 0.44,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_jade-h.mp3",
-   "sha256": "70a725d84717d3f1c7908af2c8a95f5c21c242a2ba3af0ff96a95e119edbd968",
-   "kit": "Aranha de Jade",
-   "duration": 0.32,
+   "duration": 0.52,
    "channels": 2
   },
   {
    "name": "mob-spider_jade-d.mp3",
-   "sha256": "cba4ae36a2548d5d2bc48aaedb3925ae168cd67d897e395a382a297f8b479566",
+   "sha256": "f17be1fa3b05cb5fee88590d1b6290f2700e36474aa49104a628e415a9b33505",
    "kit": "Aranha de Jade",
-   "duration": 0.87,
+   "duration": 0.46,
    "channels": 2
   },
   {
-   "name": "mob-oni-v.mp3",
-   "sha256": "6d5026872b180ae2614150a10defcc94e00d6b562af237e46d8f40d55cd9b7a1",
+   "name": "mob-oni-a.mp3",
+   "sha256": "48684541ca0c90e58c2aa5d83fc6f9b4577ef902c4b64784bf429b99077053cc",
    "kit": "Oni da Névoa",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni-h.mp3",
-   "sha256": "c3688b75fac7ee5b5ec12c4ebe27e28f4537dd5bbeaf77ada6f11da58c68da1e",
-   "kit": "Oni da Névoa",
-   "duration": 0.37,
+   "duration": 0.58,
    "channels": 2
   },
   {
    "name": "mob-oni-d.mp3",
-   "sha256": "91c5d70cfcf18ea6894a3a19dc16ee932f1a16fba7f385d78d5f964ac5ba8979",
+   "sha256": "5fb6d8964dc4042664a47a7d846672535c52255b30669a567310b009d68520ca",
    "kit": "Oni da Névoa",
-   "duration": 0.94,
+   "duration": 0.51,
    "channels": 2
   },
   {
-   "name": "mob-golem_elder-v.mp3",
-   "sha256": "fdc7105ee91181d236963565dc6e33bb826a0a67ff8f8a2c31da3703f2488c51",
+   "name": "mob-golem_elder-a.mp3",
+   "sha256": "69b6a5c4fa30bc29f4faa5cd89c2931e49df801f8ede8777c1e233960e1614f7",
    "kit": "Ancião de Musgo",
-   "duration": 0.81,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_elder-h.mp3",
-   "sha256": "10ae5db3a5fcf60d02cb88d3c87e16b56f12a8415be9e7a8ff1e7b191f504c97",
-   "kit": "Ancião de Musgo",
-   "duration": 0.49,
+   "duration": 1.05,
    "channels": 2
   },
   {
    "name": "mob-golem_elder-d.mp3",
-   "sha256": "ab9fd42116157fb5b98a0a5c706c38d8d6dee03050a1e1d5ddcbb7808c61209b",
+   "sha256": "4cc4b8e58a8bfe58f555496d33ff64e80f40a2db7f54dc55ec02d060c33ec3ad",
    "kit": "Ancião de Musgo",
-   "duration": 0.99,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_nine-v.mp3",
-   "sha256": "c0112cae692174202d50863c1f622cf5280c552d36196469b22543233676af73",
-   "kit": "Raposa de Nove Sombras",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_nine-h.mp3",
-   "sha256": "7fb61e5e276ec044353d8330c12374180e6d0083b132ba7943ecf635f3783890",
-   "kit": "Raposa de Nove Sombras",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_nine-d.mp3",
-   "sha256": "b43d7f01d46cfcf7da56920a1cb933c6fd091e21bd5584ccca949272366330b9",
-   "kit": "Raposa de Nove Sombras",
-   "duration": 0.87,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ash-v.mp3",
-   "sha256": "7d47af35504f3d4812a3a27c3cd32d3cf4a6ab21bef5bfd528f27389a512d9c0",
-   "kit": "Oni de Cinzas",
-   "duration": 0.55,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ash-h.mp3",
-   "sha256": "c9746e342c65600934e6a42b19f39f310d7d4d9e27c7182ff22cf2a0d6fd5c67",
-   "kit": "Oni de Cinzas",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ash-d.mp3",
-   "sha256": "33cd2f541eaa94a6ee45669ea4afaf8463b7ab62f891f9b3329b1577497241b6",
-   "kit": "Oni de Cinzas",
-   "duration": 0.94,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider-v.mp3",
-   "sha256": "372eb2697ec512f3257ef618a014306ca96c3b181da54ca0a99c386439e74fbc",
-   "kit": "Aranha de Cristal",
-   "duration": 0.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider-h.mp3",
-   "sha256": "1b045415f0e8bfba6e21c843523cc23bb74c70becfdb2e56ee7f63b30f394b03",
-   "kit": "Aranha de Cristal",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider-d.mp3",
-   "sha256": "52ce85ef879441279ca9694a01746b80cc1ea15feac66266d937df6526810dd5",
-   "kit": "Aranha de Cristal",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_void-v.mp3",
-   "sha256": "e059c17a26eeb69d55bf3327a87ebc3a08f7cb3a0423ca427b5d0b45e905d781",
-   "kit": "Chama do Vazio",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_void-h.mp3",
-   "sha256": "bdee81c4ca47da4f9f14511c82b6479ee3dff1a6cb6c1fbe5efa7df214e0f8c0",
-   "kit": "Chama do Vazio",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_void-d.mp3",
-   "sha256": "1a276989501fd222fcef8f0640755bd6ce3d8c13543fe7a2930a853468c90336",
-   "kit": "Chama do Vazio",
-   "duration": 0.84,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_obsidian-v.mp3",
-   "sha256": "c8790ccdd9e7565f005fd45b6babf2dc03e0ad38d551c457338803aa1b07936c",
-   "kit": "Golem de Obsidiana",
-   "duration": 0.7,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_obsidian-h.mp3",
-   "sha256": "6c603f4cff3ae95bce6d029d7f5c16329f05e533135e05ea60a21bdb3d4544a2",
-   "kit": "Golem de Obsidiana",
-   "duration": 0.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_obsidian-d.mp3",
-   "sha256": "84a7a90a52e3697098a2aeb055bb9a3dc4a6dc0be7a0ba9c0248209b027fa5bf",
-   "kit": "Golem de Obsidiana",
-   "duration": 1.03,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_crimson-v.mp3",
-   "sha256": "4588496360ccfbb795837d7e60194ee3a085161b5fa3ed01bc64c93f0ed9b10d",
-   "kit": "Oni Carmesim",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_crimson-h.mp3",
-   "sha256": "66bb0158ef0cfb67dab0fb432be6525eaa5fb6a3be35239f9595e17c63ad6d6b",
-   "kit": "Oni Carmesim",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_crimson-d.mp3",
-   "sha256": "d27a05aadeade293304cca706489bc6246572d93824eed9f2c7bae5a321d5f4f",
-   "kit": "Oni Carmesim",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_specter-v.mp3",
-   "sha256": "899a5de93eea4a1c8fd3dc9c3e7ce32d971c5fce3687045523f930d038f92f06",
-   "kit": "Kitsune Espectral",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_specter-h.mp3",
-   "sha256": "fdc651aa8f47836ac65a229b5ecce8e51c7fede1f3ee80e7c82b0833149d97af",
-   "kit": "Kitsune Espectral",
-   "duration": 0.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_specter-d.mp3",
-   "sha256": "498283129a5e99a8434c12a869e59d7e499e89e47b5596fa18c8be9735e82449",
-   "kit": "Kitsune Espectral",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_lava-v.mp3",
-   "sha256": "dde369ed350d8cd9308eecc24ec91dd45ff9728a8a85e0fd4b28b4974db71e43",
-   "kit": "Guardião Ígneo",
-   "duration": 0.58,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_lava-h.mp3",
-   "sha256": "b5499b9044300572967cd7d7eed528344e2c96de3910c0ffd1adb7c36ec27a2e",
-   "kit": "Guardião Ígneo",
-   "duration": 0.47,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_lava-d.mp3",
-   "sha256": "e0bf62b142c727b7b2223b78e672dcc96290d2ee3e1d0cff3d4d90bb9e58234d",
-   "kit": "Guardião Ígneo",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_lava-r.mp3",
-   "sha256": "fe6ce97a564d9717b0ff111adec776c4621249bca7ce2f161f46b589ac028eb0",
-   "kit": "Guardião Ígneo",
-   "duration": 1.15,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp-v.mp3",
-   "sha256": "6e00c6600c3fc4a3782ad3f10e49dfb0ef22ab00dcc04d3cca2fb0e082e630d0",
-   "kit": "Luz Errante",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp-h.mp3",
-   "sha256": "d3006e7662172d653106a8653a90cc70886080912823ed056992bc9e6311491c",
-   "kit": "Luz Errante",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp-d.mp3",
-   "sha256": "b8f6f4283600a9eb002697899c33fc55052a4a782131d52fb2a53ffce87afcd8",
-   "kit": "Luz Errante",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant-v.mp3",
-   "sha256": "1a16071ac9aebb1d44d614dc083fb0b602a28524991065740c1493d903dda364",
-   "kit": "Espectro das Marés",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant-h.mp3",
-   "sha256": "00008151d1704f30a1d1d92995feaa8f066be227b8b8bfaf62e0e8aad84ea881",
-   "kit": "Espectro das Marés",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant-d.mp3",
-   "sha256": "44bff38173e19348616c6f7eb3c7752ce5a508023865a3e6288737aa8f82e706",
-   "kit": "Espectro das Marés",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_foam-v.mp3",
-   "sha256": "4e24fab76239bcd3efabd7719b505a0ba82b932631c117a1079e03277ce1872e",
-   "kit": "Raposa da Espuma",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_foam-h.mp3",
-   "sha256": "332689c871182d941427802160198fa8d7d6ec609a249e0993dcedc213d88fbe",
-   "kit": "Raposa da Espuma",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_foam-d.mp3",
-   "sha256": "f5a9f8d43ca7052d1a7d3d58a83ce85d7131858cbb341cea9fe5fa733487dfb8",
-   "kit": "Raposa da Espuma",
-   "duration": 0.86,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_coral-v.mp3",
-   "sha256": "15f6fa2ae0c0e5b0345beb959a3551a6314b9723ac24491cbfd02f6b2c9096b4",
-   "kit": "Aranha de Coral",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_coral-h.mp3",
-   "sha256": "aada1b456bc1bfde3636fbc56328a439d66703e2c94a3719440d8dec5cb35691",
-   "kit": "Aranha de Coral",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_coral-d.mp3",
-   "sha256": "b59d901ef3fa5ad17a0575bfd3b7b21df8046383da0380a20452e78c1ba9084b",
-   "kit": "Aranha de Coral",
-   "duration": 0.93,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_tide-v.mp3",
-   "sha256": "551583b500bf39628265620761e42b07aa0a1e9c993a87ef303eed9cc20f2fe9",
-   "kit": "Oni Abissal",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_tide-h.mp3",
-   "sha256": "3f590a6c4d08226af16799946713c13789639fd14dbe08f3563aa4b62fb55e00",
-   "kit": "Oni Abissal",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_tide-d.mp3",
-   "sha256": "5983ab0959e0ce5f8ab5c9ace2c8548c68578e4256349627d7e428d5f3bf42ee",
-   "kit": "Oni Abissal",
-   "duration": 0.87,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_captain-v.mp3",
-   "sha256": "ae206fda839608f72b79a828dae7e2768950a642a8b798c396963b604a14bc05",
-   "kit": "Capitão Afogado",
-   "duration": 1.01,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_captain-h.mp3",
-   "sha256": "7bbdf95df24218ab4958dce9a64f4439395ae652f6fb023f9fce90b32ca93fed",
-   "kit": "Capitão Afogado",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_captain-d.mp3",
-   "sha256": "255dd8c1fd9fcc85514ff76ec264881127d48d40c88681e10d46252cd3cd69fe",
-   "kit": "Capitão Afogado",
-   "duration": 1.28,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_coral-v.mp3",
-   "sha256": "ed5d1d14bf83847f6f3ea7c1ec119221a6649c701c0140b81c060ecf86c83c08",
-   "kit": "Colosso de Coral",
-   "duration": 0.78,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_coral-h.mp3",
-   "sha256": "337b3b0ac747366fd35bf6568c0fe965334113b8296cc8918ea4369d89335369",
-   "kit": "Colosso de Coral",
-   "duration": 0.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_coral-d.mp3",
-   "sha256": "3c9222bcb36421c5a95e64ca921ca486594940ecea7e87fcb4ae10d84d8e0d70",
-   "kit": "Colosso de Coral",
-   "duration": 1.03,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_scribe-v.mp3",
-   "sha256": "b75aefe413c25d3cfe418db78d6069e8da07f987ef7f2d7e222c67852b9f30de",
-   "kit": "Escriba Afogado",
-   "duration": 0.91,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_scribe-h.mp3",
-   "sha256": "a7b62f0bcc3171b5bfd385e4739c03919077b70bf42c7bfa5eb587182891201d",
-   "kit": "Escriba Afogado",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_scribe-d.mp3",
-   "sha256": "174ec10e8b330fa94437d25017e89049da39fec7eb19722937abeb8e087d9520",
-   "kit": "Escriba Afogado",
-   "duration": 1.25,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_arc-v.mp3",
-   "sha256": "1995e86f2354aae3235e8821bb9064671072aa1b275abc2e4f5d800b7b5f0616",
-   "kit": "Faísca Arcana",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_arc-h.mp3",
-   "sha256": "d11edda5a291f512e760796405c18ee1e4fcc2667b7c5f273ddd8dbe6cf59b86",
-   "kit": "Faísca Arcana",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_arc-d.mp3",
-   "sha256": "e48fb41ba7c0172df7549615cc3f6fcee58c59593e346ef5a97fc0eb9693f0ed",
-   "kit": "Faísca Arcana",
-   "duration": 0.83,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ink-v.mp3",
-   "sha256": "9f1ff564c00f92df6f924c3c0ffb54798d85e63ff80143b0c4aa56e5e76dabdb",
-   "kit": "Aranha de Tinta",
-   "duration": 0.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ink-h.mp3",
-   "sha256": "29491e3bb2749278035d7defcd43e09140c27fbf5709a2270124706251d26c40",
-   "kit": "Aranha de Tinta",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ink-d.mp3",
-   "sha256": "b53e87cce78466a5aea7ea0ffd8a17d9162ede82a022af2f0a554da68a4e65e6",
-   "kit": "Aranha de Tinta",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_crystal-v.mp3",
-   "sha256": "4fa5e3618d82bfb2daf85f9047f88a84095048422c00192181de63c24a657b31",
-   "kit": "Autômato de Jade",
-   "duration": 0.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_crystal-h.mp3",
-   "sha256": "f07a2ec5010a9355d520509e28711d672d809e59e25b859ef1345810d737bf36",
-   "kit": "Autômato de Jade",
-   "duration": 0.43,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_crystal-d.mp3",
-   "sha256": "e3bb68de568d446820f1d2e0c2a2381c0fa6a08199c0c644751bb052b5c50c7e",
-   "kit": "Autômato de Jade",
-   "duration": 0.94,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_storm-v.mp3",
-   "sha256": "f318bbc33d2b9642bd79b9336ee543f9b9ef07cb1262cf06c2e6cd08c784d168",
-   "kit": "Raposa-Trovão",
-   "duration": 0.43,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_storm-h.mp3",
-   "sha256": "b5c4e4a94e95b1232db36cb249db2f171741885d308b990f4df68f3082d1e7d5",
-   "kit": "Raposa-Trovão",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_storm-d.mp3",
-   "sha256": "029bcea8999eacb8bc25d2191bad4c7c958a70493b8362d4876db04824efe32f",
-   "kit": "Raposa-Trovão",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_crimson-v.mp3",
-   "sha256": "b16892165162ef61fd7a81886e397ad4cb81521b6be930932b28352a70e59989",
-   "kit": "Arquivista Carmesim",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_crimson-h.mp3",
-   "sha256": "45a5cb963999db25f753d207ff31918b76ed8231e983585d558514d26995b9c0",
-   "kit": "Arquivista Carmesim",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_crimson-d.mp3",
-   "sha256": "172f5ab0eac7158373bb37121f0c3dd54e67154238402bb773ca654de2fd9949",
-   "kit": "Arquivista Carmesim",
-   "duration": 1.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_storm-v.mp3",
-   "sha256": "de419e702486bf0130a8c33e3b6ac970c4249843c0c131321450feb784291aa7",
-   "kit": "Guardião da Tempestade",
-   "duration": 0.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_storm-h.mp3",
-   "sha256": "725fc96a241d94f72725745bd3f4fcfe89ad95a999aa2059ecc15adafb7053f1",
-   "kit": "Guardião da Tempestade",
-   "duration": 0.43,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_storm-d.mp3",
-   "sha256": "3021bff8acec6043e946ab8407b88c1e50a9ddb7feabd8b94accb926f841f2d3",
-   "kit": "Guardião da Tempestade",
-   "duration": 0.99,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_storm-r.mp3",
-   "sha256": "da1290f7652ee4dcf400e86eeaa9f6a18b9ecf061b820132b1bb7ae0e777ad32",
-   "kit": "Guardião da Tempestade",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_bog-v.mp3",
-   "sha256": "b5cf305c91a4190dc85105eba99c9f1afe8f67bc5c8e1a03e1253b9d23818ad6",
-   "kit": "Raposa do Lodo",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_bog-h.mp3",
-   "sha256": "22b8856745398a39b9317f3fc6061c4a8008da7a10ec4e7c236d5e5b85c54860",
-   "kit": "Raposa do Lodo",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_bog-d.mp3",
-   "sha256": "387a6bd077afefcca33d9a17da2328eb288e9aa26da73a3007628307f901f3d3",
-   "kit": "Raposa do Lodo",
-   "duration": 0.87,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bog-v.mp3",
-   "sha256": "fa92352b1ff9e7bc0992412cd4ada373b174e31f02eb77a8f090d8ced0fc4e4e",
-   "kit": "Aranha do Brejo",
-   "duration": 0.53,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bog-h.mp3",
-   "sha256": "d6de967c737ed382ace7c81d674140832b81c18c4fc1475827ce5dd8c95c1145",
-   "kit": "Aranha do Brejo",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bog-d.mp3",
-   "sha256": "2261dcb68971473d9fa4d087f274f6a2f342d1cb38ccbfa566950969b458beda",
-   "kit": "Aranha do Brejo",
-   "duration": 0.91,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_bog-v.mp3",
-   "sha256": "8d06273cc3bffa2b5afbcd265c50f2aff1698e0b455d3f403733a873d277eb50",
-   "kit": "Vaga-lume Errante",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_bog-h.mp3",
-   "sha256": "fa63e51eba33b73a68c451cef8eb3f0ebd66074c8a2d5828347419d8a34e45b9",
-   "kit": "Vaga-lume Errante",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_bog-d.mp3",
-   "sha256": "fac72a7d53b0671b603e58a717a177717ae5ad1bc8f47edf638f1f8a6dff60fb",
-   "kit": "Vaga-lume Errante",
-   "duration": 0.86,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_moss-v.mp3",
-   "sha256": "553b4fa2b8790290b91a7f49ec9b17fbbac8ef92531df2572a4e7659e7487adc",
-   "kit": "Oni do Musgo",
-   "duration": 0.36,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_moss-h.mp3",
-   "sha256": "5035088bde438d71327ec69f817e6d12d982f2256188e3a9d9c55d6a707cdd94",
-   "kit": "Oni do Musgo",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_moss-d.mp3",
-   "sha256": "d3c2f852cb333f4219ab5e4ded86bab505d761bbc670b8ad7233d945c15e9815",
-   "kit": "Oni do Musgo",
-   "duration": 0.89,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bog-v.mp3",
-   "sha256": "8d3717f796a4cb699dbc36a24e0f5e8a379aeef72a9a65818a42875a5df7c5f9",
-   "kit": "Colosso do Pântano",
-   "duration": 0.66,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bog-h.mp3",
-   "sha256": "35985f3d23adbf118f384f4ac4e4696304c29c0e3a3dcc9273c74ec484577e4e",
-   "kit": "Colosso do Pântano",
-   "duration": 0.54,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bog-d.mp3",
-   "sha256": "4cad0e7c14093cda6c405c31a7ca30080800fae6366a6a4535b4183a317b6961",
-   "kit": "Colosso do Pântano",
-   "duration": 1.04,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_bog-v.mp3",
-   "sha256": "ea0735af0df0ec6dbb3ee1abf9cbce035ef43bab18347a1e72c369b5df09542a",
-   "kit": "Bruxa do Brejo",
-   "duration": 0.69,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_bog-h.mp3",
-   "sha256": "48e451021ede9d609b25061370a4ed885e069f021894fef3163550ceb8ac8ad3",
-   "kit": "Bruxa do Brejo",
-   "duration": 0.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_bog-d.mp3",
-   "sha256": "48b74be0177ac79d271423f252b38febf54f25d64b6dd08d00865c686a93357b",
-   "kit": "Bruxa do Brejo",
-   "duration": 1.66,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bone-v.mp3",
-   "sha256": "626a4f0357b016179d9965467082c767a752a96b55788d9ee924a75fc2f4bb82",
-   "kit": "Aranha de Ossos",
-   "duration": 0.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bone-h.mp3",
-   "sha256": "5f1a53c3b7a6c8bef2d9197b975c9a1e8b2b98dafe66539d1a3d925b60d996d8",
-   "kit": "Aranha de Ossos",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_bone-d.mp3",
-   "sha256": "eeec1c07a7394b9e37e0e83e0c361456b6db9ccfb3b5f507b0327af3aff07ed1",
-   "kit": "Aranha de Ossos",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_jade-v.mp3",
-   "sha256": "418b66e2c5b070152e1134cf26a1f6fe6cf16cf6395491b86fdb06461232148a",
-   "kit": "Chama de Jade",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_jade-h.mp3",
-   "sha256": "8f468f348ef83eb8601c216c731067193fc470e8958089dc87601d26e2f62034",
-   "kit": "Chama de Jade",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_jade-d.mp3",
-   "sha256": "0f8eac9bb504697fec97735df56b3f4c6c99d6e0b1e67ff3910f13489141628a",
-   "kit": "Chama de Jade",
-   "duration": 0.84,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_jade-v.mp3",
-   "sha256": "1e2f6d18fb477810d15ddb6cd66a3e1e70dc9907d33ed5dffee74986f4e1cd53",
-   "kit": "Raposa de Jade",
-   "duration": 0.36,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_jade-h.mp3",
-   "sha256": "4c9b97420a49c7815d18b28baf579ad7b9ac0fff14d576d3d91915fa9ba0e439",
-   "kit": "Raposa de Jade",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_jade-d.mp3",
-   "sha256": "9f708d84f67f7f81157007587d8ae70e53cb7afb0ed094d36bd4ec043af6ee73",
-   "kit": "Raposa de Jade",
-   "duration": 0.81,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_emerald-v.mp3",
-   "sha256": "f3a7454fbc7cda59654d0fb364b259fd2981e8df6c4bda52a413f2d85b0b1f7c",
-   "kit": "Guardião Esmeralda",
-   "duration": 0.68,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_emerald-h.mp3",
-   "sha256": "6b8b1672111b6f84e5125992f94c2a524d6818977bc08ab1f51aa87b8eb2be37",
-   "kit": "Guardião Esmeralda",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_emerald-d.mp3",
-   "sha256": "83825d5c2dd747946f2ccc4ca241988dd1c7c15da01f0b6c9bda612c53039e47",
-   "kit": "Guardião Esmeralda",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_jade-v.mp3",
-   "sha256": "66db764cbff675c743cd28ffc07cd1d42a5fac4c6c7e63a1e1dcc4912fe9f45f",
-   "kit": "Sacerdote de Jade",
-   "duration": 0.61,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_jade-h.mp3",
-   "sha256": "c285e1f112dc6af6173e20b3de6709736e85d056afb6e254f7f24b1df5cd7f68",
-   "kit": "Sacerdote de Jade",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_jade-d.mp3",
-   "sha256": "ee0cf79bd87375e454ed959189beabc08e5b408a57523c176e8f058dd5ed89dd",
-   "kit": "Sacerdote de Jade",
-   "duration": 1.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_jade-v.mp3",
-   "sha256": "65274ba0851cbfde01175100da5c8eee4ef47de21baccb49a83ebdb69d490718",
-   "kit": "Oni Carcereiro",
-   "duration": 0.55,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_jade-h.mp3",
-   "sha256": "dede3ec67df41a0965b5aab23e03ce07b00a33448acc23c67812e3b2a3934e97",
-   "kit": "Oni Carcereiro",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_jade-d.mp3",
-   "sha256": "d42adc4d6e7429227816fb5c02d328b1b9898bdbb4de07eb158c233b4636c1dd",
-   "kit": "Oni Carcereiro",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_king-v.mp3",
-   "sha256": "a5f32498a1d048399b3b428756406a5acbf0f13148573dc88611243fa1dbda27",
-   "kit": "Rei Sem Túmulo",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_king-h.mp3",
-   "sha256": "75579545d7047f78af73be0f73ca5ed7783ebd72f600ff2b5726b6f46a3f3692",
-   "kit": "Rei Sem Túmulo",
-   "duration": 0.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_king-d.mp3",
-   "sha256": "65379cdde11aef44cb6c56b0148472a0a7179a80775bff123a67b8be95dae17f",
-   "kit": "Rei Sem Túmulo",
-   "duration": 2.21,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_king-r.mp3",
-   "sha256": "3cdd78d78c4075636ade11c618654b544174d05ceef6ed50f527f1cd6a11159b",
-   "kit": "Rei Sem Túmulo",
-   "duration": 2.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_snow-v.mp3",
-   "sha256": "93124a26d126e42deb19f03cd550ab2f09f08a8e6a706ffe462d74b296159ba2",
-   "kit": "Raposa da Nevasca",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_snow-h.mp3",
-   "sha256": "154f2caa2007c147992a2e4c0b4c5992513ade9d50d37591400f361fc9571856",
-   "kit": "Raposa da Nevasca",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_snow-d.mp3",
-   "sha256": "25f5b36dc8d4cce02d34da12f53d0cff5e7e933b883faf8f158dc15d9bce296b",
-   "kit": "Raposa da Nevasca",
-   "duration": 0.9,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ice-v.mp3",
-   "sha256": "6697107a0840dcaa67c42d21107491b681b2d95059357db59b86a23c04e62562",
-   "kit": "Aranha de Geada",
-   "duration": 0.31,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ice-h.mp3",
-   "sha256": "af13b067e1c78ee5a2aef2fe7aea13879fbae2898ceeec535fe88680ee916fcd",
-   "kit": "Aranha de Geada",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ice-d.mp3",
-   "sha256": "0768750b496d55c3bf0d6041e1c6d2852f55fba49e808458645374e337314984",
-   "kit": "Aranha de Geada",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ice-v.mp3",
-   "sha256": "158fe99d27152ac83802f9168d4bbb692f91b0c84b6a73f87abddb4555d61b5c",
-   "kit": "Espírito Boreal",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ice-h.mp3",
-   "sha256": "7bb294e5b336a71258d81f896b9b533c586d918cd72f20692a3a98a4ecbc60b6",
-   "kit": "Espírito Boreal",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ice-d.mp3",
-   "sha256": "6d68c37207e3a0faa44e3c3c883f8ff134915cb19590403e8ca15925146f93a1",
-   "kit": "Espírito Boreal",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ice-v.mp3",
-   "sha256": "201c4a7e2d9e3c5fcfb367050a5d158544bd60cb0e0cd37e5acae0899be9480d",
-   "kit": "Golem Glacial",
-   "duration": 0.75,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ice-h.mp3",
-   "sha256": "058ef1f43842eadf0cab558993cbda476614f29ec2b7641b608c7dd89ed40f13",
-   "kit": "Golem Glacial",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ice-d.mp3",
-   "sha256": "0181e899ac60ab139a73594e871b5682724ef87107252f09094ca0e53acc304e",
-   "kit": "Golem Glacial",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_frost-v.mp3",
-   "sha256": "b5c7d05e12e5eaaad4c5e63f35e38cf6992c10bce682a0a36fd3d032292d9c73",
-   "kit": "Oni da Avalanche",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_frost-h.mp3",
-   "sha256": "499f828153334b32c30a411336e9786b841be602ce1df0050c3d5e3bb88460fc",
-   "kit": "Oni da Avalanche",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_frost-d.mp3",
-   "sha256": "3db1f5f689d8025baadf6b8c9423fec5d35fc58488a09cc681102c1bd9dfecfe",
-   "kit": "Oni da Avalanche",
-   "duration": 0.9,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_frost-v.mp3",
-   "sha256": "1390692b6f6eb4203c4138c10fedab42a69d4ebb0e58dbc45d1b560bee5c3e8c",
-   "kit": "Rainha do Inverno",
-   "duration": 1.01,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_frost-h.mp3",
-   "sha256": "c354558f27e67f8950e10905d4c7a0dd41e0423779d14501e69e883f51bdfad7",
-   "kit": "Rainha do Inverno",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_frost-d.mp3",
-   "sha256": "19550fd71fffe2292e4853f7ab33abfb9a2169677467cebac7b2983d44b5d71a",
-   "kit": "Rainha do Inverno",
-   "duration": 1.01,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_lava-v.mp3",
-   "sha256": "e19e65418ddc8c0c8d450bc4fe9bacbcbf89138f800b2d388984804c86a9c0ef",
-   "kit": "Aranha de Magma",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_lava-h.mp3",
-   "sha256": "e5894207e3996d619e275d6b0eaf93c65ff41bd4b3717e0a57a163b55c91786a",
-   "kit": "Aranha de Magma",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_lava-d.mp3",
-   "sha256": "5b4c6a2f50e7b0b0f10a092a376659ed928656e3b00a98d5721ef216307181d5",
-   "kit": "Aranha de Magma",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_lava-v.mp3",
-   "sha256": "9dac187a392d8030ffa5391f58cdd49823a2f5680667bf905a10ade8311d1933",
-   "kit": "Faísca da Forja",
-   "duration": 0.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_lava-h.mp3",
-   "sha256": "85970d597ee3f5f4f22cc3b5797368277684fe2f8f0ec4d7b7cbe677220bdab0",
-   "kit": "Faísca da Forja",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_lava-d.mp3",
-   "sha256": "0830fe117419b02a5ed912dcf80b574f23245a1e74f1faee0cb346d4fa1ec8bd",
-   "kit": "Faísca da Forja",
-   "duration": 0.78,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_fire-v.mp3",
-   "sha256": "2e2412a1fbaeef7815e0a4cf356b72082eb1b3ca2960587696a003da50ce8338",
-   "kit": "Raposa Brasa",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_fire-h.mp3",
-   "sha256": "c172ae023a9744e73846824f4cf2633fd841371e82ec992b127c9f87d8a39f68",
-   "kit": "Raposa Brasa",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_fire-d.mp3",
-   "sha256": "924a83dbddebb9289e61b9e089a13ad804092ad7d96acf1e5be409985bc63869",
-   "kit": "Raposa Brasa",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ash-v.mp3",
-   "sha256": "873298ab2214439d299900059c380d510050bca7c3b23bd0a910306d22b0d2a7",
-   "kit": "Ferreiro de Cinzas",
-   "duration": 1.13,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ash-h.mp3",
-   "sha256": "d81a86323c0953ed633a7289723c2a9853d8af4065c970170ef27a0ab57558b0",
-   "kit": "Ferreiro de Cinzas",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ash-d.mp3",
-   "sha256": "155dde384e45ad7cdde08e5384c4d4466548081f961557bdcf1e784df4d48f5d",
-   "kit": "Ferreiro de Cinzas",
-   "duration": 1.09,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_lava-v.mp3",
-   "sha256": "f850742e2d05956a7ce5d9329f2ad65a332a0bcb10bcd9cdb2558436acf75e92",
-   "kit": "Oni Fundidor",
-   "duration": 0.55,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_lava-h.mp3",
-   "sha256": "db67a96d546b68f1dbe4d5249517721068da3fbe866c21e848f5a099ebc907b5",
-   "kit": "Oni Fundidor",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_lava-d.mp3",
-   "sha256": "21bb49abd97836b18002073b31076597ea8f86cdc27cf161d8b3454e41886ae8",
-   "kit": "Oni Fundidor",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_iron-v.mp3",
-   "sha256": "471e98fad1f3b67237b2027e9bd8a5154693755d9fc0b79f5f3f9090f7ca416f",
-   "kit": "Autômato de Ferro",
-   "duration": 0.6,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_iron-h.mp3",
-   "sha256": "dfc6871c0c48ff69a72cca88adaf34302b3816020d3588aacf0da94753f3825d",
-   "kit": "Autômato de Ferro",
-   "duration": 0.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_iron-d.mp3",
-   "sha256": "c8d02d918d87070472e91931999aab4ce39263e6d550d93ee322c987e163732a",
-   "kit": "Autômato de Ferro",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_forge-v.mp3",
-   "sha256": "7cc30cd474e03040afa18a39c99c88bda60d135901cc5fb54f56cc62b831ea68",
-   "kit": "Coração da Forja",
-   "duration": 0.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_forge-h.mp3",
-   "sha256": "6e86103421a17145ae2803a8db3b5c2cacf167fd73a6045329fa176bf5a13e3c",
-   "kit": "Coração da Forja",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_forge-d.mp3",
-   "sha256": "7c833e14a97c02ba8c316b5d8b9c62f4ab9b3ba4fcafc83a779c4a973d1305c0",
-   "kit": "Coração da Forja",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_forge-r.mp3",
-   "sha256": "f35dbf64ad564e1a9548a31ae81d5dfca0850bfab2fa2b7f7ce3737ac7750c26",
-   "kit": "Coração da Forja",
-   "duration": 1.24,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sand-v.mp3",
-   "sha256": "849c5fba111bf3e72bdd7a5743939ebe60f547900b7f0d410d5942ee33f46798",
-   "kit": "Chacal das Dunas",
-   "duration": 0.26,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sand-h.mp3",
-   "sha256": "ae43e4eaba126f3e67f05f6d1e208dae2893cac495ab2a5044cb4c9c1d456171",
-   "kit": "Chacal das Dunas",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sand-d.mp3",
-   "sha256": "4d4590952bd1379f6b0a3a987dc2861ecb2202d7a5e7a9b5189eddc910bf75a4",
-   "kit": "Chacal das Dunas",
-   "duration": 0.91,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_sand-v.mp3",
-   "sha256": "d1a9c07bd2c6f12fb9ffff9c75af756264d1480a87d8fcddedebbce41235d980",
-   "kit": "Escorpião Dourado",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_sand-h.mp3",
-   "sha256": "cb88128dc2d793c8474dac6532d667a3c119dfd754f75abceb1607e7a59ba3e0",
-   "kit": "Escorpião Dourado",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_sand-d.mp3",
-   "sha256": "6783feedac6093a0a383fa8c0e339c389f19ac96781cc956bc504e5f4fd3a534",
-   "kit": "Escorpião Dourado",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_sand-v.mp3",
-   "sha256": "c281b0552fb2f2c53ae3ff73502050de354eb3808914b4f6da0448ec16121646",
-   "kit": "Miragem",
-   "duration": 0.27,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_sand-h.mp3",
-   "sha256": "661e65394f5c9ef1fd131c5a776ea32f200303cfaac80ea9888205ff470b33ee",
-   "kit": "Miragem",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_sand-d.mp3",
-   "sha256": "1bca46373c072783ef02f2c9eba54beb6e3f5a539e1b8f24b1bfe0b94dc20f09",
-   "kit": "Miragem",
-   "duration": 0.77,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_sand-v.mp3",
-   "sha256": "3023e45cac826850534b892e3dea9ed4422c913e536c022b1592dcd6d3ccda86",
-   "kit": "Guerreiro de Areia",
-   "duration": 0.5,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_sand-h.mp3",
-   "sha256": "15b0dc1d6b3288bb0a755c65b5fad527f34a1b07cf3e963dbcfe11ec2cc0eab0",
-   "kit": "Guerreiro de Areia",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_sand-d.mp3",
-   "sha256": "f727e815b368dd3698962042f9b9e20e09215661af60886d49e3af6569437183",
-   "kit": "Guerreiro de Areia",
-   "duration": 0.86,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sand-v.mp3",
-   "sha256": "c8097e3bbf5a5a9d805b4d70ab4d832ad5d90415879e51194bfbd9f29bc85d40",
-   "kit": "Esfinge de Pedra",
-   "duration": 0.56,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sand-h.mp3",
-   "sha256": "b39461727769391b647dd7cff29f71da6bf9aefbb90ef74c6d0b2f05410a6f49",
-   "kit": "Esfinge de Pedra",
-   "duration": 0.46,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sand-d.mp3",
-   "sha256": "bcb0fdc83c70c0b5c1f457631975795d4ae27d2a42ef5ec7423fdf3327721036",
-   "kit": "Esfinge de Pedra",
-   "duration": 0.96,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_mummy-v.mp3",
-   "sha256": "eb1a042afb1f38b62ddd0589b86c4a49fbb0975cd980a659b89a499ddd76ad61",
-   "kit": "Múmia Real",
-   "duration": 1.21,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_mummy-h.mp3",
-   "sha256": "bfc8ae28ed9477197514cb6b6351e77f3b9d0110957807fdc47e201441602f10",
-   "kit": "Múmia Real",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_mummy-d.mp3",
-   "sha256": "605affd8b843cf19e587bde2b12e50c646908029eb332e90a97147edb46f31e1",
-   "kit": "Múmia Real",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_ghost-v.mp3",
-   "sha256": "40b219cd91f424cd0fbc535f7b59e2920684c98a782775b3d3c0b58935422bc7",
-   "kit": "Raposa Fantasma",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_ghost-h.mp3",
-   "sha256": "3a4f14034809ce2504d609511688ab1274ac19886053586477f715ee0372acd0",
-   "kit": "Raposa Fantasma",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_ghost-d.mp3",
-   "sha256": "eae5dee57e570966cd343f9cd6cd0205766b5f5bb9653b8c4caf3d08bae92b2a",
-   "kit": "Raposa Fantasma",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ghost-v.mp3",
-   "sha256": "6906215690d4cf4c72172c7af1a6e918963973af3fd6294f4a91857a9372c806",
-   "kit": "Lamento",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ghost-h.mp3",
-   "sha256": "6e37ba0ffe4e7b143c38f980847db02fbf03d3ed7ed9dd4f815fffeecf136d29",
-   "kit": "Lamento",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ghost-d.mp3",
-   "sha256": "d2c28f8d2d882dd32959ff9483d4eb127d190eeeca1d2ed8709e96a92f8e6547",
-   "kit": "Lamento",
-   "duration": 0.77,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ghost-v.mp3",
-   "sha256": "d2afc649a512a43a6d35032f165e504d09b4b455f89f11a4a53d4a87ec5305c4",
-   "kit": "Aranha Etérea",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ghost-h.mp3",
-   "sha256": "f8d48866e0eb8c248ab0c27f218a7252455141f95f7539804068f077cb811b1c",
-   "kit": "Aranha Etérea",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_ghost-d.mp3",
-   "sha256": "9f7dd5d3f066f227e39f0608a80ef7ab95e46d301df577efb2a4d6e69fa7f8a5",
-   "kit": "Aranha Etérea",
-   "duration": 0.93,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ghost-v.mp3",
-   "sha256": "665988b1a86e02d9a5c5510da6c22d9b8dd4d666cf03f2e3837c10dbcb791f37",
-   "kit": "Oni Espectral",
-   "duration": 0.27,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ghost-h.mp3",
-   "sha256": "393fb347cb08a7c1f9cfaec7e8b51921c9ac9fafcde0dbe1ec6d0197b278866a",
-   "kit": "Oni Espectral",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_ghost-d.mp3",
-   "sha256": "d04caaf9b482b6c736d30ab76784b7508d234bac0bed2617320ba10fcda68637",
-   "kit": "Oni Espectral",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ghost-v.mp3",
-   "sha256": "ee08db85e4e7cb49a90485eb85d946857272fefd53a323ffc1015935f327714b",
-   "kit": "Sentinela Assombrada",
-   "duration": 0.54,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ghost-h.mp3",
-   "sha256": "125a324f99e444aef25b50eb65ba9ef1a1e1640a40d1b1fde2cffd5693ca5201",
-   "kit": "Sentinela Assombrada",
-   "duration": 0.44,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_ghost-d.mp3",
-   "sha256": "1b7ceed5ca8f08ecdf5867848743427bb2a941a5fd808dc9b50aecb9cdc5d96f",
-   "kit": "Sentinela Assombrada",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ghost-v.mp3",
-   "sha256": "4e9f84ca04fe0e8f8ed7b8cacdb03aa1266ee80df248297c5135701e7f984375",
-   "kit": "Noiva Espectral",
-   "duration": 1.25,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ghost-h.mp3",
-   "sha256": "9e51a04b14ba011498732f9527d40febd3f0d7433d2301b19e6f6fe4eda9bc5b",
-   "kit": "Noiva Espectral",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_ghost-d.mp3",
-   "sha256": "336153d19c7d16e15312a6ee575605f56cfab6d6d5d59dd640cbca0101db8dcc",
-   "kit": "Noiva Espectral",
-   "duration": 1.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_time-v.mp3",
-   "sha256": "56b6b97a3c10bbfcd658b1836afd2bdd3fcfd3013dec9fa9dfe3b8def5b7ba36",
-   "kit": "Raposa Temporal",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_time-h.mp3",
-   "sha256": "623c32370bbde1d12ecc132ff40549bf742fbbaf0ffd9ab3c91e512202e6f790",
-   "kit": "Raposa Temporal",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_time-d.mp3",
-   "sha256": "d24bfae23785a0411eef85c7294b5b3d04b354199a917972941e8823562a634c",
-   "kit": "Raposa Temporal",
-   "duration": 0.86,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_time-v.mp3",
-   "sha256": "6ad3fc32aa6b96a75388c064a43d32937bddaf28f791bc9ce0803e14f80baae2",
-   "kit": "Engrenagem Viva",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_time-h.mp3",
-   "sha256": "c0ccc207993efec7390966b52a8e2e8a920c282148dda86e4efddb25edff57f0",
-   "kit": "Engrenagem Viva",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_time-d.mp3",
-   "sha256": "525cb99ea5ef016a4e5dccd96345712454cba7f0042809c9bb5ad9dffc024809",
-   "kit": "Engrenagem Viva",
-   "duration": 0.82,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_clock-v.mp3",
-   "sha256": "38f8a7b1f7c094dc20287fefb14380e7176c38ffdae8f7815d1b2bf02a63665f",
-   "kit": "Aranha de Corda",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_clock-h.mp3",
-   "sha256": "efcba227a101818096d4ba07aa71e695464dff6e4ee83aa694e5d6b41cfd3a27",
-   "kit": "Aranha de Corda",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_clock-d.mp3",
-   "sha256": "46be9f775176214512968fb90a61c39afe999ce9be15e344c0cf2060f3f8f0aa",
-   "kit": "Aranha de Corda",
-   "duration": 0.89,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_time-v.mp3",
-   "sha256": "2e25f7f3cb3688095d33c2e79d3f4f01262f1a78ad573460ee8d00a405248bc4",
-   "kit": "Oni do Pêndulo",
-   "duration": 0.46,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_time-h.mp3",
-   "sha256": "1c85facc6976744a77a3b8d999f24dc761d19256b45f36c3d0cf8c88d0661b1e",
-   "kit": "Oni do Pêndulo",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_time-d.mp3",
-   "sha256": "b32dc6d118dbe3124b6470f7deda1370d652e8e05af2f8464bf17bada7dcdee1",
-   "kit": "Oni do Pêndulo",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_time-v.mp3",
-   "sha256": "86cb192fe70ce1e3939a5ca029d8e11dba31fb60adf9b6f0f459e6d7bf9c9c41",
-   "kit": "Relojoeiro Louco",
-   "duration": 0.67,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_time-h.mp3",
-   "sha256": "a9e9274a589bb1f6ae5f27a3d94eeff224133965f71c60ada8caf7fa294a2eb9",
-   "kit": "Relojoeiro Louco",
-   "duration": 0.43,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_time-d.mp3",
-   "sha256": "46db01e00cc0c61a27fecd01e1955543ea475fa04a88f66604cf25db371a32f5",
-   "kit": "Relojoeiro Louco",
-   "duration": 1.09,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_chrono-v.mp3",
-   "sha256": "114f0550d5fdccac968c4e459d184f3242138ef1a45436d9ca59384e9d035f7c",
-   "kit": "Guardião do Tempo",
-   "duration": 0.91,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_chrono-h.mp3",
-   "sha256": "9d233562754b71d2bc6899945d7cc4cb779baba535c7bb3f3081e9e03c444ec5",
-   "kit": "Guardião do Tempo",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_chrono-d.mp3",
-   "sha256": "fcfa082bddaa86f4165298f54d2253be442c4c27121442f77fefe3463f637e78",
-   "kit": "Guardião do Tempo",
-   "duration": 1.95,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_clock-v.mp3",
-   "sha256": "a086f00b4816f8b648ac791224fab09b4a47bdcafbd96b3d44cf3c3ef69ad11c",
-   "kit": "Colosso do Relógio",
-   "duration": 0.7,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_clock-h.mp3",
-   "sha256": "1b75176a0fea6cd7c49c3404595f2fcf63679b7c1aa2f051742f81522b34d97e",
-   "kit": "Colosso do Relógio",
-   "duration": 0.48,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_clock-d.mp3",
-   "sha256": "b6698063002e31c65a4237c078f235e2e0d62da93fc18b9089712184bd9983d2",
-   "kit": "Colosso do Relógio",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_clock-r.mp3",
-   "sha256": "12dc20d33d760fa6ff823d944ba1b9502b73413e983d462ecd9f44198510ce92",
-   "kit": "Colosso do Relógio",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_cloud-v.mp3",
-   "sha256": "84bee551cf1ba3fdd15e4d76d93fee14b1c0f232ff713c1db3178e735893a23a",
-   "kit": "Raposa das Nuvens",
-   "duration": 0.24,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_cloud-h.mp3",
-   "sha256": "e7785e959b82f1020358772f9d49c6bcf7ae9a33cdf255073e8344b847fff459",
-   "kit": "Raposa das Nuvens",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_cloud-d.mp3",
-   "sha256": "972e79221938f058cecba9ad35422ddb3bf4f36a75d8c15769250b57d38a8950",
-   "kit": "Raposa das Nuvens",
-   "duration": 0.84,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_storm-v.mp3",
-   "sha256": "35548266c53eb20e0639ec964e573ed0aee53cf101d4baba5fb26bf97960d807",
-   "kit": "Centelha Celeste",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_storm-h.mp3",
-   "sha256": "34dc973239064c8c58b70a6b222ae63e33083f9e000a6b2b7ec2152b7201534d",
-   "kit": "Centelha Celeste",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_storm-d.mp3",
-   "sha256": "48adb09debc81c1d4bbee44623a48359c9660299f5b6133685bb7fbb9128d946",
-   "kit": "Centelha Celeste",
-   "duration": 0.82,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_wind-v.mp3",
-   "sha256": "26f9c8100e9118e0de591257ecab2cd544a4ffac49eb5792759a744ca4abf58b",
-   "kit": "Aranha dos Ventos",
-   "duration": 0.49,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_wind-h.mp3",
-   "sha256": "a204705036f333383d755e7aaaef686ff806f6768a35c44ff81662fac8ab3b22",
-   "kit": "Aranha dos Ventos",
-   "duration": 0.36,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_wind-d.mp3",
-   "sha256": "008027af0a45fc1470c9e0c11783bf766122f3985753a85f5f12af383b8e2991",
-   "kit": "Aranha dos Ventos",
-   "duration": 0.93,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_thunder-v.mp3",
-   "sha256": "772a3c9b11a44316b75969a6b794bcae537e3454986422d37f7e9568b9912807",
-   "kit": "Oni do Trovão",
-   "duration": 0.39,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_thunder-h.mp3",
-   "sha256": "082f4bfdd19e971702b50ae19f0bb07271c1c5b4fe30cfbece07f10cbb2884a6",
-   "kit": "Oni do Trovão",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_thunder-d.mp3",
-   "sha256": "a04646713d192b6937b5f8cfb25d9cbc8e2dc9653599161969642fdb207651f1",
-   "kit": "Oni do Trovão",
-   "duration": 0.97,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sky-v.mp3",
-   "sha256": "94158ba17e9807eb4c8df18c74d8d322c4793b3bb8564df43523c76eab425399",
-   "kit": "Colosso Alado",
-   "duration": 0.61,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sky-h.mp3",
-   "sha256": "60788994b54b332993288334d0f87b8d29a1080ffbb264e58094b071609e799b",
-   "kit": "Colosso Alado",
-   "duration": 0.5,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_sky-d.mp3",
-   "sha256": "1fed6bbacee3199966f484fb57b049d5b66070d3c9d5c709f91c87336c9e7f38",
-   "kit": "Colosso Alado",
-   "duration": 0.99,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_sky-v.mp3",
-   "sha256": "9465949ebaa069ba6d8e27ec8bb939cea7ed996566e927f39eaaee0a78daf269",
-   "kit": "Tengu Ancião",
-   "duration": 1.25,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_sky-h.mp3",
-   "sha256": "583e8c7d3a838669df6744d3c8f2ad0dbdba8ace98bf25a086e447bf0bddd22f",
-   "kit": "Tengu Ancião",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_sky-d.mp3",
-   "sha256": "512d4b2714bdd8e4f0e38f2bc65719cf769371f841eb5e6b3557271293b796fc",
-   "kit": "Tengu Ancião",
-   "duration": 1.07,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sakura-v.mp3",
-   "sha256": "cdc3141a18d06733198cf6d62bcbd2987b131d136879fd2ef41404e33ab7d02d",
-   "kit": "Kitsune Rosada",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sakura-h.mp3",
-   "sha256": "09e6e1a2fb1b8186730faa253de74aa4a319de558e7e834d15ab6968b23cac2a",
-   "kit": "Kitsune Rosada",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_sakura-d.mp3",
-   "sha256": "3bd10c4f260f3b03d495633212d9f529a8b790e2982af60e4180e2b60406fd76",
-   "kit": "Kitsune Rosada",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_petal-v.mp3",
-   "sha256": "6621b101afcf54406a6d7801e1bb76dfec450939e34d83bc3d5f7db9fdf1e930",
-   "kit": "Espírito da Pétala",
-   "duration": 0.34,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_petal-h.mp3",
-   "sha256": "a3ad73d425e390521b2e09d0f478958ffbb73bef892e7aa7f7c432dc40b73355",
-   "kit": "Espírito da Pétala",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_petal-d.mp3",
-   "sha256": "ea64f419a744132a04f39a374ef45af2bbd892602f864a68f46d9eee686f86f4",
-   "kit": "Espírito da Pétala",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_silk-v.mp3",
-   "sha256": "9e7d6ff5a2af7d731f1c9802dc381f4161b95f65537347aa4bb646536b12cde9",
-   "kit": "Tecelã de Seda",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_silk-h.mp3",
-   "sha256": "f80da720433b5db6b34f4725c93ff2365f14d450a22d6f24ec0da0942764fa0e",
-   "kit": "Tecelã de Seda",
-   "duration": 0.35,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_silk-d.mp3",
-   "sha256": "f9090f8aa98d7ed901d6d9062706fde75743097534d0014126f104c01315e193",
-   "kit": "Tecelã de Seda",
-   "duration": 0.85,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_blossom-v.mp3",
-   "sha256": "ca1ee1644db70416827a518a3b4d47b2a4c2f00493b993255b633338ba64eda0",
-   "kit": "Oni Florido",
-   "duration": 0.44,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_blossom-h.mp3",
-   "sha256": "7ea4bfa2740e854a7aaa17350481ffff403cce2a76e8373c848856fe94082162",
-   "kit": "Oni Florido",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_blossom-d.mp3",
-   "sha256": "0ad3575ad799d25cd35f728cdd05a90d083b5b3fde706f25ecb1455d77579859",
-   "kit": "Oni Florido",
-   "duration": 0.87,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_root-v.mp3",
-   "sha256": "5d3a71e3bbd76ae8a96085f07e4175478c283a3f5878fc0f9eced294310d243f",
-   "kit": "Guardião de Raízes",
-   "duration": 0.73,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_root-h.mp3",
-   "sha256": "cf4fe24686aedc99bb1f1b2618b25efdfb5c262c63e8402a6e5227b0ea3e9692",
-   "kit": "Guardião de Raízes",
-   "duration": 0.5,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_root-d.mp3",
-   "sha256": "aebd7bf3809381f91a3634142b84694b0fd6f81a6793e84e96c59042a06e057d",
-   "kit": "Guardião de Raízes",
-   "duration": 1.01,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_geisha-v.mp3",
-   "sha256": "c770e6677853ac670a874d592abb59363a24507803e5967f4af8c26036c64db3",
-   "kit": "Dama das Flores",
-   "duration": 1.0,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_geisha-h.mp3",
-   "sha256": "826d34e1f18390800dab95d204679ea1fe53ac03d8d5660cb1c6fcf697bcb527",
-   "kit": "Dama das Flores",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_geisha-d.mp3",
-   "sha256": "1f1ca4904a9ebcf0fe13653548b94953dc5b075bdb42192539a8136956b84700",
-   "kit": "Dama das Flores",
-   "duration": 1.14,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_lightning-v.mp3",
-   "sha256": "7a4212a905afebe483e33d05f4f8fd3684ae7a7eb379b0b0da79e67f0a9909cb",
-   "kit": "Raiju",
-   "duration": 0.31,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_lightning-h.mp3",
-   "sha256": "54e0799f392767b64c56417ae1dcad2ea08ad6682fd020cca02487c3517de754",
-   "kit": "Raiju",
-   "duration": 0.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_lightning-d.mp3",
-   "sha256": "a79b3e38dd3628b0ca86c585058c3cbbbf59386fda0d9ed3df7164bfc679813e",
-   "kit": "Raiju",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_cloud-v.mp3",
-   "sha256": "2548b24a4819c112eaa2cf8bd0fd835bb7152644d9ee25700e5e22255c868ad6",
-   "kit": "Névoa Sagrada",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_cloud-h.mp3",
-   "sha256": "6bb7e20ec9400783d10738f9bafc5f31e46b29bd02eb7a1d55422a7e57c3ad07",
-   "kit": "Névoa Sagrada",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_cloud-d.mp3",
-   "sha256": "4bd0af0ef0eeab35257ebe014a61e16e5769d9d3f2cd3d7cebf8dc1cf622e2f8",
-   "kit": "Névoa Sagrada",
-   "duration": 0.79,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_thunder-v.mp3",
-   "sha256": "470cbced4b19ba903ea3be8b2d4564b298339fd14f87b01d94da83bab3c6c862",
-   "kit": "Aranha Trovejante",
-   "duration": 0.31,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_thunder-h.mp3",
-   "sha256": "d37f00b3b8764bf5cf5aa8ee6313a81f0ecbcc2e9940f3b8e5eff8d63e6d2b75",
-   "kit": "Aranha Trovejante",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-spider_thunder-d.mp3",
-   "sha256": "62a76f2a6dd0ad6f28c9ec1b6fc2b48f1b05a78ea90031568c8a704f4b7e0bc8",
-   "kit": "Aranha Trovejante",
-   "duration": 0.94,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_wind-v.mp3",
-   "sha256": "c77fc1486060813fa4a0cd2b4b9ebb7df10230e43b593b9f347f2839b6c09d1f",
-   "kit": "Oni do Vendaval",
-   "duration": 0.31,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_wind-h.mp3",
-   "sha256": "0bb936c46806781cb7bfb55215db3a435518e7de0183b4f0d06be78b089c4632",
-   "kit": "Oni do Vendaval",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-oni_wind-d.mp3",
-   "sha256": "5c899599aeb24ce364a1d11ce672b095384b4bc7e20b7704c13e5af9bde13d0d",
-   "kit": "Oni do Vendaval",
-   "duration": 0.89,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_monk-v.mp3",
-   "sha256": "9da1d862916c469f555b075b6a9085304427c144baaa025aba22f8cb409ed835",
-   "kit": "Monge da Tempestade",
-   "duration": 1.02,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_monk-h.mp3",
-   "sha256": "79f78611e10c09b8c06e06bb2a39ec67cf0febcbe50af9a9fbdddd74a8c40f53",
-   "kit": "Monge da Tempestade",
-   "duration": 0.47,
-   "channels": 2
-  },
-  {
-   "name": "mob-revenant_monk-d.mp3",
-   "sha256": "ebca51da22ceda87d112952008b74c80d2b53d4ca7cb7ba5f47e78694e769625",
-   "kit": "Monge da Tempestade",
-   "duration": 1.19,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bell-v.mp3",
-   "sha256": "76319df945c5e2ceba9024c1f17000c02a74c9c9d6b1e89ecdc84fab2c982084",
-   "kit": "Sino Colossal",
-   "duration": 0.66,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bell-h.mp3",
-   "sha256": "94073e4c578961d04c36a924ca259197e271660a8dcfb0fd73afa57b307729ee",
-   "kit": "Sino Colossal",
-   "duration": 0.54,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_bell-d.mp3",
-   "sha256": "a4b095ca5837be163198bd162fda77bcdcee2f4c663dee2733b778a9f04b1209",
-   "kit": "Sino Colossal",
-   "duration": 0.99,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_fujin-v.mp3",
-   "sha256": "e4f0f7811b9823e27025526aa8239b1f93fff430ea397d88cfe613e55c8e6759",
-   "kit": "Fujin, Senhor dos Ventos",
-   "duration": 0.61,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_fujin-h.mp3",
-   "sha256": "221852d2688fdc4055a29ea31cf4a3c5e607602ee460282ceafa7ba9318b1008",
-   "kit": "Fujin, Senhor dos Ventos",
-   "duration": 0.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_fujin-d.mp3",
-   "sha256": "c4c678c43ce7a7b5f281cbf7130bc673bbaf71b5f2dbc7515289e89e64740804",
-   "kit": "Fujin, Senhor dos Ventos",
-   "duration": 0.98,
-   "channels": 2
-  },
-  {
-   "name": "mob-golem_fujin-r.mp3",
-   "sha256": "255a04f4add8c5b490b42a4050a3da9dbc227b57aa5289f6ba7595fabeee529e",
-   "kit": "Fujin, Senhor dos Ventos",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_hound-v.mp3",
-   "sha256": "e08ed3a7be227ca3fd9506990d6f1a607c975f43df5566954ea8d80a40d1c44b",
-   "kit": "Cão do Vazio",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_hound-h.mp3",
-   "sha256": "ed964071d5a060d6fa475c82a29fc580e835d691c55462a4fba82ef0551294b0",
-   "kit": "Cão do Vazio",
-   "duration": 0.37,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_hound-d.mp3",
-   "sha256": "af4b9e20368479179d541e51bcdd4cb2b284a7f8d52e1ad017d020c5c4a6e201",
-   "kit": "Cão do Vazio",
-   "duration": 0.92,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_weaver-v.mp3",
-   "sha256": "a1a0eab211476e94e639b54140c688f3822dd7ab19f4127931a1033830eec766",
-   "kit": "Tecelã do Abismo",
-   "duration": 0.46,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_weaver-h.mp3",
-   "sha256": "a5aa03e8e48e66c12efd4abdad2689366fd8e125885680107cdcba0d8a8c15de",
-   "kit": "Tecelã do Abismo",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_weaver-d.mp3",
-   "sha256": "d0e10b217d4a89bf162331acb1f79a6a0b9e3ab228d1903dc898585b9b78ed12",
-   "kit": "Tecelã do Abismo",
-   "duration": 0.84,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_eye-v.mp3",
-   "sha256": "dd48c8b2eebc9ebc6233421d8318aac36e7e2e9c924b281e5d4343dd1084ce81",
-   "kit": "Olho da Fenda",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_eye-h.mp3",
-   "sha256": "a56604cdb939d1a9683b91fca353833706d5b8ca0ae0dd4cefbdd0ee57533b1d",
-   "kit": "Olho da Fenda",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_eye-d.mp3",
-   "sha256": "39eb8d28e916372b96f7834d0c2d11b6fb8ff0acabd25cb2398763ba33f3c1e4",
-   "kit": "Olho da Fenda",
-   "duration": 0.87,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_devourer-v.mp3",
-   "sha256": "460915acf937f328fddab09524fd529ed158e195f5413d55e13ec089adc2191c",
-   "kit": "Devorador de Mundos",
-   "duration": 0.47,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_devourer-h.mp3",
-   "sha256": "17a0fd93d6c98fb30a96cacc2cefa71e9c47722d5f997d849a63cacb38446ee9",
-   "kit": "Devorador de Mundos",
-   "duration": 0.32,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_devourer-d.mp3",
-   "sha256": "758e1089f44bb01ef82f9d8aecc51a0be12d9876f61866427ebfd37d67583df9",
-   "kit": "Devorador de Mundos",
-   "duration": 0.95,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_colossus-v.mp3",
-   "sha256": "9ad5a4b25b9ce1e77b92b79af910213b7cccade79c36664b101da177e8fcea6f",
-   "kit": "Colosso Estilhaçado",
-   "duration": 0.74,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_colossus-h.mp3",
-   "sha256": "5daa12dd53c816dba793d8bacb254ffff7e19bd2d3cf5fa6391bedfd118c8970",
-   "kit": "Colosso Estilhaçado",
-   "duration": 0.5,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_colossus-d.mp3",
-   "sha256": "41856922def452f193f2f3374d0416c184cb0e2e47cbcc1599b5233486d697a7",
-   "kit": "Colosso Estilhaçado",
-   "duration": 1.01,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_herald-v.mp3",
-   "sha256": "0ce6a5fd2e332135c5732b64e9cd958dd435694af396e7571917c6c81ef2a79b",
-   "kit": "Arauto do Vazio",
-   "duration": 0.99,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_herald-h.mp3",
-   "sha256": "1bf42b3077362ee3b1e357b093ef1cd13871d05e154b79cd4e34505e9bdfe4f4",
-   "kit": "Arauto do Vazio",
-   "duration": 0.4,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_herald-d.mp3",
-   "sha256": "40bcb39cbcb9ec3adf2ea3b7e610fe226632654a8a2a775fa6579f9b3241a8f1",
-   "kit": "Arauto do Vazio",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_wyrm-v.mp3",
-   "sha256": "1cf2dabf95b49214d91361faa93b6dad545c9b45b822809816b1995b7e9becd8",
-   "kit": "Wyrm da Fenda",
-   "duration": 1.04,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_wyrm-h.mp3",
-   "sha256": "2831ceed1bbe94cd34a6043fdb661f6a7ad1c76a77f2229095b1497fff702d06",
-   "kit": "Wyrm da Fenda",
-   "duration": 0.6,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_wyrm-d.mp3",
-   "sha256": "29135113a06f8e8a2625b154066f7c0813a3010325645e69713416e92ae481dd",
-   "kit": "Wyrm da Fenda",
-   "duration": 1.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-rift_wyrm-r.mp3",
-   "sha256": "b588081177aa6940c0d83712a962cdb91ae2fe13064cbff21fd422b5d242febf",
-   "kit": "Wyrm da Fenda",
-   "duration": 1.86,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse_shade-v.mp3",
-   "sha256": "f050a6af09797e43a4a780ac6db4bac48ec2bef09c8169991e4a01d821ac43b6",
-   "kit": "Sombra Lunar",
-   "duration": 0.41,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse_shade-h.mp3",
-   "sha256": "268e82161d6328275ad001efbed8bc82e718b958080a96da4d074383d3a2bfb5",
-   "kit": "Sombra Lunar",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse_shade-d.mp3",
-   "sha256": "f201a93eae2ec3590c29e7642251606789475701e3d4e3acedc3495bc7f21640",
-   "kit": "Sombra Lunar",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-mizuchi_spawn-v.mp3",
-   "sha256": "d1402152932c13f1896ddb534e805dd051fb46f64c712a6d76aeb97a50896753",
-   "kit": "Cria de Mizuchi",
-   "duration": 0.95,
-   "channels": 2
-  },
-  {
-   "name": "mob-mizuchi_spawn-h.mp3",
-   "sha256": "379c60f9df8b3c8eb4ca1c52468e982b6b76cd25a7dd680a3e8b58a368d71350",
-   "kit": "Cria de Mizuchi",
-   "duration": 0.55,
-   "channels": 2
-  },
-  {
-   "name": "mob-mizuchi_spawn-d.mp3",
-   "sha256": "d0be498eeb510ce6104cfa4d22ddbf567a8ff3e41d93c9f2190a2af817229f28",
-   "kit": "Cria de Mizuchi",
-   "duration": 1.49,
-   "channels": 2
-  },
-  {
-   "name": "mob-sand_servant-v.mp3",
-   "sha256": "4efa37647a9c2b638e09ec03799267f1155015b92a7fbed92cba6efe444cb082",
-   "kit": "Servo de Âmbar",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-sand_servant-h.mp3",
-   "sha256": "8e142a55e7bf0f05d3745c8eae5b4c9caeeb0bcaf7637c9dc87a3941b5e3f3ec",
-   "kit": "Servo de Âmbar",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-sand_servant-d.mp3",
-   "sha256": "2d2f92bc4e7c1e5db53dea4e16a4303ef1591c244b7b0698895f17d8040cd309",
-   "kit": "Servo de Âmbar",
-   "duration": 0.89,
-   "channels": 2
-  },
-  {
-   "name": "mob-storm_servant-v.mp3",
-   "sha256": "d477a5a82dfb42c8e2214f9c798b09b455772895219269123bdc7fd3dc119da5",
-   "kit": "Arauto do Tambor",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-storm_servant-h.mp3",
-   "sha256": "1cfa5e0c37bf7a5dae989d0e24d67b960059c3d1ccff3b3113522484686a8e57",
-   "kit": "Arauto do Tambor",
-   "duration": 0.42,
-   "channels": 2
-  },
-  {
-   "name": "mob-storm_servant-d.mp3",
-   "sha256": "02297776e849c0dee1ba9e63227186ffe16acb583b06533b7ff1e55719a1ca53",
-   "kit": "Arauto do Tambor",
-   "duration": 0.98,
-   "channels": 2
-  },
-  {
-   "name": "mob-archive_sentinel-v.mp3",
-   "sha256": "2f081045aeaed45443c19d3d8a61e4b896e0e9c6f1e90cdd5cdfceba0617282d",
-   "kit": "Bibliotecária Espectral",
-   "duration": 1.28,
-   "channels": 2
-  },
-  {
-   "name": "mob-archive_sentinel-h.mp3",
-   "sha256": "a60226d3d9df41eab1871a466c01cd4c17993ab5bf12917a2c7b58ee5375a1c0",
-   "kit": "Bibliotecária Espectral",
-   "duration": 0.43,
-   "channels": 2
-  },
-  {
-   "name": "mob-archive_sentinel-d.mp3",
-   "sha256": "02ab4edd0ee8e0d342af6d3acc2535d2bdc862a1ab1c4636a6d1ffe3187efcb5",
-   "kit": "Bibliotecária Espectral",
-   "duration": 1.15,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_titan-v.mp3",
-   "sha256": "28e2c53e321053f04591a6b663a3331e742f03c0caf7dedddb20b08182e2a824",
-   "kit": "Titã de Obsidiana",
-   "duration": 0.94,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_titan-h.mp3",
-   "sha256": "6b64bef05380f863e739f666408fdee6e32402b2649c657ec29853f587f3357d",
-   "kit": "Titã de Obsidiana",
-   "duration": 0.57,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_titan-d.mp3",
-   "sha256": "8994659bad1e7bd2646d788aa3a7017ddffcddccf8a5446c38ca3a4d0dede088",
-   "kit": "Titã de Obsidiana",
-   "duration": 1.1,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_titan-r.mp3",
-   "sha256": "ea6ecf27f769b35428bbe7deedf7087deaac0f9589453bea51f59f3afc45ca4a",
-   "kit": "Titã de Obsidiana",
-   "duration": 1.09,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_frost_dragon-v.mp3",
-   "sha256": "8e23ebfcf45a9c5cf590dbe1cf4517f2274f78b044e3b672cd01a451053e8444",
-   "kit": "Glacius, o Dragão Invernal",
-   "duration": 1.0,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_frost_dragon-h.mp3",
-   "sha256": "d752541c5692aa88a95bcaa765148208f357135f5a0d219edc11e3c5b846c238",
-   "kit": "Glacius, o Dragão Invernal",
-   "duration": 0.58,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_frost_dragon-d.mp3",
-   "sha256": "c3d579b01b6c6cc18acb04f91a0ccda89ab6ab6321461952c8e018890124b360",
-   "kit": "Glacius, o Dragão Invernal",
-   "duration": 1.24,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_frost_dragon-r.mp3",
-   "sha256": "894c6bc094f91a670e6112ec963953b8ce654556a835dc06384048f2f386106b",
-   "kit": "Glacius, o Dragão Invernal",
-   "duration": 1.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_storm_kitsune-v.mp3",
-   "sha256": "17abc0eb8d107361ada9cfaca79d733fab729486eefbbbf20b08c28d6ee461e4",
-   "kit": "Raijin-Kitsune",
-   "duration": 0.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_storm_kitsune-h.mp3",
-   "sha256": "328abbb80f171ff24aa5647f84a7380aa1f32ce66b007ed7dcfccf1b8a1e82c8",
-   "kit": "Raijin-Kitsune",
-   "duration": 0.5,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_storm_kitsune-d.mp3",
-   "sha256": "6219f2d13a64ea92992b1047ac0a3189e67473462fc9bb96b10f95f58f1d3c75",
-   "kit": "Raijin-Kitsune",
-   "duration": 1.04,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_storm_kitsune-r.mp3",
-   "sha256": "dc29354f876f5d8117be104be5ec73795e708c5710f26e83cff6706cd4453d26",
-   "kit": "Raijin-Kitsune",
-   "duration": 1.05,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_blood_moon-v.mp3",
-   "sha256": "8c8e5a97a9f386a3462d988ed6259aefe748e22c0677f0f789ba71865d20713b",
-   "kit": "Lua Sangrenta, Rainha do Eclipse",
-   "duration": 0.89,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_blood_moon-h.mp3",
-   "sha256": "ed6627bb99b62e2a0a03f35ef5056660337bc46907dae0e9cd24f733c4700399",
-   "kit": "Lua Sangrenta, Rainha do Eclipse",
-   "duration": 0.63,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_blood_moon-d.mp3",
-   "sha256": "2afff109ddc723b98e33734fd5e9d62e2c17b2f8de6e7cc2ffaf783c5f39a7ce",
-   "kit": "Lua Sangrenta, Rainha do Eclipse",
-   "duration": 2.33,
-   "channels": 2
-  },
-  {
-   "name": "mob-wb_blood_moon-r.mp3",
-   "sha256": "0b859437394ad5589c27ba33ba5545d704dd8a975b0b34649bf9e5466b1fe926",
-   "kit": "Lua Sangrenta, Rainha do Eclipse",
-   "duration": 2.62,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ember-v.mp3",
-   "sha256": "cb4c29bcbabca68bed83af87bc4b5f39897b60accdc7e524127d3ec882ca116c",
-   "kit": "Fogo-Fátuo do Festival",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ember-h.mp3",
-   "sha256": "f1e213398f2f4735dadf27f46dfd0afe177a3aa90e3f1f05591a299ac2c0079c",
-   "kit": "Fogo-Fátuo do Festival",
-   "duration": 0.29,
-   "channels": 2
-  },
-  {
-   "name": "mob-wisp_ember-d.mp3",
-   "sha256": "0f006206bb8262f2ca292e10cf6bf78e492e184361e8a0b42d6b9804cd0b4977",
-   "kit": "Fogo-Fátuo do Festival",
-   "duration": 0.8,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_gold-v.mp3",
-   "sha256": "573228987efadea53d359919fa913c3039e13749ac1c2aa97c5ef6e04afe4fdb",
-   "kit": "Raposa Dourada",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_gold-h.mp3",
-   "sha256": "9ea3e03bbeada9c16ad203bac59d243f8eae7ef62e57e71b404888aac0192b4a",
-   "kit": "Raposa Dourada",
-   "duration": 0.3,
-   "channels": 2
-  },
-  {
-   "name": "mob-fox_gold-d.mp3",
-   "sha256": "d286af39f283c54936334bdef32924796256064245cd7ae1a06e0e27b764b843",
-   "kit": "Raposa Dourada",
-   "duration": 0.88,
-   "channels": 2
-  },
-  {
-   "name": "mob-mimic-v.mp3",
-   "sha256": "6db9c5f6bb257e29b82fb3326ee2c9a18bcc7674258436e16915de2a620dea51",
-   "kit": "Baú Mímico",
-   "duration": 0.73,
-   "channels": 2
-  },
-  {
-   "name": "mob-mimic-h.mp3",
-   "sha256": "202c9e54c3ce936c26baefe28f3c509b80405f0a88359937a81e34aa2e0dda1b",
-   "kit": "Baú Mímico",
-   "duration": 0.38,
-   "channels": 2
-  },
-  {
-   "name": "mob-mimic-d.mp3",
-   "sha256": "a524a4898585d97d08cef00b8e92325a2451a660958f6c7526996aaed87151d6",
-   "kit": "Baú Mímico",
-   "duration": 1.19,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse-v.mp3",
-   "sha256": "d9eb9da73a3b832bd42b5917cd09898e22d6bc758b15989eb4b603f37927a102",
-   "kit": "Shirogane, Rei do Eclipse",
-   "duration": 0.77,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse-h.mp3",
-   "sha256": "2b292eb13c730e66aa8cac284b3ea1c5665ef802c0af12a9c9997c19c2864383",
-   "kit": "Shirogane, Rei do Eclipse",
-   "duration": 0.57,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse-d.mp3",
-   "sha256": "436cad4d9fb6b08096cf03824307232379bafcfa7b2c142cde93dae579f3acef",
-   "kit": "Shirogane, Rei do Eclipse",
-   "duration": 1.06,
-   "channels": 2
-  },
-  {
-   "name": "mob-eclipse-r.mp3",
-   "sha256": "d40e83ae586b406b4897b75cc0650dd98dc6817e6694cba4755765b309889291",
-   "kit": "Shirogane, Rei do Eclipse",
-   "duration": 1.19,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon-v.mp3",
-   "sha256": "3207e0cb98e2eafc6ced0843ec56a01d9a880183701838f080bdbc878691a54e",
-   "kit": "Mizuchi, Dragão Abissal",
-   "duration": 1.17,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon-h.mp3",
-   "sha256": "ca3c565b553ea8cdf99a72333f20328e6348b5d28703e20ac866d085fc57bf18",
-   "kit": "Mizuchi, Dragão Abissal",
-   "duration": 0.68,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon-d.mp3",
-   "sha256": "88db208b93c52112761cb6497c114cb6148835b22d5d029fa5e1eac5f52e21ee",
-   "kit": "Mizuchi, Dragão Abissal",
-   "duration": 1.45,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon-r.mp3",
-   "sha256": "f401a6cac8d8f8ddd1a36f0320ed2ed5bbac503d081b016f2576706af383580d",
-   "kit": "Mizuchi, Dragão Abissal",
-   "duration": 1.67,
-   "channels": 2
-  },
-  {
-   "name": "mob-lantern_kitsune-v.mp3",
-   "sha256": "05885e009d377ca091a3f41d317ad52aa1ab7f60b215acc1e2fe35b4283d354d",
-   "kit": "Kitsune das Lanternas",
-   "duration": 0.51,
-   "channels": 2
-  },
-  {
-   "name": "mob-lantern_kitsune-h.mp3",
-   "sha256": "00150956bb0d03390214a5d9c1b341e74e01c99927ac5379c5bf33791f0c5211",
-   "kit": "Kitsune das Lanternas",
-   "duration": 0.54,
-   "channels": 2
-  },
-  {
-   "name": "mob-lantern_kitsune-d.mp3",
-   "sha256": "f8d3b87049832cf4738f2b13bfba96868235b1459ac67427a97bf2d588e5d2d8",
-   "kit": "Kitsune das Lanternas",
-   "duration": 1.08,
-   "channels": 2
-  },
-  {
-   "name": "mob-lantern_kitsune-r.mp3",
-   "sha256": "d80e6821bfdbe5acfd73ad243d2c2ef7b1c1abdbf42d07e8b67aef70eb596ac4",
-   "kit": "Kitsune das Lanternas",
-   "duration": 1.09,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon_amber-v.mp3",
-   "sha256": "f0f8e7d255cf131e54a855520a4066e9ca78c2372e69c6fa3a1e3d2638302e05",
-   "kit": "Apep, Serpente do Tempo",
-   "duration": 1.26,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon_amber-h.mp3",
-   "sha256": "26285ecc63ce1de9e45efb1a722a8bd255b48f6d64ffaced130a3984863567f9",
-   "kit": "Apep, Serpente do Tempo",
-   "duration": 0.73,
-   "channels": 2
-  },
-  {
-   "name": "mob-dragon_amber-d.mp3",
-   "sha256": "929c249e4a09e3fb93c9b0b7ac99440998f9d21405cc57a48e14aae4f87d51ce",
-   "kit": "Apep, Serpente do Tempo",
    "duration": 1.23,
    "channels": 2
   },
   {
-   "name": "mob-dragon_amber-r.mp3",
-   "sha256": "6b6787d899ba9f613b6962a2c3d281d729a3cbf4d0b83758d06a9346c639af8b",
-   "kit": "Apep, Serpente do Tempo",
-   "duration": 1.47,
+   "name": "mob-fox_nine-a.mp3",
+   "sha256": "f67079d3a6c8968571ee02d49aeb29a95cec2932f4d13d4a25214589c0acbd91",
+   "kit": "Raposa de Nove Sombras",
+   "duration": 0.52,
    "channels": 2
   },
   {
-   "name": "mob-raijin-v.mp3",
-   "sha256": "64b939c86499965e4c3850c162ac1ecda4028d972e7769b9a46180824d273e35",
-   "kit": "Raijin, o Tambor do Trovão",
+   "name": "mob-fox_nine-d.mp3",
+   "sha256": "5174470d61483e63be16de96bb7cc11ce6e3e7f2147b848b577b327a7136889f",
+   "kit": "Raposa de Nove Sombras",
    "duration": 0.61,
    "channels": 2
   },
   {
-   "name": "mob-raijin-h.mp3",
-   "sha256": "e0904193419702ff1caf73e16b0280525d58d3fca2a2245cec425a7c31d01663",
-   "kit": "Raijin, o Tambor do Trovão",
+   "name": "mob-oni_ash-a.mp3",
+   "sha256": "cc1c7828e2c6fb9757c09c9aa93a7eb11e6279589fd693a4897bd361a82f323d",
+   "kit": "Oni de Cinzas",
+   "duration": 0.6,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_ash-d.mp3",
+   "sha256": "3a6259e80e8cd8ca116861e90efac93da9ab03b327e4bfcb7883a15dd01a46db",
+   "kit": "Oni de Cinzas",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider-a.mp3",
+   "sha256": "9bdeffdb2b6deacc4f373ed08636b6146eb189be90c762ee74ee146a6df7a990",
+   "kit": "Aranha de Cristal",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider-d.mp3",
+   "sha256": "8f99a033b56434bdcbec8e86ed80ec4ee8f5a492646b81a03ef9bbded89753c6",
+   "kit": "Aranha de Cristal",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_void-a.mp3",
+   "sha256": "42ddafc6da3c5c38a924317d36c7bc49c54eeaa4803a85660a4d59927e7cbc74",
+   "kit": "Chama do Vazio",
    "duration": 0.5,
    "channels": 2
   },
   {
-   "name": "mob-raijin-d.mp3",
-   "sha256": "e0bb2470c38bee011decdabe21dcdcfc32824b665c9b4f063ef58b9bed2cbfd2",
-   "kit": "Raijin, o Tambor do Trovão",
+   "name": "mob-wisp_void-d.mp3",
+   "sha256": "197b24570b37976a9adcfcacc8d6a596e026b21a4c326ea81aa3daaf6868e6f8",
+   "kit": "Chama do Vazio",
+   "duration": 0.67,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_obsidian-a.mp3",
+   "sha256": "29055c4727f0649e1ed264ec8379a6289c7580ca896204c1fc92d740554fd10c",
+   "kit": "Golem de Obsidiana",
+   "duration": 1.11,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_obsidian-d.mp3",
+   "sha256": "b01d5f1667ffafa6de26b713101718262b906abc1a6ceea0974717e700986c5a",
+   "kit": "Golem de Obsidiana",
+   "duration": 1.0,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_crimson-a.mp3",
+   "sha256": "ea645b06bf08dfefc4d9da94142e0f8701dfc5722bbad21920ef746871f86a8a",
+   "kit": "Oni Carmesim",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_crimson-d.mp3",
+   "sha256": "20487b739d736358c5528b081b8076f7d71b4e46bb4b6c630f4a1befe955b331",
+   "kit": "Oni Carmesim",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_specter-a.mp3",
+   "sha256": "916cd9d8228b6baefe52943329cb4cd2956a303cbceffc96f8316800e0a5702f",
+   "kit": "Kitsune Espectral",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_specter-d.mp3",
+   "sha256": "0a4bb62af7f09566dc1dc088408a0809ef3b81d06945b0ae1c639905d9843d3d",
+   "kit": "Kitsune Espectral",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_lava-a.mp3",
+   "sha256": "6472ed385d7fdd450cd6b0e46b2f430696f28cee3ee90d758e82e25e1c87276b",
+   "kit": "Guardião Ígneo",
+   "duration": 1.02,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_lava-d.mp3",
+   "sha256": "bfc9921ec83642768ae2edf378c8803d7fa84883052204ea5c7772b31b0ea227",
+   "kit": "Guardião Ígneo",
+   "duration": 1.19,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp-a.mp3",
+   "sha256": "ebc6b856d8eee20c1594f56c232736f2b4290a970ee7a677bbadf9adbc02277e",
+   "kit": "Luz Errante",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp-d.mp3",
+   "sha256": "709c22c9b8cc40c65bf70c9a20a0a3ae292e0f0ee755ba818c2db7e5c376814a",
+   "kit": "Luz Errante",
+   "duration": 0.75,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant-a.mp3",
+   "sha256": "8e1ca895aae74a396efd83502f20d69ca6e585bc0fc6178d8e7f955ada7ea1e0",
+   "kit": "Espectro das Marés",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant-d.mp3",
+   "sha256": "ec0e599965421f70c2d4c8c353cd5dc8c6074b3b8936d0aa19905bd174acfaab",
+   "kit": "Espectro das Marés",
+   "duration": 0.7,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_foam-a.mp3",
+   "sha256": "c77c55e1416af1ae7c9e6d6b3ac81ea86e2c1b052ba61735ad8013f960f8cad8",
+   "kit": "Raposa da Espuma",
+   "duration": 0.59,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_foam-d.mp3",
+   "sha256": "c0edbe9a89842e8f239b92235d9c80864aa8effb606765e9fee1ca1e278653fd",
+   "kit": "Raposa da Espuma",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_coral-a.mp3",
+   "sha256": "bb79e0dc72e4150609f1b7e5327b17b35a3a114a13cd172a5e197633e94a7c19",
+   "kit": "Aranha de Coral",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_coral-d.mp3",
+   "sha256": "92ed6a27a481ab9846be562eeea3b31013a0527a9f899107ca2978ee572125c0",
+   "kit": "Aranha de Coral",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_tide-a.mp3",
+   "sha256": "492513aef8e1f91c3fbd758ffc58c007cbf4e3442d14070f66dbd067a9747da1",
+   "kit": "Oni Abissal",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_tide-d.mp3",
+   "sha256": "c71cc6f27ba38802a55e555c3c7346bb9882fc9947c3453671d2699ea8eb3b8c",
+   "kit": "Oni Abissal",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_captain-a.mp3",
+   "sha256": "145520eed4fd8620ffa1f94b65fe72349c0d896ec21d63bd28b91ede8243e4e1",
+   "kit": "Capitão Afogado",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_captain-d.mp3",
+   "sha256": "8810c5392947a2d5ea5f84587af3c2d8e365847da010f3676e2b0c764b6d9832",
+   "kit": "Capitão Afogado",
+   "duration": 0.67,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_coral-a.mp3",
+   "sha256": "835bac10024c41e4a9b14370773590199f2403bf6a3f31dc73e6320b0b85d533",
+   "kit": "Colosso de Coral",
+   "duration": 1.08,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_coral-d.mp3",
+   "sha256": "4951f4933de72031456515de926ded435c713e9d7441809437afa852d9f7ba34",
+   "kit": "Colosso de Coral",
+   "duration": 1.04,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_scribe-a.mp3",
+   "sha256": "e5898b5bb301d0cf9b41e2ccd9042dd0d3f25aafba0174e34f8453b235ade1b6",
+   "kit": "Escriba Afogado",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_scribe-d.mp3",
+   "sha256": "6ee0265421995630afeccb5aa55aef3ef76c089170a97a3bd1726083014879d2",
+   "kit": "Escriba Afogado",
+   "duration": 0.63,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_arc-a.mp3",
+   "sha256": "0d025f0ffed8a6589886c762c6eae3959141d8636b3982cbcd951eff22919027",
+   "kit": "Faísca Arcana",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_arc-d.mp3",
+   "sha256": "e9b3e6d61cfdbfdfbdecb01ad67132f90276b6ac87d75ebd302b929065e4c36b",
+   "kit": "Faísca Arcana",
+   "duration": 0.62,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ink-a.mp3",
+   "sha256": "f8bbec745ef49eef25faf3fa72b4b2dd32251fd30b98973cddf43c584a3cb9c7",
+   "kit": "Aranha de Tinta",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ink-d.mp3",
+   "sha256": "63c4ddb4496d99e437d6b195ae13e809e56ca926c7516f042b80475ee71d0e14",
+   "kit": "Aranha de Tinta",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_crystal-a.mp3",
+   "sha256": "88ce4e8595f591b5f536bfdc179026899b6ecb11dcfdb2d9754e5f6d8663e5c8",
+   "kit": "Autômato de Jade",
+   "duration": 1.01,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_crystal-d.mp3",
+   "sha256": "4e06397f69f91b9659d8294bf6ff0183f4df2236a34a3ca7759521d824e266cf",
+   "kit": "Autômato de Jade",
    "duration": 0.99,
    "channels": 2
   },
   {
-   "name": "mob-raijin-r.mp3",
-   "sha256": "c65b393a3ff9ead19054c220512fec338c4703c5cde8c1afdc9f5d9e04542fbd",
+   "name": "mob-fox_storm-a.mp3",
+   "sha256": "b54f05f015fbe1f8fe9a153da1a2fea39754012ef1b8b2b333f34fc190eaa758",
+   "kit": "Raposa-Trovão",
+   "duration": 0.63,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_storm-d.mp3",
+   "sha256": "772e22ba25f4f58738468bf9d10add8ce5719f7e9cf3d82aa781be756be7a0cb",
+   "kit": "Raposa-Trovão",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_crimson-a.mp3",
+   "sha256": "b5e654a80a7de328917de45f08676b201c5890be399e12c96c5d73cae3c9b564",
+   "kit": "Arquivista Carmesim",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_crimson-d.mp3",
+   "sha256": "03f45c93e3f1da19605c64fb913baa14f17251fb93d79e1bfb43987137a66d35",
+   "kit": "Arquivista Carmesim",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_storm-a.mp3",
+   "sha256": "a5246c73e2cbada0e98e06229111d43239321505777dcf0bc6d15acde07c1641",
+   "kit": "Guardião da Tempestade",
+   "duration": 0.85,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_storm-d.mp3",
+   "sha256": "ac688b1c6f3a098d069d953ca6a2c9b4edfc51e600d817687445a54fa7c175bb",
+   "kit": "Guardião da Tempestade",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_bog-a.mp3",
+   "sha256": "a110aa70fb9488a1c7847d124ca254d02a37f1a25379be49b156dbab0cb42a93",
+   "kit": "Raposa do Lodo",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_bog-d.mp3",
+   "sha256": "94628404f77311bd2d4b7e87b33e6d8837c341ab67f4cf0d9db899866dd26da4",
+   "kit": "Raposa do Lodo",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_bog-a.mp3",
+   "sha256": "25b4c6a2ca0cbef2faf834761cb3aef4338db76c1960f82aa32413b529c8dd7f",
+   "kit": "Aranha do Brejo",
+   "duration": 0.57,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_bog-d.mp3",
+   "sha256": "4949964a27540b1aa37cc6b8ddbad63e247bf7044a892c015eacfadcc4db08f9",
+   "kit": "Aranha do Brejo",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_bog-a.mp3",
+   "sha256": "7855799d66386cf0055f24028e4b90a6d198f95a37f1872eeb980c2684a364ef",
+   "kit": "Vaga-lume Errante",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_bog-d.mp3",
+   "sha256": "f7bf31c42f1f8826a308cfe9abcff10c53d61f7cc12f40b75a5e535c17f65be2",
+   "kit": "Vaga-lume Errante",
+   "duration": 0.62,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_moss-a.mp3",
+   "sha256": "ec2cb3a0ba0e57718ba97d64fba7ed870c401db1a51ab82d351ef1f22670df69",
+   "kit": "Oni do Musgo",
+   "duration": 0.65,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_moss-d.mp3",
+   "sha256": "3337892e064f51097bfeb92790907467ae3d35c5bd205469c5781ad00909271f",
+   "kit": "Oni do Musgo",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_bog-a.mp3",
+   "sha256": "609bb3b639eacee75d99798eff732b8a6b30fa39099ae66301ad71a210e917f2",
+   "kit": "Colosso do Pântano",
+   "duration": 0.94,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_bog-d.mp3",
+   "sha256": "cd6f472c612c8567c5c5b294f92d1658a2df3f05ae55293333691145a61752fc",
+   "kit": "Colosso do Pântano",
+   "duration": 1.03,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_bog-a.mp3",
+   "sha256": "3a11154a291064798f485b9c8f7376c40a9f3fa3d9eecaf4d0f02047f9b2f4fa",
+   "kit": "Bruxa do Brejo",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_bog-d.mp3",
+   "sha256": "4ff510206b33e9637df0feb013d496474c4d3bb16d8304061ce704e16465be4f",
+   "kit": "Bruxa do Brejo",
+   "duration": 0.76,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_bone-a.mp3",
+   "sha256": "fdb5a4210690b9a34b0cfdcee04d93d2f61f287992868d0ff37b08706e88631c",
+   "kit": "Aranha de Ossos",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_bone-d.mp3",
+   "sha256": "09e78051d1e7e48db65619f76036435fce94af589be2064b930b827c690b77a5",
+   "kit": "Aranha de Ossos",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_jade-a.mp3",
+   "sha256": "d877713e5a8247a909af0aa518b804a88f15404759a5f612f7af16acdbe77650",
+   "kit": "Chama de Jade",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_jade-d.mp3",
+   "sha256": "53051214b3ec0ac9e4a3e8b767714d4a429f143401108d3b2d418e3e8bd423b2",
+   "kit": "Chama de Jade",
+   "duration": 0.73,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_jade-a.mp3",
+   "sha256": "1aa696b3f771265666d39d250e599db74c75a2d1c86c90562081483e698ab36a",
+   "kit": "Raposa de Jade",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_jade-d.mp3",
+   "sha256": "7c87befa3fd93a842a3e97de4aff33eabd27c987e1da7e5ff8d40f816d4feba5",
+   "kit": "Raposa de Jade",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_emerald-a.mp3",
+   "sha256": "58f3292b85b85614993fea1f06d77a8b83f997f8f8ae0b2437903283adc90df9",
+   "kit": "Guardião Esmeralda",
+   "duration": 1.09,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_emerald-d.mp3",
+   "sha256": "7b8f47d46350ced9e78d6e0578cc43f137babd69be9feddcb1ebfc8323761dae",
+   "kit": "Guardião Esmeralda",
+   "duration": 1.16,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_jade-a.mp3",
+   "sha256": "2e9462dcb65d4c4cf1f0f498672ac34ba2750d5ecc03ae2ac2f65e0f0809cd67",
+   "kit": "Sacerdote de Jade",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_jade-d.mp3",
+   "sha256": "81b4f9d2eef52b7091b6bc6ad08e09a0396ad4c691e2fc352768507cf2b41c1b",
+   "kit": "Sacerdote de Jade",
+   "duration": 0.67,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_jade-a.mp3",
+   "sha256": "01c9ec2eabb179aa0ea5e8956ba4025f607e5c1081b02033378a8d7b1552363f",
+   "kit": "Oni Carcereiro",
+   "duration": 0.8,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_jade-d.mp3",
+   "sha256": "00207132fef6affe6fdc918037753abbaa580459c8113588d2f1ef898c73d533",
+   "kit": "Oni Carcereiro",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_king-a.mp3",
+   "sha256": "71269233cbd3fb7bba63fd728ca651af450d33463f2fb79058aed41f84b6d17f",
+   "kit": "Rei Sem Túmulo",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_king-d.mp3",
+   "sha256": "5b49752e078325d94427d49b86c7a218be1a2e1a5d9083f70f078c36b2410a94",
+   "kit": "Rei Sem Túmulo",
+   "duration": 0.71,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_snow-a.mp3",
+   "sha256": "f29fd898bfe53efb9e7ecef1b443b54034d2236b8d681c29b943739dd09f6ab5",
+   "kit": "Raposa da Nevasca",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_snow-d.mp3",
+   "sha256": "0a82b66228eadff787eeba614bebe7ad56b5a28af25c2e55c02385e109523f0c",
+   "kit": "Raposa da Nevasca",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ice-a.mp3",
+   "sha256": "24718e02cc4850eb29289f18c3d8928066ae3f328e3e51b848f16a0d9de15cd6",
+   "kit": "Aranha de Geada",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ice-d.mp3",
+   "sha256": "d01a3d9de6c3f75eae799092ca6fcb770a61baff361b0fb01867de96d217c818",
+   "kit": "Aranha de Geada",
+   "duration": 0.44,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ice-a.mp3",
+   "sha256": "04af9a0a1f3efa0ae5de60f02a62afef1aacfa508817294c5dc6cf67f702aca8",
+   "kit": "Espírito Boreal",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ice-d.mp3",
+   "sha256": "b8c5851d24aea2c6539cbdc99c54225dcb755959c9d4336fa8728b70a78acc82",
+   "kit": "Espírito Boreal",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_ice-a.mp3",
+   "sha256": "e749ac749dd2c9d5ef1de412638c23ddc2907de8676b515f8d9477723e31d2ca",
+   "kit": "Golem Glacial",
+   "duration": 0.99,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_ice-d.mp3",
+   "sha256": "973448d2007097f4480cdf2a07935cff1cbfd137f3a294e6736ee0644ab05f93",
+   "kit": "Golem Glacial",
+   "duration": 0.95,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_frost-a.mp3",
+   "sha256": "7610af6081f3a4490bbc21746a3e66216b605cd2041ac7a67bf12432aeaba72b",
+   "kit": "Oni da Avalanche",
+   "duration": 0.68,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_frost-d.mp3",
+   "sha256": "187cbc7e3654ce2b5faa745fa7faf986171d853d06bb6b92f66f2d4ba5e62aa3",
+   "kit": "Oni da Avalanche",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_frost-a.mp3",
+   "sha256": "13fe86ddd04aeb9e20912e8b93fbda70095bfe1aeb64699ba769c016b446d1e7",
+   "kit": "Rainha do Inverno",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_frost-d.mp3",
+   "sha256": "137dc4d166c6612d8836a4fe2ac702cac1a7aef2c015c3f7bc1d513e27f89511",
+   "kit": "Rainha do Inverno",
+   "duration": 0.75,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_lava-a.mp3",
+   "sha256": "ae8e16c676ea5592bf6e1ee41fa53052028394e4c62ec102256832112e593f31",
+   "kit": "Aranha de Magma",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_lava-d.mp3",
+   "sha256": "13d83dce455be8c031d3b1a216491e29c526dc612fa4c1032b2b2a22a377d71a",
+   "kit": "Aranha de Magma",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_lava-a.mp3",
+   "sha256": "5e13e1dcfea689c77cbc6c961b443cb6c0c23c227c7fb19a79ae3ec881e379d1",
+   "kit": "Faísca da Forja",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_lava-d.mp3",
+   "sha256": "3ca0f437adf0afbf36be4960bf620004735b5abd6242253b14acb6965e2684f5",
+   "kit": "Faísca da Forja",
+   "duration": 0.75,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_fire-a.mp3",
+   "sha256": "0787e33881921170eefdaf30bf5d9ddc271e4cb4e2d8766af9847d3b92b6fdc1",
+   "kit": "Raposa Brasa",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_fire-d.mp3",
+   "sha256": "2cf045a3280fc75057dc2243406b1936e9257d76aa59ee86097b1459008ce2be",
+   "kit": "Raposa Brasa",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_ash-a.mp3",
+   "sha256": "803e56c8563ac51b4abd4e91ad55e632362da05fb3cb9447d7c4c51fba57589d",
+   "kit": "Ferreiro de Cinzas",
+   "duration": 0.45,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_ash-d.mp3",
+   "sha256": "ba34f575b038ac0b3fb5ea354354e9242b7da557cacd72f377de11ec09a68bdb",
+   "kit": "Ferreiro de Cinzas",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_lava-a.mp3",
+   "sha256": "1a03005f24191297c5905ee943a01b26531bb3888662315f860fa99ad382efe6",
+   "kit": "Oni Fundidor",
+   "duration": 0.7,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_lava-d.mp3",
+   "sha256": "606e26cd5a31e41a9425d4537e981dcde9ea28878132ee26f69fc33d5fda2d3b",
+   "kit": "Oni Fundidor",
+   "duration": 0.57,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_iron-a.mp3",
+   "sha256": "49f35882edd2f8e7c7e0d57e321a85e6af383dfcd197fa411aee9286a232d4dc",
+   "kit": "Autômato de Ferro",
+   "duration": 1.04,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_iron-d.mp3",
+   "sha256": "233e6fc424e6ad1a9feba211baa91f5212fb9e68fcd04d450f690ef02a4121da",
+   "kit": "Autômato de Ferro",
+   "duration": 1.08,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_forge-a.mp3",
+   "sha256": "4a1afd5499fcc1ea527d7e87f3a7862445576875ecc21d9a165e5d1bbca4222a",
+   "kit": "Coração da Forja",
+   "duration": 1.14,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_forge-d.mp3",
+   "sha256": "62eb720a519cede4a0de69962cfcddd2dbbc416e8ce8261782b86f555d1ba5ca",
+   "kit": "Coração da Forja",
+   "duration": 1.22,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_sand-a.mp3",
+   "sha256": "0fad3e7567d0e431725836e0ccbbc5dad7404f7a5bde936a5f1316aca4a3f3c7",
+   "kit": "Chacal das Dunas",
+   "duration": 0.45,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_sand-d.mp3",
+   "sha256": "46207ffa5fc98edaf7ecf49d26325f4c42bd3f68a48ef9665f90d14e54143f84",
+   "kit": "Chacal das Dunas",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_sand-a.mp3",
+   "sha256": "512ccb468b6184e7b62f5d359ff22c61eb205339f7a587a06ea7201e4e0e814e",
+   "kit": "Escorpião Dourado",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_sand-d.mp3",
+   "sha256": "00ba3cc879bf3b8c45d1068966b4a5ef5ffbef56bc78fc476f8a029305bf335b",
+   "kit": "Escorpião Dourado",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_sand-a.mp3",
+   "sha256": "03683e1180e2d14b455edf0cce6c2b1c51550c0b1667bbb9dacd57ae0d3bfb5b",
+   "kit": "Miragem",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_sand-d.mp3",
+   "sha256": "20b39592637d608baa9a8304791a14bed221f0fcfeb76a4c7d2948e1d278fef0",
+   "kit": "Miragem",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_sand-a.mp3",
+   "sha256": "40720223e159bcf07b8d7a9e004700f63b6aa4a69d049729b6fe198033bc9ae1",
+   "kit": "Guerreiro de Areia",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_sand-d.mp3",
+   "sha256": "1ba9e87c5fd99a77a579a7c8755957b630aa47de01b7b48aef556030274902e9",
+   "kit": "Guerreiro de Areia",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_sand-a.mp3",
+   "sha256": "d8d23514acc14dc1cb775843a916f1d59a0c353f6839595f441d796ff8d3daff",
+   "kit": "Esfinge de Pedra",
+   "duration": 1.03,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_sand-d.mp3",
+   "sha256": "91539485235679b9d8a850dd473559622f3d2cc6d4f93818c9f5c8adf6cefca6",
+   "kit": "Esfinge de Pedra",
+   "duration": 1.06,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_mummy-a.mp3",
+   "sha256": "799c9335b0f84a32a84a6287bdd6ae9a503e1fe2499510a7d98c019331415865",
+   "kit": "Múmia Real",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_mummy-d.mp3",
+   "sha256": "a907993783cf2639005055fafeb40c189b189a264c34896c5956cfa8c37624e3",
+   "kit": "Múmia Real",
+   "duration": 0.75,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_ghost-a.mp3",
+   "sha256": "dc1734125c11842d0d5ffd721aab7a26e1bf61992764cb4b980c2490a574bcd2",
+   "kit": "Raposa Fantasma",
+   "duration": 0.45,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_ghost-d.mp3",
+   "sha256": "c97dfd6095d56cf04e38bb089f2deafd228f1b964c99d1532bfd3ff6f0995df2",
+   "kit": "Raposa Fantasma",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ghost-a.mp3",
+   "sha256": "4488dbe572b209f672a70d5bbf1d41a7930f39d464680baf4bd401f6324cfa70",
+   "kit": "Lamento",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ghost-d.mp3",
+   "sha256": "225e5e85a1aada83a0bf3ca45e87f77cf55bd6f50b61c8bca61893636633b18a",
+   "kit": "Lamento",
+   "duration": 0.64,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ghost-a.mp3",
+   "sha256": "52870bcdb364cd500403c523a3381aee536a21b9a96fbbdb636dacfc17574956",
+   "kit": "Aranha Etérea",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_ghost-d.mp3",
+   "sha256": "61e81207d35f0a3e481c3bda84a1167b007b61fe824101fa5b6336eaa1f7e09e",
+   "kit": "Aranha Etérea",
+   "duration": 0.45,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_ghost-a.mp3",
+   "sha256": "132235a399d6a57ce1970f5da0c1f925835594913f4cd8241a6df7c7454a93e2",
+   "kit": "Oni Espectral",
+   "duration": 0.6,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_ghost-d.mp3",
+   "sha256": "55318e3dbad155f95e8f09acd996bee309bcd1d07313f7ba9c98f0caebefcac8",
+   "kit": "Oni Espectral",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_ghost-a.mp3",
+   "sha256": "ac4d487820c59a0709d6e10dff7cbb322ae59ae3481403de511bb555decf16fa",
+   "kit": "Sentinela Assombrada",
+   "duration": 1.01,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_ghost-d.mp3",
+   "sha256": "e031b68788399535a8b273971e0c62cc2431886a9d94c8cb798b8b311506924f",
+   "kit": "Sentinela Assombrada",
+   "duration": 0.89,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_ghost-a.mp3",
+   "sha256": "854e0f744a1442ffea0d35cea4c8374d973a7e1ef1f1dbcffd940b9f1a2962d3",
+   "kit": "Noiva Espectral",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_ghost-d.mp3",
+   "sha256": "2d28b8ee834aa12de11cf2575823e0a13aba0ab71cd117e1d85f8a8dd47896f7",
+   "kit": "Noiva Espectral",
+   "duration": 0.69,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_time-a.mp3",
+   "sha256": "b7e25af89ebae8bb4cdd9446b493edd82543f5d06841e22dbe20833c14432cd7",
+   "kit": "Raposa Temporal",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_time-d.mp3",
+   "sha256": "19aa5759387fb970c3c922834dfa96d416c8ce8e6f4c4f6836f472aa7257a58c",
+   "kit": "Raposa Temporal",
+   "duration": 0.6,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_time-a.mp3",
+   "sha256": "017c743e383a8060654101b9d5a748e13c3c28657f0c5ea590c2897a8eb8e42e",
+   "kit": "Engrenagem Viva",
+   "duration": 0.55,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_time-d.mp3",
+   "sha256": "45e9eed200a7524ec76986043fe13f013f39bd49b3b61f7b02f65059a787aa5f",
+   "kit": "Engrenagem Viva",
+   "duration": 0.73,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_clock-a.mp3",
+   "sha256": "b4ee2bc9e4d4661d620ca26c4890a81edfdddb49444871c2542a830d50433058",
+   "kit": "Aranha de Corda",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_clock-d.mp3",
+   "sha256": "44fbbeda0d9711b3fd930c107dd78677096b42acc92ece8b54031134eee70558",
+   "kit": "Aranha de Corda",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_time-a.mp3",
+   "sha256": "8a7c17eb3eb954a14569578a831f3a998414a0138be6baa0a2524453561f7a69",
+   "kit": "Oni do Pêndulo",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_time-d.mp3",
+   "sha256": "886084171423b3c52248d895fcf6d3df603a23cb1eaa0d7e78e259a09feb179a",
+   "kit": "Oni do Pêndulo",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_time-a.mp3",
+   "sha256": "6eee9d27cdb527ded5fd167ac6fd689b533097685f8a8b2d20e357c4d37022c5",
+   "kit": "Relojoeiro Louco",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_time-d.mp3",
+   "sha256": "1c4786ba2b3b8b3139f9a01b91d45656d4864766213b5bb7c301deb1fa5f3c42",
+   "kit": "Relojoeiro Louco",
+   "duration": 0.65,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_chrono-a.mp3",
+   "sha256": "15321790bc069e1469674ebc4c59d112c67130090d620010871013669678fa0f",
+   "kit": "Guardião do Tempo",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_chrono-d.mp3",
+   "sha256": "e2062f0634e874bbcffd6308519754cce70b59e5a62fb10e5e80b1d6842506cc",
+   "kit": "Guardião do Tempo",
+   "duration": 0.72,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_clock-a.mp3",
+   "sha256": "c826003963a10f5818478fc7d6cc2fc00d62be78852fd7d392854da03cd4feac",
+   "kit": "Colosso do Relógio",
+   "duration": 1.13,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_clock-d.mp3",
+   "sha256": "20c859668e9d5ececec6fe3862d06893abacbe68367e112c46241e34a697c209",
+   "kit": "Colosso do Relógio",
+   "duration": 1.27,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_cloud-a.mp3",
+   "sha256": "0cef90cbcefa161039afec8d22a280a2b1b621fd9320b95a999a77ce9f2e21ac",
+   "kit": "Raposa das Nuvens",
+   "duration": 0.65,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_cloud-d.mp3",
+   "sha256": "d0e9af41688aa9bf3fa8beb68a4fc8b596f661ebdd794fde9c78da03a19cae17",
+   "kit": "Raposa das Nuvens",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_storm-a.mp3",
+   "sha256": "52de266d8a5fe25e953e0212e8358d75d50496499fdd82b96cd718b60dcd060c",
+   "kit": "Centelha Celeste",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_storm-d.mp3",
+   "sha256": "6825e7a72d0e9429d278f53b02f323680a2744fe47bef385179edd26fd88416c",
+   "kit": "Centelha Celeste",
+   "duration": 0.62,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_wind-a.mp3",
+   "sha256": "66d5158cdfcf278856b03defffb5aebd5313ce2d2f07e5d1a3558d5d8f141629",
+   "kit": "Aranha dos Ventos",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_wind-d.mp3",
+   "sha256": "7824ee8d9f29d2fbb741730452b48c130302043c2744a94a86328ab562d3d11c",
+   "kit": "Aranha dos Ventos",
+   "duration": 0.44,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_thunder-a.mp3",
+   "sha256": "d6b60fa1aa14b0b813fc54d1eb45a3ba56f556c3089ef94b79ae7d26e24de87f",
+   "kit": "Oni do Trovão",
+   "duration": 0.69,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_thunder-d.mp3",
+   "sha256": "711b42d3e1ee9f790b5ed3b10a9586b04a5870bc45cc35e4cf606211d81fcb00",
+   "kit": "Oni do Trovão",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_sky-a.mp3",
+   "sha256": "d41520ca73c25af46d15b3e32fdbbbd6183efa189fbdd76bf466b386ff5f2104",
+   "kit": "Colosso Alado",
+   "duration": 1.09,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_sky-d.mp3",
+   "sha256": "195fc691c7ac5055757a26e41a0450fd778e94b2c1012fbf6e927b396eaa3c5f",
+   "kit": "Colosso Alado",
+   "duration": 1.16,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_sky-a.mp3",
+   "sha256": "21bad4bb14844f163a9cb058fb6d603c3b394029afa74b6be9b6fc0caab1cc6c",
+   "kit": "Tengu Ancião",
+   "duration": 0.46,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_sky-d.mp3",
+   "sha256": "6e6595f5eba3c92a2a01de9ce2e2aafa403ee412b0faf69cbac10aaba3a6a507",
+   "kit": "Tengu Ancião",
+   "duration": 0.64,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_sakura-a.mp3",
+   "sha256": "cc960254679733b2b9dcab2278a3c5e1455b3872acc0fd276993c1cebc9bf71a",
+   "kit": "Kitsune Rosada",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_sakura-d.mp3",
+   "sha256": "58250537555bf5b3fee0fee87b7c95624c3a82a84e5a2d2b4ba0b95ce852a42a",
+   "kit": "Kitsune Rosada",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_petal-a.mp3",
+   "sha256": "c7010d31bcd2b7f0757d405da06ecff3ba19259302b5742c58e421e2fae93157",
+   "kit": "Espírito da Pétala",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_petal-d.mp3",
+   "sha256": "c7f43eb7304ad66dd4c0e8e2e43d2ede8e61f8f464267254d9552246d3753646",
+   "kit": "Espírito da Pétala",
+   "duration": 0.7,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_silk-a.mp3",
+   "sha256": "dd5a537a2b992f41b0cd27e4391877a09016ad3075b2c214776294a304c6e8a8",
+   "kit": "Tecelã de Seda",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_silk-d.mp3",
+   "sha256": "1c48d503e72e44d9fd319477be4b20e5c1b23e569e7bf3589436492a7898adae",
+   "kit": "Tecelã de Seda",
+   "duration": 0.43,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_blossom-a.mp3",
+   "sha256": "cdc3cd7aadbe574128ea3e6753a22050aa7726d8e662deb75f7a161ceefc824e",
+   "kit": "Oni Florido",
+   "duration": 0.68,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_blossom-d.mp3",
+   "sha256": "4957970572a76fff9f2ad74a1b997f500445f22c2ee70231260f8485ba591404",
+   "kit": "Oni Florido",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_root-a.mp3",
+   "sha256": "6f0d0815129d037f108353ed4e31d614b7b5cfa2d5590a471e9ac04bd0c39ffa",
+   "kit": "Guardião de Raízes",
+   "duration": 1.12,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_root-d.mp3",
+   "sha256": "287113c0663ed032871c4fd41a75eec4756fa0082fc65bac7442f1d60ee0813f",
+   "kit": "Guardião de Raízes",
+   "duration": 1.17,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_geisha-a.mp3",
+   "sha256": "635287389b98464ba5eab75cb727ca6eaf5a2e32fe2dfa2275133816abe60896",
+   "kit": "Dama das Flores",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_geisha-d.mp3",
+   "sha256": "5f2fc4d1b8f5d1c8b2fae2839194f2ce8dfdcbdd4d25067c0224730317e3a71b",
+   "kit": "Dama das Flores",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_lightning-a.mp3",
+   "sha256": "3c490848cf8d5f47d71e17672e9deaa83f4e1c12d39e6e5aa81da6e451f0645d",
+   "kit": "Raiju",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_lightning-d.mp3",
+   "sha256": "fa6c16ce32a3d6525bd835be366389207e1241c409e81c6aafca9c4adbb56bfc",
+   "kit": "Raiju",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_cloud-a.mp3",
+   "sha256": "3c7f810767c739b29032830fc5d7973f479dd90d0d8e99e55ec001a97221ba6a",
+   "kit": "Névoa Sagrada",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_cloud-d.mp3",
+   "sha256": "da24ad1efa43fd038d29426374d27fe3acd5c9ef2204ca131bacf2d992c11a3a",
+   "kit": "Névoa Sagrada",
+   "duration": 0.68,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_thunder-a.mp3",
+   "sha256": "88ffec26de3c9edbd335283d1c64b554641dc9772963f04da6ac5b6636fb6b17",
+   "kit": "Aranha Trovejante",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-spider_thunder-d.mp3",
+   "sha256": "db8ab2f794dff30149d4954c68f44dd59693e0fedfbaa52a5f6c697dff7bdf5f",
+   "kit": "Aranha Trovejante",
+   "duration": 0.43,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_wind-a.mp3",
+   "sha256": "c58e1cc919c2c0781833f10ffb938071f051837fa84010443b8508226ca1866c",
+   "kit": "Oni do Vendaval",
+   "duration": 0.72,
+   "channels": 2
+  },
+  {
+   "name": "mob-oni_wind-d.mp3",
+   "sha256": "5a6da4b88af8c612323f9bc64603f2399ba05fc2e58614e4d8f01f7719d79cdd",
+   "kit": "Oni do Vendaval",
+   "duration": 0.53,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_monk-a.mp3",
+   "sha256": "8d78326f677f47a57a7f8783d9fb9f7bc3065bd1f3d65070259e8bd938b80d88",
+   "kit": "Monge da Tempestade",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-revenant_monk-d.mp3",
+   "sha256": "7fb5aa6f1c70b070cdd83f097ca983bb8fdf06270e95e375664e9c0c644fed5f",
+   "kit": "Monge da Tempestade",
+   "duration": 0.73,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_bell-a.mp3",
+   "sha256": "ca6c663641606aed20609ceb829e361bf1ca42820c7cfe518d63dcd337e3979c",
+   "kit": "Sino Colossal",
+   "duration": 1.07,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_bell-d.mp3",
+   "sha256": "b09cc4d291ef2e176b2e74572f3731fd1be878d016411338efa4cc7cffdc5637",
+   "kit": "Sino Colossal",
+   "duration": 1.04,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_fujin-a.mp3",
+   "sha256": "c93f3290c3fdf1f8a4b5c322f0c7aee2503e571e89c75da41b0145a56cb9bd2f",
+   "kit": "Fujin, Senhor dos Ventos",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-golem_fujin-d.mp3",
+   "sha256": "5efb5317905290844c31d6756b5c61fbd9c38988f94e547e5a6b816b0961eb81",
+   "kit": "Fujin, Senhor dos Ventos",
+   "duration": 0.65,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_hound-a.mp3",
+   "sha256": "143d9f47898c94e39f92f9d3dddfa65fd4f25f9da387cf3d8d92cb2b3cef1834",
+   "kit": "Cão do Vazio",
+   "duration": 0.59,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_hound-d.mp3",
+   "sha256": "fbbf7cf8f49cf48a369220d4b57c56eb2a0e06ac31ebb6ceddd720dcb903c268",
+   "kit": "Cão do Vazio",
+   "duration": 0.62,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_weaver-a.mp3",
+   "sha256": "16920165602dc894dc490bdc1460c2e36b375420a4f2569432b38a85706d0417",
+   "kit": "Tecelã do Abismo",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_weaver-d.mp3",
+   "sha256": "03097d704edb3b3a66e33d3e6dd44178e134806af200b9d885dca761afab238b",
+   "kit": "Tecelã do Abismo",
+   "duration": 0.52,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_eye-a.mp3",
+   "sha256": "ca7bc6d6b1738c16db6688eadcc06c78def1dc3e4569a44460d172fb759ab0d2",
+   "kit": "Olho da Fenda",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_eye-d.mp3",
+   "sha256": "8bff25ae9b282d324ea53111d5d4edd1726977895d3e5b95c573f0bc40be9775",
+   "kit": "Olho da Fenda",
+   "duration": 0.63,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_devourer-a.mp3",
+   "sha256": "4d56ed8947fb7485ab257ad345d9afbb890592b99e69523df43073c3fb9c5de1",
+   "kit": "Devorador de Mundos",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_devourer-d.mp3",
+   "sha256": "f90b4d877394f1bb9d482aac4c1bf676ba8679fa1a0ad2066878ea581abdc750",
+   "kit": "Devorador de Mundos",
+   "duration": 0.56,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_colossus-a.mp3",
+   "sha256": "6115848a3c54ab981ce47f24deda0d69b979148f1fa2bbb9cf6d352028fdb7fb",
+   "kit": "Colosso Estilhaçado",
+   "duration": 1.02,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_colossus-d.mp3",
+   "sha256": "9e0b8ee7f0769f1c1a77373b4dfa623323637349983e8cf98319cec3050cdf77",
+   "kit": "Colosso Estilhaçado",
+   "duration": 1.16,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_herald-a.mp3",
+   "sha256": "3473ad522651df45502baa55cc8e579bd3f263c20959e6e41d6c1ce02f430768",
+   "kit": "Arauto do Vazio",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_herald-d.mp3",
+   "sha256": "8045bb38d5a319c64d00afa4ee5a8341af1b5dc253d350c3c13378ac47d56a08",
+   "kit": "Arauto do Vazio",
+   "duration": 0.7,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_wyrm-a.mp3",
+   "sha256": "6eb0aaec94e83ff19a040280755bc2871f757778094bd48b73534be942aa5c91",
+   "kit": "Wyrm da Fenda",
+   "duration": 0.83,
+   "channels": 2
+  },
+  {
+   "name": "mob-rift_wyrm-d.mp3",
+   "sha256": "c948d8f95ad3cece96b077da19b464c16921503c1c8cb6415f91ad98e5ffe276",
+   "kit": "Wyrm da Fenda",
+   "duration": 0.62,
+   "channels": 2
+  },
+  {
+   "name": "mob-eclipse_shade-a.mp3",
+   "sha256": "3e17f128e4abec12da1a6edd01cea9ef853af7771292079ec065843d0cbf9c06",
+   "kit": "Sombra Lunar",
+   "duration": 0.6,
+   "channels": 2
+  },
+  {
+   "name": "mob-eclipse_shade-d.mp3",
+   "sha256": "bb3c900d98a5461e40caf4c74d46b88af922120e8a30bc00e109930b9ce24e7e",
+   "kit": "Sombra Lunar",
+   "duration": 0.48,
+   "channels": 2
+  },
+  {
+   "name": "mob-mizuchi_spawn-a.mp3",
+   "sha256": "c94a1566e4a7b0db031b579473b5b1de2fea6a428e4a0dc171c6958fd15e4ec0",
+   "kit": "Cria de Mizuchi",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-mizuchi_spawn-d.mp3",
+   "sha256": "e4334391b9e6b215c6e50488e03e1feb5bffc6e9f2b379fa171f0dc7da932102",
+   "kit": "Cria de Mizuchi",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-sand_servant-a.mp3",
+   "sha256": "0b124cecf58bb92d775b47f7b7a9508d423cdc53ca15129291407143707a8cf9",
+   "kit": "Servo de Âmbar",
+   "duration": 0.63,
+   "channels": 2
+  },
+  {
+   "name": "mob-sand_servant-d.mp3",
+   "sha256": "b3464eccd5904e43ee95c2d507d3ebe1ff1bc07376164b0d618591d231a70849",
+   "kit": "Servo de Âmbar",
+   "duration": 0.49,
+   "channels": 2
+  },
+  {
+   "name": "mob-storm_servant-a.mp3",
+   "sha256": "d45df1003034bdb8c637a7ab61dd85cf1f81529ac2d2d3e75b6de0209b1a138d",
+   "kit": "Arauto do Tambor",
+   "duration": 0.69,
+   "channels": 2
+  },
+  {
+   "name": "mob-storm_servant-d.mp3",
+   "sha256": "be6e483b85fed2309a073f9b33b043baaaf3ec348d22081780c15de647a5577e",
+   "kit": "Arauto do Tambor",
+   "duration": 0.66,
+   "channels": 2
+  },
+  {
+   "name": "mob-archive_sentinel-a.mp3",
+   "sha256": "00f63d3ba8cfdfd4ee00467cc47c1a4175aec933d6eb40bbf947b4a459e81b1f",
+   "kit": "Bibliotecária Espectral",
+   "duration": 0.5,
+   "channels": 2
+  },
+  {
+   "name": "mob-archive_sentinel-d.mp3",
+   "sha256": "4c2865aadb8b6d885bfb8bad521529173f12448a36e06580f8af8549ad501e45",
+   "kit": "Bibliotecária Espectral",
+   "duration": 0.71,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_titan-a.mp3",
+   "sha256": "bc2a485a5ebf28094974756bac356337dcc7319006c14a53eda6fd342ebaa3fb",
+   "kit": "Titã de Obsidiana",
+   "duration": 1.04,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_titan-d.mp3",
+   "sha256": "7d296ab4a75046babd0dd6c7b45f45633d6f0edd74eb81a7f2537d60c61020c7",
+   "kit": "Titã de Obsidiana",
+   "duration": 1.18,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_frost_dragon-a.mp3",
+   "sha256": "db87c8c78ebdb82e1a7648a33a45e0be8132dabdbfd93a1d391ac5620de5500c",
+   "kit": "Glacius, o Dragão Invernal",
+   "duration": 0.95,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_frost_dragon-d.mp3",
+   "sha256": "039f0b4984120ab57f37d4ca01cf0189ecdb3a6640e2ba6b3ee1cb01c7255750",
+   "kit": "Glacius, o Dragão Invernal",
+   "duration": 0.73,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_storm_kitsune-a.mp3",
+   "sha256": "2311f49b3a2a560075a128f3aa610af28b613a8094aa799bccfe7c238e24c296",
+   "kit": "Raijin-Kitsune",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_storm_kitsune-d.mp3",
+   "sha256": "f4a2b1ee5054809f719ac58cc06b20a9b9e017e380f43851b7fb70f6890cf81e",
+   "kit": "Raijin-Kitsune",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_blood_moon-a.mp3",
+   "sha256": "8628efcbeac4fc85f3af93190a058b25bf30d3963845672dc977a567a66c9da0",
+   "kit": "Lua Sangrenta, Rainha do Eclipse",
+   "duration": 0.6,
+   "channels": 2
+  },
+  {
+   "name": "mob-wb_blood_moon-d.mp3",
+   "sha256": "9d5db995c344b6e4af26629ab3d592bc8c1f792fb3b6584e33c19b3d189ae070",
+   "kit": "Lua Sangrenta, Rainha do Eclipse",
+   "duration": 0.79,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ember-a.mp3",
+   "sha256": "060518d43899779b59d0715039924c64dcffe7267406b4c69363187e3b87e37e",
+   "kit": "Fogo-Fátuo do Festival",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-wisp_ember-d.mp3",
+   "sha256": "61c6e87c00e470f02ea1103dd12a297ac52b790ea43fbceb4df834675af7162b",
+   "kit": "Fogo-Fátuo do Festival",
+   "duration": 0.63,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_gold-a.mp3",
+   "sha256": "8a3b08aa2a008944673e769df7ccd637f1d4dbfe87c1c1084fd5790ed4a966e6",
+   "kit": "Raposa Dourada",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-fox_gold-d.mp3",
+   "sha256": "0566d745971101d07883129e3b66b96597ffaf3b5f2809d43317291125ac71df",
+   "kit": "Raposa Dourada",
+   "duration": 0.54,
+   "channels": 2
+  },
+  {
+   "name": "mob-mimic-a.mp3",
+   "sha256": "69cfe9e074c1a7ebab7bc79996a3bc446aab69407c84ed7e2c33233130793694",
+   "kit": "Baú Mímico",
+   "duration": 0.58,
+   "channels": 2
+  },
+  {
+   "name": "mob-mimic-d.mp3",
+   "sha256": "202c62b2aac8e28c7d5c55e3e8e5675d017576d0215a0d96676c720f79b927f6",
+   "kit": "Baú Mímico",
+   "duration": 0.47,
+   "channels": 2
+  },
+  {
+   "name": "mob-eclipse-a.mp3",
+   "sha256": "d38470c14e0093f2eec74cba2bc0c0aa96e09fd95bf0df1fdf2a4d537e46a04f",
+   "kit": "Shirogane, Rei do Eclipse",
+   "duration": 0.51,
+   "channels": 2
+  },
+  {
+   "name": "mob-eclipse-d.mp3",
+   "sha256": "7c55768f51dde445050a04e1dea4e5bf915dcea205a6a9b8835bb64d61213f93",
+   "kit": "Shirogane, Rei do Eclipse",
+   "duration": 0.65,
+   "channels": 2
+  },
+  {
+   "name": "mob-dragon-a.mp3",
+   "sha256": "780557071534c95568839b742b78ff6bb53a8c673426bd583eafb57369d8749b",
+   "kit": "Mizuchi, Dragão Abissal",
+   "duration": 0.85,
+   "channels": 2
+  },
+  {
+   "name": "mob-dragon-d.mp3",
+   "sha256": "e95f2adc91fb5f86a896feef1e300e51e3a2b3d963ccfe02e3702b2b290e5889",
+   "kit": "Mizuchi, Dragão Abissal",
+   "duration": 0.64,
+   "channels": 2
+  },
+  {
+   "name": "mob-lantern_kitsune-a.mp3",
+   "sha256": "4b4c3f5b6eb1fc4ca36cdfe4ff0fab38f9f06e10fc400958ba15c9006014d1ec",
+   "kit": "Kitsune das Lanternas",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-lantern_kitsune-d.mp3",
+   "sha256": "9f6c72ded3deab3083fe82b91c9d9e408493ac2fa214809b83da47a41af3eb36",
+   "kit": "Kitsune das Lanternas",
+   "duration": 0.61,
+   "channels": 2
+  },
+  {
+   "name": "mob-dragon_amber-a.mp3",
+   "sha256": "4c26f6aa6f1f875733b9af01bb3496a4a1dffc46c2a971dee2da5a4a2ef80be7",
+   "kit": "Apep, Serpente do Tempo",
+   "duration": 0.95,
+   "channels": 2
+  },
+  {
+   "name": "mob-dragon_amber-d.mp3",
+   "sha256": "047019640c7f931544adb48f8368b600473512af1166be4c71382185369e9ee1",
+   "kit": "Apep, Serpente do Tempo",
+   "duration": 0.74,
+   "channels": 2
+  },
+  {
+   "name": "mob-raijin-a.mp3",
+   "sha256": "4ce7e2d34732e4518e351d1391293c61d21e3e4b2292ea22422d33b149402308",
    "kit": "Raijin, o Tambor do Trovão",
-   "duration": 1.05,
+   "duration": 0.85,
+   "channels": 2
+  },
+  {
+   "name": "mob-raijin-d.mp3",
+   "sha256": "14bfcd19d45bf7ae279b6ee5d101b0c373d782a1ae3bf11aa8020aa22afd0a8d",
+   "kit": "Raijin, o Tambor do Trovão",
+   "duration": 0.78,
    "channels": 2
   }
  ],

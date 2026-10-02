@@ -268,3 +268,37 @@ body:not(.in-combat) .stage-controls{display:none!important}
 .vol-rows .vol em{font:800 12px/1 var(--ui);font-style:normal;color:var(--gold-hi);text-align:right}
 .vol-rows .vol input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--gold);height:22px}
 @media (max-width:760px){.vol-rows{grid-template-columns:1fr}}
+
+/* objetivo do momento e recompensas, na faixa do saguão (nada fica por cima da cidade) */
+.village-hub{display:none!important}
+.lobby-goal{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:10px;padding:5px 8px 5px 12px;border-radius:12px;background:var(--lacquer);border:1px solid rgba(236,226,208,.14);box-shadow:var(--lift)}
+.lobby-goal.empty{visibility:hidden}
+.lobby-goal.done{border-color:rgba(127,190,140,.6)}
+.lobby-goal>.ic{flex:none;font-size:20px;--icc:var(--gold-hi)}
+.lobby-goal>span{flex:1;min-width:0}
+.lobby-goal small{display:block;font:700 9px/1.3 var(--ui);letter-spacing:.16em;color:var(--dim)}
+.lobby-goal b{display:block;font:800 14.5px/1.15 var(--display);color:var(--washi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lobby-goal .action{flex:none;min-height:32px}
+.lobby-btn.todo em{position:absolute;top:5px;right:6px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--shu-hi);color:#fff;font:800 10.5px/17px var(--ui);font-style:normal;text-align:center}
+.lobby-btn.todo.has{border-color:rgba(224,96,63,.7)}
+/* a faixa se ajusta pela largura DELA (a cidade encolhe em telas baixas), não pela da janela */
+.lobby-bar{container:lobby/inline-size}
+.lobby-goal{flex:1 1 200px;min-width:190px}
+.lobby-cta{flex:0 1 auto;min-width:0}
+.lobby-go{flex:0 1 auto}
+@container lobby (max-width:1180px){
+  .lt-power{display:none}
+  .lobby-go{min-width:0}.lobby-go small{display:none}.lobby-go b{font-size:15.5px}
+  .lobby-btn{padding:0 11px}.lobby-btn:not(.todo) b{display:none}
+}
+@container lobby (max-width:980px){
+  .lobby-goal small,.lobby-btn.todo b{display:none}
+  .lobby-goal b{font-size:13.5px}
+  .lt-hero{width:36px;height:36px}
+}
+@media (max-width:900px){
+  .lobby-goal{display:none}
+  .lobby-cta{grid-template-columns:minmax(0,1fr) 62px 62px 62px}
+  .lobby-btn.todo{order:3}
+}
+@media (max-width:560px){.lobby-cta{grid-template-columns:minmax(0,1fr) 56px 56px 56px}}

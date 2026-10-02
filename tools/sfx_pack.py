@@ -11,8 +11,8 @@ Fontes (ficam em data/, fora do repositório; ver assets/audio/combat/LICENSE.tx
 
 Saída: assets/audio/combat/*.mp3 + index.json (mix "recorded-v1"):
   heroes[id]     = {attack, skill, ult, weapon, element}     golpe da arma, habilidade e ultimate de cada herói
-  families[fam]  = {attack, cast}                            golpe e conjuração de cada família de criatura
-  creatures[id]  = {f, v, h, d[, r]}                         família, voz, dor, morte (e rugido, nos chefes) de CADA criatura
+  families[fam]  = {attack, cast}                            golpe e conjuração de cada família de criatura (reserva)
+  creatures[id]  = {f, a, d}                                 família, golpe e queda de CADA criatura (sem vozes: nada de gemidos)
   events[nome]   = arquivo                                   guarda, aparo, quebra, cura, interface, passos…
 
 Uso: python tools/sfx_pack.py [heroes|creatures|events|all] [--only id,id]
@@ -29,7 +29,7 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'assets', 'audio', 'combat')
 SR = 44100
-MIX = 'recorded-v1'
+MIX = 'recorded-v2'
 PACKS = {
     'rpg': os.path.join(ROOT, 'data', 'audio-source', 'rpg', 'RPG Sound Pack'),
     'jc': os.path.join(ROOT, 'data', 'audio-source', 'jc', 'Fantasy SFX Pack Vol 1'),
@@ -343,7 +343,7 @@ def hero_sound(h, event):
                 m.add(cut(f'jc:Magic Shield_Activation_0{r.integers(1, 3)}', b=1.2, r=p, fout=.5), .05, -6)
         if not dmg and not heal:                                  # reforço ou maldição: só a carga do elemento
             put(m, el_layers(h['el'], 'launch', r, p), 0, -2)
-        return m.render(-13.5, tail=.12)
+        return m.render(-14, tail=.18)[:n_(1.5)]
     # ultimate: carga, disparo e um impacto com peso
     put(m, el_layers(h['el'], 'build', r, p * .96), 0, -5)
     put(m, el_layers(h['el'], 'launch', r, p * .94), .62, -2)
@@ -356,29 +356,13 @@ def hero_sound(h, event):
     if heal:
         m.add(cut(f'jc:Healing Chime_0{r.integers(1, 3)}', b=2.4, r=p * .94, fout=.9), .7, 6 if not dmg else 1)
         m.add(cut(f'jc:Magic Shield_Activation_0{r.integers(1, 3)}', b=1.6, r=p, fout=.6), .7, -5)
-    return m.render(-12.5, tail=.2)
+    return fade(m.render(-13, tail=.25)[:n_(2.6)], .002, .3)
 
 
 # ------------------------------------------------------------------ criaturas
-def _n(prefix, nums):
-    return [f'{prefix}{i}' for i in nums]
-
-
-# família → (vozes gravadas, faixa de velocidade, golpe, conjuração)
-VOICES = {
-    'fox': (['rpg:NPC/misc/wolfman'] + _n('rpg:NPC/gutteral beast/mnstr', [1, 8, 10, 12, 13, 15]), (1.05, 1.3)),
-    'oni': (_n('rpg:NPC/ogre/ogre', [1, 2, 3, 4, 5]) + ['rpg:NPC/giant/giant3'], (.9, 1.08)),
-    'golem': (_n('rpg:NPC/giant/giant', [1, 2, 4, 5]), (.72, .9)),
-    'spider': (['rpg:NPC/beetle/bite-small', 'rpg:NPC/beetle/bite-small2', 'rpg:NPC/beetle/bite-small3'] + _n('rpg:NPC/slime/slime', [2, 6, 8, 9]), (.85, 1.2)),
-    'wisp': (_n('rpg:NPC/shade/shade', [1, 2, 3, 5, 14, 15]), (1.25, 1.55)),
-    'revenant': (_n('rpg:NPC/shade/shade', [4, 6, 7, 8, 9, 10, 11, 12, 13]), (.8, 1.0)),
-    'dragon': (_n('rpg:NPC/gutteral beast/mnstr', [4, 5, 9, 11, 14]), (.62, .78)),
-    'serpent': (_n('rpg:NPC/gutteral beast/mnstr', [6, 7, 14]), (.58, .7)),
-    'mimic': (['rpg:world/door', 'kr:creak2', 'rpg:misc/burp'], (.95, 1.15)),
-    'armor': (['rpg:NPC/giant/giant1', 'rpg:NPC/ogre/ogre4', 'rpg:NPC/shade/shade12'], (.7, .82)),
-    'kitsune': (['rpg:NPC/misc/wolfman'] + _n('rpg:NPC/gutteral beast/mnstr', [7, 13]), (.82, .95)),
-    'drum': (['rpg:NPC/ogre/ogre3', 'rpg:NPC/giant/giant4', 'rpg:NPC/ogre/ogre2'], (.78, .9)),
-}
+# Nenhuma criatura tem voz (os gemidos gravados cansavam e soavam mal): cada uma tem o próprio golpe, a receita da
+# família afinada só para ela, e a própria queda, do material de que é feita.
+FAMILIES = ['fox', 'oni', 'golem', 'spider', 'wisp', 'revenant', 'dragon', 'serpent', 'mimic', 'armor', 'kitsune', 'drum']
 FAMILY_OF_BOSS = {'eclipse': 'armor', 'dragon': 'dragon', 'lantern_kitsune': 'kitsune', 'dragon_amber': 'serpent', 'raijin': 'drum',
                   'wb_titan': 'golem', 'wb_frost_dragon': 'dragon', 'wb_storm_kitsune': 'kitsune', 'wb_blood_moon': 'armor'}
 SPECIAL = {'rift_hound': 'fox', 'rift_weaver': 'spider', 'rift_eye': 'wisp', 'rift_devourer': 'oni', 'rift_colossus': 'golem', 'rift_herald': 'revenant', 'rift_wyrm': 'dragon',
@@ -392,7 +376,7 @@ def family_of(sprite):
     if sprite in SPECIAL:
         return SPECIAL[sprite]
     head = sprite.split('_')[0]
-    return head if head in VOICES else 'oni'
+    return head if head in FAMILIES else 'oni'
 
 
 def fam_attack(fam, r, p=1.0):
@@ -463,27 +447,36 @@ def fam_cast(fam, r, p=1.0):
     return m.render(-14, tail=.15)
 
 
+def fall(fam, r, p=1.0):
+    """Queda de uma criatura, sem voz: o corpo, a pedra ou o espírito se desfazendo."""
+    m = Mix()
+    k5 = int(r.integers(0, 5))
+    if fam == 'golem':
+        m.add(cut(f'ki:impactMining_00{k5}', r=p * .8), 0, 0)
+        m.add(cut(f'ki:impactMining_00{(k5 + 2) % 5}', r=p * .7), .16, -3)
+        m.add(cut('ks:lowFrequency_explosion_001', b=.6, fout=.35), .05, -9)
+    elif fam in ('wisp', 'revenant'):
+        m.add(cut('jc:Teleport_Out', b=.75, r=p * 1.1, fout=.4), 0, 0)
+    elif fam == 'mimic':
+        m.add(cut(f'ki:impactWood_heavy_00{k5}', r=p), 0, 0)
+        m.add(cut('kr:doorClose_3', b=.35, r=p * .9), .05, -5)
+    elif fam == 'spider':
+        m.add(cut(f'ki:impactSoft_medium_00{k5}', r=p), 0, 0)
+        m.add(cut('kr:cloth3', r=p * 1.1), .04, -3)
+    elif fam in ('armor', 'drum'):
+        m.add(cut(f'ki:impactSoft_heavy_00{k5}', r=p * .9), 0, 0)
+        m.add(cut('rpg:inventory/chainmail2', r=p * .85), .06, -5)
+    else:
+        m.add(cut(f'ki:impactSoft_heavy_00{k5}', r=p), 0, 0)
+        m.add(cut('rpg:inventory/cloth-heavy', r=p * .85), .05, -4)
+    return m.render(-17, tail=.15)
+
+
 def creature_sounds(sprite, fam, boss=False, mini=False, elite=False):
-    """Voz, dor e morte de UMA criatura: gravações da família, escolhidas e afinadas só para ela."""
-    pool, (lo, hi) = VOICES[fam]
+    """Golpe e queda de UMA criatura: a receita da família, com gravações e afinação escolhidas só para ela."""
     r = rng_of('creature', sprite)
-    order = list(r.permutation(len(pool)))
-    p = float(r.uniform(lo, hi)) * (.84 if boss else .9 if mini else .95 if elite else 1)
-    v, h, d = pool[order[0]], pool[order[1 % len(pool)]], pool[order[2 % len(pool)]]
-    out = {}
-    m = Mix(); m.add(cut(v, r=p), 0, 0)
-    out['v'] = m.render(-15, tail=.08)
-    m = Mix(); m.add(cut(h, b=.42, r=p * 1.12, fout=.12), 0, 0); m.add(cut(f'ki:impactPunch_medium_00{r.integers(0, 5)}'), 0, -9)
-    out['h'] = m.render(-16, tail=.08)
-    m = Mix(); m.add(cut(d, r=p * .8, fout=.25), 0, 0); m.add(cut(f'ki:impactSoft_heavy_00{r.integers(0, 5)}', r=.85), .28 / p, -7)
-    out['d'] = m.render(-15, tail=.2)
-    if boss or mini:                                                 # rugido: duas vozes da família, uma atrás da outra, e o chão tremendo
-        m = Mix()
-        m.add(cut(v, r=p * .86, fout=.3), 0, 0)
-        m.add(cut(d, r=p * .74, fout=.4), .1, -3, .2)
-        m.add(cut('ks:lowFrequency_explosion_001', b=1.2, fin=.15, fout=.6), .05, -9)
-        out['r'] = m.render(-13, tail=.3)
-    return out
+    p = float(r.uniform(.9, 1.12)) * (.84 if boss else .9 if mini else .95 if elite else 1)
+    return {'a': fam_attack(fam, r, p), 'd': fall(fam, r, p)}
 
 
 # ------------------------------------------------------------------ eventos da luta e da interface
@@ -502,8 +495,6 @@ def ev(name):
         A(cut('ki:impactGlass_heavy_000'), 0, 0); A(cut('jc:Heavy Sword_Hit_Metal_01'), 0, -3); A(cut('ks:lowFrequency_explosion_000', b=.7, fout=.35), 0, -7); A(cut('ki:impactGlass_medium_002'), .09, -6)
     elif name == 'defend':
         A(cut('rpg:inventory/cloth-heavy'), 0, 0); A(cut('rpg:inventory/armor-light', r=.9), .04, -3)
-    elif name == 'turn':
-        A(cut('rpg:inventory/metal-small2'), 0, 0)
     elif name == 'strike':
         A(cut('jc:Heavy Sword_Swing_02', r=.85), 0, 0); A(cut('rpg:battle/swing', r=.8), .05, -5)
     elif name == 'bossWindup':
@@ -536,10 +527,8 @@ def ev(name):
         A(cut('rpg:battle/spell', b=2.2, r=1.12, fout=.8), 0, 0); A(cut('rpg:inventory/coin2'), .25, -6); A(cut('jc:Healing Chime_01', b=2.2, fout=.9), .1, 5)
     elif name == 'defeat':
         A(cut('jc:Mana Drain_End', r=.7, lp=3500), 0, 0); A(cut('ki:impactSoft_heavy_003', r=.7), .1, -3)
-    elif name == 'spawn':
-        A(cut('jc:Teleport_In', b=.9, fout=.3), 0, 0)
     elif name == 'death':
-        A(cut('rpg:NPC/slime/slime9', r=.8), 0, 0); A(cut('ki:impactSoft_heavy_004'), .12, -4)
+        A(cut('ki:impactSoft_heavy_004'), 0, 0); A(cut('rpg:inventory/cloth-heavy', r=.85), .05, -4)
     elif name == 'potion':
         A(cut('rpg:inventory/bottle'), 0, 0); A(cut('rpg:inventory/bubble'), .2, -2)
     elif name == 'elixir':
@@ -548,8 +537,6 @@ def ev(name):
         A(cut('jc:Dagger_Hit_Metal_02'), 0, 0); A(cut('rpg:inventory/metal-ringing', fout=.2), 0, -8)
     elif name == 'finale':
         A(cut('jc:Fireball Impact_03', r=.9), 0, 0); A(cut('ks:lowFrequency_explosion_000'), 0, -1); A(cut('jc:Heavy Sword_Hit_Metal_03'), 0, -4); A(cut('ks:explosionCrunch_001', r=.75), .04, -5)
-    elif name.startswith('step'):
-        A(cut(f'kr:footstep0{name[-1]}'), 0, 0)
     elif name == 'uiClick':
         A(cut('rpg:interface/interface1'), 0, 0)
     elif name == 'uiConfirm':
@@ -568,14 +555,14 @@ def ev(name):
         return fam_cast('revenant', rng_of('ev', name))
     else:
         raise KeyError(name)
-    level = {'uiClick': -22, 'uiOpen': -24, 'uiClose': -22, 'uiConfirm': -20, 'uiDeny': -20, 'turn': -26, 'step0': -24, 'step1': -24, 'step2': -24, 'step3': -24,
+    level = {'uiClick': -26, 'uiOpen': -26, 'uiClose': -26, 'uiConfirm': -22, 'uiDeny': -22, 'death': -19, 'damage': -18, 'damagePlate': -18,
              'heal': -17, 'shield': -17, 'reward': -20, 'loot': -18, 'potion': -18, 'elixir': -18, 'parry': -12, 'break': -12, 'bossBurst': -12, 'finale': -12,
-             'bossWindup': -15, 'victory': -15, 'defeat': -15, 'summon': -14, 'levelUp': -15, 'revive': -15, 'spawn': -20, 'guard': -17, 'defend': -18, 'dodge': -18}.get(name, -15)
+             'bossWindup': -16, 'victory': -15, 'defeat': -16, 'summon': -14, 'levelUp': -16, 'revive': -16, 'guard': -17, 'defend': -18, 'dodge': -18}.get(name, -15)
     return m.render(level, tail=.25 if level > -16 else .08)
 
 
-EVENTS = ['guard', 'guardHit', 'parry', 'dodge', 'break', 'defend', 'turn', 'strike', 'bossWindup', 'bossBurst', 'burst', 'damage', 'damagePlate', 'crit', 'heal', 'shield',
-          'heroDown', 'revive', 'levelUp', 'reward', 'loot', 'victory', 'defeat', 'spawn', 'death', 'potion', 'elixir', 'chain', 'finale', 'step0', 'step1', 'step2', 'step3',
+EVENTS = ['guard', 'guardHit', 'parry', 'dodge', 'break', 'defend', 'strike', 'bossWindup', 'bossBurst', 'burst', 'damage', 'damagePlate', 'crit', 'heal', 'shield',
+          'heroDown', 'revive', 'levelUp', 'reward', 'loot', 'victory', 'defeat', 'death', 'potion', 'elixir', 'chain', 'finale',
           'uiClick', 'uiConfirm', 'uiDeny', 'uiOpen', 'uiClose', 'summon', 'enemyAttack', 'enemyCast']
 
 
@@ -620,7 +607,7 @@ def main():
             man['events'][name] = f'event-{name}.mp3'
         print('eventos', len(man['events']), flush=True)
     if what in ('creatures', 'all'):
-        for fam in VOICES:
+        for fam in FAMILIES:
             rec = {}
             write(f'fam-{fam}-attack.mp3', fam_attack(fam, rng_of('fam', fam, 'attack')), man, fam); rec['attack'] = f'fam-{fam}-attack.mp3'
             write(f'fam-{fam}-cast.mp3', fam_cast(fam, rng_of('fam', fam, 'cast')), man, fam); rec['cast'] = f'fam-{fam}-cast.mp3'

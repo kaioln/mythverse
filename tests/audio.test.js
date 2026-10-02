@@ -56,7 +56,8 @@ const tick=()=>new Promise(setImmediate);
   const ready=[...sound.buffers.keys()].filter(k=>k.includes('/combat/')&&!k.includes('/event-'));
   for(const sprite of ['erik','akira','aurelia','warden'])for(const event of ['attack','skill','ult'])assert.ok(ready.includes(`assets/audio/combat/${sprite}-${event}.mp3`),`${sprite} ${event} na memória`);
   await sound.prepare([{sprite:'erik'},{sprite:'fox_bog',side:'enemy'},{sprite:'eclipse',side:'enemy'}]);
-  const field=[...sound.buffers.keys()];assert.ok(field.includes('assets/audio/combat/fam-fox-attack.mp3')&&field.includes('assets/audio/combat/mob-fox_bog-v.mp3')&&field.includes('assets/audio/combat/mob-eclipse-r.mp3'),'golpe da família, voz da criatura e rugido do chefe em campo');
+  const field=[...sound.buffers.keys()];assert.ok(field.includes('assets/audio/combat/mob-fox_bog-a.mp3')&&field.includes('assets/audio/combat/mob-fox_bog-d.mp3')&&field.includes('assets/audio/combat/mob-eclipse-a.mp3'),'golpe e queda de cada criatura em campo');
+  assert.ok(!field.some(k=>/mob-.*-(v|h|r)\.mp3$/.test(k)),'criaturas sem voz, dor nem rugido');
   assert.ok(!field.includes('assets/audio/combat/akira-attack.mp3'),'quem saiu de campo sai da memória');
   sound.tone=sound.noise=sound.chord=()=>{throw new Error('Combate não pode usar bipes sintéticos');};
   for(const [fx,event]of [[{type:'attack'},'enemyAttack'],[{type:'cast',enemy:true},'enemyCast'],[{type:'damage',side:'hero'},'damage'],[{type:'damage',side:'enemy',crit:true},'crit'],...['burst','heal','death','bossWindup','bossBurst','levelUp','reward'].map(type=>[{type},type])]){
@@ -71,17 +72,20 @@ const tick=()=>new Promise(setImmediate);
   }
   sound.stopFx();
   for(let i=0;i<10;i++)await sound.combat({type:'attack'},{sprite:'erik',uid:'u'+i});
-  assert.equal(sound.fxSources.size,10);
-  await sound.combat({type:'attack'},{sprite:'akira',uid:'overflow'});assert.equal(sound.fxSources.size,10);
+  assert.equal(sound.fxSources.size,6,'no máximo seis efeitos ao mesmo tempo');
+  await sound.combat({type:'attack'},{sprite:'akira',uid:'overflow'});assert.equal(sound.fxSources.size,6);
   const beforeUlt=[...sound.fxSources];await sound.combat({type:'cast',ult:true},{sprite:'akira',uid:'priority'});await tick();
-  assert.equal(sound.fxSources.size,10);assert.ok(beforeUlt.some(s=>s.stopped),'ultimate tem prioridade sobre ataques');
-  // Monstro conhecido: golpe da família; a dor e a morte são as gravações da própria criatura.
-  sound.stopFx();await sound.combat({type:'enemyAttack'},{sprite:'golem_elder',side:'enemy',uid:'g1'});
-  assert.ok(requests.includes('assets/audio/combat/fam-golem-attack.mp3'));
-  sound.fx({type:'damage',side:'enemy',crit:true},{sprite:'golem_elder',side:'enemy',uid:'g2'});sound.fx({type:'death'},{sprite:'golem_elder',side:'enemy',uid:'g3'});await tick();
-  assert.ok(requests.includes('assets/audio/combat/mob-golem_elder-h.mp3')&&requests.includes('assets/audio/combat/mob-golem_elder-d.mp3'),'dor e morte da criatura');
+  assert.equal(sound.fxSources.size,6);assert.ok(beforeUlt.some(s=>s.stopped),'ultimate tem prioridade sobre ataques');
+  // Monstro conhecido: o golpe e a queda são os da própria criatura; apanhar não tem voz.
+  sound.stopFx();sound.last={};await sound.combat({type:'enemyAttack'},{sprite:'golem_elder',side:'enemy',uid:'g1'});
+  assert.ok(requests.includes('assets/audio/combat/mob-golem_elder-a.mp3'));
+  const nReq=requests.length;sound.fx({type:'damage',side:'enemy'},{sprite:'golem_elder',side:'enemy',uid:'g2'});await tick();assert.equal(requests.length,nReq,'dano comum num monstro não toca nada além da arma');
+  sound.last={};sound.fx({type:'death'},{sprite:'golem_elder',side:'enemy',uid:'g3'});await tick();
+  assert.ok(requests.includes('assets/audio/combat/mob-golem_elder-d.mp3'),'queda da criatura');
+  // Sem passos, sem aviso de turno e sem som de onda chegando: menos ruído na luta.
+  assert.equal(typeof sound.step,'undefined');for(const type of ['turn','spawn']){const n=requests.length;sound.fx({type},{sprite:'erik',side:'hero',uid:type});await tick();assert.equal(requests.length,n,`${type} em silêncio`);}
   // Eventos novos da luta e a interface.
-  for(const type of ['guard','guardHit','parry','dodge','break','defend','turn','strike','shield','heroDown','revive','chain','finale','potion']){sound.fx({type},{sprite:'erik',side:'hero',uid:type});await tick();assert.ok(requests.includes(`assets/audio/combat/${combatManifest.events[type]}`),`som de ${type}`);}
+  for(const type of ['guard','guardHit','parry','dodge','break','defend','strike','shield','heroDown','revive','chain','finale','potion']){sound.last={};sound.fx({type},{sprite:'erik',side:'hero',uid:type});await tick();assert.ok(requests.includes(`assets/audio/combat/${combatManifest.events[type]}`),`som de ${type}`);}
   sound.stopFx();
   sound.setScene({kind:'village'});await tick();assert.equal(sound.fxSources.size,0);
   await sound.combat({type:'attack'},{sprite:'erik',uid:'city'});assert.equal(sound.fxSources.size,0,'nenhum efeito de combate na cidade');
@@ -105,23 +109,23 @@ const tick=()=>new Promise(setImmediate);
     assert.ok(file.length>3000);assert.ok(!hashes.has(hash),'efeito não pode ser cópia idêntica de outro herói');hashes.add(hash);
     assert.equal(combatManifest.files.find(f=>f.name===combatManifest.heroes[h.id][event]).sha256,hash);
   }
-  assert.equal(hashes.size,216);assert.equal(combatManifest.mix,'recorded-v1');assert.ok(!combatManifest.voices,'sem vozes de herói');
-  // Cada criatura do jogo tem voz, dor e morte só dela (os chefes, também rugido); cada família tem golpe e magia.
+  assert.equal(hashes.size,216);assert.equal(combatManifest.mix,'recorded-v2');assert.ok(!combatManifest.voices,'sem vozes de herói');
+  // Cada criatura do jogo tem golpe e queda só dela, sem voz; cada família tem golpe e magia de reserva.
   const dir=require('node:path').join(__dirname,'../assets/audio/combat'),own=new Set();
   for(const e of Object.values(roster.KT.Data.enemies)){
-    const c=combatManifest.creatures[e.sprite];assert.ok(c&&combatManifest.families[c.f]?.attack&&c.v&&c.h&&c.d,`${e.sprite} sem som`);
-    if(e.boss)assert.ok(c.r,`${e.sprite} sem rugido`);
-    for(const k of ['v','h','d','r'])if(c[k])assert.ok(fs.statSync(require('node:path').join(dir,c[k])).size>1500,`${e.sprite} ${k}`);
+    const c=combatManifest.creatures[e.sprite];assert.ok(c&&combatManifest.families[c.f]?.attack&&c.a&&c.d&&!c.v&&!c.h&&!c.r,`${e.sprite} sem som próprio`);
+    for(const k of ['a','d'])assert.ok(fs.statSync(require('node:path').join(dir,c[k])).size>1500,`${e.sprite} ${k}`);
   }
-  for(const [sprite,c] of Object.entries(combatManifest.creatures)){const hash=combatManifest.files.find(f=>f.name===c.v).sha256;assert.ok(!own.has(hash),`voz de ${sprite} repetida de outra criatura`);own.add(hash);}
+  for(const [sprite,c] of Object.entries(combatManifest.creatures)){const hash=combatManifest.files.find(f=>f.name===c.a).sha256;assert.ok(!own.has(hash),`golpe de ${sprite} repetido de outra criatura`);own.add(hash);}
   for(const [fam,f] of Object.entries(combatManifest.families))for(const k of ['attack','cast'])assert.ok(fs.statSync(require('node:path').join(dir,f[k])).size>3000,`${fam} ${k}`);
   assert.ok(fs.readdirSync(dir).filter(f=>f.endsWith('.mp3')).every(f=>combatManifest.files.some(x=>x.name===f)),'nenhum arquivo solto na pasta');
   assert.ok(/CC BY 4\.0/.test(fs.readFileSync(require('node:path').join(dir,'LICENSE.txt'),'utf8'))&&/JC Sounds/.test(fs.readFileSync(require('node:path').join(dir,'LICENSE.txt'),'utf8')),'crédito obrigatório da biblioteca CC-BY');
-  for(const ev of ['uiClick','uiOpen','uiClose','summon','victory','defeat','step0'])assert.ok(combatManifest.events[ev],`evento ${ev}`);
+  for(const ev of ['uiClick','uiOpen','uiClose','summon','victory','defeat'])assert.ok(combatManifest.events[ev],`evento ${ev}`);
+  for(const ev of ['turn','spawn','step0'])assert.ok(!combatManifest.events[ev],`evento ${ev} removido`);
   for(const file of combatManifest.files){
     assert.equal(file.channels,2,'efeitos em estéreo');
     const bytes=fs.readFileSync(require('node:path').join(__dirname,'../assets/audio/combat',file.name));
     assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),file.sha256);
   }
-  console.log('AUDIO_OK: trilhas por cena, golpes gravados por herói, voz própria por criatura, eventos da luta e da interface, volumes');
+  console.log('AUDIO_OK: trilhas por cena, golpes gravados por herói, golpe e queda por criatura (sem vozes), eventos, mistura calma, volumes');
 })().catch(e=>{console.error(e);process.exitCode=1;});
