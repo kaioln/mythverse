@@ -54,6 +54,8 @@
       const on = (sel, ev, fn) => document.querySelector(sel)?.addEventListener(ev, fn);
       document.querySelectorAll('.nav').forEach(b => b.addEventListener('click', () => this.openPanel(b.dataset.panel)));
       document.addEventListener('click', e => { const b = e.target.closest('[data-open]'); if (!b || this.el.modalBody.contains(b)) return; const [p, tab] = b.dataset.open.split(':'); this.openPanel(p, tab); });
+      // Placas que não abrem painel: trocar de bairro (capital ⇄ Cidade Mercado) e casas que ainda vão abrir.
+      document.addEventListener('click', e => { const b = e.target.closest('[data-quarter], [data-soon]'); if (!b) return; if (b.dataset.quarter) this.setQuarter(b.dataset.quarter); else this.toast(b.dataset.soon, 'info'); });
       on('#player-chip', 'click', () => this.openPanel('record'));
       on('#city-focus-btn', 'click', e => {
         const on = document.body.classList.toggle('city-focus');
@@ -261,8 +263,9 @@
       document.body.classList.toggle('in-combat', z.kind !== 'village');
       document.body.classList.toggle('boss-combat', z.kind === 'boss' || e.enemies?.some(x => x.alive && (x.boss || x.miniboss)));
       if (this._fightHud !== (z.kind !== 'village')) { this._fightHud = z.kind !== 'village'; this.placeHud?.(); this.renderer.resize(); }   // o corte do palco depende de estar em luta
-      this.el.zoneTitle.textContent = z.title; this.el.zoneKick.textContent = z.kicker;
-      let diff = z.difficulty, wave = z.kind === 'village' ? '8 distritos em celebração' : 'Cidade segura';
+      const bazaar = z.kind === 'village' && this.quarter === 'market';
+      this.el.zoneTitle.textContent = bazaar ? 'Cidade Mercado de Tsukimori' : z.title; this.el.zoneKick.textContent = bazaar ? 'BAIRRO DOS MERCADORES · TSUKIMORI' : z.kicker;
+      let diff = z.difficulty, wave = bazaar ? '6 casas de comércio' : z.kind === 'village' ? '8 distritos em celebração' : 'Cidade segura';
       if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido!' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
       if (z.kind === 'dungeon') { diff = `Andar ${['I','II','III'][e.opts.floor - 1]}`; wave = `Sala ${e.room}/5`; }
       if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido!' : `Sala ${e.room}/${D.RIFT.rooms}`; }
@@ -296,6 +299,13 @@
       this.el.potionBtn.style.setProperty('--cd', e.potionCd / 20); this.el.elixirBtn.style.setProperty('--cd', e.elixirCd / 30);
     }
 
+    // A cidade tem dois bairros: a capital e a Cidade Mercado (a que se vê ao fundo da capital). Trocar de bairro muda a
+    // cena, quem anda nela e as placas; a região do jogo continua sendo a cidade (nada muda no servidor nem no progresso).
+    setQuarter(q) {
+      q = q === 'market' ? 'market' : 'capital'; if (q === this.quarter || this.engine.zone.kind !== 'village') return;
+      this.quarter = q; document.body.classList.toggle('q-market', q === 'market');
+      this.renderer.setQuarter(q); this._distHtml = null; this.renderZone(); this.renderDistricts?.();
+    }
     // Cidade: painel de boas-vindas e selos vivos nas placas dos distritos.
     renderVillage() {
       const hub = this.el.villageHub, show = !this.el.locations.hidden;
@@ -312,7 +322,7 @@
       const cap = PRG.trainingCap(s.buildings.dojo), dojo = Object.keys(PRG.training).filter(k => (s.training[k] || 0) < cap && s.player.gold >= PRG.trainingCost(s.training[k] || 0)).length;
       const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
-      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = b.dataset.open.split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta nv ${gate.level}` : lv ? `Nv ${lv}` : ''; });
+      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = (b.dataset.open || '').split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta nv ${gate.level}` : lv ? `Nv ${lv}` : b.dataset.sub || ''; });
       this.lobbyPending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       this.renderLobby(hz, stage);
     }

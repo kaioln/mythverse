@@ -565,7 +565,8 @@ ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 
 
 { // Marcadores da cidade: todos abrem um destino, sem caracteres de controle no HTML; ícones desenhados cobrem os kanji dos dados.
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8'), posts = html.match(/<button class="signpost[^>]*>/g) || [];
-  ok(posts.length >= 10 && posts.every(b => /data-open="[^"]+"/.test(b)), 'todo marcador da cidade tem data-open');
+  ok(posts.length >= 17 && posts.every(b => /data-(open|quarter|soon)="[^"]+"/.test(b)), 'todo marcador da cidade abre um painel, troca de bairro ou avisa que ainda vai abrir');
+  ok(posts.filter(b => /data-q="market"/.test(b)).length === 7 && posts.filter(b => /data-quarter="market"/.test(b)).length === 1 && posts.filter(b => /data-q="market"/.test(b) && /data-quarter="capital"/.test(b)).length === 1, 'a Cidade Mercado tem as placas dela, uma ida na capital e uma volta');
   ok(!/[ --]/.test(html), 'index.html sem caracteres de controle');
   const D2 = KT.Data, glyphs = [...Object.values(D2.statusInfo), ...Object.values(D2.elements), ...Object.values(D2.classes)].map(x => x.icon);
   ok(glyphs.every(g => KT.Icons.name(g)), 'efeitos, elementos e classes têm ícone desenhado');

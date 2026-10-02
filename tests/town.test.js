@@ -12,6 +12,7 @@ assert.equal(missing.KT.TownMap.route(560, 430, 770, 372), null);
 
 const game = vm.createContext({});
 vm.runInContext(source('town-walk.js'), game);
+vm.runInContext(source('town-walk-market.js'), game);
 vm.runInContext(source('town.js'), game);
 const { TownLife, TownMap } = game.KT;
 assert.equal(TownMap.isWalk(-1, 430), false);
@@ -117,4 +118,62 @@ assert.ok(seen.emotes.has('♥') && seen.emotes.has('!'), 'bichos mostram carinh
 assert.ok(seen.flew, 'os pardais levantam voo');
 assert.ok(seen.followed, 'o cachorro acompanha alguém');
 assert.ok(seen.petLines.size >= 2 || seen.heroEmote, 'as pessoas reagem aos bichos');
-console.log('TOWN_OK: chão, colisão, circulação, conversas, bichos com comportamento próprio e ausência segura da máscara');
+
+// ---- Cidade Mercado: o segundo bairro tem chão, gente, falas e bichos próprios, e roda junto com a capital ----
+const M = TownMap.of('market');
+assert.ok(M && TownMap.towns.includes('market') && TownMap.of('nenhum') === null);
+for (const p of [[500,350],[700,450],[815,700],[150,300],[1100,300],[420,480],[560,612],[735,300]]) assert.equal(M.isWalk(...p), false, `telhado, barraca, água ou lanterna não é piso na Cidade Mercado: ${p}`);
+for (const p of [[650,700],[651,572],[677,372],[296,410],[866,255],[487,180],[924,624]]) assert.equal(M.isWalk(...p), true, `rua, escada, ponte ou terraço é piso na Cidade Mercado: ${p}`);
+assert.ok(!TownMap.isWalk(677,372) && !TownMap.isWalk(866,255) && !M.isWalk(560,430), 'o chão de um bairro não vaza para o outro');
+for (const spot of M.SPOTS) assert.ok(M.route(...M.at('plaza'), ...M.at(spot.node)), `rota do largo do sul para ${spot.node}`);
+assert.equal(M.route(...M.at('plaza'), ...M.at('emporium')), null, 'o terraço do Empório é uma ilha (a arte não liga a escada dele ao bazar)');
+assert.equal(M.route(...M.at('plaza'), ...M.at('yard')), null, 'o Pátio das Caravanas é uma ilha');
+const bazaar = new TownLife('market'); bazaar.sync([]);
+const merchants = bazaar.agents.filter(a => a.kind !== 'animal');
+assert.equal(merchants.length, 28, 'a Cidade Mercado tem 28 moradores');
+assert.ok(merchants.filter(a => a.fixed).length >= 15, 'mercadores nos postos');
+assert.ok(new Set(merchants.map(a => a.name)).size === merchants.length && !merchants.some(a => townPeople.some(b => b.name === a.name)), 'ninguém com o nome repetido, nem entre os bairros');
+const tamae = bazaar.agents.find(a => a.name === 'Tamae'); assert.ok(bazaar.talk(tamae) && /Salão de Trocas/.test(tamae.speech), 'cada mercador tem a própria fala');
+assert.ok(bazaar.drawList().find(o => o.a === tamae).h > visitor.drawList().find(o => o.a.name === 'Renji').h, 'a Cidade Mercado é vista de mais perto: gente maior');
+const inPool = (x, y) => { let on = false; const W = M.WATER; for (let i = 0, j = W.length - 1; i < W.length; j = i++) { const [ax, ay] = W[i], [bx, by] = W[j]; if ((ay > y) !== (by > y) && x < (bx - ax) * (y - ay) / (by - ay) + ax) on = !on; } return on; };
+for (const seed of [3, 11, 27, 40]) {
+  game.__seed = seed;
+  const life = new TownLife('market'), side = new TownLife();
+  const team = Array.from({ length:4 }, (_, i) => ({ uid:String(i), sprite:String(i), name:`H${i}` }));
+  life.sync(team); side.sync(team);
+  const previous = life.agents.map(a => [a.x, a.y]), sidePrev = side.agents.map(a => [a.x, a.y]);
+  const idle = new Map(life.agents.map(a => [a, 0])), speakers = new Set();
+  for (let frame = 0; frame < 3600; frame++) {
+    life.update(1 / 30);
+    if (frame % 3 === 0) {                                  // a capital anda ao mesmo tempo: os dois bairros não se misturam
+      side.update(1 / 10);
+      side.agents.forEach((a, i) => { const p = sidePrev[i]; if (a.kind !== 'animal' && (a.x !== p[0] || a.y !== p[1])) assert.ok(TownMap.isWalk(a.x, a.y), `${a.name} saiu do chão da capital com os dois bairros ativos`); p[0] = a.x; p[1] = a.y; });
+    }
+    for (let i = 0; i < life.agents.length; i++) {
+      const a = life.agents[i], p = previous[i], moved = Math.hypot(a.x - p[0], a.y - p[1]);
+      assert.ok(Number.isFinite(a.x) && Number.isFinite(a.y), `${a.name || a.sp} com posição inválida`);
+      if (a.kind === 'animal') {
+        if (TownMap.SPECIES[a.sp].water) assert.ok(inPool(a.x, a.y), `${a.sp} saiu do poço no quadro ${frame}`);
+        else if (!a.fly && moved) assert.ok(M.isWalk(a.x, a.y), `${a.sp} saiu do chão no quadro ${frame}`);
+        p[0] = a.x; p[1] = a.y; continue;
+      }
+      if (moved) {
+        assert.ok(M.isWalk(a.x, a.y), `${a.name} saiu do caminho no quadro ${frame}`);
+        const steps = Math.ceil(moved);
+        for (let n = 1; n < steps; n++) assert.ok(M.isWalk(p[0] + (a.x - p[0]) * n / steps, p[1] + (a.y - p[1]) * n / steps), `${a.name} cruzou chão proibido`);
+        p[0] = a.x; p[1] = a.y; idle.set(a, 0);
+      } else if (!a.fixed) {
+        idle.set(a, idle.get(a) + 1 / 30);
+        assert.ok(idle.get(a) < 11, `${a.name} ficou travado por ${idle.get(a).toFixed(1)}s na Cidade Mercado (cenário ${seed})`);
+      }
+      if (a.speechFor > 0) speakers.add(a.name);
+      for (let j = i + 1; j < life.agents.length; j++) {
+        const b = life.agents[j]; if (b.kind === 'animal') continue;
+        if (!a.moving && !b.moving && !a.path.length && !b.path.length) assert.ok(Math.hypot(a.x - b.x, (a.y - b.y) * 1.55) >= 11.9, `${a.name} e ${b.name} pararam sobrepostos`);
+      }
+    }
+  }
+  for (const a of life.agents.filter(a => !a.fixed && a.kind !== 'animal')) assert.ok(a.walkD > 100, `${a.name} não circulou pela Cidade Mercado`);
+  assert.ok(speakers.size >= 2, 'os mercadores conversam entre si');
+}
+console.log('TOWN_OK: chão, colisão, circulação, conversas, bichos com comportamento próprio, ausência segura da máscara e os dois bairros (capital e Cidade Mercado)');

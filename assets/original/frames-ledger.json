@@ -1,5 +1,5 @@
 {
- "total_usd": 13.9698,
+ "total_usd": 14.0376,
  "calls": [
   {
    "hero": "sora",
@@ -13377,6 +13377,27 @@
     "total_tokens": 1987
    },
    "at": "2026-10-02 05:05:52"
+  },
+  {
+   "hero": "scene:market-1",
+   "kind": "scene",
+   "model": "gpt-image-2.5-sunburst",
+   "quality": "high",
+   "usd": 0.0678,
+   "usage": {
+    "input_tokens": 3632,
+    "input_tokens_details": {
+     "image_tokens": 2832,
+     "text_tokens": 800
+    },
+    "output_tokens": 1372,
+    "output_tokens_details": {
+     "image_tokens": 1372,
+     "text_tokens": 0
+    },
+    "total_tokens": 5004
+   },
+   "at": "2026-10-02 06:43:01"
   }
  ]
 }

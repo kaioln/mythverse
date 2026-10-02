@@ -111,7 +111,8 @@
   P.renderDistricts = function() {
     const grid = this.el.districts; if (!grid) return;
     const show = this.engine.zone?.kind === 'village'; grid.hidden = !show; if (!show) return;
-    const html = [...document.querySelectorAll('#village-actions .signpost')].map((sp, i) => { const badge = sp.querySelector('.sp-badge'), [panel, tab] = sp.dataset.open.split(':'), gate = this.engine.serviceStatus(KT.Progression.serviceFor(panel, tab)); return `<button type="button" data-district="${i}" class="${gate.locked ? 'service-locked' : ''}">${sp.querySelector('.sp-icon')?.innerHTML || ''}<span>${sp.querySelector('b')?.textContent || ''}${gate.locked ? `<small>Conta nv ${gate.level}</small>` : ''}</span>${badge && !badge.hidden && !gate.locked ? `<em>${badge.textContent}</em>` : ''}</button>`; }).join('');
+    const q = this.quarter === 'market' ? 'market' : 'capital';
+    const html = [...document.querySelectorAll('#village-actions .signpost')].map((sp, i) => { if ((sp.dataset.q || 'capital') !== q) return ''; const badge = sp.querySelector('.sp-badge'), [panel, tab] = (sp.dataset.open || '').split(':'), gate = this.engine.serviceStatus(KT.Progression.serviceFor(panel, tab)); return `<button type="button" data-district="${i}" class="${gate.locked ? 'service-locked' : ''}${sp.dataset.quarter ? ' quarter' : ''}">${sp.querySelector('.sp-icon')?.innerHTML || ''}<span>${sp.querySelector('b')?.textContent || ''}${gate.locked ? `<small>Conta nv ${gate.level}</small>` : ''}</span>${badge && !badge.hidden && !gate.locked ? `<em>${badge.textContent}</em>` : ''}</button>`; }).join('');
     if (html !== this._distHtml) { this._distHtml = html; grid.innerHTML = html; }
   };
   // Cartão de objetivo na arena: um só "o que fazer agora", com o botão certo.

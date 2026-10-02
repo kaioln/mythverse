@@ -74,7 +74,7 @@
       this.particles = []; this.ambient = []; this.loot = []; this.projectiles = []; this.delayed = [];
       this.vis = new Map(); this.flashCache = new Map(); this.glowCache = new Map(); this.portraits = new Map();
       this.worldTime = 0; this.shake = 0; this.hitstop = 0; this.screenFlash = null; this.banner = null; this.cutin = null;
-      this.zoneId = null; this.zoneFade = 1; this.scale = 1; this.hotspots = []; this.hoverEnemy = null; this.lastCaster = null;
+      this.zoneId = null; this.zoneFade = 1; this.quarter = 'capital'; this.wantQuarter = null; this.towns = {}; this.scale = 1; this.hotspots = []; this.hoverEnemy = null; this.lastCaster = null;
       this.cam = { z:1, tz:1, x:W / 2, y:H * .62, tx:W / 2, ty:H * .62, hold:0 }; this.freeze = 0;
       this.resize();
       if (globalThis.ResizeObserver) new ResizeObserver(() => this.resize()).observe(canvas);
@@ -640,17 +640,26 @@
       c.restore();
       this.drawOverlay(); this.drawCutin(); this.drawBanner(); this.drawChain();
     }
+    // Bairro da cidade em cena: 'capital' ou 'market' (a Cidade Mercado). Cada um tem a própria arte, luzes, chão e gente.
+    // A troca só acontece quando a arte do bairro já chegou (escurece e volta, como ao mudar de região).
+    setQuarter(q) { q = q === 'market' ? 'market' : 'capital'; this.wantQuarter = q === this.quarter ? null : q; if (this.wantQuarter) this.assets.scene(this.quarterScene(q)); }
+    quarterScene(q = this.quarter) { return q === 'market' ? 'market-city' : 'village'; }
     drawScene() {
-      const c = this.ctx, z = this.engine.zone, img = this.assets.scene(z.id);
+      const c = this.ctx, z = this.engine.zone, town = z.kind === 'village';
+      if (this.wantQuarter && this.assets.scene(this.quarterScene(this.wantQuarter))) {
+        this.quarter = this.wantQuarter; this.wantQuarter = null; this.zoneFade = 0;
+        // o que é medido na arte de cada bairro recomeça do zero
+        this.smoke = this.leaves = this.skyLanterns = this.fireworks = this.forgeSparks = null; this.fwNext = undefined; this._bubbleRectsAt = 0; this.townHits = []; this.townT = undefined;
+      }
+      const market = town && this.quarter === 'market', img = this.assets.scene(town ? this.quarterScene() : z.id);
       const moving = this.engine.phase === 'between' || this.engine.phase === 'stageClear';
       // Na cidade a câmera fica parada (as ruas são o chão de quem anda nelas) e a arte aparece clara; nas lutas, leve respiro.
-      const town = z.kind === 'village';
       const zoom = town ? 1 : 1.04 + Math.sin(this.worldTime * .08) * .012 + (moving ? .02 : 0);
       const dx = town ? 0 : Math.sin(this.worldTime * .05) * 10;
       // Pintura viva (src/scene-fx.js): na cidade a própria arte se move (água, copas ao vento, fumaça, nuvens). Sem ela, a pintura parada.
-      const live = town && img ? KT.SceneFx?.frame('village', img, this.worldTime, this.canvas.width, this.canvas.height, this.cloudColor()) : null;
+      const live = town && img ? KT.SceneFx?.frame(market ? 'market-city' : 'village', img, this.worldTime, this.canvas.width, this.canvas.height, this.cloudColor()) : null;
       if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(live || img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
-      if (town) {
+      if (town && !market) {
         if (!this.festivalHomes) { this.festivalHomes = this.assets.image?.('assets/scenes/web/festival-homes.webp'); if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/web/festival-homes.webp'; } }
         // A ilha das casas do festival é uma camada à parte: sobe e desce devagar, como quem flutua.
         if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65 + Math.sin(this.worldTime * .42) * 3, 390, 260);
@@ -673,7 +682,7 @@
       this.softCache.set(key, s); return s;
     }
     drawVillageLife() {
-      const c = this.ctx, t = this.worldTime, L = KT.TownLights || {};
+      const c = this.ctx, t = this.worldTime, L = (this.quarter === 'market' ? KT.TownLightsMarket : KT.TownLights) || {};
       const dt = Math.min(.05, Math.max(0, t - (this.lifeT ?? t))); this.lifeT = t;
       const hour = new Date(this.engine.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
       const tint = hour >= 7 && hour < 17 ? 'rgba(255,226,180,.07)' : hour >= 17 && hour < 19 ? 'rgba(255,140,90,.13)' : hour >= 5 && hour < 7 ? 'rgba(255,170,200,.1)' : 'rgba(36,34,110,.1)';
@@ -713,7 +722,7 @@
       }
       // Folhas e pétalas que o vento solta das copas, na cor de cada árvore (KT.SceneFx.treeSpots): saem mais nas rajadas
       // e seguem o vento. É o que mostra o vento na cena sem deformar a pintura.
-      const spots = KT.SceneFx?.treeSpots?.('village', this.assets.scene('village'));
+      const spots = KT.SceneFx?.treeSpots?.(this.quarter === 'market' ? 'market-city' : 'village', this.assets.scene(this.quarterScene()));
       if (spots?.length) {
         this.leaves ||= []; this.leafAcc = Math.min(2, (this.leafAcc || 0) + dt * (1.4 + wind * 3.4));
         while (this.leafAcc >= 1) { this.leafAcc -= 1; if (this.leaves.length >= 64) break; const sp = spots[Math.floor(Math.random() * spots.length)];
@@ -745,7 +754,7 @@
         c.globalAlpha = .5 * f; c.fillStyle = '#fff6d8'; c.beginPath(); c.ellipse(x + Math.sin(t * 9 + seed * 20) * .35, y - .3 - f * .5, .55 + s * .22, .9 + s * .3 + f * .35, 0, 0, Math.PI * 2); c.fill();
       });
       // Lanternas do festival soltas na praça, no mercado, no cais e na Oficina: sobem devagar e somem no céu.
-      const FROM = [[560, 405], [230, 468], [1060, 612], [700, 664], [990, 500]];
+      const FROM = L.sky_from || [[560, 405], [230, 468], [1060, 612], [700, 664], [990, 500]];
       this.skyLanterns ||= Array.from({ length:11 }, (_, i) => ({ k:i % FROM.length, u:i / 11, ph:U.rand(0, 6), s:U.rand(.7, 1.15), dx:U.rand(-34, 34) }));
       for (const l of this.skyLanterns) {
         l.u += dt * .021 * (1.1 - l.s * .3); if (l.u >= 1) { l.u = 0; l.k = Math.floor(U.rand(0, FROM.length)); l.dx = U.rand(-34, 34); }
@@ -767,8 +776,10 @@
       this.fireworks ||= []; this.fwNext ??= t + 3;
       if (t >= this.fwNext) {
         this.fwNext = t + U.rand(5.5, 10);
-        const left = U.random() < .45, x = left ? U.rand(630, 840) : U.rand(880, 1240), y = left ? U.rand(42, 150) : U.rand(18, 52), col = U.pick(['255,160,200', '255,214,130', '150,220,255', '255,130,110', '190,160,255']);
-        this.fireworks.push({ x, y, col, age:-.9, from:left ? 250 : 120, parts:Array.from({ length:34 }, (_, i) => { const a = i / 34 * Math.PI * 2 + U.rand(-.08, .08), v = U.rand(30, 52); return { a, v }; }) });
+        // onde há céu limpo em cada bairro: [x0, x1, y0, y1, altura da subida]
+        const SKY = L.fireworks || [[630, 840, 42, 150, 250], [880, 1240, 18, 52, 120]], [sx0, sx1, sy0, sy1, rise] = SKY[U.random() < .45 ? 0 : 1 + Math.floor(U.random() * (SKY.length - 1))];
+        const x = U.rand(sx0, sx1), y = U.rand(sy0, sy1), col = U.pick(['255,160,200', '255,214,130', '150,220,255', '255,130,110', '190,160,255']);
+        this.fireworks.push({ x, y, col, age:-.9, from:rise, parts:Array.from({ length:34 }, (_, i) => { const a = i / 34 * Math.PI * 2 + U.rand(-.08, .08), v = U.rand(30, 52); return { a, v }; }) });
       }
       this.fireworks = this.fireworks.filter(fw => {
         fw.age += dt; if (fw.age > 1.9) return false;
@@ -945,14 +956,20 @@
     }
     drawTown() {
       const c = this.ctx, e = this.engine, A = this.townArt;
-      if (!this.town) this.town = new KT.TownLife();
+      this.town = this.towns[this.quarter] ||= new KT.TownLife(this.quarter);
       const heroes = e.state.formation.filter(Boolean).map(uid => { const r = e.record(uid), t = r && e.template(r.id); return t && { uid, sprite:t.sprite, name:t.name.replace(/^(Coronel|Mestre|Comandante|Unidade|O|A)\s+/, '').split(/[ ,]/)[0] }; }).filter(Boolean);
       this.town.sync(heroes);
       const dt = Math.min(.1, Math.max(0, this.worldTime - (this.townT ?? this.worldTime))); this.townT = this.worldTime; this.townDt = dt; this.town.update(dt);
       this.townHits = [];
       c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
       const drawn = this.town.drawList();
+      // O que a arte tem NA FRENTE de quem anda (portão, corrimão, lanterna de pé): cada peça entra na ordem de
+      // profundidade pela linha de chão dela e é redesenhada por cima de quem está atrás (src/town-front-*.js).
+      const front = (this.quarter === 'market' && KT.TownFrontMarket) || [], behind = []; let fi = 0;
+      this.townFrontSnap(front);
       for (const { a, h } of drawn) {
+        while (fi < front.length && front[fi].y <= a.y) this.drawTownFront(front[fi++], behind);
+        behind.push([a.x - h * .5, a.y - h * 1.2 - (a.lift || 0), a.x + h * .5, a.y + 3]);
         if (a.kind === 'animal') { this.drawTownAnimal(a, h); continue; }
         { const sh = a.def?.small ? .14 : a.def?.act === 'taiko' ? .46 : .3; c.save(); c.fillStyle = 'rgba(12,8,4,.38)'; c.beginPath(); c.ellipse(a.x, a.y + 1, h * sh, h * sh * .3, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
         if (a.kind === 'hero') {
@@ -969,6 +986,7 @@
           this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h });
         }
       }
+      while (fi < front.length) this.drawTownFront(front[fi++], behind);
       // Uma fala por vez, ancorada no interlocutor e sem cobrir personagens ou serviços.
       this.townBubbleBoxes = [];
       for (const { a, h } of drawn) {
@@ -976,6 +994,28 @@
         if (a.kind === 'hero') this.townNameTag(a.x, a.y + 4, a.name);
         else if (a.speechFor > 0 && a.speech && !this.townBubble(a, a.kind === 'animal' ? h * Math.max(.5, (KT.TownMap.SPECIES[a.sp]?.size || .4) * 1.5) : h) && !a.manualSpeech) { a.speech = ''; a.speechFor = 0; }
       }
+    }
+    // Guarda, antes de desenhar as pessoas, o pedaço da cena de cada peça da frente (já com luz, água viva e cor do dia).
+    townFrontSnap(front) {
+      if (!front.length) return;
+      const cv = this.canvas, o = this.frontCv ||= document.createElement('canvas');
+      if (o.width !== cv.width || o.height !== cv.height) { o.width = cv.width; o.height = cv.height; this.frontG = null; }
+      const g = this.frontG ||= o.getContext('2d'), s = this.scale, vx = this.view?.x || 0;
+      for (const f of front) {
+        const [x0, y0, x1, y1] = f.box, sx = Math.max(0, Math.floor((x0 - vx) * s)), sy = Math.max(0, Math.floor(y0 * s)), ex = Math.min(cv.width, Math.ceil((x1 - vx) * s) + 1), ey = Math.min(cv.height, Math.ceil(y1 * s) + 1);
+        if (ex > sx && ey > sy) g.drawImage(cv, sx, sy, ex - sx, ey - sy, sx, sy, ex - sx, ey - sy);
+      }
+    }
+    // Redesenha uma peça da frente por cima de quem já foi desenhado atrás dela (só se houver alguém ali).
+    drawTownFront(f, behind) {
+      const [x0, y0, x1, y1] = f.box;
+      if (!behind.some(b => b[0] < x1 && b[2] > x0 && b[1] < y1 && b[3] > y0)) return;
+      const c = this.ctx, s = this.scale, vx = this.view?.x || 0;
+      c.save(); c.beginPath();
+      for (const p of f.p) { c.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) c.lineTo(p[i], p[i + 1]); c.closePath(); }
+      c.clip();
+      c.drawImage(this.frontCv, (x0 - vx) * s, y0 * s, (x1 - x0) * s, (y1 - y0) * s, x0, y0, x1 - x0, y1 - y0);
+      c.restore();
     }
     // Bicho da cidade (src/town.js): anda pelo chão percorrido, faz a pose do momento, voa (pardal) ou nada (pato, carpa).
     drawTownAnimal(a, h) {
@@ -1010,7 +1050,7 @@
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     townFolkAt(x, y) { if (this.engine.zone.kind !== 'village') return null; return (this.townHits || []).filter(o => o.folk && Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]?.actor; }
-    townTalkAt(x, y) { const a = this.townFolkAt(x, y); return a && this.town.talk(a) ? a : null; }
+    townTalkAt(x, y) { const a = this.townFolkAt(x, y); return a && this.town?.talk(a) ? a : null; }
     // Um quadro da folha de poses do herói, com os pés em (x, y).
     drawFrame(img, M, col, x, y, height, flip) {
       const c = this.ctx, k = height / M.bodyH;

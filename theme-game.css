@@ -468,3 +468,19 @@ body .side-nav .nav em[hidden]{display:none}
   .building-head>div{flex:1 1 150px;min-width:0}
   .building-head>.action,.building-head>button{flex:1 1 100%}
 }
+
+/* ---- Bairros da cidade: capital e Cidade Mercado ---- */
+/* As placas de cada bairro só aparecem no bairro delas. */
+body:not(.q-market) #village-actions .signpost[data-q="market"],body.q-market #village-actions .signpost:not([data-q="market"]){display:none!important}
+/* A placa que leva ao outro bairro: selo dourado, para não se confundir com um serviço. */
+#village-actions .signpost.quarter .sp-icon{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(216,176,98,.22),0 2px 6px rgba(0,0,0,.35)!important}
+#village-actions .signpost.quarter .sp-plate{border-color:rgba(216,176,98,.55)}
+/* Na Cidade Mercado a capital aparece ao fundo, no canto de cima à esquerda: o nome do lugar vai para a direita. */
+@media (min-width:901px){body.q-market:not(.in-combat) #viewport .stage-top{flex-direction:row-reverse}}
+#district-grid button.quarter{border-color:rgba(216,176,98,.55)}
+/* Palco pequeno no PC (notebook baixo ou janela estreita): o nome do lugar fica em uma linha só, para não cobrir as placas. */
+@media (min-width:901px) and (max-height:720px),(min-width:901px) and (max-width:1280px){
+  body:not(.in-combat) #viewport .zone-chip{padding:5px 10px 6px}
+  body:not(.in-combat) #viewport .zone-chip .zone-kicker,body:not(.in-combat) #viewport .zone-chip .zone-meta{display:none}
+  body:not(.in-combat) #viewport .zone-chip h1{margin:0;font-size:15px;white-space:nowrap}
+}

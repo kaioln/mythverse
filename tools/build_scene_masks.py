@@ -9,7 +9,7 @@ Tudo é medido pela cor da arte dentro de regiões desenhadas à mão (REGIONS, 
 telhado azul não virar mar nem faixa verde virar árvore.
 
 Saída: assets/scenes/masks/<cenário>.png (1280×360) e, com --debug, uma prévia colorida em data/mask-debug/.
-Uso: python tools/build_scene_masks.py [village] [--debug]
+Uso: python tools/build_scene_masks.py [village] [market-city] [--debug]
 """
 import os
 import sys
@@ -47,6 +47,30 @@ REGIONS = {
         # cachoeiras: [x0, x1, y0, y1] (as mesmas de tools/build_town_lights.py)
         'falls': [[413, 438, 78, 132], [438, 468, 168, 198], [721, 747, 222, 268], [319, 328, 346, 386], [336, 348, 358, 398], [356, 364, 371, 400],
                   [421, 448, 498, 578], [772, 805, 462, 500], [828, 843, 440, 470], [818, 848, 522, 590], [1164, 1190, 458, 500], [372, 402, 638, 690]],
+    },
+    # Cidade Mercado: riachos e poços entre os terraços, copas, céu do entardecer (a capital ao fundo não é céu) e as cachoeiras.
+    'market-city': {
+        'art': 'assets/scenes/web/market-city.webp',
+        'water': [[(340, 452), (440, 452), (440, 515), (340, 515)],                           # sob a ponte do oeste
+                  [(455, 545), (610, 545), (610, 705), (455, 705)],                           # riacho a oeste do portão
+                  [(740, 640), (910, 640), (910, 720), (740, 720)],                           # sob a ponte do sul
+                  [(840, 150), (975, 150), (975, 362), (840, 362)],                           # poço da Casa de Leilões e a queda sob a ponte do norte
+                  [(900, 400), (965, 400), (965, 455), (900, 455)],                           # bica do leste do bazar
+                  [(410, 240), (480, 240), (480, 320), (410, 320)],                           # queda ao lado da escada do oeste
+                  [(370, 680), (450, 680), (450, 720), (370, 720)], [(0, 650), (70, 650), (70, 720), (0, 720)],
+                  [(1225, 520), (1280, 520), (1280, 720), (1225, 720)]],
+        'water_no': [[(548, 576), (748, 576), (748, 642), (548, 642)]],                      # telhado azul do portão
+        'trees': [[(0, 0), (1280, 0), (1280, 720), (0, 720)]],
+        'trees_no': [[(0, 0), (1280, 0), (1280, 60), (0, 60)],                               # céu do entardecer (nuvens rosadas não são cerejeiras)
+                     [(0, 0), (335, 0), (335, 185), (0, 185)],                               # a capital ao fundo
+                     [(404, 530), (430, 530), (430, 604), (404, 604)], [(260, 486), (282, 486), (282, 550), (260, 550)],   # faixas verdes do Pátio das Caravanas
+                     [(930, 545), (1060, 545), (1060, 615), (930, 615)], [(1150, 535), (1230, 535), (1230, 575), (1150, 575)],   # guarda-sóis vermelhos da Casa de Chá
+                     [(440, 300), (540, 300), (540, 362), (440, 362)], [(790, 372), (880, 372), (880, 432), (790, 432)],   # toldos listrados de vermelho do bazar
+                     [(560, 140), (800, 140), (800, 206), (560, 206)]],                      # estandartes e cortinas vermelhas da Casa de Leilões
+        'air': [],
+        'sky': [[(335, 0), (1280, 0), (1280, 46), (1140, 60), (1000, 80), (800, 76), (740, 64), (640, 64), (600, 80), (470, 84), (335, 100)]],
+        'falls': [[428, 452, 258, 300], [857, 876, 168, 208], [852, 873, 294, 346], [758, 781, 566, 622], [507, 533, 588, 632], [522, 544, 632, 658],
+                  [403, 436, 700, 720], [922, 938, 424, 446], [1248, 1270, 542, 596], [17, 40, 692, 720]],
     },
 }
 
