@@ -16,7 +16,7 @@ precision highp float;
 precision mediump float;
 #endif
 uniform sampler2D uScene, uMask, uNoise;
-uniform float uTime, uWind, uAmt;
+uniform float uTime, uWind, uAmt, uZoom;
 uniform vec3 uCloud;
 varying vec2 v;
 void main() {
@@ -35,11 +35,14 @@ void main() {
   float n2 = texture2D(uNoise, v * vec2(7., 21.) - vec2(t * .034, -t * .009)).g - .5;
   uv.x += m.r * (n1 * .0042 + sin(v.y * 260. + t * 1.6 + n2 * 6.) * .0010);
   uv.y += m.r * n2 * .0034;
-  // árvores: balanço da copa (mais forte no alto), com rajadas que atravessam a cena da esquerda para a direita
-  float gust = texture2D(uNoise, vec2(v.x * .9 - t * .035, v.y * .5 + t * .008)).b - .5;
-  float sway = sin(t * 1.25 + v.x * 14. + v.y * 5.) * .55 + sin(t * 2.7 + v.x * 37.) * .22 + gust * 1.5;
-  uv.x += m.g * sway * .0024 * uWind;
-  uv.y += m.g * sin(t * 3.1 + v.x * 60.) * .0006 * uWind;
+  // árvores: a copa inteira vai e volta com o vento (mais no alto), em rajadas que atravessam a cena da esquerda para a
+  // direita, e as folhas tremem por cima. uZoom mantém o balanço do mesmo tamanho na tela quando a cena é desenhada pequena.
+  float gust = texture2D(uNoise, vec2(v.x * .7 - t * .045, v.y * .4 + t * .006)).b - .5;
+  float sway = sin(t * 1.15 + v.x * 6. + v.y * 2.) * .6 + sin(t * 2.3 + v.x * 15. + 1.7) * .25 + gust * 1.7;
+  float flut = texture2D(uNoise, v * vec2(5., 6.) + vec2(t * .09, -t * .06)).r - .5;
+  float lean = (.25 + sway) * uWind;                         // o vento sopra para um lado: a copa pende e volta
+  uv.x -= m.g * (lean * .0050 + flut * .0030 * uWind) * uZoom;
+  uv.y += m.g * (sin(t * 1.9 + v.x * 9.) * .0014 * uWind + flut * .0022) * uZoom;
   // fumaça e névoa pintadas: tremulam e pendem para o lado do vento
   float n3 = texture2D(uNoise, v * vec2(4., 6.) + vec2(t * .015, t * .05)).r - .5;
   float n4 = texture2D(uNoise, v * vec2(6., 4.) + vec2(-t * .01, t * .04)).g - .5;
@@ -102,7 +105,7 @@ void main() {
           else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
         };
         tex(0, scene, false); tex(1, mask, false); tex(2, noiseTexture(), true);
-        this.u = {}; ['uScene', 'uMask', 'uNoise', 'uTime', 'uWind', 'uAmt', 'uCloud'].forEach(n => { this.u[n] = gl.getUniformLocation(pr, n); });
+        this.u = {}; ['uScene', 'uMask', 'uNoise', 'uTime', 'uWind', 'uAmt', 'uZoom', 'uCloud'].forEach(n => { this.u[n] = gl.getUniformLocation(pr, n); });
         gl.uniform1i(this.u.uScene, 0); gl.uniform1i(this.u.uMask, 1); gl.uniform1i(this.u.uNoise, 2);
         this.ok = true;
       } catch (err) { console.warn('SceneFx:', err.message); this.ok = false; }
@@ -116,7 +119,7 @@ void main() {
       if (this.last >= 0 && Math.abs(time - this.last) < 1 / 31) return this.cv;
       this.last = time;
       const t = time % 3600;
-      gl.uniform1f(this.u.uTime, t); gl.uniform1f(this.u.uWind, SceneFx.wind(t)); gl.uniform1f(this.u.uAmt, 1);
+      gl.uniform1f(this.u.uTime, t); gl.uniform1f(this.u.uWind, SceneFx.wind(t)); gl.uniform1f(this.u.uAmt, 1); gl.uniform1f(this.u.uZoom, Math.max(1, Math.min(2.2, 1280 / w)));
       gl.uniform3f(this.u.uCloud, cloud[0], cloud[1], cloud[2]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       return this.cv;

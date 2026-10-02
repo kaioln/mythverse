@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Pintura viva (desenvolvimento)</title>
+<base href="../../">
+<body style="margin:0;background:#111;color:#eee;font:14px system-ui">
+<div id="out" style="padding:6px 10px"></div>
+<canvas id="c" style="display:block"></canvas>
+<script src="src/config.js"></script>
+<script src="src/data.js"></script>
+<script src="src/scene-fx.js"></script>
+<script>
+// Ferramenta de desenvolvimento: mede o MOVIMENTO da pintura viva. Desenha a cena em dois instantes e a diferença
+// entre eles (ampliada), para ver o que se mexe de verdade: água, copas, fumaça, nuvens, cachoeiras.
+//   ?t1=10&t2=10.8        os dois instantes, em segundos (padrão 10 e 10.8)
+//   ?gain=10              quanto a diferença é ampliada na imagem (padrão 10)
+//   ?x=880&y=300&w=400&h=220   recorte da cena 1280×720 (padrão: tudo)
+//   ?only=diff | a        mostra só a diferença ou só o primeiro instante
+(async () => {
+  const q = new URLSearchParams(location.search), num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
+  const load = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('falhou: ' + src)); i.src = src; });
+  const scene = await load('assets/scenes/web/village-expanded.webp');
+  const W = 1280, H = 720, t1 = num('t1', 10), t2 = num('t2', 10.8), gain = num('gain', 10);
+  const cx = num('x', 0), cy = num('y', 0), cw = num('w', W), ch = num('h', H);
+  let layer = null;
+  for (let i = 0; i < 400 && !layer; i++) { layer = KT.SceneFx.frame('village', scene, t1, W, H); if (!layer) await new Promise(r => setTimeout(r, 25)); }
+  const out = document.getElementById('out');
+  if (!layer) { out.textContent = 'SEM PINTURA VIVA (sem WebGL, sem máscara ou desligada)'; return; }
+  const grab = t => { const fr = KT.SceneFx.frame('village', scene, t, W, H); const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.drawImage(fr, 0, 0, W, H); return g; };
+  const A = grab(t1), B = grab(t2);
+  const a = A.getImageData(cx, cy, cw, ch), b = B.getImageData(cx, cy, cw, ch), d = new ImageData(cw, ch);
+  let sum = 0, moved = 0;
+  for (let i = 0; i < a.data.length; i += 4) {
+    const v = (Math.abs(a.data[i] - b.data[i]) + Math.abs(a.data[i + 1] - b.data[i + 1]) + Math.abs(a.data[i + 2] - b.data[i + 2])) / 3;
+    sum += v; if (v > 6) moved++;
+    d.data[i] = d.data[i + 1] = d.data[i + 2] = Math.min(255, v * gain); d.data[i + 3] = 255;
+  }
+  const only = q.get('only'), k = Math.min(3, Math.floor(1280 / cw)) || 1, panels = only ? 1 : 2;
+  const cv = document.getElementById('c'); cv.width = cw * k * panels; cv.height = ch * k; const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
+  const tmp = document.createElement('canvas'); tmp.width = cw; tmp.height = ch; const tg = tmp.getContext('2d');
+  if (only !== 'diff') { tg.putImageData(a, 0, 0); g.drawImage(tmp, 0, 0, cw * k, ch * k); }
+  if (only !== 'a') { tg.putImageData(d, 0, 0); g.drawImage(tmp, only ? 0 : cw * k, 0, cw * k, ch * k); }
+  out.textContent = `t ${t1} → ${t2} · diferença média ${(sum / (cw * ch)).toFixed(2)} · pixels que mudaram (>6): ${(moved / (cw * ch) * 100).toFixed(1)}% · vento ${KT.SceneFx.wind(t1).toFixed(2)}`;
+  document.title = out.textContent;
+})();
+</script>

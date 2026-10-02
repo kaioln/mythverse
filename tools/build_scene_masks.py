@@ -34,8 +34,12 @@ REGIONS = {
         'water_no': [],
         'trees': [[(0, 0), (1280, 0), (1280, 720), (0, 720)]],
         'trees_no': [[(0, 486), (262, 486), (262, 612), (0, 612)],                           # telhado verde do banco
+                     [(96, 600), (146, 600), (146, 646), (96, 646)],                         # porta e faixa do banco
+                     [(1016, 478), (1080, 478), (1080, 526), (1016, 526)],                   # escada de madeira abaixo do santuário
                      [(636, 470), (792, 470), (792, 560), (636, 560)],                       # fumaça verde e violeta da Oficina
-                     [(486, 0), (640, 0), (640, 130), (486, 130)],                           # cúpula da lua
+                     [(486, 0), (640, 0), (640, 178), (486, 178)],                           # cúpula da lua e o pátio dela
+                     [(486, 388), (668, 388), (668, 462), (486, 462)],                       # medalhão da praça
+                     [(60, 196), (200, 196), (200, 244), (60, 244)],                         # telhado da Guilda
                      [(640, 0), (1280, 0), (1280, 290), (1000, 290), (900, 214), (700, 214), (640, 120)]],   # céu (nuvens rosadas do pôr do sol não são cerejeiras)
         'air': [[(770, 150), (900, 150), (900, 272), (770, 272)],                            # fumaça pintada da Forja
                 [(640, 470), (800, 470), (800, 566), (640, 566)]],                           # fumaça dos alambiques
@@ -75,26 +79,32 @@ def build(name, debug=False):
     w8 = cv2.erode(w8, k5)                                                  # longe de cais, barcos e pedras
     water_f = cv2.GaussianBlur(w8.astype(np.float32), (0, 0), 3.5 * k)
 
-    # ---- árvores: flor de cerejeira (rosa) e folhagem (verde escuro a médio)
-    pink = (Hh >= 290) & (Hh <= 348) & (Ss > .16) & (Ss < .7) & (Vv > .52)
-    green = (G > R + 5) & (G > B + 3) & (lum > 16) & (lum < 150) & (Ss > .16)
-    trees = (pink | green) & poly_mask(shape, cfg['trees'], k) & ~poly_mask(shape, cfg.get('trees_no', []), k)
-    t8 = cv2.morphologyEx(trees.astype(np.uint8), cv2.MORPH_OPEN, k3)
-    t8 = cv2.morphologyEx(t8, cv2.MORPH_CLOSE, k5)
+    # ---- árvores: copas de cerejeira (rosa) e folhagem (do verde-amarelado ao verde-azulado, clara ou no escuro).
+    # A primeira versão só pegava o rosa mais claro e o verde puro: 2,6% da cena e força média de 0,2, um balanço que
+    # ninguém via. Agora a copa inteira entra (flores na sombra, folhas iluminadas pelas lanternas, vãos e galhos de
+    # dentro) e a força vai de 0,45 no pé da copa a 1 no alto.
+    pink = (Hh >= 284) & (Hh <= 350) & (Ss > .14) & (Vv > .28) & (R > G + 8)
+    leaf = (Hh >= 58) & (Hh <= 172) & (Ss > .2) & (Vv > .09) & (Vv < .66)
+    # folhagem tem textura (cachos de folhas); gramado e telhado são lisos: sai o que não varia de claro para escuro
+    g8 = lum.astype(np.float32)
+    var = cv2.GaussianBlur(g8 * g8, (0, 0), 3 * k) - cv2.GaussianBlur(g8, (0, 0), 3 * k) ** 2
+    leaf &= var > 38
+    allow = poly_mask(shape, cfg['trees'], k) & ~poly_mask(shape, cfg.get('trees_no', []), k)
+    t8 = ((pink | leaf) & allow).astype(np.uint8)
+    t8 = cv2.morphologyEx(t8, cv2.MORPH_OPEN, k3)
+    t8 = cv2.morphologyEx(t8, cv2.MORPH_CLOSE, np.ones((max(3, round(7 * k)) | 1,) * 2, np.uint8))     # fecha vãos e galhos da copa
     n, lab, stats, _ = cv2.connectedComponentsWithStats(t8, 8)
     lift = np.zeros(shape, np.float32)
     kept = 0
     for i in range(1, n):
         x, y, w, h, area = stats[i]
-        if area < 140 * k * k or h < 9 * k:
+        if area < 110 * k * k or h < 8 * k:
             continue
         kept += 1
         sel = lab[y:y + h, x:x + w] == i
-        # quanto mais alto na copa, mais balança; copas baixas e largas (cercas vivas, moitas) quase não se mexem
         rows = (1 - (np.arange(h, dtype=np.float32) + .5) / h)[:, None]
-        tall = min(1.0, h / (46 * k))
-        lift[y:y + h, x:x + w][sel] = (np.broadcast_to(rows, sel.shape)[sel] * .85 + .15) * tall
-    lift = cv2.GaussianBlur(lift, (0, 0), 2.6 * k)
+        lift[y:y + h, x:x + w][sel] = np.broadcast_to(rows, sel.shape)[sel] * .55 + .45
+    lift = cv2.GaussianBlur(lift, (0, 0), 2.2 * k)
 
     # ---- ar: fumaça e névoa pintadas (claras e pouco saturadas) dentro das regiões
     pale = (Ss < .42) & (lum > 58)
