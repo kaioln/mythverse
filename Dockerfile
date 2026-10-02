@@ -11,16 +11,13 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY server ./server
 COPY src ./src
-COPY assets/sprites ./assets/sprites
-COPY assets/portraits ./assets/portraits
-COPY assets/icons ./assets/icons
-COPY assets/scenes ./assets/scenes
-COPY assets/brand ./assets/brand
-COPY assets/ui ./assets/ui
-COPY assets/anim ./assets/anim
+# Todos os assets do jogo (as fontes pesadas ficam de fora pelo .dockerignore). Copiar a pasta inteira evita que uma
+# pasta nova (áudio, cidade, moradores…) seja esquecida aqui e o jogo suba quebrado.
+COPY assets ./assets
+COPY vendor ./vendor
 COPY legal ./legal
 COPY admin ./admin
-COPY index.html styles.css ./
+COPY index.html styles.css theme-sumi.css theme-game.css version.json ./
 
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node

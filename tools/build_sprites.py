@@ -189,7 +189,13 @@ def shift(img, hue_deg=0, sat=1.0, val=1.0):
     return out
 
 
-# Variantes de monstros: (id, base, matiz, saturação, brilho)
+def own_art(vid):
+    """A criatura já tem folha de poses própria (tools/enemy_frames.py)? Então a recoloração não vale mais para ela:
+    o sprite e o retrato saem da folha (tools/build_anim.py)."""
+    return os.path.exists(os.path.join(ROOT, 'assets', 'original', 'poses', f'{vid}.webp'))
+
+
+# Variantes de monstros: (id, base, matiz, saturação, brilho). Reserva para criaturas ainda sem arte própria.
 ENEMY_VARIANTS = [
     ('spider_jade', 'spider', -155, 1.0, 1.05), ('golem_elder', 'golem', -55, 1.2, 1.1), ('fox_nine', 'fox', 55, 1.1, 1.05),
     ('oni_ash', 'oni', 200, .45, .9), ('wisp_void', 'wisp', 90, 1.1, .95), ('golem_obsidian', 'golem', 0, .2, .62),
@@ -206,6 +212,7 @@ ICON_HUES = [45, 100, 160, 220, 290]
 def build_variants():
     sp = os.path.join(ROOT, 'assets', 'sprites')
     for vid, base, h, s, v in ENEMY_VARIANTS:
+        if own_art(vid): continue
         shift(Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA'), h, s, v).save(os.path.join(sp, f'{vid}.png'), optimize=True)
     icons = os.path.join(ROOT, 'assets', 'icons')
     for f in sorted(os.listdir(icons)):
@@ -252,6 +259,7 @@ MORE_ICON_HUES = [20, 70, 130, 190, 250, 330]
 def build_world():
     sp = os.path.join(ROOT, 'assets', 'sprites')
     for vid, base, h, s, v in WORLD_ENEMIES:
+        if own_art(vid): continue
         shift(Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA'), h, s, v).save(os.path.join(sp, f'{vid}.png'), optimize=True)
     sc = os.path.join(ROOT, 'assets', 'scenes')
     for sid, base, h, s, v in WORLD_SCENES:
@@ -301,6 +309,7 @@ def aura(img, color, radius=9):
 def build_unique():
     sp = os.path.join(ROOT, 'assets', 'sprites')
     for vid, base, h, s, v, flip, col in UNIQUE_EXTRA:
+        if own_art(vid): continue
         img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
         pad = 16
         canvas = Image.new('RGBA', (img.width + pad * 2, img.height + pad * 2), (0, 0, 0, 0))
@@ -342,6 +351,7 @@ CHAPTER4_SCENES = [
 def build_chapter4():
     sp = os.path.join(ROOT, 'assets', 'sprites')
     for vid, base, h, s, v, flip, col in CHAPTER4_ENEMIES:
+        if own_art(vid): continue
         img = Image.open(os.path.join(sp, f'{base}.png')).convert('RGBA')
         if col:
             pad = 16

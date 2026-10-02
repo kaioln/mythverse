@@ -636,8 +636,8 @@ body .stage-controls .journey-cta{position:static!important;display:flex!importa
 .map-pin.locked,.illustrated-map .map-pin.locked{width:auto;height:auto;padding:4px 8px}
 .illustrated-map>img{filter:saturate(.82) brightness(1.02)}
 /* Combate essencial: AFK/AUTO/AVANÇO só com "Mais" aberto; objetivo some durante a luta */
-body.in-combat .stage-controls:not(.adv-open) :is(#auto-btn,#advance-btn,#afk-btn){display:none!important}
-body.in-combat .stage-controls.adv-open :is(#auto-btn,#advance-btn,#afk-btn){display:flex!important}
+body.in-combat .stage-controls:not(.adv-open) :is(#advance-btn,#afk-btn){display:none!important}
+body.in-combat .stage-controls.adv-open :is(#advance-btn,#afk-btn){display:flex!important}
 body:not(.in-combat) #adv-ctl-btn{display:none!important}
 body.in-combat #adv-ctl-btn{display:flex!important}
 body.in-combat #goal-chip{display:none!important}
@@ -880,3 +880,144 @@ body:not(.in-combat) .zone-kicker::before{content:'✿';margin-right:5px;color:#
 #district-grid .service-locked{border-color:rgba(180,164,143,.4)}#district-grid .service-locked small{display:block;font:600 10px/1.5 var(--ui);color:#c9baa4}
 @media(max-width:600px){.service-roadmap{grid-template-columns:1fr}.service-lock{padding:8px}.chat-channel h3{font-size:20px}.chat-form{display:flex;gap:6px}.chat-form .action{padding:10px}.guild-feed{max-height:300px}.chat-log{min-height:230px}.chat-channel .chat-status{flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.dlg-body p.typing{animation:none}}
+
+/* =========================================================
+   COMANDOS DE LUTA
+   Cada herói tem dois botões lado a lado: HABILIDADE (A S D F) e ULTIMATE (Q W E R). A Guarda (Espaço) fica com as
+   poções, no canto do palco, e o botão COMANDO troca entre AUTO · SEMI · MANUAL (tecla Z).
+   ========================================================= */
+.dock .hero-slot{container:hero/inline-size}
+.hero-actions{grid-column:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;min-width:0}
+.hero-actions :is(.skill-btn,.ult-btn){grid-column:auto!important;width:100%;min-width:0;overflow:visible}
+.skill-btn{position:relative;display:flex;align-items:center;gap:7px;height:32px;padding:0 8px 0 4px;border-radius:10px;background:rgba(0,0,0,.4);border:1px solid var(--line2);text-align:left;transition:border-color .15s,background .15s}
+.skill-btn>span:nth-of-type(2){position:relative;min-width:0;flex:1}
+.skill-btn b{display:block;font-size:11.5px;font-weight:700;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.skill-btn small{display:block;font-size:10px;line-height:1.15;color:var(--muted);letter-spacing:.05em;font-weight:700}
+.hero-actions small{font-variant-numeric:tabular-nums}
+/* recarga da habilidade: leque escuro sobre o ícone e um fio que enche embaixo do botão */
+.skill-btn .sk-ic::after{content:"";position:absolute;inset:0;border-radius:inherit;background:conic-gradient(rgba(8,6,14,.8) calc(var(--cd,0)*1turn),transparent 0);pointer-events:none}
+.skill-btn .cdw{position:absolute;left:1px;right:1px;bottom:0;height:3px;border-radius:0 0 8px 8px;background:var(--cyan);transform-origin:left;transform:scaleX(calc(1 - var(--cd,0)));opacity:.85;pointer-events:none}
+.skill-btn:disabled{cursor:default}
+.skill-btn.ready{border-color:var(--cyan);background:rgba(134,182,196,.12);animation:skillReady 1.5s ease-in-out infinite}
+.skill-btn.ready small{color:#c4e7f0}
+.skill-btn.ready:hover{background:rgba(134,182,196,.2)}
+.skill-btn.fired{animation:fired .35s}
+@keyframes skillReady{50%{box-shadow:0 0 0 1px rgba(134,182,196,.55)}}
+.hero-slot .skill-btn .ult-ic kbd{position:absolute;left:auto;right:-6px;top:-6px;bottom:auto;width:14px;height:14px;border-radius:4px;font:700 8.5px/1 var(--ui,sans-serif);color:#1b1512;background:var(--washi,#efe6d2);box-shadow:0 1px 2px rgba(0,0,0,.5);display:grid;place-items:center}
+.hero-slot.dead .hero-actions{opacity:.6}
+@media (hover:none),(max-width:700px){.hero-slot .skill-btn .ult-ic kbd{display:none}}
+
+/* Em luta: retrato e vida em cima, os dois botões na largura toda do cartão */
+body.in-combat .dock .hero-slot{grid-template-columns:46px minmax(0,1fr);grid-template-rows:auto auto;gap:5px 8px;align-items:center}
+body.in-combat .dock .hero-portrait{grid-row:1;width:46px;height:46px}
+body.in-combat .dock .hero-actions{grid-column:1/-1}
+body.in-combat .dock .hero-actions :is(.skill-btn,.ult-btn){height:30px;gap:6px;padding:0 7px 0 4px;border-radius:9px;background:rgba(0,0,0,.28)}
+body.in-combat .dock .hero-actions b{font-size:11.5px}
+body.in-combat .dock .hero-actions small{font-size:10px!important;letter-spacing:.04em}
+@media (max-height:700px) and (min-width:861px){
+  body.in-combat .dock .hero-portrait{width:40px;height:40px}
+  body.in-combat .dock .hero-actions :is(.skill-btn,.ult-btn){height:26px}
+}
+/* Cartão estreito: some o nome do golpe, fica o ícone e o estado (PRONTA!, 4s, 80%) */
+@container hero (max-width:236px){
+  .hero-actions :is(.skill-btn,.ult-btn) b{display:none!important}
+  .hero-actions :is(.skill-btn,.ult-btn){justify-content:center;padding:0 4px!important;gap:5px!important}
+  .hero-actions :is(.skill-btn,.ult-btn)>span:nth-of-type(2){flex:0 1 auto!important}
+  .hero-actions small{font-size:11px!important}
+}
+@media (max-width:640px){
+  body.in-combat .dock .hero-slot{grid-template-columns:44px minmax(0,1fr)}
+  body.in-combat .dock .hero-portrait{width:44px;height:44px}
+  body.in-combat .dock .hero-actions{gap:6px}
+  body.in-combat .dock .hero-actions :is(.skill-btn,.ult-btn){height:44px}
+  body.in-combat .dock .hero-actions .ult-ic{width:26px;height:26px}
+}
+
+/* Guarda: botão largo junto das poções; acende quando erguida e chama quando um inimigo prepara um golpe */
+body .consumables .cons.guard{width:auto;min-width:108px;display:flex;align-items:center;gap:7px;padding:0 10px 0 9px;color:var(--washi)}
+.cons.guard .ic{flex:none;font-size:21px;--icc:var(--gold)}
+.cons.guard b{position:static;font:800 12px/1 var(--ui);letter-spacing:.1em;text-shadow:none}
+.cons.guard kbd{position:static;margin-left:auto;padding:3px 5px;border-radius:4px;background:rgba(236,226,208,.12);font:700 9px/1 var(--ui);color:var(--muted);letter-spacing:.04em}
+.cons.guard .cd{background:linear-gradient(90deg,rgba(8,6,14,.76) calc(var(--cd,0)*100%),transparent 0)}
+.cons.guard:disabled .ic{--icc:var(--dim)}
+.cons.guard:disabled b{color:var(--dim)}
+.cons.guard.up{border-color:var(--gold);background:rgba(216,176,98,.22);box-shadow:0 0 0 2px rgba(216,176,98,.4)}
+.cons.guard.up b{color:#ffe9b0}
+.cons.guard.alert{border-color:#ffe28a;animation:guardCall .45s ease-in-out infinite alternate}
+.cons.guard.fired{animation:fired .3s}
+@keyframes guardCall{to{background:rgba(216,176,98,.26);box-shadow:0 0 0 3px rgba(255,226,138,.5)}}
+@media (hover:none),(max-width:860px){.cons.guard kbd{display:none}body .consumables .cons.guard{min-width:92px}}
+@media (max-width:640px){body .consumables .cons.guard{min-width:96px;height:44px}body .consumables .cons{width:44px;height:44px}}
+#guard-btn.afk-hide,#mode-btn.afk-hide{display:none!important}
+
+/* Comando: AUTO (a equipe decide) · SEMI (ultimates suas) · MANUAL (tudo seu) */
+.ctl.mode[data-mode="auto"] b{color:var(--green)}
+.ctl.mode[data-mode="semi"] b{color:var(--cyan)}
+.ctl.mode[data-mode="manual"] b{color:#f0a48f}
+body.in-combat .ctl.mode.active{background:rgba(236,226,208,.07);box-shadow:inset 0 0 0 1px rgba(236,226,208,.25)}
+@media(prefers-reduced-motion:reduce){.skill-btn.ready,.cons.guard.alert,.ult-btn.ready{animation:none}}
+/* Luta em telas médias: PREPARAR e MAPA ficam só com o ícone, para o nome da região e a barra do chefe caberem */
+@media (min-width:901px) and (max-width:1320px){
+  body.in-combat .stage-controls #boost-btn,body.in-combat .stage-controls .journey-cta{min-width:46px!important;padding:0 8px!important}
+  body.in-combat .stage-controls #boost-btn b,body.in-combat .stage-controls .journey-cta b{display:none}
+  body.in-combat .zone-chip{flex:0 0 auto;max-width:230px}
+  body.in-combat .boss-panel{min-width:0}
+}
+/* Celular: Guarda e poções numa faixa própria abaixo do palco */
+.consumables.below-stage{position:static;display:grid;grid-template-columns:minmax(0,1fr) 52px 52px;gap:6px;width:100%;margin:6px 0 0;box-sizing:border-box}
+.consumables.below-stage[hidden]{display:none}
+body .consumables.below-stage .cons{width:auto;height:48px}
+body .consumables.below-stage .cons.guard{min-width:0;justify-content:center;gap:9px}
+body .consumables.below-stage .cons.guard b{font-size:14px}
+body .consumables.below-stage .cons img{margin-top:8px}
+
+/* =========================================================
+   LUTA POR TURNOS: linha do tempo (quem age em seguida) e o comando da vez do herói
+   ========================================================= */
+.turn-bar{position:absolute;left:10px;top:86px;z-index:3;margin:0;padding:5px 4px 6px;list-style:none;display:flex;flex-direction:column;align-items:center;gap:4px;border-radius:12px;background:rgba(13,12,18,.74);border:1px solid var(--line2)}
+.turn-bar[hidden]{display:none}
+.turn-bar .tb-label{font:700 8.5px/1 var(--ui);letter-spacing:.14em;color:var(--dim);padding:2px 0 2px}
+.turn-bar .tb{position:relative;width:34px;height:34px;border-radius:9px;overflow:hidden;border:2px solid color-mix(in srgb,var(--tc) 65%,#111);background:var(--bg2);opacity:.84}
+.turn-bar .tb img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+.turn-bar .tb.foe{border-radius:50%;border-color:#a8574c;background:#241a1c}
+.turn-bar .tb.foe img{object-fit:contain;object-position:center;padding:2px;box-sizing:border-box}
+.turn-bar .tb.now{width:46px;height:46px;opacity:1;border-color:var(--gold);box-shadow:0 0 0 2px rgba(216,176,98,.35)}
+.turn-bar .tb.special{border-color:#ff6b6b;opacity:1;animation:tbWarn .7s ease-in-out infinite alternate}
+.turn-bar .tb em{position:absolute;right:2px;top:0;font:800 13px/1 var(--ui);font-style:normal;color:#ff7a7a;text-shadow:0 1px 2px #000}
+@keyframes tbWarn{to{box-shadow:0 0 0 3px rgba(255,107,107,.45)}}
+@media (max-height:700px) and (min-width:901px){.turn-bar .tb{width:28px;height:28px}.turn-bar .tb.now{width:38px;height:38px}.turn-bar .tb:nth-child(n+8){display:none}}
+@media (max-width:900px){
+  .turn-bar{left:auto;right:4px;top:6px;flex-direction:row;padding:3px;gap:2px;border-radius:9px}
+  body.boss-combat .turn-bar{top:86px}
+  .turn-bar .tb-label{display:none}
+  .turn-bar .tb{width:22px;height:22px;border-radius:6px;border-width:1.5px}
+  .turn-bar .tb.now{width:30px;height:30px}
+  .turn-bar .tb:nth-child(n+7){display:none}
+}
+
+.turn-cmd{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);z-index:4;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;width:min(320px,46%);padding:8px;border-radius:14px;background:rgba(13,12,18,.93);border:1px solid var(--gold);box-shadow:0 14px 34px rgba(0,0,0,.5),0 0 0 3px rgba(216,176,98,.16);animation:turnIn .16s ease-out}
+.turn-cmd[hidden]{display:none}
+.tc-who{grid-column:1/-1;display:flex;align-items:center;gap:9px;min-width:0;padding:0 2px 2px}
+.tc-who img{flex:none;width:38px;height:38px;border-radius:10px;border:2px solid var(--hc,var(--gold));object-fit:cover;background:var(--bg2)}
+.tc-who>span{min-width:0}
+.tc-who small{display:block;font:700 9px/1.3 var(--ui);letter-spacing:.16em;color:var(--gold)}
+.tc-who b{display:block;font:800 14px/1.2 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-btn{position:relative;display:flex;align-items:center;gap:8px;min-width:0;height:44px;padding:0 30px 0 10px;border-radius:10px;background:rgba(236,226,208,.07);border:1px solid var(--line2);color:var(--text);text-align:left;transition:background .12s,border-color .12s}
+.tc-btn .ic{flex:none;font-size:18px;--icc:var(--washi)}
+.tc-btn b{min-width:0;font:700 12px/1.15 var(--ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tc-btn kbd{position:absolute;right:6px;top:50%;transform:translateY(-50%);padding:3px 5px;border-radius:4px;background:rgba(0,0,0,.35);font:700 9px/1 var(--ui);color:var(--muted);letter-spacing:.04em}
+.tc-btn:hover:not(:disabled){background:rgba(236,226,208,.14);border-color:rgba(236,226,208,.4)}
+.tc-btn.primary{background:var(--shu);border-color:transparent;color:#fff7ea}
+.tc-btn.primary .ic{--icc:#fff7ea}
+.tc-btn.primary kbd{background:rgba(0,0,0,.28);color:#ffe9dc}
+.tc-btn.primary:hover:not(:disabled){background:#dc5738}
+.tc-btn[data-act="skill"]:not(:disabled){border-color:var(--cyan);background:rgba(134,182,196,.14)}
+.tc-btn[data-act="ult"]:not(:disabled){border-color:var(--gold);background:rgba(216,176,98,.16)}
+.tc-btn:disabled{opacity:.36;cursor:default}
+@keyframes turnIn{from{opacity:0;transform:translate(-50%,-44%)}}
+/* celular: o comando fica numa faixa abaixo do palco, com botões grandes */
+.turn-cmd.below-stage{position:static;transform:none;width:100%;box-sizing:border-box;margin:6px 0 0;grid-template-columns:repeat(2,minmax(0,1fr));animation:none}
+.turn-cmd.below-stage .tc-btn{height:48px}
+@media (hover:none){.tc-btn kbd{display:none}.tc-btn{padding-right:10px}}
+.hero-slot.turn{border-color:var(--gold)!important;box-shadow:0 0 0 2px rgba(216,176,98,.38)}
+@media(prefers-reduced-motion:reduce){.turn-cmd,.turn-bar .tb.special{animation:none}}

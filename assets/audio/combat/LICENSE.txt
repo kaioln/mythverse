@@ -1,44 +1,12 @@
+Sons de combate do Mythverse (assets/audio/combat)
 
+Todos os arquivos desta pasta foram produzidos para o projeto. Nenhuma gravação ou biblioteca de sons de terceiros
+é usada.
 
-	Impact Sounds (1.0)
+- Efeitos (golpes, magias, impactos, guarda, aparo, interface, passos): síntese própria em camadas, feita por
+  tools/sfx_lab.py (numpy + FFmpeg).
+- Vozes (gritos de golpe, de dano e de especial dos heróis; rugidos e sons das criaturas e dos chefes): geradas por
+  inteligência artificial com a API de voz da OpenAI (tools/voice_gen.py) e tratadas em tools/sfx_lab.py.
+  Não são gravações de pessoas.
 
-	Created/distributed by Kenney (www.kenney.nl)
-	Creation date: 19-12-2019
-
-			------------------------------
-
-	License: (Creative Commons Zero, CC0)
-	http://creativecommons.org/publicdomain/zero/1.0/
-
-	This content is free to use in personal, educational and commercial projects.
-	Support us by crediting Kenney or www.kenney.nl (this is not mandatory)
-
-			------------------------------
-
-	Donate:   http://support.kenney.nl
-	Request:  http://request.kenney.nl
-	Patreon:  http://patreon.com/kenney/
-
-	Follow on Twitter for updates:
-	http://twitter.com/KenneyNL
-
-
-	RPG Audio
-
-	by  Kenney Vleugels (Kenney.nl)
-
-			------------------------------
-
-	License (Creative Commons Zero, CC0)
-	http://creativecommons.org/publicdomain/zero/1.0/
-
-	You may use these assets in personal and commercial projects.
-	Credit (Kenney or www.kenney.nl) would be nice but is not mandatory.
-
-			------------------------------
-
-	Donate:   http://support.kenney.nl
-	Request:  http://request.kenney.nl
-
-	Follow on Twitter for updates:
-	@KenneyNL
+O manifesto index.json lista cada arquivo com o SHA-256, a duração e o conjunto a que pertence.

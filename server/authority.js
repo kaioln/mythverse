@@ -26,7 +26,7 @@ const V = {
   any: v => v === null || ['string', 'number', 'boolean'].includes(typeof v)
 };
 const OPS = {
-  setParty:[V.int(0, 3), V.uid], removeFromParty:[V.uid],
+  setParty:[V.int(0, 3), V.uid], removeFromParty:[V.uid], autoTeam:[],
   addAttr:[V.uid, V.attr, V.int(1, 500)], resetAttr:[V.uid], autoAttr:[V.uid], autoTalents:[V.uid], autoEquip:[V.uid],
   addHeroTalent:[V.uid, V.str], resetHeroTalents:[V.uid], jobChange:[V.uid, v => v === undefined || v === 'a' || v === 'b'], transcend:[V.uid], awaken:[V.uid], useScroll:[V.uid],
   equip:[V.uid, V.uid], unequip:[V.uid, V.slot], toggleLock:[V.uid], salvage:[V.uid], salvageMany:[V.rarity],
@@ -46,6 +46,7 @@ function wbUnitHp(bossId, tier) { const t = KT.Data.enemies[bossId], tr = KT.Dat
 function authority({ store, cfg, send, fail, readJson, readBody, limiter, clientIp, audit, log, eco, sameOrigin }) {
   const OFFLINE_MIN_MS = 120_000;
   const clock = () => (cfg.now ? cfg.now() : Date.now()); // relógio injetável só para testes
+  const seeded = new Set(); // contas com a procedência dos itens já registrada por este processo
 
   // Saves anteriores à troca do elenco usam os ids antigos dos heróis: troca cada id entre aspas pelo atual.
   const LEGACY_RE = new RegExp(`"(${Object.keys(LEGACY.HERO).join('|')})"`, 'g');
@@ -137,6 +138,8 @@ function authority({ store, cfg, send, fail, readJson, readBody, limiter, client
     const user = await store.userById(s.user_id);
     const r = await store.transaction(async t => {
       const { row, state } = await loadState(t, s.user_id, user.username);
+      // Procedência: o que a conta já tinha antes desta chamada (na primeira chamada deste processo, registra tudo).
+      const known = seeded.has(s.user_id) ? new Set(game.provenanceKeys(state)) : null;
       const out = {};
       if (body.finish) out.finish = await finishSegment(t, s.user_id, state, body.finish, now, req);
       else if (body.act || body.start) await t.closeOpenSegments(s.user_id); // nada fica pendente entre ações
@@ -144,10 +147,15 @@ function authority({ store, cfg, send, fail, readJson, readBody, limiter, client
       if (body.act && !beacon) { const a = await runAct(t, s, user, state, body.act, now); if (a.error) out.actError = a.error; else out.result = a.result ?? a; }
       if (body.start && !beacon) { const st = await startSegment(t, s.user_id, state, body.start, now); if (st.error) out.startError = st.error; else out.seg = st.seg; }
       state.lastSeen = now;
+      // Registra quando cada item e carta apareceu no save (idade mínima para vender). Antes isto só acontecia ao
+      // restaurar um save, e nenhum item obtido jogando podia ser anunciado.
+      const keys = game.provenanceKeys(state), fresh = known ? keys.filter(k => !known.has(k)) : keys;
+      if (fresh.length) await t.seeItems(s.user_id, fresh, now);
       out.revision = await persist(t, s.user_id, row, state, now);
       out.state = state;
       return out;
     });
+    seeded.add(s.user_id);
     if (beacon) return send(res, 200, { ok:true });
     send(res, 200, { ok:true, ...r });
   }

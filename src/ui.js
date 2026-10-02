@@ -1,7 +1,14 @@
 (() => {
   const KT = globalThis.KT = globalThis.KT || {};
   const D = KT.Data, U = KT.Utils;
-  const KEYS = ['Q','W','E','R'];
+  const KEYS = ['Q','W','E','R'], SKILL_KEYS = ['A','S','D','F'];
+  // Quem comanda a luta: [rótulo, aviso ao trocar].
+  const TOUCH = !!globalThis.matchMedia?.('(hover:none)').matches;   // sem teclado: os avisos falam dos botões, não das teclas
+  const MODES = {
+    auto:['AUTO', 'Comando <b>AUTO</b>: a equipe decide tudo sozinha, uma ação por vez.'],
+    semi:['SEMI', TOUCH ? 'Comando <b>SEMI</b>: habilidades automáticas; toque na <b>ultimate</b> de cada herói quando encher (+25%).' : 'Comando <b>SEMI</b>: habilidades automáticas; as ultimates são suas (<b>Q W E R</b>, +25%).'],
+    manual:['MANUAL', TOUCH ? 'Comando <b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem: <b>Atacar</b>, <b>Habilidade</b> (+15%), <b>Ultimate</b> (+25%) ou <b>Defender</b>.' : 'Comando <b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem: <b>Espaço</b> ataca, <b>A S D F</b> habilidade (+15%), <b>Q W E R</b> ultimate (+25%), <b>G</b> defende.']
+  };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
   const portrait = id => KT.portraitUrl(id);
   const fmtTime = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`; };
@@ -29,9 +36,9 @@
         bossPanel:$('#boss-panel'), bossBreak:$('#boss-break'), bossBreakFill:$('#boss-break-fill'), bossBreakLabel:$('#boss-break-label'), bossKind:$('#boss-kind'), bossName:$('#boss-name'), bossFill:$('#boss-fill'), bossChip:$('#boss-chip'), bossShield:$('#boss-shield'), bossPercent:$('#boss-percent'), bossPhase:$('#boss-phase'), bossTimer:$('#boss-timer'), bossMark1:$('#boss-mark-1'), bossMark2:$('#boss-mark-2'),
         guide:$('#guide-card'), event:$('#event-card'), rightObjectives:$('#right-objectives'), rightLoot:$('#right-loot'), rightCombat:$('#right-combat'), lootToast:$('#loot-toast-area'),
         inventoryBadge:$('#inventory-badge'), adventureBadge:$('#adventure-badge'), questBadge:$('#quest-badge'), summonBadge:$('#summon-badge'), talentBadge:$('#talent-badge'), partyBadge:$('#party-badge'),
-        auto:$('#auto-btn'), advance:$('#advance-btn'), speed:$('#speed-btn'), retreat:$('#retreat-btn'),
-        modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'), modalBackNav:$('#modal-back-nav'),
-        villageHub:$('#village-hub'), toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
+        mode:$('#mode-btn'), guardBtn:$('#guard-btn'), turnBar:$('#turn-bar'), turnCmd:$('#turn-cmd'), advance:$('#advance-btn'), speed:$('#speed-btn'), retreat:$('#retreat-btn'),
+        modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'), modalBackNav:$('#modal-back-nav'), scrollHint:$('#scroll-hint'),
+        villageHub:$('#village-hub'), lobby:$('#lobby-bar'), toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
       };
     }
 
@@ -48,12 +55,15 @@
       });
       this.el.party.addEventListener('click', e => {
         const ult = e.target.closest('[data-ult]'); if (ult) { this.castUlt(Number(ult.dataset.ult)); return; }
+        const sk = e.target.closest('[data-skill]'); if (sk) { this.castSkill(Number(sk.dataset.skill)); return; }
         const det = e.target.closest('[data-hero-detail]'); if (det) { this.openPanel('hero', det.dataset.heroDetail); return; }
         const slot = e.target.closest('[data-slot-open]'); if (slot) this.openPanel('party');
       });
-      this.el.auto.addEventListener('click', () => { const v = !this.state.settings.auto; if (this.engine.seg) this.engine.input('auto', v); else { this.state.settings.auto = v; this.cmd('setSetting', 'auto', v); } this.renderControls(); this.toast(this.state.settings.auto ? 'Ultimates automáticas <b>ativadas</b>.' : 'Ultimates <b>manuais</b>: use Q W E R quando a energia encher.'); });
+      this.el.mode.addEventListener('click', () => this.cycleMode());
+      this.el.guardBtn.addEventListener('click', () => this.guard());
+      this.el.turnCmd.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && !b.disabled) this.command(b.dataset.act); });
       this.el.advance.addEventListener('click', () => { const v = !this.state.settings.autoAdvance; if (this.engine.seg) this.engine.input('advance', v); else { this.state.settings.autoAdvance = v; this.cmd('setSetting', 'autoAdvance', v); } this.renderControls(); this.toast(this.state.settings.autoAdvance ? 'Avanço automático <b>ligado</b>: ao vencer, segue para o próximo estágio.' : 'Avanço <b>desligado</b>: a equipe repete o estágio atual para treinar.'); });
-      this.el.speed.addEventListener('click', () => { const seq = [1, 2, 3], i = seq.indexOf(this.state.settings.speed); this.state.settings.speed = seq[(i + 1) % seq.length]; this.renderControls(); });
+      this.el.speed.addEventListener('click', () => this.cycleSpeed());
       this.el.retreat.addEventListener('click', () => this.engine.enterZone('village'));
       this.el.potionBtn.addEventListener('click', () => this.engine.input('potion'));
       this.el.elixirBtn.addEventListener('click', () => this.engine.input('elixir'));
@@ -74,19 +84,41 @@
         if (e.code === 'Escape') { if (!this.el.reveal.hidden) this.closeReveal(); else if (!this.el.dialog.hidden) this.advanceDialog(); else this.closeModal(); return; }
         if (!this.el.modal.hidden) return;
         if (!this.el.dialog.hidden && (e.code === 'Space' || e.code === 'Enter')) { e.preventDefault(); this.advanceDialog(); return; }
-        const map = { KeyQ:0, KeyW:1, KeyE:2, KeyR:3 }; if (map[e.code] !== undefined) this.castUlt(map[e.code]);
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        // Comandos de luta: Q W E R ultimates · A S D F habilidades · Espaço guarda · 1/2 poção e elixir · Z comando · X alvo.
+        const ult = { KeyQ:0, KeyW:1, KeyE:2, KeyR:3 }, skill = { KeyA:0, KeyS:1, KeyD:2, KeyF:3 }, fight = this.engine.active;
+        if (fight && (ult[e.code] !== undefined || skill[e.code] !== undefined || ['Space', 'Enter', 'KeyG', 'KeyZ', 'KeyX'].includes(e.code))) {
+          // Um botão clicado antes fica com o foco e o Espaço "clicaria" nele de novo: o foco sai e a tecla é só do comando.
+          const a = document.activeElement; if (a && a !== document.body && a.matches?.('button')) a.blur();
+          if (e.code === 'Space' || e.code === 'Enter') e.preventDefault();
+          if (e.repeat) return;
+        }
+        if (ult[e.code] !== undefined) this.castUlt(ult[e.code]);
+        if (fight && skill[e.code] !== undefined) this.castSkill(skill[e.code]);
+        // Espaço: na vez de um herói é "Atacar"; fora dela, ergue a Guarda (o Aparo dos golpes preparados).
+        if (fight && (e.code === 'Space' || e.code === 'Enter')) { if (this.engine.awaiting !== null) this.command('attack'); else if (e.code === 'Space') this.guard(); }
+        if (fight && e.code === 'KeyG') this.command('defend');
+        if (fight && e.code === 'KeyZ') this.cycleMode();
+        if (fight && e.code === 'KeyX') this.nextTarget();
         if (e.code === 'Digit1') this.engine.input('potion');
         if (e.code === 'Digit2') this.engine.input('elixir');
-        if (e.code === 'KeyA') this.el.auto.click();
         if (e.code === 'KeyM') this.openPanel('journey');
         if (e.code === 'KeyI') this.openPanel('inventory');
         if (e.code === 'KeyT') this.openPanel('talents');
       });
       this.el.modalBody.addEventListener('click', e => this.handleAction(e));
+      // Há mais conteúdo abaixo? Um aviso no pé do painel mostra, e um toque nele rola a página.
+      this.el.modalBody.addEventListener('scroll', () => this.scrollHint?.(), { passive:true });
+      addEventListener('resize', () => this.scrollHint?.());
+      this.el.scrollHint.addEventListener('click', () => this.el.modalBody.scrollBy({ top:this.el.modalBody.clientHeight * .8, behavior:'smooth' }));
       this.el.modalTabs.addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { this.view.tab = b.dataset.tab; this.refreshPanel(); } });
       this.el.modalBody.addEventListener('input', e => this.handleInput(e));
       this.el.modalBody.addEventListener('change', e => this.handleInput(e));
-      [this.el.villageHub, this.el.result, this.el.hint, this.el.guide, this.el.choice, this.el.rightObjectives, this.el.event].forEach(n => n.addEventListener('click', e => this.handleAction(e)));
+      [this.el.villageHub, this.el.lobby, this.el.result, this.el.hint, this.el.guide, this.el.choice, this.el.rightObjectives, this.el.event].forEach(n => n.addEventListener('click', e => this.handleAction(e)));
+      this.el.lobby.addEventListener('click', e => {
+        const h = e.target.closest('[data-hero-detail]'); if (h) { this.openPanel('hero', h.dataset.heroDetail); return; }
+        if (e.target.closest('[data-lobby-prep]')) this.openPreparation?.();
+      });
       this.el.dialog.addEventListener('click', ev => {
         const b = ev.target.closest('[data-story-book]');
         if (b) { const i = KT.Lore?.book?.findIndex(c => c.id === b.dataset.storyBook); if (i >= 0) { this.bookCh = i; this.openPanel('wiki', 'lore'); } return; }
@@ -125,6 +157,49 @@
       if (ok && btn) { btn.classList.remove('fired'); void btn.offsetWidth; btn.classList.add('fired'); }
       else if (!ok && u && this.engine.active && u.alive && u.energy < 100) this.toast(`${esc(u.name)}: energia ${Math.floor(u.energy)}/100.`);
       return ok;
+    }
+    // Habilidade comandada (modo MANUAL): rende +15% e vai no alvo em foco.
+    castSkill(i) {
+      const e = this.engine, u = e.party[i], ok = e.input('skill', i), btn = this.el.party.querySelector(`[data-skill="${i}"]`);
+      if (ok && btn) { btn.classList.remove('fired'); void btn.offsetWidth; btn.classList.add('fired'); }
+      else if (!ok && u?.alive && e.phase === 'fight' && e.mode !== 'manual' && !this.skillHintAt) { this.skillHintAt = Date.now(); this.toast(`No comando <b>AUTO</b> ou <b>SEMI</b> as habilidades saem sozinhas. Troque para <b>MANUAL</b> ${TOUCH ? 'no botão COMANDO' : '(tecla Z)'} para escolher a hora de cada uma.`); }
+      return ok;
+    }
+    // Guarda: durante o bote de um golpe preparado quem julga o tempo é o anel na tela (dentro da faixa dourada = Aparo).
+    guard() {
+      const q = this.renderer.qteQuality?.(), ok = q === null || q === undefined ? this.engine.input('guard') : this.engine.input('guard', q), b = this.el.guardBtn;
+      if (ok && b) { b.classList.remove('fired'); void b.offsetWidth; b.classList.add('fired'); }
+      return ok;
+    }
+    // Ordem na vez do herói (comando MANUAL): atacar, habilidade, ultimate ou defender.
+    command(what) {
+      const e = this.engine, i = e.awaiting; if (i === null || i === undefined) return false;
+      const ok = what === 'skill' ? this.castSkill(i) : what === 'ult' ? this.castUlt(i) : e.input('act', what);
+      if (ok) { this.turnSince = 0; this.callbacks.click?.(); this.renderParty(); }
+      return ok;
+    }
+    // Velocidade: x1 → x2 → x3 → TURBO (só no AUTO: a luta corre em tempo corrido, sem a pausa de cada ação).
+    cycleSpeed() {
+      const st = this.state.settings, turbo = st.pace === 'turbo' && st.auto;
+      if (turbo) { st.pace = 'rpg'; st.speed = 1; this.cmd('setSetting', 'pace', 'rpg'); }
+      else if (st.speed >= 3) { if (st.auto) { st.pace = 'turbo'; this.cmd('setSetting', 'pace', 'turbo'); this.toast('<b>TURBO</b>: a luta corre sem parar a cada ação. Bom para repetir estágios; para comandar, volte a x1.'); } else st.speed = 1; }
+      else st.speed = (st.speed || 1) + 1;
+      this.renderControls();
+    }
+    // AUTO → SEMI → MANUAL. Dentro da luta a troca é um comando gravado (o servidor refaz a luta com ele).
+    setMode(mode) {
+      if (!MODES[mode]) return;
+      if (this.state.settings.afk) { this.toast('O <b>AFK</b> está no comando. Saia do AFK para lutar você mesmo.'); return; }
+      if (this.engine.seg) this.engine.input('mode', mode); else { this.engine.setMode(mode); this.cmd('setSetting', 'mode', mode); }
+      this.renderControls(); this.renderParty(); this.toast(MODES[mode][1]);
+    }
+    cycleMode() { const order = ['auto', 'semi', 'manual']; this.setMode(order[(order.indexOf(this.engine.mode) + 1) % order.length]); }
+    // Próximo alvo em foco (os golpes e as habilidades de alvo único vão nele).
+    nextTarget() {
+      const list = this.engine.enemies.filter(x => x.alive); if (!list.length) return;
+      const next = list[(list.findIndex(x => x.uid === this.engine.focusUid) + 1) % list.length];
+      if (next.uid !== this.engine.focusUid) this.engine.input('focus', next.uid);
+      this.callbacks.click?.();
     }
     switchRight(name) { document.querySelectorAll('.right-tab').forEach(b => b.classList.toggle('active', b.dataset.right === name)); ['objectives','loot','combat'].forEach(n => document.querySelector(`#right-${n}`).hidden = n !== name); if (name === 'combat') this.renderCombat(true); }
 
@@ -201,7 +276,9 @@
     // Cidade: painel de boas-vindas e selos vivos nas placas dos distritos.
     renderVillage() {
       const hub = this.el.villageHub, show = !this.el.locations.hidden;
-      hub.hidden = !show; if (!show) { this.villageKey = ''; return; }
+      hub.hidden = !show; this.el.lobby.hidden = this.engine.zone.kind !== 'village';
+      if (this.engine.zone.kind === 'village' && !show) { const z0 = D.zones[this.state.lastHunt] || D.zones.hunt, p0 = this.state.progress[z0.id] || {}; this.renderLobby(z0, Math.max(1, Math.min(z0.stages || 1, p0.cur || p0.best || 1))); }
+      if (!show) { this.villageKey = ''; return; }
       const s = this.state, e = this.engine, ev = e.event(), PRG = KT.Progression;
       const hour = new Date(e.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
       const greet = hour < 5 ? 'Boa madrugada' : hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -216,11 +293,32 @@
       const pending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       const gs = e.guideStep(), key = [greet, hz.id, stage, pending, ev.id, s.player.name, gs?.id, gs && e.guideDone(gs)].join('|'); if (key === this.villageKey) return; this.villageKey = key;
       const now = ev.id !== 'calm' ? `Agora: <b style="color:${ev.color}">${KT.glyph(ev.icon)} ${esc(ev.name)}</b>.` : 'O céu está calmo a esta hora.';
-      // Compacto no canto de baixo (a cidade viva ocupa o palco): saudação numa linha, objetivo e Continuar.
+      // No alto, só o que pede atenção agora: a saudação, o objetivo e o que há para resgatar.
       hub.innerHTML = `<span class="eyebrow" data-tip="${esc(`Sua equipe passeia por Tsukimori. ${now.replace(/<[^>]+>/g, '')}`)}">${greet}, ${esc(s.player.name || 'Viajante')}</span>
         ${(() => { const g = e.guideStep(); if (!g) return ''; const done = e.guideDone(g); return `<div class="hub-goal ${done ? 'done' : ''}"><i class="ic ic-target"></i><div><small>Objetivo</small><b>${esc(g.title)}</b></div>${done ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>`; })()}
-        <div class="hub-actions"><button class="action primary" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button"><i class="ic ic-swords"></i> <span class="hub-go"><small>Continuar</small><b>${esc(hz.title)}</b></span><em class="hub-stage">${stage}</em></button>
-        <div class="hub-row"><button class="action ${pending ? 'pink' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i> ${pending} para resgatar` : '<i class="ic ic-target"></i> O que fazer'}</button></div></div>`;
+        <button class="hub-todo ${pending ? 'has' : ''}" data-go="adventure" type="button">${pending ? `<i class="ic ic-chest"></i><span><b>${pending}</b> para resgatar</span>` : '<i class="ic ic-lantern"></i><span>O que fazer agora</span>'}<em>›</em></button>`;
+      this.renderLobby(hz, stage);
+    }
+    // Barra do saguão, no pé da cidade: a equipe à esquerda e, à direita, a ação principal (continuar a jornada).
+    renderLobby(hz, stage) {
+      const el = this.el.lobby, e = this.engine, s = this.state;
+      const team = s.formation.map(uid => uid && e.record(uid)), full = e.heroes.length >= 4;
+      const key = [hz.id, stage, s.starterRolls, e.getPower(), ...team.map(r => r ? `${r.uid}:${r.level}:${r.stars}` : '-')].join('|');
+      if (key === this.lobbyKey) return; this.lobbyKey = key;
+      const slots = team.map((r, i) => {
+        if (!r) return `<button class="lt-hero empty" data-go="party" type="button" data-tip="Vaga ${i + 1}: escolha um herói"><span>+</span></button>`;
+        const t = e.template(r.id);
+        return `<button class="lt-hero rarity-${r.rarity}" data-hero-detail="${r.uid}" type="button" style="--hc:${t.color}" data-tip="<b>${esc(t.name)}</b><br>${t.cls} · ${t.el} · Nv.${r.level}<br><small>Clique para abrir a ficha.</small>"><img src="${portrait(t.id)}" alt=""><em>${r.level}</em><i>${KT.glyph(D.classes[t.cls].icon)}</i></button>`;
+      }).join('');
+      const cta = !full
+        ? (s.starterRolls > 0
+          ? `<button class="lobby-go" data-go="collection" type="button"><span><small>COMECE AQUI</small><b>Convocar seus heróis</b></span><em>${s.starterRolls} grátis</em></button>`
+          : `<button class="lobby-go" data-go="party" type="button"><span><small>EQUIPE ${e.heroes.length}/4</small><b>Montar a equipe</b></span><em>4 vagas</em></button>`)
+        : `<button class="lobby-go" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button" data-tip="Volta para a jornada de onde você parou."><span><small>CONTINUAR A JORNADA</small><b>${esc(hz.title)}</b></span><em>Estágio ${stage}</em></button>`;
+      el.innerHTML = `<div class="lobby-team"><div class="lt-heroes">${slots}</div><button class="lt-power" data-go="party" type="button" data-tip="Poder total da equipe. Clique para ver a formação e as sinergias."><small>PODER</small><b>${compact(e.getPower())}</b></button></div>
+        <div class="lobby-cta">${cta}
+          <button class="lobby-btn" data-go="journey" type="button" data-tip="Mapa do mundo (M)"><i class="ic ic-compass"></i><b>Mapa</b></button>
+          <button class="lobby-btn" data-lobby-prep type="button" data-tip="Preparar a equipe: farm, equipamento, atributos ou talentos."><i class="ic ic-bolt"></i><b>Preparar</b></button></div>`;
     }
 
     renderParty() {
@@ -236,19 +334,22 @@
           return `<article class="hero-slot rarity-${rec.rarity}" data-uid="${rec.uid}" style="--hc:${t.color};--rc:var(--${rec.rarity})">
             <button class="hero-portrait" data-hero-detail="${rec.uid}" type="button" data-tip="Ver ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><span class="lv">Nv.${rec.level}</span><span class="cls">${KT.glyph(D.classes[t.cls].icon)}</span></button>
             <div class="hero-info"><header><b>${esc(t.name)}</b><small><i class="kj" style="color:${D.elements[t.el].color}">${KT.glyph(D.elements[t.el].icon)}</i> <span class="row-txt">${i < 2 ? 'Frente' : 'Trás'}</span></small></header>
-              <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div>
-              <div class="skill-line"><span class="skill-cd" data-tip="<b>${esc(t.skill.name)}</b> (automática)<br>${esc(t.skillText)}"><i></i>${esc(t.skill.name)}</span></div></div>
-            <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>
+              <div class="bar hp"><span class="fill"></span><span class="shield"></span><em></em></div></div>
+            <div class="hero-actions">
+              <button class="skill-btn" data-skill="${idx}" type="button" data-tip="<b>HABILIDADE · ${esc(t.skill.name)}</b><br>${esc(t.skillText)}<br><small>Recarga de ${t.skill.cd}s. No comando MANUAL: tecla ${SKILL_KEYS[idx]}, com +15% de efeito.</small>"><span class="ult-ic sk-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t, 'skill'))}<kbd>${SKILL_KEYS[idx]}</kbd></span><span><b>${esc(t.skill.name)}</b><small>HABILIDADE</small></span><i class="cdw"></i></button>
+              <button class="ult-btn" data-ult="${idx}" type="button" data-tip="<b>ULTIMATE · ${esc(t.ult.name)}</b><br>${esc(t.ultText)}<br><small>Tecla ${KEYS[idx]} quando a energia estiver cheia. À mão rende +25%.</small>"><span class="ult-ic" style="${glyphStyle(t)}">${ic(skillGlyph(t))}<kbd>${KEYS[idx]}</kbd></span><span><b>${esc(t.ult.name)}</b><small>ULTIMATE</small></span><i class="nrg"></i></button>
+            </div>
           </article>`;
         }).join('');
       }
       units.forEach((u, i) => {
         const card = this.el.party.children[i]; if (!u || !card?.dataset.uid) return;
-        const hpBar = card.querySelector('.bar.hp'), ult = card.querySelector('.ult-btn'), cdEl = card.querySelector('.skill-cd');
+        const hpBar = card.querySelector('.bar.hp'), ult = card.querySelector('.ult-btn'), sk = card.querySelector('.skill-btn');
         if (village) {
           const r = u.rec; const st = KT.State.heroStats(this.state, r);
           hpBar.querySelector('.fill').style.width = '100%'; hpBar.querySelector('em').textContent = U.fmt(st.maxHp);
-          ult.disabled = true; ult.style.setProperty('--nrg', 0); ult.classList.remove('ready'); cdEl.style.setProperty('--cd', 0);
+          ult.disabled = true; ult.style.setProperty('--nrg', 0); ult.classList.remove('ready'); ult.querySelector('small').textContent = 'ULTIMATE';
+          sk.disabled = true; sk.style.setProperty('--cd', 0); sk.classList.remove('ready', 'auto'); sk.querySelector('small').textContent = 'HABILIDADE';
           card.querySelector('.lv').textContent = `Nv.${r.level}`;
           return;
         }
@@ -258,13 +359,61 @@
         hpBar.querySelector('em').textContent = U.fmt(Math.max(0, u.hp)); hpBar.classList.toggle('low', hp < .3);
         const ready = u.alive && u.energy >= 100 && e.phase === 'fight';
         ult.disabled = !ready; ult.classList.toggle('ready', ready); ult.style.setProperty('--nrg', U.clamp(u.energy / 100, 0, 1));
-        ult.querySelector('small').textContent = !u.alive ? 'NOCAUTEADO' : ready ? 'PRONTA!' : `ENERGIA ${Math.floor(u.energy)}%`;
-        cdEl.style.setProperty('--cd', U.clamp(u.skillCd / u.template.skill.cd, 0, 1));
+        ult.querySelector('small').textContent = !u.alive ? 'K.O.' : ready ? 'PRONTA!' : `${Math.floor(u.energy)}%`;
+        // Habilidade: recarga em leque e segundos; no comando MANUAL fica "PRONTA!" esperando a tecla.
+        const manual = e.mode === 'manual', cd = Math.max(0, u.skillCd), silenced = u.effects.some(x => x.s === 'silence');
+        const skReady = u.alive && cd <= 0 && e.phase === 'fight' && !silenced && e.canAct(u);
+        sk.disabled = !(manual && skReady); sk.classList.toggle('ready', manual && skReady); sk.classList.toggle('auto', !manual);
+        sk.style.setProperty('--cd', U.clamp(cd / u.template.skill.cd, 0, 1));
+        sk.querySelector('small').textContent = !u.alive ? 'K.O.' : silenced ? 'SILÊNCIO' : cd > 0 ? `${Math.ceil(cd / (1 + (u.st.cdr || 0)))}s` : manual ? 'PRONTA!' : 'AUTO';
         card.querySelector('.lv').textContent = `Nv.${u.level}`;
         card.classList.toggle('dead', !u.alive);
         const prev = this.lastHp.get(u.uid); if (prev !== undefined && u.hp < prev - u.maxHp * .05) { card.classList.remove('hurt'); void card.offsetWidth; card.classList.add('hurt'); }
         this.lastHp.set(u.uid, u.hp);
       });
+      // Guarda: recarga, erguida e o chamado quando um inimigo dá o bote de um golpe preparado.
+      const g = this.el.guardBtn;
+      if (g && !village) {
+        const G = KT.State.GUARD, cd = e.guardCd || 0, up = e.guardT > 0, danger = e.enemies.some(x => x.alive && x.striking);
+        g.disabled = e.phase !== 'fight' || cd > 0; g.style.setProperty('--cd', U.clamp(cd / G.cd, 0, 1));
+        g.classList.toggle('up', up); g.classList.toggle('alert', danger && !up && cd <= 0 && e.phase === 'fight');
+      }
+      this.renderTurn(village);
+    }
+    // Linha do tempo (quem age em seguida) e a barra de comando da vez do herói.
+    renderTurn(village) {
+      const e = this.engine, bar = this.el.turnBar, cmd = this.el.turnCmd, fight = !village && e.phase === 'fight';
+      const show = fight && e.sequenced?.() !== false && !this.state.settings.afk && !(this.state.settings.pace === 'turbo' && this.state.settings.auto);
+      bar.hidden = !show;
+      if (show) {
+        const order = e.turnOrder(7), key = order.map(o => `${o.uid}:${o.kind}`).join('|') + `|${e.awaiting}`;
+        if (key !== this.turnKey) {
+          this.turnKey = key;
+          bar.innerHTML = '<li class="tb-label">ORDEM</li>' + order.map((o, n) => {
+            const u = e.party.find(x => x.uid === o.uid) || e.enemies.find(x => x.uid === o.uid); if (!u) return '';
+            const hero = u.side === 'hero', src = hero ? portrait(u.template.id) : KT.spriteUrl(u.sprite);
+            return `<li class="tb ${hero ? 'hero' : 'foe'} ${o.kind === 'special' ? 'special' : ''} ${n === 0 ? 'now' : ''}" style="--tc:${u.color || '#fff'}" data-tip="${esc(u.name)}${o.kind === 'special' ? ' · golpe preparado' : ''}"><img src="${src}" alt="">${o.kind === 'special' ? '<em>!</em>' : ''}</li>`;
+          }).join('');
+        }
+      } else this.turnKey = '';
+      // Vez de um herói: a luta espera a ordem do jogador.
+      const i = fight ? e.awaiting : null, u = i === null || i === undefined ? null : e.party[i];
+      cmd.hidden = !u;
+      [...this.el.party.children].forEach((card, n) => card.classList.toggle('turn', !!u && n === u.slot));
+      if (!u) { this.turnSince = 0; this.turnHero = null; return; }
+      if (this.turnHero !== u.uid) {
+        this.turnHero = u.uid; this.turnSince = performance.now();
+        const t = u.template; cmd.querySelector('#tc-face').src = portrait(t.id); cmd.querySelector('#tc-name').textContent = t.name;
+        const sk = cmd.querySelector('[data-act="skill"]'), ul = cmd.querySelector('[data-act="ult"]');
+        sk.querySelector('b').textContent = t.skill.name; sk.querySelector('kbd').textContent = SKILL_KEYS[i]; sk.dataset.tip = `<b>${esc(t.skill.name)}</b> (+15% à mão)<br>${esc(t.skillText)}`;
+        ul.querySelector('b').textContent = t.ult.name; ul.querySelector('kbd').textContent = KEYS[i]; ul.dataset.tip = `<b>${esc(t.ult.name)}</b> (+25% à mão)<br>${esc(t.ultText)}`;
+        cmd.style.setProperty('--hc', t.color);
+      }
+      const silenced = u.effects.some(x => x.s === 'silence');
+      cmd.querySelector('[data-act="skill"]').disabled = silenced || u.skillCd > 0;
+      cmd.querySelector('[data-act="ult"]').disabled = silenced || u.energy < 100;
+      // Ninguém no comando há muito tempo: o herói ataca sozinho para a luta não ficar parada.
+      if (this.turnSince && performance.now() - this.turnSince > 40000) { this.command('attack'); if (!this.turnIdleTold) { this.turnIdleTold = true; this.toast('A equipe esperou sua ordem por muito tempo e atacou sozinha. No comando <b>AUTO</b> ou <b>SEMI</b> ela nunca espera.'); } }
     }
 
     renderBoss() {
@@ -286,12 +435,19 @@
 
     renderControls() {
       const s = this.state.settings, z = this.engine.zone;
-      this.el.auto.classList.toggle('active', s.auto); this.el.auto.querySelector('b').textContent = s.auto ? 'ON' : 'OFF';
+      const mode = this.engine.mode;
+      if (this.el.mode.dataset.mode !== mode || !this.el.mode.dataset.tipSet) {
+        this.el.mode.dataset.mode = mode; this.el.mode.dataset.tipSet = '1'; this.el.mode.querySelector('b').textContent = MODES[mode][0]; this.el.mode.classList.toggle('active', mode !== 'auto');
+        this.el.mode.dataset.tip = `<b>Comando: ${MODES[mode][0]}</b> · tecla Z<br><b>AUTO</b>: a equipe decide tudo.<br><b>SEMI</b>: habilidades sozinhas, ultimates suas (Q W E R, +25%).<br><b>MANUAL</b>: na vez de cada herói a luta espera a sua ordem (atacar, habilidade +15%, ultimate +25% ou defender).<br><small>Em qualquer comando, a Guarda (Espaço) apara os golpes preparados.</small>`;
+        document.body.dataset.cmd = mode;
+      }
       this.el.advance.classList.toggle('active', s.autoAdvance); this.el.advance.querySelector('b').textContent = s.afk ? 'FARM' : s.autoAdvance ? 'ON' : 'OFF'; this.el.advance.disabled = !!s.afk;
-      this.el.speed.querySelector('b').textContent = `x${s.speed}`; this.el.speed.classList.toggle('active', s.speed > 1);
+      const turbo = s.pace === 'turbo' && s.auto;
+      this.el.speed.querySelector('b').textContent = turbo ? 'TURBO' : `x${s.speed}`; this.el.speed.classList.toggle('active', turbo || s.speed > 1);
+      this.el.speed.dataset.tip = '<b>Velocidade da luta</b><br>x1 a x3: uma ação por vez, mais rápido a cada nível.<br><b>TURBO</b> (só no comando AUTO): tempo corrido, sem a pausa de cada ação.';
       const village = z.kind === 'village';
       const cityFocus = document.querySelector('#city-focus-btn'); if (cityFocus) { const focused = document.body.classList.contains('city-focus'); cityFocus.hidden = !village; cityFocus.setAttribute('aria-pressed', String(focused)); cityFocus.querySelector('b').textContent = focused ? 'RECOLHER' : 'AMPLIAR'; }
-      this.el.auto.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';
+      this.el.mode.hidden = this.el.speed.hidden = this.el.retreat.hidden = village; this.el.advance.hidden = z.kind !== 'hunt' && z.kind !== 'rift';
       this.renderChoiceTimer(); this.renderAfk?.();
     }
 
@@ -535,6 +691,6 @@
   }
   const shade = (hex, f) => { const n = parseInt(String(hex).slice(1), 16), c = k => Math.max(0, Math.min(255, Math.round(((n >> k) & 255) * f))); return `rgb(${c(16)},${c(8)},${c(0)})`; };
   const glyphStyle = t => { const col = D.elements[t.el]?.color || '#ffcf6b'; return `--e1:${col};--e2:${shade(col, .55)}`; };
-  UIController.helpers = { esc, portrait, fmtTime, compact, KEYS, ic, skillGlyph, glyphStyle };
+  UIController.helpers = { esc, portrait, fmtTime, compact, KEYS, SKILL_KEYS, MODES, ic, skillGlyph, glyphStyle };
   KT.UIController = UIController;
 })();

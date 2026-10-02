@@ -94,7 +94,7 @@ function maxItemLevel(state) {
 }
 // Chaves de procedência de tudo que é negociável num save: uid de cada item e cada cópia de carta.
 function provenanceKeys(state) {
-  const keys = (state.inventory || []).map(it => `i:${it.uid}`);
+  const keys = [...(state.inventory || []), ...(state.storage || []), ...(state.overflow || [])].filter(it => it && it.uid).map(it => `i:${it.uid}`);
   Object.entries(state.cards || {}).forEach(([id, n]) => { for (let i = 1; i <= Math.min(50, Number(n) || 0); i++) keys.push(`c:${id}:${i}`); });
   return keys;
 }

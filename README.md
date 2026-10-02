@@ -150,7 +150,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Invasão Mundial**: um chefe mundial por dia, em duas janelas (12h30 às 14h e 20h30 às 22h de Brasília), 1 tentativa por dia, dano somado por todo o servidor e dificuldades Heroica e Mítica cooperativas.
 - **Expedições** (correm no servidor, mesmo com o PC desligado) e **Quadro de Recompensas** com loja de Marcas de Caçador.
 - **Evento**: Kitsune das Lanternas, disponível durante o Festival.
-- **94 criaturas**, cada uma com habilidade própria e exclusiva da sua região (inclusive os lacaios invocados pelos chefes). As ondas variam de formato (matilhas, pares, mistos) e há variantes **Alfa** raras com loot garantido.
+- **115 criaturas**, cada uma com arte e animação próprias (16 poses, `tools/enemy_frames.py`) e habilidade própria e exclusiva da sua região (inclusive os lacaios invocados pelos chefes). As ondas variam de formato (matilhas, pares, mistos) e há variantes **Alfa** raras com loot garantido.
 - **Bestiário**: abates liberam níveis de pesquisa (+dano e +chance de carta contra aquela criatura).
 - **Chefes** com 3 fases, ataques preparados (⚠ e zona de perigo), invocações, cura e **Fúria** por tempo. Dificuldades Normal, Pesadelo e Inferno.
 - **Eventos mundiais por calendário fixo** (data e hora de Brasília, relógio do servidor): Maré Dourada, Festival das Cerejeiras, Noite dos Oni, Maré de Éter, Lua de Sangue, Festival das Lanternas e Chuva de Estrelas. A agenda aparece no painel lateral e na Wiki.
@@ -180,7 +180,7 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 - **Ouro mais escasso**: todas as fontes passam por uma torneira única; fundar guilda custa 1,5 milhão.
 
 ### Guia, missões e loja
-- **Guia do Viajante** com 27 passos e recompensas, e o menu **Aventuras**, que mostra tudo o que dá para fazer agora (invasão, expedições, recompensas, eventos, Fenda, chefes).
+- **Guia do Viajante** com 30 passos e recompensas, e o menu **Aventuras**, que mostra tudo o que dá para fazer agora (invasão, expedições, recompensas, eventos, Fenda, chefes).
 - **Contratos da Guilda** com **Rank da Guilda** sem limite, **missões diárias** (meia-noite de Brasília), **login diário** em ciclo de 7 dias, **Crônicas** infinitas depois do Guia e 43 conquistas.
 - **Loja** em ouro (poções, elixires, pergaminhos de EXP, materiais) e em cristais (chaves, expansão da bolsa, incenso de EXP/ouro, redefinição de talentos), além do **Mercado** com ofertas a cada 2 horas.
 - **Gemas (dinheiro real) e Mercado de Jogadores**: 100 Gemas = R$ 1,00, depósito via Pix (Mercado Pago), saque com revisão manual e taxas configuráveis (padrão: 5% na venda, 2% no saque). Itens e cartas anunciados ficam sob custódia do servidor; compras chegam pelo Correio. Tudo fica **desligado** até você configurar `RMT_ENABLED=1` e o provedor (veja `.env.example`).
@@ -195,8 +195,12 @@ Saves da versão antiga (Hoshikage) não são compatíveis: a nova jornada come�
 | Tecla | Ação |
 |---|---|
 | Q W E R | Ultimate dos heróis 1 a 4 |
+| A S D F | Habilidade dos heróis 1 a 4 |
+| Espaço / Enter | Na vez de um herói: Atacar. Fora dela (só Espaço): Guarda, que apara golpes preparados |
+| G | Defender (na vez do herói) |
+| Z | Troca o comando: MANUAL → SEMI → AUTO |
+| X | Próximo alvo |
 | 1 / 2 | Poção de Cura / Elixir de Energia |
-| A | Liga/desliga ultimates automáticas |
 | M · I · T | Mapa · Bolsa · Talentos do herói |
 | Clique no inimigo | A equipe foca nesse alvo |
 | ESC | Fecha painel ou diálogo |

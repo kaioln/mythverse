@@ -14,7 +14,8 @@
       document.querySelector('#boot')?.classList.add('done');
       return new Promise(resolve => { this.resolve = resolve; });
     },
-    hide() { if (this.el) this.el.hidden = true; },
+    // Ao sair da tela de entrada, a tela de carregamento volta até o jogo estar pronto (nunca a interface vazia).
+    hide(label = 'Abrindo a Fenda…') { if (this.el) this.el.hidden = true; KT.bootLabel?.(label); },
     sessionKey:'mythverse-tab-login',
     forgetSession() { try { sessionStorage.removeItem(this.sessionKey); } catch (_) {} },
     async requireUser(provider = 'server') {
@@ -116,19 +117,19 @@
         if (this.provider === 'neon' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email || '')) return this.error('Informe um e-mail válido.');
       }
       if (this.provider === 'neon') {
-        btn.disabled = true; btn.textContent = 'Aguarde…';
+        btn.disabled = true; btn.classList.add('busy'); btn.textContent = kind === 'login' ? 'Entrando' : 'Criando conta';
         const rn = kind === 'login' ? await KT.Neon.signIn(d) : await KT.Neon.signUp(d);
-        btn.disabled = false; btn.textContent = label;
+        btn.disabled = false; btn.classList.remove('busy'); btn.textContent = label;
         if (!rn.ok || !rn.user) return this.error(rn.error || (kind === 'register' ? 'Conta criada: confirme o e-mail e depois entre.' : 'Não foi possível entrar.'));
-        this.hide(); this.resolve?.(rn.user); return;
+        this.hide('Carregando seu progresso…'); this.resolve?.(rn.user); return;
       }
-      btn.disabled = true; btn.textContent = 'Aguarde…';
+      btn.disabled = true; btn.classList.add('busy'); btn.textContent = kind === 'login' ? 'Entrando' : kind === 'register' ? 'Criando conta' : 'Redefinindo';
       const r = kind === 'login' ? await KT.Net.login(d) : kind === 'register' ? await KT.Net.register(d) : await KT.Net.recover(d);
-      btn.disabled = false; btn.textContent = label;
+      btn.disabled = false; btn.classList.remove('busy'); btn.textContent = label;
       if (!r.ok) return this.error(r.error || 'Não foi possível concluir. Tente novamente.');
       KT.Net.user = r.user || await KT.Net.me();
       if (r.recoveryCode) await this.showRecovery(r.recoveryCode, kind === 'register');
-      this.hide(); this.resolve?.(KT.Net.user);
+      this.hide('Carregando seu progresso…'); this.resolve?.(KT.Net.user);
     },
     showRecovery(code, isNew) {
       return new Promise(resolve => {

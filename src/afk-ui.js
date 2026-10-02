@@ -14,7 +14,7 @@
     afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual, usa poções e equipa itens melhores. Não avança nem distribui pontos.';
     afk.innerHTML = '<span><i class="ic ic-moon"></i> AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
-    boost.dataset.tip = 'Preparação: escolha entre farm, equipamento, atributos ou talentos. Nenhuma build inteira é montada sozinha.';
+    boost.dataset.tip = 'Preparação: escolha entre farm, equipamento, atributos ou talentos. Nenhuma build inteira é montada sozinha.'; boost.setAttribute('aria-label', 'Preparar equipe');
     boost.innerHTML = '<span><i class="ic ic-bolt"></i></span><b>PREPARAR</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
     const banner = document.createElement('div'); banner.id = 'afk-banner'; banner.hidden = true; document.querySelector('#viewport')?.appendChild(banner);
     this.el.afk = afk; this.el.boost = boost; this.el.afkBanner = banner;
@@ -70,8 +70,8 @@
     const on = !!this.state.settings.afk, b = this.el.afkBanner, village = this.engine.zone?.kind === 'village';
     this.el.afk.classList.toggle('active', on); this.el.afk.querySelector('b').textContent = on ? 'ON' : 'OFF';
     this.el.afk.hidden = village;
-    // Durante o AFK ele controla AUTO e AVANÇO: os dois saem da tela para não confundir.
-    ['#auto-btn', '#advance-btn'].forEach(id => { const x = document.querySelector(id); if (x) x.classList.toggle('afk-hide', on); });
+    // Durante o AFK ele controla o comando e o avanço: os botões saem da tela para não confundir.
+    ['#mode-btn', '#advance-btn', '#guard-btn'].forEach(id => { const x = document.querySelector(id); if (x) x.classList.toggle('afk-hide', on); });
     const hint = this.engine.optimizeHint(); this.el.boost.querySelector('.ctl-dot').hidden = !hint.any;
     this.el.boost.classList.toggle('pulse', hint.any && !on);
     document.body.classList.toggle('afk-on', on && !village);

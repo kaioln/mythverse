@@ -3,7 +3,7 @@
 
   // Vozes originais em arquivos locais; áudio só após interação, sem credenciais no cliente.
   class SoundEngine {
-    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.eventIndex = {}; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); this.combatIndex = fetch('assets/audio/combat/index.json' + (KT.VERSION ? '?v=' + KT.VERSION : '')).then(r => r.ok ? r.json() : null).then(index => { this.eventIndex = index?.events || {}; return index?.heroes || {}; }).catch(() => ({})); }
+    constructor() { this.ctx = null; this.enabled = false; this.master = null; this.music = null; this.musicTimer = 0; this.scene = 'city'; this.last = {}; this.voices = new Map(); this.buffers = new Map(); this.musicSources = new Set(); this.fxSources = new Set(); this.voiceGeneration = 0; this.musicGeneration = 0; this.eventIndex = {}; this.voiceIndex = fetch('assets/audio/voices/index.json').then(r => r.ok ? r.json() : []).then(ids => new Set(ids)).catch(() => new Set()); this.manifest = {}; this.combatIndex = fetch('assets/audio/combat/index.json' + (KT.VERSION ? '?v=' + KT.VERSION : '')).then(r => r.ok ? r.json() : null).then(index => { this.manifest = index || {}; this.eventIndex = index?.events || {}; return index?.heroes || {}; }).catch(() => ({})); }
     musicVolume() { return this.scene === 'city' ? .24 : .16; }
     async enable(on) {
       this.enabled = on;
@@ -68,37 +68,72 @@
     }
     stopMusic() { this.musicGeneration++; clearTimeout(this.musicTimer); this.musicTimer = 0; for (const source of this.musicSources) source.stop(); this.musicSources.clear(); }
     stopFx() { for (const source of this.fxSources) source.stop(); this.fxSources.clear(); }
+    // Deixa na memória os sons de quem está em campo: golpes e vozes dos heróis, a família de cada monstro, os eventos.
     async prepare(units) {
       if (!this.enabled || !this.ctx) return;
-      const index = await this.combatIndex;
-      const urls = new Set(units.flatMap(u => { const profile = index[u.sprite]; return profile ? ['attack','skill','ult'].map(event => `assets/audio/combat/${profile[event]}`) : []; }));
-      Object.values(this.eventIndex).forEach(file => urls.add(`assets/audio/combat/${file}`));
+      const index = await this.combatIndex, M = this.manifest, urls = new Set();
+      const add = file => { if (file) urls.add(`assets/audio/combat/${file}`); };
+      units.forEach(u => {
+        const hero = index[u.sprite];
+        if (hero) { ['attack','skill','ult'].forEach(event => add(hero[event])); Object.values(M.voices?.[u.sprite] || {}).forEach(add); return; }
+        const c = M.creatures?.[u.sprite];
+        if (c) { Object.values(M.families?.[c[0]] || {}).forEach(add); Object.values(M.bosses?.[u.sprite] || {}).forEach(add); }
+      });
+      Object.values(this.eventIndex).forEach(add);
       for (const key of this.buffers.keys()) if (key.startsWith('assets/audio/combat/') && !urls.has(key)) this.buffers.delete(key);
       await Promise.all([...urls].map(url => this.buffer(url)));
     }
-    async combat(fx, unit) {
-      if (!this.enabled || !this.ctx || this.scene === 'city') return;
-      const generation = this.musicGeneration, index = await this.combatIndex;
-      if (generation !== this.musicGeneration || !this.enabled) return;
-      const hero = ['attack','cast'].includes(fx.type) && (unit?.side === 'hero' || unit?.template?.base || (!unit?.side && index[unit?.sprite]));
-      const event = hero ? fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill' : fx.type === 'attack' ? 'enemyAttack' : fx.type === 'cast' ? 'enemyCast' : fx.type;
-      const file = hero ? index[unit.sprite]?.[event] : this.eventIndex[event];
-      const priority = ['ult','bossBurst','bossWindup'].includes(event) ? 2 : ['skill','enemyCast','heal'].includes(event) ? 1 : 0;
-      if (!file || !this.throttle(`combat:${event === 'bossWindup' ? 'field' : unit?.uid || unit?.sprite || 'field'}:${event}`, event === 'bossWindup' ? 1200 : event === 'attack' ? 130 : 200)) return;
-      const buffer = await this.buffer(`assets/audio/combat/${file}`);
+    // Toca um arquivo de efeito. Cada execução sai um pouco diferente (tom e volume) para nada soar repetido.
+    async play(file, o = {}) {
+      if (!file || !this.enabled || !this.ctx || (this.scene === 'city' && !o.ui)) return;
+      if (o.key && !this.throttle(o.key, o.every || 150)) return;
+      const generation = this.musicGeneration, buffer = await this.buffer(`assets/audio/combat/${file}`);
       if (!buffer || generation !== this.musicGeneration || !this.enabled) return;
-      if (this.fxSources.size >= 8) {
-        const victim = [...this.fxSources].find(s => (s.priority || 0) < priority);
+      const priority = o.priority || 0;
+      if (this.fxSources.size >= 10) {
+        const victim = [...this.fxSources].find(src => (src.priority || 0) < priority);
         if (!victim) return;
         victim.stop(); this.fxSources.delete(victim);
       }
-      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain();
+      const source = this.ctx.createBufferSource(), gain = this.ctx.createGain(), vary = o.vary ?? .035;
       source.buffer = buffer; source.priority = priority;
-      gain.gain.value = hero ? event === 'attack' ? .24 : event === 'skill' ? .4 : .55 : ({enemyAttack:.16,enemyCast:.24,damage:.13,crit:.2,heal:.22,death:.13,bossWindup:.3,bossBurst:.45,burst:.32,reward:.12,loot:.15,levelUp:.25,victory:.3}[event] || .2);
+      if (source.playbackRate) source.playbackRate.value = (o.rate || 1) * (1 + (Math.random() * 2 - 1) * vary);
+      gain.gain.value = (o.gain ?? .2) * (.92 + Math.random() * .16);
       const pan = this.ctx.createStereoPanner?.();
-      if (pan) { pan.pan.value = [-.35,-.12,.12,.35][unit?.slot] || 0; source.connect(gain); gain.connect(pan); pan.connect(this.master); }
+      if (pan) { pan.pan.value = o.pan || 0; source.connect(gain); gain.connect(pan); pan.connect(this.master); }
       else { source.connect(gain); gain.connect(this.master); }
       this.fxSources.add(source); source.onended = () => { this.fxSources.delete(source); source.disconnect(); gain.disconnect(); pan?.disconnect(); }; source.start();
+      if (o.duck) this.duck(o.duck);
+    }
+    // Abaixa a trilha por um instante para o golpe grande respirar.
+    duck(seconds = .7) {
+      if (!this.music || this.speaker) return;
+      this.music.gain.value = this.musicVolume() * .45;
+      clearTimeout(this.duckTimer); this.duckTimer = setTimeout(() => { if (this.music && !this.speaker) this.music.gain.value = this.musicVolume(); }, seconds * 1000);
+    }
+    event(name, o = {}) { return this.play(this.eventIndex[name], { gain:EVENT_GAIN[name] || .2, ...o }); }
+    // Sons de um golpe: o efeito da arma ou da família, e por cima a voz de quem ataca (nem sempre, para não cansar).
+    async combat(fx, unit) {
+      if (!this.enabled || !this.ctx || this.scene === 'city') return;
+      const index = await this.combatIndex, M = this.manifest;
+      const hero = ['attack','cast'].includes(fx.type) && (unit?.side === 'hero' || unit?.template?.base || (!unit?.side && index[unit?.sprite])) && index[unit?.sprite];
+      const who = unit?.uid || unit?.sprite || 'field';
+      if (hero) {
+        const event = fx.type === 'attack' ? 'attack' : fx.ult ? 'ult' : 'skill', pan = unit.side === 'enemy' ? .3 : ([-.35,-.12,.12,.35][unit?.slot] || 0), voice = M.voices?.[unit.sprite] || {};
+        const main = this.play(hero[event], { gain:event === 'attack' ? .26 : event === 'skill' ? .4 : .55, pan, priority:event === 'ult' ? 2 : event === 'skill' ? 1 : 0, key:`combat:${who}:${event}`, every:event === 'attack' ? 130 : 200, duck:event === 'ult' ? 1.1 : 0 });
+        if (event === 'ult') this.play(voice.u || voice.b, { gain:.5, pan, priority:2, vary:.01, key:`voice:${who}:u`, every:1500 });
+        else if (event === 'skill') this.play(voice.b, { gain:.34, pan, priority:1, vary:.03, key:`voice:${who}:b`, every:2500 });
+        else if (Math.random() < .3) this.play(voice.a, { gain:.26, pan, vary:.04, key:`voice:${who}:a`, every:2200 });
+        return main;
+      }
+      const c = M.creatures?.[unit?.sprite], fam = c && M.families?.[c[0]], rate = c ? c[1] : 1, pan = unit?.side === 'enemy' ? .3 : 0;
+      if (fx.type === 'attack' || fx.type === 'enemyAttack') {
+        const main = this.play(fam?.attack || this.eventIndex.enemyAttack, { gain:.24, rate, pan, key:`combat:${who}:attack`, every:130 });
+        if (fam?.voice && Math.random() < .35) this.play(fam.voice, { gain:.24, rate, pan, vary:.05, key:`voice:${who}`, every:2600 });
+        return main;
+      }
+      if (fx.type === 'cast') { const main = this.play(fam?.cast || this.eventIndex.enemyCast, { gain:.3, rate, pan, priority:1, key:`combat:${who}:cast`, every:200 }); if (fam?.voice && Math.random() < .5) this.play(fam.voice, { gain:.26, rate, pan, key:`voice:${who}`, every:2600 }); return main; }
+      return this.event(fx.type, { key:`combat:${fx.type === 'bossWindup' ? 'field' : who}:${fx.type}`, every:fx.type === 'bossWindup' ? 1200 : 200, priority:['bossBurst','bossWindup'].includes(fx.type) ? 2 : fx.type === 'heal' ? 1 : 0 });
     }
     throttle(key, ms) { const now = performance.now(); if (now - (this.last[key] || 0) < ms) return false; this.last[key] = now; return true; }
     tone(freq = 320, dur = .08, type = 'sine', gain = .05, slide = 0, delay = 0, bus = null) {
@@ -119,20 +154,55 @@
     chord(freqs, step = .07, type = 'triangle', gain = .045) { freqs.forEach((f, i) => this.tone(f, .22, type, gain, 0, i * step)); }
     fx(fx, unit) {
       if (!fx || !this.enabled) return;
+      const M = this.manifest, c = M.creatures?.[unit?.sprite], fam = c && M.families?.[c[0]], rate = c ? c[1] : 1, boss = M.bosses?.[unit?.sprite], who = unit?.uid || 'field';
       switch (fx.type) {
-        case 'attack': this.combat(fx, unit); break;
-        case 'damage': if (fx.side === 'hero' && fx.kind !== 'dot' && this.throttle('hurt', 130)) this.combat(fx, unit); else if (fx.crit && this.throttle('crit', 150)) this.combat({...fx,type:'crit'},unit); break;
-        case 'cast': this.combat(fx, unit); break; // Vozes das skills desativadas por enquanto.
-        case 'bossWindup': this.combat(fx, unit); if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`); break;
+        case 'attack': case 'enemyAttack': case 'cast': this.combat(fx, unit); break; // a chamada falada da ultimate vai junto com o golpe
+        case 'damage':
+          if (fx.kind === 'dot') break;
+          if (fx.side === 'hero') {
+            if (this.throttle('hurt', 130)) this.event(unit?.cls === 'Vanguarda' ? 'damagePlate' : 'damage', { pan:[-.35,-.12,.12,.35][unit?.slot] || 0 });
+            const voice = M.voices?.[unit?.sprite]?.h; if (voice && Math.random() < .3) this.play(voice, { gain:.26, vary:.04, key:`voice:${who}:h`, every:2600 });
+          } else {
+            if (fx.crit && this.throttle('crit', 150)) this.event('crit', { pan:.3 });
+            const hurt = boss?.hurt || fam?.hurt; if (hurt && (fx.crit || fx.kind === 'ult' || Math.random() < .14)) this.play(hurt, { gain:.24, rate:boss ? 1 : rate, pan:.3, vary:.05, key:`voice:${who}:hurt`, every:boss ? 3200 : 1800 });
+          }
+          break;
+        case 'bossWindup':
+          this.combat(fx, unit);
+          if (boss?.roar || fam?.voice) this.play(boss?.roar || fam.voice, { gain:.42, rate:boss ? 1 : rate * .9, pan:.3, priority:2, key:`roar:${who}`, every:2500, duck:1 });
+          if (unit && this.throttle(`voice:${unit.sprite}`, 24000)) this.voice(`boss-${unit.sprite}`);
+          break;
         case 'burst': if (unit?.side !== 'hero' && !unit?.template?.base) this.combat(fx, unit); break;
-        case 'heal': case 'death': case 'bossBurst': case 'levelUp': case 'reward': this.combat(fx, unit); break;
+        case 'death': this.play(boss?.death || fam?.death || this.eventIndex.death, { gain:fx.boss ? .5 : .22, rate:boss ? 1 : rate, pan:.3, priority:fx.boss ? 2 : 0, key:`death:${who}`, every:300, duck:fx.boss ? 1.4 : 0 }); break;
+        case 'heal': case 'levelUp': case 'reward': this.combat(fx, unit); break;
+        case 'bossBurst': this.event('bossBurst', { priority:2, key:'bossBurst', every:400, duck:1 }); break;
+        case 'parry': this.event('parry', { priority:2, duck:1.2 }); break;
+        case 'break': this.event('break', { priority:2, pan:.3, duck:.9 }); break;
+        case 'finale': this.event('finale', { priority:2, duck:1.6 }); break;
+        case 'chain': this.event('chain', { priority:1, rate:1 + Math.min(4, (fx.n || 2) - 2) * .06, vary:0 }); break;
+        case 'strike': this.event('strike', { priority:2, key:'strike', every:500 }); break;
+        case 'guard': case 'defend': case 'dodge': case 'shield': case 'revive': case 'heroDown': this.event(fx.type, { priority:1, key:`ev:${fx.type}:${who}`, every:160 }); break;
+        case 'guardHit': this.event('guardHit', { key:'guardHit', every:120 }); break;
+        case 'turn': this.event('turn', { key:'turn', every:300 }); break;
+        case 'spawn': this.event('spawn', { key:'spawn', every:600, pan:.3 }); break;
+        case 'potion': case 'elixir': this.potion(fx.type); break;
       }
     }
-    loot() { this.combat({type:'loot'}); }
-    victory() { this.combat({type:'victory'}); }
+    loot() { this.event('loot', { key:'loot', every:180 }); }
+    victory() { this.event('victory', { priority:2, key:'victory', every:1500, duck:1.5 }); }
+    defeat() { this.event('defeat', { priority:2, key:'defeat', every:1500, duck:1.5 }); }
     warn() { this.combat({type:'bossWindup'}); }
-    summon(r) { const n = { legendary:[523, 659, 784, 1047, 1319, 1568], epic:[523, 659, 784, 1047, 1319], rare:[523, 659, 784, 1047] }[r] || [523, 659, 784]; this.chord(n, .08, 'triangle', .045); }
+    potion(kind) { this.event(kind === 'elixir' ? 'elixir' : 'potion', { priority:1, key:'potion', every:300 }); }
+    // Passos da equipe indo para a próxima onda.
+    step() { if (this.throttle('step', 285)) this.event(`step${Math.floor(Math.random() * 4)}`, { vary:.06 }); }
+    // Interface: toque, confirmação, recusa, painel abrindo e fechando. Toca também na cidade.
+    ui(name) { this.play(this.eventIndex[name], { gain:EVENT_GAIN[name] || .16, ui:true, vary:.02, key:`ui:${name}`, every:70 }); }
+    summon() { this.play(this.eventIndex.summon, { gain:.36, ui:true, vary:0, priority:2, key:'summon', every:800 }); }
   }
+  // Volume de cada evento na mesa (os arquivos já saem nivelados; isto é o lugar de cada um na mistura).
+  const EVENT_GAIN = { enemyAttack:.2, enemyCast:.26, damage:.16, damagePlate:.18, crit:.24, heal:.24, death:.2, bossWindup:.34, bossBurst:.5, burst:.3, reward:.14, loot:.17, levelUp:.28, victory:.34, defeat:.32,
+    guard:.3, guardHit:.3, parry:.56, dodge:.2, break:.5, defend:.26, turn:.14, strike:.36, shield:.24, heroDown:.34, revive:.3, spawn:.18, potion:.26, elixir:.26, chain:.3, finale:.56,
+    step0:.07, step1:.07, step2:.07, step3:.07, uiClick:.14, uiConfirm:.18, uiDeny:.16, uiOpen:.13, uiClose:.12, summon:.36 };
 
   // Caixa de diálogo simples (também usada antes de a interface existir).
   function askBox(title, text, buttons) {
@@ -144,6 +214,8 @@
     });
   }
   KT.askBox = askBox;
+  // Tela de carregamento: volta a aparecer (com o que está acontecendo) sempre que o jogo ainda não está pronto.
+  KT.bootLabel = text => { const el = document.querySelector('#boot'); if (!el) return; el.classList.remove('done'); const l = el.querySelector('#boot-label'); if (l && text) l.textContent = text; };
 
   // Decide de onde vem o save: nuvem (conta) ou navegador (modo offline).
   // Online, o estado vem sempre do servidor (fonte única da verdade): não existe mais conflito
@@ -177,7 +249,9 @@
   async function resolveNeon() {
     const user = await KT.Auth.requireUser('neon');
     KT.State.setSaveKey(`${KT.State.SAVE_KEY}:neon:${user.id}`);
+    KT.bootLabel('Acertando o relógio de Tsukimori…');
     await KT.Neon.syncClock().catch(() => false);
+    KT.bootLabel('Carregando seu progresso…');
     const data = await KT.Neon.loadSave();
     const state = data ? KT.State.mergeState(data) : KT.State.createState();
     if (!data) state.player.name = String(user.username || 'Viajante').slice(0, 20);
@@ -193,9 +267,9 @@
       const state = session.state;
       // Desenvolvimento (arquivo local ou localhost com ?devseed=1): save de teste com equipe nível 80 e tutorial visto,
       // para conferir telas em vários tamanhos. Nunca roda no site publicado.
-      if ((location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) && new URLSearchParams(location.search).has('devseed') && !state.collection.length) {
+      if ((location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) && new URLSearchParams(location.search).has('devseed') && (!state.collection.length || new URLSearchParams(location.search).has('devlvl'))) {
         const ids = (new URLSearchParams(location.search).get('devseed') || '').split(',').filter(id => KT.Data.roster.some(t => t.id === id));
-        state.collection = (ids.length ? ids : ['erik', 'akira', 'warden', 'aurelia']).map(id => Object.assign(KT.State.newHeroRecord(KT.Data.roster.find(t => t.id === id), 'epic'), { level:80 }));
+        state.collection = (ids.length ? ids : ['erik', 'akira', 'warden', 'aurelia']).map(id => Object.assign(KT.State.newHeroRecord(KT.Data.roster.find(t => t.id === id), 'epic'), { level:Number(new URLSearchParams(location.search).get('devlvl')) || 80 }));
         state.formation = state.collection.slice(0, 4).map(h => h.uid);
         Object.assign(state.player, { gold:14.6e6, crystal:993, keys:80, level:56, name:'Teste' });
         state.story.seen.intro = state.story.seen.team = true; state.starterRolls = 0;
@@ -204,26 +278,32 @@
       }
       const assets = new KT.AssetBank();
       const engine = new KT.CombatEngine(state, {});
+      engine.cinematic = true;   // ao vivo: uma ação por vez, com a pausa de cada animação (src/engine.js BEAT)
       // No modo Neon o AFK só conta com a hora do banco (relógio do aparelho pode ser adiantado).
       const offline = session.mode === 'cloud' ? session.offline : session.mode === 'neon' && !KT.Clock.trusted ? null : engine.offlineGains();
       const renderer = new KT.GameRenderer(document.querySelector('#game-canvas'), assets, engine);
       const sound = new SoundEngine();
       const ui = new KT.UIController(state, engine, assets, renderer, {
         sound:on => sound.enable(on), warn:() => sound.warn(), victory:() => sound.victory(),
-        summon:r => sound.summon(r), reward:() => sound.chord([784, 988, 1175], .05, 'sine', .04), click:() => sound.tone(660, .05, 'triangle', .03)
+        summon:r => sound.summon(r), reward:() => sound.ui('uiConfirm'), click:() => sound.ui('uiClick')
       });
       ui.session = session; ui.ask = askBox;
+      // Interface com som: todo botão responde ao toque; os painéis abrem e fecham como papel deslizando.
+      document.addEventListener('click', e => { if (e.target.closest?.('button, .action, [data-open], [role="tab"]')) sound.ui('uiClick'); }, true);
+      { const open0 = ui.openPanel?.bind(ui), close0 = ui.closeModal?.bind(ui);
+        if (open0) ui.openPanel = (...a) => { if (ui.el.modal.hidden) sound.ui('uiOpen'); return open0(...a); };
+        if (close0) ui.closeModal = (...a) => { if (!ui.el.modal.hidden) sound.ui('uiClose'); return close0(...a); }; }
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
-      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const f = new URLSearchParams(location.search).get('devfight'); if (f && KT.Data.zones[f]) setTimeout(() => { engine.enterZone(f, { stage:1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
+      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const q = new URLSearchParams(location.search), f = q.get('devfight'); if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
-        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare(engine.party); }, onPhase:p => ui.onPhase(p),
+        onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); sound.fx({ type:'spawn' }); }, onPhase:p => ui.onPhase(p),
         onLoot:item => { ui.onLoot(item); sound.loot(item); }, onCard:c => { ui.onCard(c); sound.loot(); },
         onLog:p => ui.onLog(p), onFx:fx => { renderer.emit(fx); const uid = fx.source || fx.uid; sound.fx(fx, engine.party.find(u => u.uid === uid) || engine.enemies.find(u => u.uid === uid)); },
         onToast:t => ui.toast(t), onWarn:t => ui.onWarn(t),
         onResult:r => ui.onResult(r), onResultClose:() => ui.onResultClose(),
         onChoice:c => ui.onChoice(c), onChoiceResolved:c => ui.onChoiceResolved(c), onStuck:p => ui.onStuck(p), onDialog:l => ui.onDialog(l),
-        onStageClear:r => ui.onStageClear(r), onDefeatHunt:r => ui.onDefeatHunt(r),
+        onStageClear:r => ui.onStageClear(r), onDefeatHunt:r => { ui.onDefeatHunt(r); sound.defeat(); },
         onAccountLevel:l => ui.onAccountLevel(l),
         onState:() => { ui.renderResources(); ui.renderSide(); }
       };
@@ -277,16 +357,19 @@
       let booted = false;
       const ready = () => {
         if (booted) return; booted = true;
+        ui.renderAll(); renderer.render();
+        document.body.classList.remove('booting');
         bootEl.classList.add('done'); setTimeout(() => bootEl.remove(), 700);
-        ui.renderAll();
         if (session.mode === 'offline') ui.toast(location.protocol === 'file:' ? '<b>Modo offline</b>: progresso salvo só neste navegador. Rode o servidor para contas e saves na nuvem.' : 'Servidor indisponível: jogando no <b>modo offline</b>.');
         if (session.mode === 'cloud' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica protegido no servidor.`, 'gold');
         if (session.mode === 'neon' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica salvo na sua conta.`, 'gold');
         if (!state.story.seen.intro) { ui.cmd('markSeen', 'intro'); ui.onDialog(KT.Data.story.intro); }
         if (offline) ui.showOffline(offline);
       };
-      assets.loadAll().then(ready);
-      setTimeout(ready, 9000);
+      // Só abre quando os sprites e a cidade (arte, moradores e a equipe andando) já estão na memória: nada de palco
+      // preto nem de personagens aparecendo aos poucos. Se a rede estiver lenta demais, abre assim mesmo em 12 s.
+      Promise.all([assets.loadAll(), renderer.townPreload()]).then(ready);
+      setTimeout(ready, 12000);
 
       const savedZone = state.zone && KT.Data.zones[state.zone] ? state.zone : 'village';
       const reenter = KT.Data.zones[savedZone].kind === 'hunt' ? savedZone : savedZone === 'village' ? 'village' : state.lastHunt;
@@ -297,9 +380,10 @@
       let last = performance.now(), uiClock = 0, slowClock = 0, saveClock = 0;
       function frame(now) {
         const dt = Math.min(.06, (now - last) / 1000 || 0); last = now;
-        if (renderer.hitstop <= 0) engine.update(dt);
+        if (renderer.hitstop <= 0 && !(renderer.freeze > 0)) engine.update(dt);
         renderer.update(dt); renderer.render();
         uiClock += dt; slowClock += dt; saveClock += dt;
+        if (engine.active && engine.phase === 'between') sound.step();
         if (uiClock > .08) { uiClock = 0; ui.renderParty(); ui.renderBoss(); }
         if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); ui.renderChoiceTimer(); }
         if (saveClock > 5) { saveClock = 0; engine.save(); }

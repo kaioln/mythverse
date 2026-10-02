@@ -75,6 +75,7 @@
       this.vis = new Map(); this.flashCache = new Map(); this.glowCache = new Map(); this.portraits = new Map();
       this.worldTime = 0; this.shake = 0; this.hitstop = 0; this.screenFlash = null; this.banner = null; this.cutin = null;
       this.zoneId = null; this.zoneFade = 1; this.scale = 1; this.hotspots = []; this.hoverEnemy = null; this.lastCaster = null;
+      this.cam = { z:1, tz:1, x:W / 2, y:H * .62, tx:W / 2, ty:H * .62, hold:0 }; this.freeze = 0;
       this.resize();
       if (globalThis.ResizeObserver) new ResizeObserver(() => this.resize()).observe(canvas);
       addEventListener('resize', () => this.resize());
@@ -89,13 +90,27 @@
       const w = Math.round(rect.width * dpr), h = Math.round(rect.width * dpr * H / this.view.w);
       if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
       this.scale = w / this.view.w;
+      this.css = rect.width / this.view.w;   // px de tela por unidade da cena (texto e balões da cidade se ajustam a isto)
     }
-    toLogical(cx, cy) { const r = this.canvas.getBoundingClientRect(), v = this.view || VIEW_L; return { x:v.x + (cx - r.left) / r.width * v.w, y:(cy - r.top) / r.height * H }; }
+    toLogical(cx, cy) {
+      const r = this.canvas.getBoundingClientRect(), v = this.view || VIEW_L, cm = this.cam;
+      let x = v.x + (cx - r.left) / r.width * v.w, y = (cy - r.top) / r.height * H;
+      if (cm && cm.z !== 1 && this.engine.zone.kind !== 'village') { x = cm.x + (x - cm.x) / cm.z; y = cm.y + (y - cm.y) / cm.z; }
+      return { x, y };
+    }
+    // Desafio de tempo do Aparo: 1 = guarda no anel dourado, 0 = fora dele, null = não há golpe em andamento.
+    qteQuality() {
+      const q = this.qte; if (!q || q.result !== null || q.t > q.dur) return null;
+      const k = q.t / q.dur; q.result = k >= .56 && k <= .96 ? 1 : 0; q.early = k < .56;
+      return q.result;
+    }
+    // Câmera de luta: aproxima de leve do que importa (ultimate, quebra, aparo) e volta sozinha.
+    punch(z, x, y, hold = .5) { const cm = this.cam; if (cm.hold > 0 && z < cm.tz) return; cm.tz = z; cm.tx = U.clamp(x, 360, 920); cm.ty = U.clamp(y, 330, 560); cm.hold = hold; }
     // No enquadramento em pé a formação se aproxima do centro para caber na janela.
     squeeze(p) { return this.view?.x ? { ...p, x:640 + (p.x - 640) * .8 } : p; }
 
     // ---------- atores ----------
-    v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0, clip:null, clipAt:0, combo:0 }; this.vis.set(uid, s); } return s; }
+    v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0, clip:null, clipAt:0, combo:0, guardHit:0 }; this.vis.set(uid, s); } return s; }
     unit(uid) { return this.engine.party.find(u => u.uid === uid) || this.engine.enemies.find(u => u.uid === uid); }
     heroPos(u) { return this.squeeze(HERO_POS[u.slot] || HERO_POS[0]); }
     enemyPos(u) {
@@ -122,26 +137,40 @@
       if (t === 'hitstop') { if (this.intense) this.hitstop = Math.max(this.hitstop, fx.time || .05); return; }
       if (t === 'attack') {
         const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
-        const ranged = RANGED.has(fx.role);
-        if (a.u.side === 'hero' || a.u.boss) this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][this.v(fx.source).combo++ % 3]);
-        this.v(fx.source).lunge = { t:0, dur:ranged ? .34 : .3, dx:ranged ? 16 : (b.x - a.x) * .42, dy:ranged ? -6 : (b.y - a.y) * .42, hop:ranged };
-        if (ranged) this.launch(a, b, a.u);
-        else this.later(.12, () => { this.particles.push({ kind:'slash', x:b.x, y:b.y - b.h * .5, color:fx.color || '#fff', life:.26, max:.26, rot:U.rand(-.6, .6), size:1 }); });
+        const ranged = RANGED.has(fx.role), sv = this.v(fx.source);
+        this.playClip(fx.source, ['attack1', 'attack2', 'attack3'][sv.combo++ % 3]);
+        if (ranged) { sv.lunge = { t:0, dur:.34, dx:16, dy:-6, hop:true }; this.launch(a, b, a.u); return; }
+        // Corpo a corpo: o herói cruza o campo até o alvo, golpeia e volta num salto (nada de bater de longe).
+        const reach = b.h * .3 + 54;
+        sv.lunge = { t:0, dur:.5, dx:(b.x - a.x) - reach, dy:(b.y - a.y) * .9, dash:true };
+        for (let i = 0; i < 5; i++) this.particles.push({ kind:'spark', x:a.x - 10 + U.rand(-14, 14), y:a.y - 2, vx:-U.rand(40, 150), vy:-U.rand(10, 70), color:'#d8c7a8', life:U.rand(.2, .4), max:.4, size:U.rand(2, 3.5) });
+        this.later(.12, () => { this.particles.push({ kind:'slash', x:b.x, y:b.y - b.h * .5, color:fx.color || '#fff', life:.26, max:.26, rot:U.rand(-.6, .6), size:1 }); });
         return;
       }
-      if (t === 'enemyAttack') { const a = this.posOf(fx.source), b = this.posOf(fx.target); if (a && b) this.v(fx.source).lunge = { t:0, dur:.32, dx:(b.x - a.x) * .3, dy:(b.y - a.y) * .3 }; return; }
+      if (t === 'enemyAttack') {
+        const a = this.posOf(fx.source), b = this.posOf(fx.target); if (!a || !b) return;
+        const sv = this.v(fx.source); this.playClip(fx.source, ['attack1', 'attack2'][sv.combo++ % 2]);
+        // Espíritos de fogo atiram de longe; os outros avançam sobre o alvo (chefes só inclinam o corpo, são grandes demais).
+        if (this.enemyFamily(a.u.sprite) === 'wisp') { sv.lunge = { t:0, dur:.34, dx:-14, dy:-6, hop:true }; this.launch(a, b, a.u); return; }
+        const k = a.u.boss ? .22 : a.u.miniboss ? .4 : .62, dist = (b.x - a.x) + (b.h * .3 + 50);
+        sv.lunge = { t:0, dur:a.u.boss ? .42 : .46, dx:Math.max(-430, dist * k), dy:(b.y - a.y) * k, dash:!a.u.boss };
+        this.later(.12, () => { this.particles.push({ kind:'slash', x:b.x, y:b.y - b.h * .5, color:D.elements[a.u.el]?.color || '#ffb0b8', life:.22, max:.22, rot:Math.PI + U.rand(-.6, .6), size:.85 }); });
+        return;
+      }
       if (t === 'damage') {
         const p = this.posOf(fx.uid); if (!p) return;
         const hero = fx.side === 'hero', dot = fx.kind === 'dot';
         const delay = fx.kind === 'basic' ? .12 : 0;
         this.later(delay, () => {
           if (!dot) this.hitActor(fx.uid, hero ? -1 : 1, fx.crit ? .9 : .55);
-          // Herói reage a cada golpe; chefe só a críticos/golpes fortes e no máximo a cada 2,5 s (senão fica preso na pose de dano).
-          const bu = !hero && this.unit(fx.uid)?.boss && this.unit(fx.uid);
-          if (!dot && (hero || bu)) {
+          // Herói reage a cada golpe (menos com a guarda erguida); monstro comum, no máximo a cada 0,3 s; chefe só a críticos
+          // e golpes fortes, a cada 2,5 s (senão fica preso na pose de dano).
+          const tu = this.unit(fx.uid), bu = !hero && tu?.boss && tu;
+          if (!dot && tu) {
             const vs = this.v(fx.uid), cs = vs.clip, big = fx.crit || fx.kind === 'ult' || (bu && fx.value > bu.maxHp * .03);
-            const free = !cs || cs === 'idle' || cs === 'run' || (hero && cs === 'hit');
-            if (hero ? free : free && big && this.worldTime - (vs.hitAt || -9) > 2.5) { vs.hitAt = this.worldTime; this.playClip(fx.uid, 'hit'); }
+            const free = !cs || cs === 'idle' || cs === 'run' || cs === 'hit', gap = this.worldTime - (vs.hitAt || -9);
+            const guarding = hero && this.engine.guardT > 0;
+            if (free && !guarding && (hero ? true : bu ? big && gap > 2.5 : gap > .3)) { vs.hitAt = this.worldTime; this.playClip(fx.uid, 'hit'); }
           }
           const color = fx.color || (hero ? '#ff6b6b' : fx.crit ? '#ffd76a' : '#ffffff');
           this.number(p.x + U.rand(-26, 26), p.y - p.h - 8, fx.value, color, fx.crit, hero, dot);
@@ -170,7 +199,9 @@
         this.playClip(fx.source, fx.ult ? 'ult' : 'cast');
         this.ring(p.x, p.y, fx.color, fx.ult ? 150 : 90);
         this.text(p.x, p.y - p.h - 34, fx.name, fx.enemy ? '#ffb0b8' : fx.color, fx.ult ? 22 : 18, 1.1);
-        if (fx.ult) { const u = this.unit(fx.source); this.cutin = { t:0, dur:fx.manual ? 1.1 : .8, unit:u, color:fx.color, name:fx.name, manual:fx.manual }; this.screenFlash = { color:fx.color, t:.2, max:.2 }; }
+        if (fx.ult) { const u = this.unit(fx.source); this.cutin = { t:0, dur:fx.manual ? 1.1 : .8, unit:u, color:fx.color, name:fx.name, manual:fx.manual }; this.screenFlash = { color:fx.color, t:.2, max:.2 }; this.punch(fx.manual ? 1.06 : 1.035, (p.x + 860) / 2, p.y - 60, fx.manual ? .7 : .45); }
+        // Habilidade comandada pelo jogador: selo de comando e um segundo anel (rende +15%).
+        else if (fx.manual) { this.later(.06, () => this.ring(p.x, p.y, '#fff3c4', 120)); this.sparks(p.x, p.y - p.h * .55, 8, '#fff3c4', 260); this.punch(1.02, (p.x + 860) / 2, p.y - 60, .3); }
         return;
       }
       if (t === 'burst' || t === 'aoe') {
@@ -188,17 +219,49 @@
         return;
       }
       if (t === 'heroDown') { const p = this.posOf(fx.uid); if (p) this.text(p.x, p.y - 40, 'K.O.', '#ff7a7a', 28, 1.4); return; }
+      // Vez de um herói no comando MANUAL: a luta espera a ordem (o destaque é desenhado em drawHero).
+      if (t === 'turn') { const p = this.posOf(fx.uid); if (p) this.ring(p.x, p.y, '#ffe9a8', 80); return; }
+      // Bote de um golpe preparado: o inimigo avança devagar e abre a janela do Aparo (desafio de tempo na tela).
+      if (t === 'strike') {
+        const p = this.posOf(fx.uid), B = KT.State.BEAT;
+        this.qte = { uid:fx.uid, t:0, dur:B.strike, name:fx.name || '', result:null };
+        if (p) { this.playClip(fx.uid, 'attack1'); this.v(fx.uid).lunge = { t:0, dur:B.strike + .3, dx:p.u.boss ? -70 : -160, dy:0, slow:true }; }
+        this.punch(1.04, 520, 540, B.strike);
+        return;
+      }
+      if (t === 'defend') { const p = this.posOf(fx.uid); if (p) { this.ring(p.x + 20, p.y, '#ffe9a8', 64); this.text(p.x, p.y - p.h - 30, 'DEFESA', '#ffe9a8', 16, .9); } return; }
+      // Guarda da equipe: todos erguem a defesa; cada golpe aparado solta faíscas no escudo.
+      if (t === 'guard') { this.engine.party.forEach(u => { if (!u.alive) return; const p = this.posOf(u.uid); this.ring(p.x + 20, p.y, '#ffe9a8', 64); }); return; }
+      if (t === 'guardHit') { const p = this.posOf(fx.uid); this.v(fx.uid).guardHit = .22; if (p) this.sparks(p.x + p.h * .24, p.y - p.h * .5, 6, '#ffe9a8', 260); return; }
+      // Aparo: a guarda subiu no instante do golpe preparado. Pausa curta, clarão, onda de volta no atacante.
+      if (t === 'parry') {
+        this.freeze = .16; this.screenFlash = { color:'#fff3c4', t:.32, max:.32, strong:true }; this.shake = Math.max(this.shake, 10); this.qte = null;
+        this.punch(1.07, 470, 560, .55);
+        this.engine.party.forEach(u => { if (!u.alive) return; const p = this.posOf(u.uid); this.v(u.uid).guardHit = .45; this.ring(p.x + 26, p.y - p.h * .5, '#ffffff', 120, true); this.sparks(p.x + p.h * .24, p.y - p.h * .5, 14, '#fff3c4', 420); });
+        const q = this.posOf(fx.uid);
+        if (q) this.later(.1, () => { this.hitActor(fx.uid, 1, 1); this.impact(q.x, q.y - q.h * .5, '#ffe28a', 1.5); this.ring(q.x, q.y - q.h * .45, '#ffe28a', 150, true); this.sparks(q.x, q.y - q.h * .5, 18, '#ffe9b0', 460); });
+        this.showBanner('APARO!', 'golpe bloqueado no instante certo · energia e postura a favor', '#ffe28a');
+        return;
+      }
+      if (t === 'dodge') {
+        const u = this.unit(fx.uid), p = this.posOf(fx.uid); if (!u || !p) return;
+        const dir = u.side === 'hero' ? -1 : 1; this.playClip(fx.uid, 'dodge');
+        this.v(fx.uid).lunge = { t:0, dur:.36, dx:dir * 46, dy:0, hop:true };
+        for (let i = 0; i < 4; i++) this.particles.push({ kind:'spark', x:p.x + U.rand(-10, 10), y:p.y - 2, vx:-dir * U.rand(60, 160), vy:-U.rand(10, 60), color:'#d8c7a8', life:U.rand(.2, .35), max:.35, size:U.rand(2, 3) });
+        return;
+      }
       if (t === 'levelUp') {
         const p = this.posOf(fx.uid); if (!p) return;
         this.v(fx.uid).level = 1.4; this.text(p.x, p.y - p.h - 44, 'LEVEL UP!', '#ffd76a', 26, 1.6);
         for (let i = 0; i < 22; i++) this.particles.push({ kind:'rise', x:p.x + U.rand(-45, 45), y:p.y - U.rand(0, 20), vy:-U.rand(120, 260), color:'#ffd76a', life:U.rand(.7, 1.3), max:1.3, size:U.rand(2, 4) });
         return;
       }
-      if (t === 'bossWindup') { this.shake = Math.max(this.shake, 4); if (fx.uid) this.playClip(fx.uid, 'ult'); return; }
+      if (t === 'bossWindup') { this.shake = Math.max(this.shake, 4); if (fx.uid) this.v(fx.uid).clip = null; return; }   // a pose de preparo vem do estado (animFrame)
       // Quebra de postura: estilhaços, anel duplo e aviso grande.
       if (t === 'break') {
         const p = this.posOf(fx.uid); if (!p) return;
-        this.v(fx.uid).broken = 1; this.hitstop = Math.max(this.hitstop, .16); this.shake = Math.max(this.shake, 12);
+        this.v(fx.uid).broken = 1; this.hitstop = Math.max(this.hitstop, .16); this.shake = Math.max(this.shake, 12); this.freeze = Math.max(this.freeze, .09);
+        this.punch(1.05, p.x - 120, p.y - p.h * .4, .6);
         this.screenFlash = { color:'#fff1c9', t:.22, max:.22 };
         this.ring(p.x, p.y - p.h * .45, '#ffe28a', 150, true); this.later(.08, () => this.ring(p.x, p.y - p.h * .45, '#ffffff', 220));
         for (let i = 0; i < 26; i++) { const a = U.rand(0, Math.PI * 2), sp = U.rand(220, 520); this.particles.push({ kind:'shard', x:p.x, y:p.y - p.h * .5, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 120, rot:U.rand(0, 6), vr:U.rand(-12, 12), color:i % 3 ? '#ffe9b0' : fx.color || '#ffb35c', life:U.rand(.5, .9), max:.9, size:U.rand(5, 11) }); }
@@ -213,12 +276,13 @@
       }
       if (t === 'finale') {
         this.showBanner('ELO KIZUNA', 'a equipe inteira ataca junta', '#c9472d');
-        this.screenFlash = { color:'#ffd1e8', t:.45, max:.45 }; this.shake = Math.max(this.shake, 20);
+        this.screenFlash = { color:'#ffd1e8', t:.45, max:.45 }; this.shake = Math.max(this.shake, 20); this.punch(1.08, 700, 520, .8);
         this.engine.enemies.forEach(u => { if (!u.alive) return; const q = this.posOf(u.uid); if (q) this.later(.15, () => { this.ring(q.x, q.y - q.h * .4, '#ff7eb6', 170, true); this.sparks(q.x, q.y - q.h * .5, 24, '#ffe1f0', 480); this.impact(q.x, q.y - q.h * .5, '#ff7eb6', 1.8); }); });
         return;
       }
       if (t === 'bossBurst') {
         const p = this.posOf(fx.uid);
+        if (fx.uid) this.playClip(fx.uid, 'burst');
         this.particles.push({ kind:'bosswave', x:p ? p.x - 200 : 700, y:620, color:fx.color || '#ff7a8a', life:.9, max:.9 });
         this.screenFlash = { color:fx.color || '#ff7a8a', t:.35, max:.35 }; this.shake = Math.max(this.shake, 16); this.hitstop = Math.max(this.hitstop, .12);
         return;
@@ -433,8 +497,13 @@
     // ---------- atualização ----------
     update(dt) {
       this.worldTime += dt; this.shake = Math.max(0, this.shake - dt * 40); this.hitstop = this.intense ? Math.max(0, this.hitstop - dt) : 0;
+      this.freeze = Math.max(0, (this.freeze || 0) - dt);
+      if (this.qte) { this.qte.t += dt; if (this.qte.t > this.qte.dur + .45) this.qte = null; }
+      { const cm = this.cam; cm.hold = Math.max(0, cm.hold - dt); if (cm.hold <= 0) cm.tz = 1;
+        cm.z += (cm.tz - cm.z) * Math.min(1, dt * (cm.tz > cm.z ? 9 : 3)); cm.x += (cm.tx - cm.x) * Math.min(1, dt * 8); cm.y += (cm.ty - cm.y) * Math.min(1, dt * 8);
+        if (cm.tz === 1 && Math.abs(cm.z - 1) < .0006) cm.z = 1; }
       if (this.engine.zone.id !== this.zoneId || this.engine.party !== this.lastParty) {
-        if (this.engine.zone.id !== this.zoneId) { this.zoneId = this.engine.zone.id; this.zoneFade = 0; this.particles = []; this.loot = []; this.projectiles = []; this.delayed = []; this.seedAmbient(); }
+        if (this.engine.zone.id !== this.zoneId) { this.zoneId = this.engine.zone.id; this.zoneFade = 0; this.particles = []; this.loot = []; this.projectiles = []; this.delayed = []; this.cam.z = this.cam.tz = 1; this.cam.hold = 0; this.freeze = 0; this.seedAmbient(); }
         this.lastParty = this.engine.party; this.vis.clear();
       }
       this.zoneFade = Math.min(1, this.zoneFade + dt * 2.2);
@@ -442,7 +511,7 @@
       const ready = this.delayed.filter(d => d.t <= 0); this.delayed = this.delayed.filter(d => d.t > 0); ready.forEach(d => d.fn());
       for (const s of this.vis.values()) {
         if (s.lunge) { s.lunge.t += dt; if (s.lunge.t >= s.lunge.dur) s.lunge = null; }
-        s.hit = Math.max(0, s.hit - dt); s.flash = Math.max(0, s.flash - dt); s.cast = Math.max(0, s.cast - dt); s.level = Math.max(0, s.level - dt); s.shieldHit = Math.max(0, s.shieldHit - dt); s.revive = Math.max(0, s.revive - dt);
+        s.hit = Math.max(0, s.hit - dt); s.flash = Math.max(0, s.flash - dt); s.cast = Math.max(0, s.cast - dt); s.level = Math.max(0, s.level - dt); s.shieldHit = Math.max(0, s.shieldHit - dt); s.revive = Math.max(0, s.revive - dt); s.guardHit = Math.max(0, (s.guardHit || 0) - dt);
         if (s.death > 0) s.death += dt;
         s.spawn = Math.min(1, s.spawn + dt * 2.4);
       }
@@ -494,6 +563,7 @@
       c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.canvas.width, this.canvas.height); c.setTransform(this.scale, 0, 0, this.scale, -(this.view?.x || 0) * this.scale, 0);
       c.save();
       if (this.shake > 0 && this.intense) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
+      { const cm = this.cam; if (cm.z !== 1 && this.engine.zone.kind !== 'village') { c.translate(cm.x, cm.y); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y); } }
       this.hotspots = [];
       this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawAmbient(false);
       c.restore();
@@ -508,8 +578,9 @@
       const dx = town ? 0 : Math.sin(this.worldTime * .05) * 10;
       if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
       if (town) {
-        if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/festival-homes.png'; }
-        if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65, 390, 260);
+        if (!this.festivalHomes) { this.festivalHomes = this.assets.image?.('assets/scenes/festival-homes.png'); if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/festival-homes.png'; } }
+        // A ilha das casas do festival é uma camada à parte: sobe e desce devagar, como quem flutua.
+        if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65 + Math.sin(this.worldTime * .42) * 3, 390, 260);
       }
       c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H);
       if (!town) { const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H); }
@@ -517,76 +588,108 @@
       if (z.kind === 'village') this.drawVillageLife();
       if (this.zoneFade < 1) { c.fillStyle = `rgba(8,6,20,${1 - easeOut(this.zoneFade)})`; c.fillRect(0, 0, W, H); }
     }
-    // Cidade viva: luz pela hora de Brasília, lanternas subindo ao céu e vaga-lumes perto do chão.
+    // Cidade viva. A arte é uma pintura parada; por cima dela o jogo acende o que a pintura mostra, nos lugares medidos
+    // em src/town-lights.js: a chama de cada lanterna tremula, a fornalha solta labaredas e fagulhas, as chaminés fumegam,
+    // a água das cachoeiras corre, o mar cintila, as estrelas piscam, lanternas sobem ao céu e o festival solta fogos.
+    softSprite(key, stops) {
+      this.softCache ||= new Map(); let s = this.softCache.get(key); if (s) return s;
+      s = document.createElement('canvas'); s.width = s.height = 64; const g = s.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      stops.forEach(([o, col]) => gr.addColorStop(o, col)); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+      this.softCache.set(key, s); return s;
+    }
     drawVillageLife() {
-      const c = this.ctx, t = this.worldTime;
+      const c = this.ctx, t = this.worldTime, L = KT.TownLights || {};
+      const dt = Math.min(.05, Math.max(0, t - (this.lifeT ?? t))); this.lifeT = t;
       const hour = new Date(this.engine.now() + D.EVENT_TZ_OFFSET_MIN * 60000).getUTCHours();
       const tint = hour >= 7 && hour < 17 ? 'rgba(255,226,180,.07)' : hour >= 17 && hour < 19 ? 'rgba(255,140,90,.13)' : hour >= 5 && hour < 7 ? 'rgba(255,170,200,.1)' : 'rgba(36,34,110,.1)';
       c.fillStyle = tint; c.fillRect(0, 0, W, H);
-      if (!this.skyLanterns) {
-        this.skyLanterns = Array.from({ length:16 }, () => ({ x:U.rand(0, W), y:U.rand(H * .05, H * .95), vy:U.rand(7, 16), ph:U.rand(0, 6), s:U.rand(.55, 1.25) }));
-        this.fireflies = Array.from({ length:34 }, () => ({ x:U.rand(0, W), y:U.rand(H * .5, H * .98), ph:U.rand(0, 6), sp:U.rand(.4, 1.1) }));
-      }
-      const dt = Math.min(.05, t - (this.lifeT ?? t)); this.lifeT = t;
+      const lamp = this.softSprite('lamp', [[0, 'rgba(255,238,196,1)'], [.22, 'rgba(255,198,112,.7)'], [.6, 'rgba(255,150,64,.18)'], [1, 'rgba(255,140,60,0)']]);
+      const puff = col => this.softSprite(`puff${col}`, [[0, `rgba(${col},.9)`], [.5, `rgba(${col},.35)`], [1, `rgba(${col},0)`]]);
+      const blob = (img, x, y, r, a) => { if (a <= .003 || r <= 0) return; c.globalAlpha = Math.min(1, a); c.drawImage(img, x - r, y - r, r * 2, r * 2); };
       c.save(); c.globalCompositeOperation = 'lighter';
-      for (const l of this.skyLanterns) {
-        l.y -= l.vy * dt; if (l.y < -30) { l.y = H + 20; l.x = U.rand(0, W); }
-        const x = l.x + Math.sin(t * .6 + l.ph) * 14 * l.s, y = l.y, s = l.s, fl = .75 + .25 * Math.sin(t * 7 + l.ph * 3);
-        const g = c.createRadialGradient(x, y, 0, x, y, 26 * s); g.addColorStop(0, `rgba(255,190,110,${.42 * fl})`); g.addColorStop(1, 'rgba(255,150,80,0)');
-        c.globalCompositeOperation = 'lighter'; c.fillStyle = g; c.beginPath(); c.arc(x, y, 26 * s, 0, Math.PI * 2); c.fill();
-        c.globalCompositeOperation = 'source-over';
-        c.fillStyle = Math.floor(l.ph)%2 ? `rgba(242,173,195,${.8 * fl})` : `rgba(248,209,158,${.8 * fl})`;
-        this.roundRect(x - 5 * s, y - 7 * s, 10 * s, 13 * s, 3 * s); c.fill();
-        c.strokeStyle='rgba(134,69,66,.45)';c.lineWidth=.6;c.stroke();
-        this.drawSakura(x,y,1.5*s,'rgba(255,241,213,.8)');
+      // Estrelas que cintilam e a lua da cúpula respirando.
+      (L.stars || []).forEach(([x, y], i) => { c.globalAlpha = .18 + .7 * Math.pow(.5 + .5 * Math.sin(t * (.55 + (i % 7) * .21) + i * 1.7), 3); c.fillStyle = i % 5 ? '#dfe9ff' : '#ffe9c4'; c.fillRect(x, y, 1.3, 1.3); });
+      if (L.moon) {
+        const [mx, my, mr] = L.moon; blob(this.softSprite('moon', [[0, 'rgba(190,205,255,.9)'], [.5, 'rgba(120,130,255,.3)'], [1, 'rgba(90,90,255,0)']]), mx, my, mr * (1.25 + .08 * Math.sin(t * .8)), .2 + .05 * Math.sin(t * 1.3));
+        for (let i = 0; i < 7; i++) { const a = t * .12 + i * .9, r = mr * (.25 + (i % 4) * .13); c.globalAlpha = .35 + .55 * Math.pow(.5 + .5 * Math.sin(t * 1.7 + i * 2.1), 2); c.fillStyle = '#eef2ff'; c.fillRect(mx + Math.cos(a) * r, my + Math.sin(a) * r * .9, 1.3, 1.3); }
+      }
+      // Cachoeiras: fios de água descendo e a névoa no pé da queda.
+      const mist = puff('232,242,255');
+      (L.falls || []).forEach(([x0, x1, y0, y1], k) => {
+        const w = x1 - x0, h = y1 - y0, n = Math.round(w * .85); c.fillStyle = 'rgba(226,240,255,1)';
+        for (let i = 0; i < n; i++) {
+          const len = 6 + (i % 4) * 3.5, sp = 46 + (i % 5) * 11, y = y0 + ((t * sp + i * 37 + k * 11) % (h + len)) - len, top = Math.max(y0, y), bot = Math.min(y1, y + len);
+          if (bot <= top) continue; c.globalAlpha = .16 + ((i * 7) % 5) * .035; c.fillRect(x0 + ((i * .6180339 + k * .37) % 1) * w, top, 1.1, bot - top);
+        }
+        for (let i = 0; i < 3; i++) blob(mist, x0 + w / 2 + Math.sin(t * .7 + i * 2.1 + k) * w * .45, y1 + 1 + Math.sin(t * 1.1 + i + k) * 1.5, w * (.7 + .18 * Math.sin(t * .9 + i * 1.7)), .13);
+      });
+      // Mar: reflexos que acendem e apagam.
+      (L.sea || []).forEach(([x, y], i) => { const a = Math.pow(Math.max(0, Math.sin(t * (1 + (i % 5) * .27) + i * 2.3)), 6); if (a < .02) return; c.globalAlpha = a * .7; c.fillStyle = '#ffdca8'; c.beginPath(); c.ellipse(x, y, 2.6, .8, 0, 0, Math.PI * 2); c.fill(); });
+      // Fumaça das chaminés (cinza na Forja, verde e violeta nos alambiques da Oficina).
+      this.smoke ||= (L.smoke || []).map(([x, y, kind, power]) => ({ x, y, kind, power, acc:Math.random(), list:[] }));
+      const SMOKE = { grey:['188,186,198', 'source-over', .2], steam:['236,236,246', 'source-over', .16], green:['150,238,160', 'lighter', .24], violet:['205,140,255', 'lighter', .26] };
+      for (const e of this.smoke) {
+        e.acc += dt * 2.6 * e.power;
+        while (e.acc >= 1) { e.acc -= 1; e.list.push({ x:e.x + U.rand(-1.5, 1.5), y:e.y, vx:U.rand(1, 5), vy:-U.rand(8, 13), age:0, life:U.rand(3.2, 5.2), r:U.rand(2.5, 4), ph:U.rand(0, 6) }); }
+        const [col, mode, alpha] = SMOKE[e.kind] || SMOKE.grey, img = puff(col); c.globalCompositeOperation = mode;
+        e.list = e.list.filter(p => { p.age += dt; if (p.age >= p.life) return false; p.x += (p.vx + Math.sin(p.age * 1.4 + p.ph) * 3) * dt; p.y += p.vy * dt; p.vy *= 1 - dt * .12;
+          blob(img, p.x, p.y, p.r + p.age * 4.2, alpha * e.power * Math.min(1, p.age * 3) * (1 - p.age / p.life)); return true; });
       }
       c.globalCompositeOperation = 'lighter';
+      // Fornalha da Forja: clarão, labaredas e fagulhas.
+      if (L.forge) {
+        const [fx, fy] = L.forge, fl = .8 + .14 * Math.sin(t * 11) + .06 * Math.sin(t * 27);
+        blob(lamp, fx, fy - 4, 30 * fl, .42 * fl);
+        for (let k = 0; k < 5; k++) {
+          const ph = t * (6.5 + k * 1.3) + k * 2.1, hgt = 7 + 4.5 * Math.sin(ph * 1.7) + 2 * Math.sin(ph * 3.1), x = fx + (k - 2) * 2.6 + Math.sin(ph) * 1.2;
+          c.globalAlpha = .34; c.fillStyle = '#ff9a3c'; c.beginPath(); c.ellipse(x, fy - hgt / 2, 2.6, Math.max(1, hgt / 2), 0, 0, Math.PI * 2); c.fill();
+          c.globalAlpha = .5; c.fillStyle = '#fff0b8'; c.beginPath(); c.ellipse(x, fy - hgt / 4, 1.2, Math.max(.5, hgt / 4), 0, 0, Math.PI * 2); c.fill();
+        }
+        this.forgeSparks ||= []; this.sparkAcc = (this.sparkAcc || 0) + dt * 7;
+        while (this.sparkAcc >= 1) { this.sparkAcc -= 1; this.forgeSparks.push({ x:fx + U.rand(-6, 6), y:fy - 3, vx:U.rand(-7, 7), vy:-U.rand(16, 34), age:0, life:U.rand(.7, 1.5) }); }
+        this.forgeSparks = this.forgeSparks.filter(p => { p.age += dt; if (p.age >= p.life) return false; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 9 * dt; c.globalAlpha = .9 * (1 - p.age / p.life); c.fillStyle = '#ffc878'; c.fillRect(p.x, p.y, 1.2, 1.2); return true; });
+      }
+      // Lanternas e janelas acesas: cada chama no seu ritmo (tremor rápido + respiração lenta), com o miolo da chama dançando.
+      (L.lamps || []).forEach(([x, y, s], i) => {
+        const seed = (i * .6180339) % 1, f = .74 + .16 * Math.sin(t * (4.2 + seed * 5) + seed * 40) + .07 * Math.sin(t * 17 + seed * 90) + .03 * Math.sin(t * 43 + seed * 13);
+        blob(lamp, x, y, (5.5 + s * 4.2) * (.88 + .26 * f), .3 * f);
+        c.globalAlpha = .5 * f; c.fillStyle = '#fff6d8'; c.beginPath(); c.ellipse(x + Math.sin(t * 9 + seed * 20) * .35, y - .3 - f * .5, .55 + s * .22, .9 + s * .3 + f * .35, 0, 0, Math.PI * 2); c.fill();
+      });
+      // Lanternas do festival soltas na praça, no mercado, no cais e na Oficina: sobem devagar e somem no céu.
+      const FROM = [[560, 405], [230, 468], [1060, 612], [700, 664], [990, 500]];
+      this.skyLanterns ||= Array.from({ length:11 }, (_, i) => ({ k:i % FROM.length, u:i / 11, ph:U.rand(0, 6), s:U.rand(.7, 1.15), dx:U.rand(-34, 34) }));
+      for (const l of this.skyLanterns) {
+        l.u += dt * .021 * (1.1 - l.s * .3); if (l.u >= 1) { l.u = 0; l.k = Math.floor(U.rand(0, FROM.length)); l.dx = U.rand(-34, 34); }
+        const [ox, oy] = FROM[l.k], x = ox + l.dx + Math.sin(t * .5 + l.ph) * 9 + l.u * 26, y = oy - l.u * (oy + 30), s = l.s * (1 - l.u * .35), a = Math.min(1, l.u * 9) * Math.min(1, (1 - l.u) * 4), fl = .8 + .2 * Math.sin(t * 7 + l.ph * 3);
+        blob(lamp, x, y, 13 * s, .4 * a * fl);
+        c.globalCompositeOperation = 'source-over'; c.globalAlpha = .9 * a;
+        c.fillStyle = l.k % 2 ? '#f6b7c6' : '#f8d49c'; this.roundRect(x - 3.2 * s, y - 4.4 * s, 6.4 * s, 8.4 * s, 2 * s); c.fill();
+        c.fillStyle = 'rgba(134,69,66,.7)'; c.fillRect(x - 2.4 * s, y - 4.6 * s, 4.8 * s, .9 * s); c.fillRect(x - 2.4 * s, y + 3.4 * s, 4.8 * s, .9 * s);
+        c.globalCompositeOperation = 'lighter';
+      }
+      // Vaga-lumes nos jardins.
+      this.fireflies ||= Array.from({ length:26 }, () => ({ x:U.rand(0, W), y:U.rand(H * .32, H * .96), ph:U.rand(0, 6), sp:U.rand(.4, 1.1) }));
       for (const f of this.fireflies) {
         const x = f.x + Math.sin(t * f.sp + f.ph) * 22, y = f.y + Math.cos(t * f.sp * 1.3 + f.ph) * 10, a = Math.max(0, Math.sin(t * 2.2 * f.sp + f.ph));
-        c.fillStyle = `rgba(210,255,170,${.75 * a})`; c.beginPath(); c.arc(x, y, 2.2, 0, Math.PI * 2); c.fill();
-        c.fillStyle = `rgba(180,255,140,${.16 * a})`; c.beginPath(); c.arc(x, y, 8, 0, Math.PI * 2); c.fill();
+        c.globalAlpha = .75 * a; c.fillStyle = '#d2ffaa'; c.beginPath(); c.arc(x, y, 1.6, 0, Math.PI * 2); c.fill();
+        c.globalAlpha = .16 * a; c.beginPath(); c.arc(x, y, 6, 0, Math.PI * 2); c.fill();
       }
-      c.restore();
-      this.drawFestivalDecor();
-    }
-    drawFestivalDecor() {
-      const c = this.ctx, t = this.worldTime, strings = [[[62,370],[395,388],9],[[410,376],[700,390],8],[[980,376],[1190,397],6],[[118,138],[296,152],6],[[539,143],[626,144],5],[[695,341],[846,360],6],[[97,585],[269,598],7],[[622,641],[800,659],7],[[984,597],[1214,629],8]];
-      c.save(); c.lineWidth = 1.3; c.strokeStyle = 'rgba(74,35,38,.72)';
-      for (const [[x1,y1],[x2,y2],n] of strings) {
-        c.beginPath(); c.moveTo(x1,y1); c.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+18,x2,y2); c.stroke();
-        for (let i=1;i<n;i++) { const u=i/n, x=x1+(x2-x1)*u, y=y1+(y2-y1)*u+Math.sin(u*Math.PI)*18, sway=Math.sin(t*1.4+i)*1.4;
-          c.fillStyle=i%3===0?'rgba(255,225,155,.88)':i%2?'rgba(255,150,185,.86)':'rgba(245,235,220,.86)';
-          this.roundRect(x-6+sway,y+2,12,17,5); c.fill();
-          c.strokeStyle='rgba(92,42,45,.55)'; c.stroke(); c.fillStyle='#9f484a'; c.fillRect(x-4+sway,y+1,8,2); c.fillRect(x-4+sway,y+18,8,2);
-          this.drawSakura(x+sway,y+10,1.8,'rgba(255,246,221,.88)');
-          c.fillStyle='rgba(255,190,105,.18)'; c.beginPath(); c.arc(x,y+10,15,0,Math.PI*2); c.fill();
-        }
+      // Fogos do festival: sobem do cais ou do alto do templo e estouram no céu limpo.
+      this.fireworks ||= []; this.fwNext ??= t + 3;
+      if (t >= this.fwNext) {
+        this.fwNext = t + U.rand(5.5, 10);
+        const left = U.random() < .45, x = left ? U.rand(630, 840) : U.rand(880, 1240), y = left ? U.rand(42, 150) : U.rand(18, 52), col = U.pick(['255,160,200', '255,214,130', '150,220,255', '255,130,110', '190,160,255']);
+        this.fireworks.push({ x, y, col, age:-.9, from:left ? 250 : 120, parts:Array.from({ length:34 }, (_, i) => { const a = i / 34 * Math.PI * 2 + U.rand(-.08, .08), v = U.rand(30, 52); return { a, v }; }) });
       }
-      // Fitas de desejos presas aos corrimãos, não novas barreiras sobre as ruas.
-      for (const [[x1,y1],[x2,y2],n] of [[[148,184],[277,190],10],[[485,391],[674,401],13],[[971,637],[1193,668],12]]) {
-        for(let i=0;i<n;i++) { const u=(i+.5)/n,x=x1+(x2-x1)*u,y=y1+(y2-y1)*u;
-          c.save();c.translate(x,y);c.rotate(Math.sin(t*1.2+i)*.08);c.fillStyle=i%3===0?'#eacb9e':i%2?'#d982a0':'#a95f71';
-          c.fillRect(-1.5,0,3,9+i%4);c.fillStyle='rgba(92,49,52,.55)';c.fillRect(-.5,2,1,4);c.restore();
-        }
-      }
-      if (!this.fallenPetals) {
-        this.fallenPetals=[];
-        for(let i=0;i<650&&this.fallenPetals.length<100;i++){const x=U.rand(0,W),y=U.rand(140,H);if(KT.TownMap?.isWalk(x,y))this.fallenPetals.push({x,y,r:U.rand(0,Math.PI),s:U.rand(1,2)});}
-      }
-      c.fillStyle='rgba(248,184,205,.4)';
-      for(const p of this.fallenPetals){c.save();c.translate(p.x,p.y);c.rotate(p.r);c.beginPath();c.ellipse(0,0,p.s*1.7,p.s*.65,0,0,Math.PI*2);c.fill();c.restore();}
-      // Pétalas e fitas pintadas no chão: não introduzem obstáculos falsos nas ruas.
-      for (const [x,y] of [[560,424],[605,439],[668,682],[213,650]]) {
-        c.save(); c.translate(x,y); c.scale(1,.48); c.fillStyle='rgba(248,170,198,.38)';
-        for(let i=0;i<5;i++){c.save();c.rotate(i*Math.PI*2/5);c.beginPath();c.ellipse(0,-11,5,9,0,0,Math.PI*2);c.fill();c.restore();}
-        c.restore();
-      }
-      const phase = t % 14;
-      if (phase < 1.8) {
-        const p=phase/1.8, x=880+(Math.floor(t/14)%3)*90, y=92;
-        c.globalAlpha=(1-p)*.6; c.strokeStyle='#efb4cf'; c.lineWidth=1.3;
-        for(let i=0;i<16;i++){const a=i*Math.PI/8, r=10+p*35;c.beginPath();c.moveTo(x+Math.cos(a)*r*.72,y+Math.sin(a)*r*.72);c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r+p*p*10);c.stroke();}
-      }
+      this.fireworks = this.fireworks.filter(fw => {
+        fw.age += dt; if (fw.age > 1.9) return false;
+        if (fw.age < 0) { const u = 1 + fw.age / .9, y = fw.y + fw.from * (1 - u * (2 - u)); c.globalAlpha = .7; c.fillStyle = `rgb(${fw.col})`; c.fillRect(fw.x - .6, y, 1.2, 5); return true; }
+        const k = fw.age, fade = Math.max(0, 1 - k / 1.9), drag = (1 - Math.exp(-k * 2.2)) / 2.2;
+        if (k < .12) blob(lamp, fw.x, fw.y, 40, .5 * (1 - k / .12));
+        c.fillStyle = `rgb(${fw.col})`;
+        for (const q of fw.parts) { const d = q.v * drag * 2.1, x = fw.x + Math.cos(q.a) * d, y = fw.y + Math.sin(q.a) * d + 13 * k * k; c.globalAlpha = fade * (.55 + .45 * Math.sin(k * 30 + q.a * 9)); c.fillRect(x, y, 1.5, 1.5); c.globalAlpha = fade * .22; c.fillRect(x - Math.cos(q.a) * 2.4, y - Math.sin(q.a) * 2.4, 1.2, 1.2); }
+        return true;
+      });
       c.restore();
     }
     drawSakura(x,y,r,color) {
@@ -606,8 +709,9 @@
       c.restore();
     }
     drawDanger() {
-      const e = this.engine.enemies.find(x => x.alive && x.windup > 0); if (!e) return;
-      const sp = e.windupSpecial, c = this.ctx, p = U.clamp(1 - e.windup / Math.max(.001, e.windupMax || 1.5), 0, 1), pulse = .5 + .5 * Math.sin(this.worldTime * 18);
+      const eng = this.engine, e = eng.enemies.find(x => x.alive && (x.windup > 0 || x.striking)); if (!e) return;
+      const sp = e.windupSpecial, c = this.ctx, pulse = .5 + .5 * Math.sin(this.worldTime * 18);
+      const p = e.striking ? 1 : U.clamp(1 - e.windup / Math.max(.001, e.windupMax || 1.5), 0, 1);
       const effs = sp?.eff || [];
       const zones = effs.some(x => x.to === 'all') ? [{ x:340, y:612, rx:310, ry:110 }] : effs.some(x => x.to === 'back') ? [{ x:265, y:628, rx:150, ry:70 }] : effs.some(x => x.to === 'front') ? [{ x:485, y:610, rx:120, ry:95 }] : [{ x:340, y:612, rx:310, ry:110 }];
       zones.forEach(zn => {
@@ -617,11 +721,30 @@
         c.setLineDash([]); c.fillStyle = `rgba(255,60,80,${.25 + .2 * pulse})`; c.beginPath(); c.ellipse(0, 0, Math.max(0, zn.rx * p), Math.max(0, zn.ry * p), 0, 0, Math.PI * 2); c.fill();
         c.restore();
       });
+      const zn = zones[0], q = this.qte, ready = !(eng.guardCd > 0) || eng.guardT > 0;
+      const label = (txt, y, size, color, alpha = 1) => { c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `800 ${size}px ${UI_FONT}`; c.lineJoin = 'round'; c.globalAlpha = alpha; c.lineWidth = 6; c.strokeStyle = 'rgba(14,10,20,.92)'; c.strokeText(txt, zn.x, y); c.fillStyle = color; c.fillText(txt, zn.x, y); c.restore(); };
+      if (eng.state.settings.afk) return;
+      if (e.striking && q && q.t <= q.dur + .3) {
+        // Aparo: o anel fecha sobre o alvo; a guarda dentro da faixa dourada (o fim do percurso) bloqueia o golpe.
+        const k = U.clamp(q.t / q.dur, 0, 1), gold = k >= .56 && k <= .96, cx = zn.x, cy = zn.y - 150, R = 46;
+        c.save(); c.translate(cx, cy);
+        c.fillStyle = 'rgba(14,10,20,.55)'; c.beginPath(); c.arc(0, 0, R + 10, 0, Math.PI * 2); c.fill();
+        c.lineWidth = 9; c.strokeStyle = 'rgba(255,226,138,.95)'; c.beginPath(); c.arc(0, 0, R, 0, Math.PI * 2); c.stroke();          // alvo (faixa dourada)
+        if (q.result === null) { c.lineWidth = gold ? 6 : 4; c.strokeStyle = gold ? '#ffffff' : 'rgba(255,255,255,.75)'; if (gold) { c.shadowColor = '#ffe28a'; c.shadowBlur = 16; } c.beginPath(); c.arc(0, 0, Math.max(R - 6, R + (1 - Math.min(1, k / .76)) * 104), 0, Math.PI * 2); c.stroke(); }
+        c.shadowBlur = 0; if (KT.Icons?.draw) KT.Icons.draw(c, 'shield', 0, 0, 34, q.result === 1 || gold ? '#ffe28a' : '#fff1dc', 3);
+        c.restore();
+        const msg = q.result === 1 ? 'NO TEMPO!' : q.result === 0 ? (q.early ? 'CEDO DEMAIS' : 'TARDE') : !ready ? 'GUARDA EM RECARGA' : gold ? 'AGORA!' : 'ESPERE O ANEL…';
+        label(msg, cy - R - 30, q.result === null && gold ? 30 : 22, q.result === 1 || (q.result === null && gold) ? '#ffe28a' : '#fff1dc');
+        return;
+      }
+      if (!ready) return;
+      label(eng.guardT > 0 ? 'GUARDA ERGUIDA' : 'GOLPE PREPARADO: APARE NO BOTE', 296, 20, eng.guardT > 0 ? '#ffe28a' : '#fff1dc', eng.guardT > 0 ? .9 : .7 + .2 * pulse);
     }
 
     drawActors() {
       const village = this.engine.zone.kind === 'village', list = [];
       if (village && KT.TownLife && this.townReady()) { this.drawTown(); return; }
+      if (village && KT.TownLife && !this.townArt.failed) return;
       if (village) {
         this.engine.state.formation.forEach((uid, i) => { const r = uid && this.engine.record(uid); if (r) list.push({ r, t:this.engine.template(r.id), pos:VILLAGE_POS[i] }); });
         list.sort((a, b) => a.pos.y - b.pos.y).forEach(o => {
@@ -639,136 +762,103 @@
       }
       this.engine.party.forEach(u => list.push({ u, pos:this.heroPos(u) }));
       this.engine.enemies.forEach(u => list.push({ u, pos:this.enemyPos(u) }));
-      list.sort((a, b) => a.pos.y - b.pos.y);
+      // Quem está mais à frente (mais baixo na tela) cobre quem está atrás, contando a investida de cada um.
+      list.forEach(o => { o.z = o.pos.y + this.actorOffset(this.v(o.u.uid), o.u.side === 'hero' ? 1 : -1).y; });
+      list.sort((a, b) => a.z - b.z);
       list.forEach(o => o.u.side === 'hero' ? this.drawHero(o.u, o.pos) : this.drawEnemy(o.u, o.pos));
     }
     // ---------- cidade viva (src/town.js) ----------
-    // Só com a arte nova da cidade (ruas caminháveis) e a folha de moradores carregadas; senão, a praça antiga.
+    // Folhas de caminhada de tools/build_town_walk.py: 8 quadros do ciclo + 1 parado por personagem, em células iguais,
+    // com os pés no chão e a cabeça no mesmo ponto em todos os quadros (nada de medir a folha em tempo de jogo).
     townReady() {
-      if (!this.folk) { this.folk = { meta:null, img:null, walk:null }; fetch('assets/folk/folk.json').then(r => r.ok ? r.json() : null).then(m => { if (!m) return; const img = new Image(); img.onload = () => Object.assign(this.folk, { meta:m, img }); img.src = 'assets/folk/folk.webp'; const walk = new Image(); walk.onload = () => { this.folk.walk = walk; }; walk.src = 'assets/town-walk/folk.webp'; }).catch(() => {}); }
-      return !!this.folk.img;
+      if (!this.townArt) {
+        const A = this.townArt = { index:null, folk:null, failed:false, sheets:new Map() }, v = KT.VERSION ? `?v=${KT.VERSION}` : '';
+        fetch(`assets/town-walk/index.json${v}`).then(r => r.ok ? r.json() : null).then(index => {
+          if (!index?.folk) { A.failed = true; return; }
+          const img = new Image(); img.onload = () => { A.index = index; A.folk = img; }; img.onerror = () => { A.failed = true; }; img.src = `assets/town-walk/folk.webp${v}`;
+          if (index.acts) { const acts = new Image(); acts.onload = () => { A.acts = acts; }; acts.src = `assets/town-walk/acts.webp${v}`; }
+        }).catch(() => { A.failed = true; });
+      }
+      return !!this.townArt.folk;
+    }
+    // Carrega a cidade antes de o jogo abrir: índice, moradores, atividades e as folhas da equipe atual. Resolve mesmo se
+    // algo falhar (a cidade cai no modo antigo) ou demorar mais de 8 s.
+    townPreload() {
+      this.townReady();
+      return new Promise(resolve => {
+        const t0 = Date.now(), A = this.townArt, e = this.engine;
+        const tick = () => {
+          if (A.failed || Date.now() - t0 > 8000) return resolve(false);
+          if (!A.folk || (A.index.acts && !A.acts)) return setTimeout(tick, 60);
+          const ids = (e.state.formation || []).map(uid => uid && e.record(uid)).filter(Boolean).map(r => e.template(r.id)?.sprite).filter(id => A.index.heroes[id]);
+          ids.forEach(id => this.townSheet(id));
+          if (ids.every(id => { const img = A.sheets.get(id); return img.complete; })) return resolve(true);
+          setTimeout(tick, 60);
+        };
+        tick();
+      });
+    }
+    // Folha de caminhada de um herói (carregada sob demanda). null enquanto carrega ou se o herói ainda não tem folha.
+    townSheet(id) {
+      const A = this.townArt, M = A?.index?.heroes?.[id]; if (!M) return null;
+      let img = A.sheets.get(id);
+      if (!img) { img = new Image(); img.decoding = 'async'; img.src = `assets/town-walk/${id}.webp${KT.VERSION ? `?v=${KT.VERSION}` : ''}`; A.sheets.set(id, img); }
+      return img.complete && img.naturalWidth ? { img, M } : null;
+    }
+    // Um quadro da folha com os pés em (x, y). col 0–7 = ciclo; 8 = parado.
+    drawWalkFrame(img, M, row, col, x, y, h, sx = 1, sy = 1) {
+      const c = this.ctx, k = h / M.body;
+      c.save(); c.translate(x, y); c.scale(sx, sy);
+      c.drawImage(img, col * M.w, row * M.h, M.w, M.h, -M.cx * k, -M.foot * k, M.w * k, M.h * k);
+      c.restore();
+    }
+    // O quadro acompanha o chão percorrido (o pé não desliza): um ciclo completo = dois passos ≈ 1,06 × a altura.
+    // Quadro do ciclo pela distância andada. stride = quanto o corpo avança num ciclo inteiro (em alturas do personagem),
+    // medido na própria folha (tools/build_town_walk.py): o pé que pisa fica no lugar, sem deslizar.
+    walkCol(dist, h, stride = 1.06) { return ((Math.floor(dist / (h * stride / 8)) % 8) + 8) % 8; }
+    // Personagem da cidade: virada suave (a folha "gira" em ~0,15 s em vez de espelhar de uma vez) e respiração presa aos pés.
+    drawTownActor(img, M, row, a, h, col = null) {
+      a.fx = a.fx === undefined ? a.face : a.fx + (a.face - a.fx) * Math.min(1, (this.townDt || 0) * 16);
+      const sx = Math.abs(a.fx) < .18 ? .18 * (a.face < 0 ? -1 : 1) : a.fx, breathe = col === null && !a.moving;
+      this.drawWalkFrame(img, M, row, col ?? (a.moving ? this.walkCol(a.walkD || 0, h, M.strides ? M.strides[row] : M.stride) : 8), a.x, a.y, h, sx, breathe ? 1 + Math.sin(a.animT * 2.1 + a.id) * .012 : 1);
+    }
+    // Atividades e bichos (assets/town-walk/acts.webp): quem treina, dança ou toca segue o próprio compasso; quem anda
+    // (criança, gato, menina da lanterna) troca de quadro pelo chão percorrido, com o passo do tamanho dele.
+    drawTownAct(img, M, R, a, h) {
+      const col = R.fps ? Math.floor(a.animT * R.fps) % 8 : a.moving ? ((Math.floor((a.walkD || 0) / (h * R.stride / 8)) % 8) + 8) % 8 : R.idle;
+      this.drawTownActor(img, M, R.row, a, h, col);
     }
     drawTown() {
-      const c = this.ctx, e = this.engine;
+      const c = this.ctx, e = this.engine, A = this.townArt;
       if (!this.town) this.town = new KT.TownLife();
       const heroes = e.state.formation.filter(Boolean).map(uid => { const r = e.record(uid), t = r && e.template(r.id); return t && { uid, sprite:t.sprite, name:t.name.replace(/^(Coronel|Mestre|Comandante|Unidade|O|A)\s+/, '').split(/[ ,]/)[0] }; }).filter(Boolean);
       this.town.sync(heroes);
-      const dt = Math.min(.1, Math.max(0, this.worldTime - (this.townT ?? this.worldTime))); this.townT = this.worldTime; this.town.update(dt);
-      const F = this.folk.meta;
+      const dt = Math.min(.1, Math.max(0, this.worldTime - (this.townT ?? this.worldTime))); this.townT = this.worldTime; this.townDt = dt; this.town.update(dt);
       this.townHits = [];
+      c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
       const drawn = this.town.drawList();
       for (const { a, h } of drawn) {
-        c.save(); c.fillStyle = 'rgba(12,8,4,.38)'; c.beginPath(); c.ellipse(a.x, a.y + 1, h * .3, h * .09, 0, 0, Math.PI * 2); c.fill(); c.restore();
+        { const sh = a.def?.small ? .14 : a.def?.act === 'taiko' ? .46 : .3; c.save(); c.fillStyle = 'rgba(12,8,4,.38)'; c.beginPath(); c.ellipse(a.x, a.y + 1, h * sh, h * sh * .3, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
         if (a.kind === 'hero') {
-          const an = this.assets.anim?.(a.sprite);
-          if (an) this.drawTownHero(an, a, h);
+          const sheet = this.townSheet(a.sprite), an = !sheet && this.assets.anim?.(a.sprite);
+          if (sheet) this.drawTownActor(sheet.img, sheet.M, 0, a, h);
+          // Herói ainda sem folha de caminhada: a pose parada com um passinho saltado (nunca a pose de corrida congelada).
+          else if (an) this.drawFrame(an.img, an.meta, 0, a.x, a.y - (a.moving ? Math.abs(Math.sin((a.walkD || 0) / (h * .21))) * h * .05 : 0), h, a.face < 0);
           else this.drawSprite(a.sprite, a.x, a.y, h, { flip:a.face < 0 });
           this.townHits.push({ uid:a.uid, x:a.x, y:a.y, h });
         } else {
-          this.drawTownFolk(a, h, F);
-          if (a.def.festival) this.drawFestivalAccessory(a, h);
+          const R = A.acts && A.index.acts?.rows[a.def.act || a.def.sheet];
+          if (R) this.drawTownAct(A.acts, A.index.acts, R, a, h);
+          else this.drawTownActor(A.folk, A.index.folk, a.f, a, h);
           this.townHits.push({ folk:true, actor:a, x:a.x, y:a.y, h });
         }
       }
       // Uma fala por vez, ancorada no interlocutor e sem cobrir personagens ou serviços.
       this.townBubbleBoxes = [];
       for (const { a, h } of drawn) {
-        if (a.kind === 'hero') this.townNameTag(a.x, a.y + 5, a.name);
+        if (a.kind === 'hero') this.townNameTag(a.x, a.y + 4, a.name);
         else if (a.speechFor > 0 && a.speech && !this.townBubble(a, h) && !a.manualSpeech) { a.speech = ''; a.speechFor = 0; }
       }
-    }
-    townWalkHero(id) {
-      this.townWalks ||= new Map();
-      if (!this.townWalks.has(id)) {
-        const img = new Image(); this.townWalks.set(id, img);
-        img.onerror = () => { img.failed = true; };
-        img.src = `assets/town-walk/${id}.webp`;
-      }
-      const img = this.townWalks.get(id);
-      return img.complete && img.naturalWidth ? img : null;
-    }
-    drawnWalker(id) {
-      const row = ['erik', 'akira', 'mercy_valkyrie', 'warden'].indexOf(id);
-      if (row < 0) return null;
-      if (!this.drawnWalk) {
-        const img = new Image(); this.drawnWalk = { img, ready:false };
-        img.onload = () => Object.assign(this.drawnWalk, this.measureWalkSheet(img, 4));
-        img.src = 'assets/town-walk/drawn-party.png';
-      }
-      return this.drawnWalk.ready ? { ...this.drawnWalk, row } : null;
-    }
-    measureWalkSheet(img, rows) {
-      const fw = img.width / 8, fh = img.height / rows, canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      const ctx = canvas.getContext('2d', { willReadFrequently:true }); ctx.drawImage(img, 0, 0);
-      const pixels = ctx.getImageData(0, 0, img.width, img.height).data, frames = [], heights = [];
-      for (let r = 0; r < rows; r++) {
-        frames[r] = []; heights[r] = 0;
-        for (let col = 0; col < 8; col++) {
-          const sx = Math.round(col * fw), sy = Math.round(r * fh), sw = Math.round((col + 1) * fw) - sx, sh = Math.round((r + 1) * fh) - sy;
-          let top = sh, foot = 0, left = sw, right = 0;
-          for (let y = 0; y < sh; y++) for (let x = 0; x < sw; x++) {
-            if (pixels[((sy + y) * img.width + sx + x) * 4 + 3] < 96) continue;
-            top = Math.min(top, y); foot = Math.max(foot, y); left = Math.min(left, x); right = Math.max(right, x);
-          }
-          frames[r][col] = { sx, sy, sw, sh, cx:(left + right) / 2, footY:foot };
-          heights[r] = Math.max(heights[r], foot - top);
-        }
-      }
-      return { img, ready:true, frameW:fw, frameH:fh, frames, heights };
-    }
-    drawSheetWalk(sheet, row, a, h) {
-      const frame = Math.floor(a.walkD / 3.2) % 8;
-      this.drawWalker(sheet.img, sheet.img, { frameW:sheet.frameW, frameH:sheet.frameH, bodyH:sheet.heights[row], ...sheet.frames[row][frame] }, row, a, h);
-    }
-    // Quadros completos, com pés alinhados ao chão. A fase acompanha a distância percorrida.
-    drawWalker(idle, walk, M, row, a, h, idleCol = 0) {
-      const c = this.ctx, k = h / M.bodyH;
-      const distance = Number.isFinite(a.walkD) ? a.walkD : a.walkT * (a.speed || 24);
-      const frame = a.moving ? Math.floor(distance / 3.2) % 8 : 0;
-      const img = a.moving && walk ? walk : idle;
-      const col = a.moving && walk ? frame : idleCol;
-      c.save(); c.translate(a.x, a.y); if (a.face < 0) c.scale(-1, 1);
-      // Respiração ancorada no chão: não desloca a sola, a sombra ou o personagem.
-      if (!a.moving) c.scale(1, 1 + Math.sin(a.animT * 2.1 + a.x) * .003);
-      c.drawImage(img, M.sx ?? col * M.frameW, M.sy ?? row * M.frameH, M.sw ?? M.frameW, M.sh ?? M.frameH,
-        -M.cx * k, -M.footY * k, (M.sw ?? M.frameW) * k, (M.sh ?? M.frameH) * k);
-      c.restore();
-    }
-    drawTownHero(an, a, h) {
-      const drawn = this.drawnWalker(a.sprite);
-      if (a.moving && drawn) {
-        this.drawSheetWalk(drawn, drawn.row, a, h);
-        return;
-      }
-      const M = an.meta, run = M.clips?.run?.seq || [2, 0];
-      const walk = this.townWalkHero(a.sprite);
-      const idleCol = a.moving ? run[0] : 0;
-      this.drawWalker(an.img, walk, M, 0, a, h, idleCol);
-    }
-    drawTownFolk(a, h, F) {
-      if (!this.drawnFolk) {
-        const img = new Image(); this.drawnFolk = { ready:false };
-        img.onload = () => Object.assign(this.drawnFolk, this.measureWalkSheet(img, 10));
-        img.src = 'assets/town-walk/drawn-folk.png';
-      }
-      if (a.moving && this.drawnFolk.ready) { this.drawSheetWalk(this.drawnFolk, a.f, a, h); return; }
-      this.drawWalker(this.folk.img, this.folk.walk, { ...F, cx:F.frameW / 2 }, a.f, a, h, a.moving ? 1 : 0);
-    }
-    drawFestivalAccessory(a,h) {
-      const c=this.ctx, sway=Math.sin(a.animT*2.4+a.id), k=h/34;
-      c.save(); c.translate(a.x,a.y); c.scale(k,k);
-      if(a.def.festival==='fan') {
-        c.translate(a.face*9,-18+sway*1.5);c.rotate(a.face*.3+sway*.14);
-        c.fillStyle='#efadc5';c.beginPath();c.moveTo(0,3);c.arc(0,3,8,-Math.PI*.85,-Math.PI*.15);c.closePath();c.fill();
-        c.strokeStyle='#9d574e';c.lineWidth=.8;for(let i=0;i<5;i++){const angle=-Math.PI*.85+i*Math.PI*.175;c.beginPath();c.moveTo(0,3);c.lineTo(Math.cos(angle)*8,3+Math.sin(angle)*8);c.stroke();}
-      } else if(a.def.festival==='lantern') {
-        c.strokeStyle='#795138';c.beginPath();c.moveTo(a.face*9,-18);c.lineTo(a.face*11,-10+sway);c.stroke();
-        c.fillStyle='#efb784';this.roundRect(a.face*11-3,-10+sway,6,8,2);c.fill();c.fillStyle='#b6594f';c.fillRect(a.face*11-2,-10+sway,4,1);
-      } else {
-        c.strokeStyle='#f0abc8';c.lineWidth=2;c.beginPath();c.moveTo(a.face*9,-18);c.quadraticCurveTo(a.face*14,-12,a.face*(12+sway*2),-7);c.stroke();
-      }
-      c.restore();
     }
     townHeroAt(x, y) { if (this.engine.zone.kind !== 'village') return null; const hit = (this.townHits || []).filter(o => Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]; return hit?.uid || null; }
     townFolkAt(x, y) { if (this.engine.zone.kind !== 'village') return null; return (this.townHits || []).filter(o => o.folk && Math.abs(x - o.x) < o.h * .4 && y < o.y + 4 && y > o.y - o.h * 1.1).sort((p, q) => q.y - p.y)[0]?.actor; }
@@ -779,14 +869,18 @@
       c.save(); c.translate(x, y); if (flip) c.scale(-1, 1);
       c.drawImage(img, col * M.frameW, 0, M.frameW, M.frameH, -M.cx * k, -M.footY * k, M.frameW * k, M.frameH * k); c.restore();
     }
+    // Tamanho de texto e de balão na cidade: a cena tem 1280 de largura lógica, mas o palco costuma ter 700 a 1100 px na
+    // tela; sem compensar, uma letra de 10 vira 5 ou 6 px e ninguém lê. k leva a letra a ~11,5 px reais.
+    townUi(base = 10, target = 11.5) { return U.clamp(target / (base * (this.css || 1)), 1, 2.6); }
+    // Balão de fala em papel, com rabicho apontando para quem fala (um por vez, sem cobrir personagens nem botões).
     townBubble(a, h) {
-      const x = a.x, y = a.y - h * 1.15 - 4, name = a.name;
-      const c = this.ctx; c.save(); c.font = `500 10px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const k = this.townUi(), x = a.x, y = a.y - h * 1.15 - 4, name = a.name;
+      const c = this.ctx; c.save(); c.font = `500 ${10 * k}px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
       const words = a.speech.split(/\s+/), lines = []; let line = '';
-      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 120) { lines.push(line); line = word; } else line = next; }
+      for (const word of words) { const next = line ? `${line} ${word}` : word; if (line && c.measureText(next).width > 120 * k) { lines.push(line); line = word; } else line = next; }
       if (line) lines.push(line);
-      const w = Math.min(136, Math.max(64, c.measureText(name).width + 14, ...lines.map(t => c.measureText(t).width + 14)));
-      const hh = 17 + lines.length * 11, v = this.view || { x:0, w:W };
+      const w = Math.min(136 * k, Math.max(64 * k, c.measureText(name).width + 14 * k, ...lines.map(t => c.measureText(t).width + 14 * k)));
+      const hh = (17 + lines.length * 11) * k, v = this.view || { x:0, w:W };
       if (x < v.x + 6 || x > v.x + v.w - 6) { c.restore(); return false; }
       const blockers = (this.townHits || []).map(o => ({ l:o.x - o.h * .38 - 3, r:o.x + o.h * .38 + 3, t:o.y - o.h * 1.15 - 3, b:o.y + 5 }));
       const rect = this.canvas.getBoundingClientRect(), rectKey = [rect.left,rect.top,rect.width,rect.height,v.x,v.w].join(':');
@@ -816,22 +910,49 @@
         if (!best || score < best.score) best = { cx, top, score, off, lift, box };
       }
       if (!best) { c.restore(); return false; }
-      const { cx, top } = best;
+      const { cx, top } = best, l = cx - w / 2, r = cx + w / 2, b = top + hh;
       a.bubblePlacement = { text:a.speech, off:best.off, lift:best.lift };
       this.townBubbleBoxes?.push(best.box);
       c.globalAlpha = Math.min(1, (a.speechAge || 0) / .15, a.speechFor / .3);
-      c.strokeStyle='rgba(238,193,171,.55)'; c.lineWidth=.7; c.beginPath(); c.moveTo(Math.max(cx-w/2,Math.min(cx+w/2,x)),Math.max(top+6,Math.min(top+hh,y+2))); c.lineTo(x,y+2); c.stroke();
-      this.roundRect(cx - w / 2, top, w, hh, 6); c.fillStyle = 'rgba(22,17,26,.65)'; c.fill(); c.strokeStyle='rgba(238,193,171,.38)'; c.stroke();
-      c.font = `600 9px ${UI_FONT}`; c.fillStyle = '#efc9ad'; c.fillText(name, cx, top + 8);
-      c.font = `500 10px ${UI_FONT}`; c.fillStyle = '#fff8ee'; lines.forEach((t, i) => c.fillText(t, cx, top + 19 + i * 11));
+      const PAPER = 'rgba(251,243,226,.97)', INK = 'rgba(46,32,26,.9)';
+      c.shadowColor = 'rgba(0,0,0,.4)'; c.shadowBlur = 7 * k; c.shadowOffsetY = 2 * k;
+      this.roundRect(l, top, w, hh, 6 * k); c.fillStyle = PAPER; c.fill();
+      c.shadowColor = 'transparent'; c.shadowBlur = 0; c.shadowOffsetY = 0; c.lineWidth = .9 * k; c.strokeStyle = INK; c.stroke();
+      // Rabicho: sai da borda mais próxima de quem fala (embaixo, em cima ou de lado).
+      const tipX = x, tipY = y + 2, t = 4 * k;
+      let p1, p2;
+      if (tipX >= l + 9 * k && tipX <= r - 9 * k || (tipX > l && tipX < r)) { const ax = Math.max(l + 9 * k, Math.min(r - 9 * k, tipX)), ay = tipY >= b ? b : top; p1 = [ax - t, ay]; p2 = [ax + t, ay]; }
+      else { const ax = tipX <= l ? l : r, ay = Math.max(top + 8 * k, Math.min(b - 8 * k, tipY)); p1 = [ax, ay - t]; p2 = [ax, ay + t]; }
+      c.fillStyle = PAPER; c.beginPath(); c.moveTo(p1[0], p1[1]); c.lineTo(tipX, tipY); c.lineTo(p2[0], p2[1]); c.fill();
+      c.beginPath(); c.moveTo(p1[0], p1[1]); c.lineTo(tipX, tipY); c.lineTo(p2[0], p2[1]); c.stroke();
+      c.font = `700 ${8.5 * k}px ${UI_FONT}`; c.fillStyle = '#b8452c'; c.fillText(name, cx, top + 8.5 * k);
+      c.font = `500 ${10 * k}px ${UI_FONT}`; c.fillStyle = '#2a211c'; lines.forEach((txt, i) => c.fillText(txt, cx, top + (19.5 + i * 11) * k));
       c.restore(); return true;
     }
-    townNameTag(x,y,name){const c=this.ctx;c.save();c.font=`700 8px ${UI_FONT}`;c.textAlign='center';c.lineWidth=2.5;c.strokeStyle='rgba(10,8,18,.82)';c.strokeText(name,x,y);c.fillStyle='#fff1d4';c.fillText(name,x,y);c.restore();}
+    // Nome do herói na cidade: plaquinha escura legível em qualquer tamanho de tela.
+    townNameTag(x, y, name) {
+      const c = this.ctx, k = this.townUi(8, 10), fs = 8 * k;
+      c.save(); c.font = `700 ${fs}px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+      const w = c.measureText(name).width + 8 * k, hh = fs + 3.5 * k, top = y - 1;
+      this.roundRect(x - w / 2, top, w, hh, hh / 2); c.fillStyle = 'rgba(14,11,24,.74)'; c.fill();
+      c.fillStyle = '#ffeccb'; c.fillText(name, x, top + hh / 2 + .3 * k);
+      c.restore();
+    }
+    // Deslocamento do ator: x/y andam no chão (a sombra acompanha), lift é o salto.
     actorOffset(s, dirSign) {
-      let x = 0, y = 0;
-      if (s.lunge) { const k = s.lunge.t / s.lunge.dur, f = k < .35 ? easeOut(k / .35) : 1 - easeOut((k - .35) / .65); x += s.lunge.dx * f; y += s.lunge.dy * f; if (s.lunge.hop) y -= Math.sin(k * Math.PI) * 18; }
+      let x = 0, y = 0, lift = 0;
+      const L = s.lunge;
+      if (L) {
+        const k = L.t / L.dur;
+        if (L.slow) { const f = k < .78 ? Math.sin(k / .78 * Math.PI / 2) : 1 - (k - .78) / .22; x += L.dx * f; }   // bote: avança devagar e recua
+        else if (L.dash) {
+          // investida: chega rápido, segura o golpe e volta num salto
+          const f = k < .24 ? easeOut(k / .24) : k < .5 ? 1 : 1 - easeOut((k - .5) / .5);
+          x += L.dx * f; y += L.dy * f; if (k > .5) lift -= Math.sin((k - .5) / .5 * Math.PI) * 24;
+        } else { const f = k < .35 ? easeOut(k / .35) : 1 - easeOut((k - .35) / .65); x += L.dx * f; y += L.dy * f; if (L.hop) lift -= Math.sin(k * Math.PI) * 18; }
+      }
       if (s.hit > 0) x -= dirSign * s.hitDir * 16 * (s.hit / .3);
-      return { x, y };
+      return { x, y, lift };
     }
     runeCircle(x, y, r, color, alpha = .7, spin = 1) {
       const c = this.ctx; c.save(); c.translate(x, y); c.scale(1, .32); c.globalAlpha = alpha; c.strokeStyle = color; c.lineWidth = 3;
@@ -843,33 +964,60 @@
       c.restore();
     }
     drawHero(u, pos) {
-      const c = this.ctx, s = this.v(u.uid), alive = u.alive, t = this.worldTime + u.slot * .7;
-      const moving = this.engine.phase === 'between' && alive;
+      const c = this.ctx, s = this.v(u.uid), alive = u.alive, t = this.worldTime + u.slot * .7, eng = this.engine;
+      const moving = eng.phase === 'between' && alive;
       const off = this.actorOffset(s, 1);
       // Escala por sprite (src/sprite-meta.js): todos os heróis com o mesmo tamanho aparente e o pé no chão.
       const hm = KT.SPRITE_META?.[u.sprite] || [1, 0], HERO_H = HERO_H0 * hm[0];
-      const x = pos.x + off.x + (moving ? 14 : 0), y = pos.y + off.y + hm[1] * HERO_H;
-      c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(pos.x + off.x, pos.y + 4, 46, 13, 0, 0, Math.PI * 2); c.fill(); c.restore();
+      const gx = pos.x + off.x, gy = pos.y + off.y;                                  // onde ele pisa agora
+      const x = gx + (moving ? 14 : 0), y = gy + off.lift + hm[1] * HERO_H;
+      const air = 1 + off.lift / 60;                                                  // sombra encolhe no salto
+      c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(gx, gy + 4, 46 * air, 13 * air, 0, 0, Math.PI * 2); c.fill(); c.restore();
       const ultReady = alive && u.energy >= 100;
-      if (alive) this.runeCircle(pos.x + off.x, pos.y + 4, ultReady ? 52 : 46, u.color, ultReady ? .7 : .16, ultReady ? 1.5 : .25);
+      if (alive) this.runeCircle(gx, gy + 4, ultReady ? 52 : 46, u.color, ultReady ? .7 : .16, ultReady ? 1.5 : .25);
+      // É a vez dele e a luta espera a ordem: anel dourado no chão e seta em cima.
+      const myTurn = alive && eng.awaiting !== null && eng.party[eng.awaiting] === u;
+      if (myTurn) {
+        const pl = .5 + .5 * Math.sin(this.worldTime * 6);
+        c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = '#ffe28a'; c.lineWidth = 4; c.globalAlpha = .55 + .4 * pl; c.shadowColor = '#ffcf6b'; c.shadowBlur = 14;
+        c.beginPath(); c.ellipse(gx, gy + 4, 60 + pl * 5, 17 + pl * 1.5, 0, 0, Math.PI * 2); c.stroke(); c.restore();
+      }
       if (s.cast > 0) this.aura(u.sprite, x, y, HERO_H, s.castColor, s.cast);
       else if (ultReady) this.aura(u.sprite, x, y, HERO_H, u.color, .55 + .25 * Math.sin(t * 5));
       if (s.level > 0) this.aura(u.sprite, x, y, HERO_H, '#ffd76a', s.level / 1.4);
       if (s.revive > 0) this.aura(u.sprite, x, y, HERO_H, '#ffe19a', s.revive);
       const stealth = u.effects.some(e => e.s === 'stealth');
       const an = this.assets.anim?.(u.sprite);
-      const walk = moving && this.drawnWalker(u.sprite);
-      if (walk) {
-        this.drawSheetWalk(walk, walk.row, { x, y, moving:true, walkD:t * 32, face:1 }, HERO_H);
+      const walk = moving && this.townReady() && this.townSheet(u.sprite);
+      const base = { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .78, gray:!alive };
+      // Rastro da investida: três imagens-fantasma atrás do herói enquanto ele cruza o campo.
+      if (an && s.lunge?.dash && s.lunge.t / s.lunge.dur < .32) {
+        const L = s.lunge, k = L.t / L.dur;
+        for (let g = 3; g >= 1; g--) { const f = easeOut(Math.max(0, k - g * .04) / .24); this.drawAnim(an, s, u, pos.x + L.dx * f, pos.y + L.dy * f + hm[1] * HERO_H, HERO_H, { alpha:.2 - g * .045 }); }
       }
-      else if (an) this.drawAnim(an, s, u, x, y, HERO_H, { flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .6, gray:!alive });
+      if (walk) this.drawWalkFrame(walk.img, walk.M, 0, this.walkCol(t * 150, HERO_H, walk.M.stride), x, y, HERO_H);
+      else if (an) this.drawAnim(an, s, u, x, y, HERO_H, base);
       else this.drawSprite(u.sprite, x, y, HERO_H, { sy:alive ? 1 + Math.sin(t * 2.6) * .018 : 1, flash:s.flash / .24, alpha:alive ? (stealth ? .45 : 1) : .35, gray:!alive, tilt:alive ? 0 : -.25 });
       if (u.shield > 0 && alive) this.drawBarrier(x, y, HERO_H, U.clamp(u.shield / u.maxHp, 0, 1), s.shieldHit > 0);
+      if (alive && eng.phase === 'fight' && (eng.guardT > 0 || u.defend)) this.drawGuard(x, y, HERO_H, u.defend ? 1 : U.clamp(eng.guardT / .22, 0, 1), s.guardHit);
       if (!alive) return;
-      this.statusIcons(u, pos.x - 44, y - HERO_H - 28);
+      if (myTurn) { const by2 = pos.y + hm[1] * HERO_H - HERO_H - 44 + Math.sin(this.worldTime * 5) * 4; c.save(); c.fillStyle = '#ffe28a'; c.strokeStyle = 'rgba(14,10,20,.9)'; c.lineWidth = 3; c.lineJoin = 'round'; c.beginPath(); c.moveTo(pos.x - 11, by2 - 12); c.lineTo(pos.x + 11, by2 - 12); c.lineTo(pos.x, by2 + 3); c.closePath(); c.stroke(); c.fill(); c.restore(); }
+      // Barras e selos ficam no lugar do herói na formação (não saem voando com a investida).
+      const by = pos.y + hm[1] * HERO_H - HERO_H;
+      this.statusIcons(u, pos.x - 44, by - 28);
       if (u.effects.some(e => e.s === 'stun' || e.s === 'freeze')) this.stunStars(x, y - HERO_H - 6);
-      this.bar(pos.x - 44, y - HERO_H - 16, 88, 9, s, '#57e389', u.shield / u.maxHp);
-      this.thin(pos.x - 44, y - HERO_H - 5, 88, U.clamp(u.energy / 100, 0, 1), ultReady ? '#ffd76a' : '#e0a93b');
+      this.bar(pos.x - 44, by - 16, 88, 9, s, '#57e389', u.shield / u.maxHp);
+      this.thin(pos.x - 44, by - 5, 88, U.clamp(u.energy / 100, 0, 1), ultReady ? '#ffd76a' : '#e0a93b');
+    }
+    // Guarda erguida: arco de luz à frente do herói; quando segura um golpe, fica branco e largo.
+    drawGuard(x, y, h, k, hit) {
+      const c = this.ctx, t = this.worldTime, r = h * .5, hot = hit > 0;
+      c.save(); c.translate(x + h * .2, y - h * .5); c.globalCompositeOperation = 'lighter'; c.lineCap = 'round';
+      c.strokeStyle = hot ? '#ffffff' : '#ffe9a8'; c.shadowColor = '#ffcf6b'; c.shadowBlur = hot ? 22 : 10;
+      c.globalAlpha = Math.min(1, (.5 + .2 * Math.sin(t * 9)) * k + (hot ? .45 : 0)); c.lineWidth = hot ? 6.5 : 3.5;
+      c.beginPath(); c.ellipse(0, 0, r * .42, r, 0, -1.25, 1.25); c.stroke();
+      c.globalAlpha *= .5; c.lineWidth = 1.5; c.beginPath(); c.ellipse(-7, 0, r * .34, r * .86, 0, -1.1, 1.1); c.stroke();
+      c.restore();
     }
     drawBarrier(x, y, h, strength, hit) {
       const c = this.ctx, pulse = .5 + .5 * Math.sin(this.worldTime * 3.2), rx = Math.max(38, h * .31), ry = Math.max(58, h * .48);
@@ -879,28 +1027,35 @@
       for (let i = 0; i < 6; i++) { const gap = .16, a0 = -Math.PI / 2 + i * Math.PI / 3 + gap, a1 = -Math.PI / 2 + (i + 1) * Math.PI / 3 - gap; c.globalAlpha = (hit ? .95 : .34 + pulse * .12) * (.65 + strength * .35); c.lineWidth = hit ? 4 : 2.2; c.beginPath(); c.ellipse(0, 0, rx, ry, 0, a0, a1); c.stroke(); }
       c.globalAlpha = .25 + strength * .25; c.lineWidth = 1; c.setLineDash([3, 8]); c.beginPath(); c.ellipse(0, 0, rx - 6, ry - 7, 0, 0, Math.PI * 2); c.stroke(); c.restore();
     }
+    // Família do monstro (fox, oni, golem, spider, wisp, revenant…): todas as criaturas são variações de poucas bases.
+    enemyFamily(sprite) { return this.assets.animBase?.(sprite) || String(sprite).split('_')[0]; }
     drawEnemy(e, pos) {
       const c = this.ctx, s = this.v(e.uid), t = this.worldTime + pos.x * .01, dying = !e.alive;
-      if (dying && (s.death > .9 || e.fled)) return;
+      // Monstros animados (folha de poses da família, recolorida na hora); sem folha, a arte parada de sempre.
+      const ban = this.assets.anim?.(e.sprite), full = ban && (ban.meta.poses || 0) >= 16, life = full ? 1.35 : .9;
+      if (dying && (s.death > life || e.fled)) return;
       const off = this.actorOffset(s, -1), height = this.enemyHeight(e), enter = easeOut(s.spawn);
-      const x = pos.x + off.x + (1 - enter) * 240, y = pos.y + off.y, floatY = e.sprite.startsWith('wisp') ? Math.sin(t * 2.4) * 10 - 16 : 0;
-      c.save(); c.globalAlpha = enter * (dying ? Math.max(0, 1 - s.death / .9) : 1);
-      c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(pos.x + off.x, pos.y + 4, height * (e.boss ? .42 : .3), height * .08, 0, 0, Math.PI * 2); c.fill();
+      const floats = this.enemyFamily(e.sprite) === 'wisp', floatY = floats ? Math.sin(t * 2.4) * 10 - 16 : 0;
+      const gx = pos.x + off.x + (1 - enter) * 240, gy = pos.y + off.y;
+      const x = gx + (e.windup > 0 ? Math.sin(this.worldTime * 46) * 2.2 : 0), y = gy + off.lift;
+      c.save(); c.globalAlpha = enter * (dying ? (full ? U.clamp((life - s.death) / .45, 0, 1) : Math.max(0, 1 - s.death / .9)) : 1);
+      c.fillStyle = 'rgba(0,0,0,.45)'; c.beginPath(); c.ellipse(gx, gy + 4, height * (e.boss ? .42 : .3), height * .08, 0, 0, Math.PI * 2); c.fill();
       const focused = this.engine.focusUid === e.uid, hovered = this.hoverEnemy === e.uid;
-      if ((focused || hovered) && !dying) { c.save(); c.translate(pos.x + off.x, pos.y + 4); c.strokeStyle = focused ? '#ffd76a' : 'rgba(255,255,255,.6)'; c.lineWidth = 3; const r = height * (e.boss ? .42 : .34); for (let k = 0; k < 4; k++) { const a0 = this.worldTime * 1.6 + k * Math.PI / 2; c.beginPath(); c.ellipse(0, 0, r, r * .3, a0 * 0, a0, a0 + .9); c.stroke(); } c.restore(); }
+      if ((focused || hovered) && !dying) { c.save(); c.translate(pos.x, pos.y + 4); c.strokeStyle = focused ? '#ffd76a' : 'rgba(255,255,255,.6)'; c.lineWidth = 3; const r = height * (e.boss ? .42 : .34); for (let k = 0; k < 4; k++) { const a0 = this.worldTime * 1.6 + k * Math.PI / 2; c.beginPath(); c.ellipse(0, 0, r, r * .3, a0 * 0, a0, a0 + .9); c.stroke(); } c.restore(); }
       if ((e.elite || e.miniboss) && !dying) this.aura(e.sprite, x, y + floatY, height, e.miniboss ? '#ff9a3b' : '#c77dff', .5 + .15 * Math.sin(t * 3));
       if (e.treasure && !dying) this.aura(e.sprite, x, y, height, '#ffd76a', .8);
-      if (e.windup > 0) this.aura(e.sprite, x, y, height, '#ff3a5a', .6 + .4 * Math.sin(this.worldTime * 20));
-      const ban = e.boss ? this.assets.anim?.(e.sprite) : null;
-      if (ban) this.drawAnim(ban, s, e, x, y + floatY + (dying ? s.death * 30 : 0), height, { flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:ban.meta.facing === 'right' });
-      else this.drawSprite(e.sprite, x, y + floatY + (dying ? s.death * 30 : 0), height, { sy:1 + Math.sin(t * 2.2) * .022, flash:dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24, alpha:1, gray:dying && s.death > .25, flip:!!e.rival });
+      if (e.windup > 0 || e.striking) this.aura(e.sprite, x, y, height, '#ff3a5a', .6 + .4 * Math.sin(this.worldTime * 20));
+      const sink = dying && !full ? s.death * 30 : 0, flash = dying ? Math.max(0, .5 - s.death * 3) : s.flash / .24;
+      if (ban) this.drawAnim(ban, s, e, x, y + floatY * (dying ? Math.max(0, 1 - s.death * 2) : 1) + sink, height, { flash, alpha:1, gray:dying && s.death > .25, flip:!!e.rival || ban.meta.facing === 'right', glow:dying ? null : this.assets.animAura?.(e.sprite) });
+      else this.drawSprite(e.sprite, x, y + floatY + sink, height, { sy:1 + Math.sin(t * 2.2) * .022, flash, alpha:1, gray:dying && s.death > .25, flip:!!e.rival });
       c.restore();
       if (dying) return;
       if (e.effects.some(x => x.s === 'burn')) this.flames(x, y, height);
       if (e.effects.some(x => x.s === 'stun' || x.s === 'freeze')) this.stunStars(x, y - height - 4);
       if (e.effects.some(x => x.s === 'freeze')) { c.save(); c.globalAlpha = .35; c.fillStyle = '#bff4ff'; c.beginPath(); c.ellipse(x, y - height * .45, height * .32, height * .5, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
       if (!e.boss) {
-        const top = y + floatY - height - 14, bw = e.miniboss ? 150 : e.elite ? 120 : 96;
+        // Barra e nome ficam no lugar do monstro na formação.
+        const top = pos.y + floatY - height - 14, bw = e.miniboss ? 150 : e.elite ? 120 : 96;
         this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#ff9a3b' : e.elite ? '#c77dff' : '#ff5d6c', e.shield / e.maxHp);
         this.nameTag(`${e.guardian ? '◆ ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
         this.statusIcons(e, pos.x - bw / 2, top - 30);
@@ -913,7 +1068,7 @@
         const k = 1 - e.windup / e.windupMax; c.fillStyle = 'rgba(0,0,0,.6)'; c.fillRect(x - 60, y - height - 20, 120, 8); c.fillStyle = '#ff4a6a'; c.fillRect(x - 60, y - height - 20, 120 * k, 8);
         c.restore();
       }
-      this.hotspots.push({ enemy:e.uid, x:pos.x - height * .35, y:y - height, w:height * .7, h:height });
+      this.hotspots.push({ enemy:e.uid, x:pos.x - height * .35, y:pos.y - height, w:height * .7, h:height });
     }
     statusIcons(u, x, y) {
       const c = this.ctx, seen = new Set(); let ix = x;
@@ -929,19 +1084,24 @@
     baseClip(u) {
       const ph = this.engine.phase;
       if (!u.alive) return 'death';
-      if (ph === 'between' || this.engine.zone.kind === 'village' && false) return 'run';
+      if (u.side === 'enemy') return ph === 'defeat' ? 'victory' : 'idle';
+      if (ph === 'between') return 'run';
       if (ph === 'stageClear' || ph === 'victory') return 'victory';
       return 'idle';
     }
-    // Quadro atual da folha: [linha, pose, próxima pose, fração até a próxima (0–1)].
+    // Quadro atual da folha: [linha, pose, próxima pose, fração até a próxima (0–1)]. As folhas têm 8 colunas e 1 ou 2
+    // linhas (tools/build_anim.py): a pose p fica na coluna p % 8 da linha p / 8.
     animFrame(an, s, u) {
-      const C = an.meta.clips; let clip = s.clip, t = this.worldTime - s.clipAt;
+      const M = an.meta, C = M.clips; let clip = s.clip, t = this.worldTime - s.clipAt;
       if (!u.alive) { if (clip !== 'death') { clip = 'death'; s.clip = 'death'; s.clipAt = this.worldTime; t = 0; } }
       else if (clip === 'death') { s.clip = null; clip = null; }
-      // seq: índices das poses na linha (folhas de 8 poses de tools/build_anim.py); sem seq, quadros seguidos.
-      const cols = Math.max(1, Math.floor(an.img.width / an.meta.frameW)), rows = Math.max(1, Math.floor(an.img.height / an.meta.frameH));
-      const pose = (m, i) => U.clamp(Number(m.seq ? m.seq[i] : i) || 0, 0, cols - 1);
+      const cols = M.cols || Math.max(1, Math.floor(an.img.width / M.frameW)), rows = Math.max(1, Math.floor(an.img.height / M.frameH));
+      const total = M.poses || cols, full = total >= 16;
+      const pose = (m, i) => U.clamp(Number(m.seq ? m.seq[i] : i) || 0, 0, total - 1);
+      const row0 = U.clamp(Number((C.idle || {}).row) || 0, 0, rows - 1), hold = p => [row0, Math.min(p, total - 1), Math.min(p, total - 1), 0];
       const at = (m, x, loop) => { const frames = Math.max(1, Number(m.frames) || 1), i = Math.floor(x), f = x - i, a = loop ? ((i % frames) + frames) % frames : Math.min(Math.max(0, i), frames - 1), b = loop ? (a + 1) % frames : Math.min(a + 1, frames - 1); return [U.clamp(Number(m.row) || 0, 0, rows - 1), pose(m, a), pose(m, b), f]; };
+      // Atordoado, congelado ou de postura quebrada: nada de continuar o golpe que estava no meio.
+      if (u.alive && (u.broken > 0 || u.effects?.some(e => e.s === 'stun' || e.s === 'freeze'))) { s.clip = null; return hold(u.side === 'enemy' && full ? 8 : 3); }
       if (clip && C[clip]) {
         const m = C[clip], x = t * m.fps;
         if (m.loop) return at(m, x, true);
@@ -949,15 +1109,23 @@
         if (clip === 'death') return at(m, m.frames - 1, false);
         s.clip = null;
       }
+      // Poses que o estado segura: ataque sendo preparado, guarda erguida, monstro entrando em campo.
+      if (u.alive) {
+        if (u.windup > 0) return hold(full ? 12 : 4);
+        if (u.striking) return hold(5);
+        if (u.side === 'hero' && full && this.engine.phase === 'fight' && (this.engine.guardT > 0 || u.defend)) return hold(8);
+        if (u.side === 'enemy' && s.spawn < 1) return hold(2);
+      }
       // Repouso numa pose só (a respiração vem de poseMotion): alternar dois desenhos fazia o herói piscar e trocar de lugar.
-      const base = this.baseClip(u), row0 = U.clamp(Number((C.idle || {}).row) || 0, 0, rows - 1);
+      const base = this.baseClip(u);
       if (base === 'idle') return [row0, 0, 0, 0];
-      if (base === 'victory') return [row0, pose(C.victory || C.idle, 0), pose(C.victory || C.idle, 0), 0];
+      if (base === 'victory') return hold(pose(C.victory || C.idle, 0));
       const b = C[base] || C.idle, it = this.worldTime + (u.slot || 0) * .37;
       return at(b, it * b.fps, true);
     }
-    // Movimento contínuo por pose (0 parado · 1 respira · 2 corre · 3 dano · 4 prepara · 5 golpe · 6 fim · 7 especial):
-    // deslocamento, inclinação e escala interpolados entre poses, desenhados a cada quadro de tela.
+    // Movimento contínuo por pose: deslocamento, inclinação e escala interpolados entre poses, a cada quadro de tela.
+    // 0 parado · 1 respira · 2 corre · 3 dano · 4 prepara · 5 golpe · 6 fim · 7 especial · 8 guarda (monstro: atordoado) ·
+    // 9 esquiva · 10 caído · 11 vitória · 12 início da conjuração · 13 disparo · 14 meio do golpe · 15 segundo golpe.
     poseMotion(p, time, slot) {
       const br = Math.sin(time * 2.4 + slot) * .5 + .5;
       switch (p) {
@@ -968,6 +1136,14 @@
         case 5: return { x:18, y:0, rot:.05, sx:1.05, sy:.97 };
         case 6: return { x:8, y:0, rot:.02, sx:1, sy:1 };
         case 7: return { x:4, y:-8, rot:0, sx:1.02, sy:1.03 };
+        case 8: return { x:-3, y:0, rot:-.015, sx:1.01, sy:.995 + br * .006 };
+        case 9: return { x:-14, y:-6, rot:-.06, sx:1, sy:1 };
+        case 10: return { x:-4, y:0, rot:0, sx:1, sy:1 };
+        case 11: return { x:0, y:-Math.abs(Math.sin(time * 5.5 + slot)) * 9, rot:0, sx:1, sy:1 + br * .01 };
+        case 12: return { x:-5 + Math.sin(time * 38) * 1.2, y:0, rot:-.03, sx:1.02, sy:.98 };
+        case 13: return { x:11, y:-2, rot:.03, sx:1.04, sy:.99 };
+        case 14: return { x:10, y:0, rot:.03, sx:1.04, sy:.98 };
+        case 15: return { x:20, y:-4, rot:.05, sx:1.05, sy:.98 };
         default: return { x:0, y:0, rot:0, sx:1, sy:1 };
       }
     }
@@ -975,6 +1151,7 @@
       const c = this.ctx, M = an.meta, [row, col, next, frac] = this.animFrame(an, s, u);
       const k = height / M.bodyH, fw = M.frameW * k, fh = M.frameH * k;
       const dx = -M.cx * k, dy = -M.footY * k;
+      const cols = M.cols || Math.max(1, Math.floor(an.img.width / M.frameW)), fx0 = (col % cols) * M.frameW, fy0 = (row + Math.floor(col / cols)) * M.frameH;
       const e = frac * frac * (3 - 2 * frac), A = this.poseMotion(col, this.worldTime, u.slot || 0), B = this.poseMotion(next, this.worldTime, u.slot || 0);
       const mix = key => A[key] + (B[key] - A[key]) * e, dir = u.side === 'enemy' ? -1 : 1, mk = height / 180;
       c.save(); c.translate(x + mix('x') * mk * dir, y + mix('y') * mk); c.rotate(mix('rot') * dir); c.scale(mix('sx') * (o.flip ? -1 : 1), mix('sy'));
@@ -982,11 +1159,12 @@
       if (o.gray) c.filter = 'grayscale(.85) brightness(.7)';
       // Troca de pose seca, como em sprites desenhados à mão (sem mistura transparente, que parecia piscar);
       // o movimento entre poses fica por conta de deslocamento, inclinação e escala interpolados acima.
-      c.drawImage(an.img, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
-      c.filter = 'none';
+      if (o.glow) { c.shadowColor = o.glow; c.shadowBlur = 13 * this.scale; }   // aura das criaturas únicas (Fenda, chefes mundiais…)
+      c.drawImage(an.img, fx0, fy0, M.frameW, M.frameH, dx, dy, fw, fh);
+      c.filter = 'none'; c.shadowBlur = 0; c.shadowColor = 'transparent';
       if (o.flash > 0) {
         if (!an.flash) { const f = document.createElement('canvas'); f.width = an.img.width; f.height = an.img.height; const g = f.getContext('2d'); g.drawImage(an.img, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = '#ffd9b8'; g.fillRect(0, 0, f.width, f.height); an.flash = f; }
-        c.globalAlpha *= U.clamp(o.flash, 0, 1) * .42; c.drawImage(an.flash, col * M.frameW, row * M.frameH, M.frameW, M.frameH, dx, dy, fw, fh);
+        c.globalAlpha *= U.clamp(o.flash, 0, 1) * .42; c.drawImage(an.flash, fx0, fy0, M.frameW, M.frameH, dx, dy, fw, fh);
       }
       c.restore();
     }
@@ -1124,8 +1302,8 @@
     }
     drawOverlay() {
       const c = this.ctx;
-      if (this.engine.enemies.some(e => e.alive && e.windup > 0)) { const pulse = .5 + .5 * Math.sin(this.worldTime * (this.intense ? 16 : 5)), k = this.intense ? 1 : .45; const g = c.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .9); g.addColorStop(0, 'rgba(255,0,40,0)'); g.addColorStop(1, `rgba(200,40,50,${(.22 + .18 * pulse) * k})`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
-      if (this.screenFlash) { c.save(); c.globalAlpha = (this.screenFlash.t / this.screenFlash.max) * (this.intense ? .14 : .05); c.globalCompositeOperation = 'screen'; c.fillStyle = this.screenFlash.color; c.fillRect(0, 0, W, H); c.restore(); }
+      if (this.engine.enemies.some(e => e.alive && (e.windup > 0 || e.striking))) { const pulse = .5 + .5 * Math.sin(this.worldTime * (this.intense ? 16 : 5)), k = this.intense ? 1 : .45; const g = c.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .9); g.addColorStop(0, 'rgba(255,0,40,0)'); g.addColorStop(1, `rgba(200,40,50,${(.22 + .18 * pulse) * k})`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+      if (this.screenFlash) { c.save(); c.globalAlpha = (this.screenFlash.t / this.screenFlash.max) * (this.screenFlash.strong ? .24 : this.intense ? .14 : .05); c.globalCompositeOperation = 'screen'; c.fillStyle = this.screenFlash.color; c.fillRect(0, 0, W, H); c.restore(); }
       if (this.engine.pendingRoute || this.engine.pendingEncounter || this.engine.paused) { c.fillStyle = 'rgba(6,4,18,.45)'; c.fillRect(0, 0, W, H); }
     }
     portrait(sprite) {
@@ -1184,7 +1362,7 @@
       if (!this.intense) {
         const c = this.ctx, k = b.t / b.dur, inK = easeOut(Math.min(1, b.t / .25)), fade = k > .75 ? 1 - (k - .75) / .25 : 1;
         c.save(); c.globalAlpha = fade * inK; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-        const y = 150; c.fillStyle = 'rgba(14,12,20,.72)'; c.fillRect(W / 2 - 260, y - 44, 520, b.sub ? 74 : 56); c.fillStyle = b.color; c.fillRect(W / 2 - 260, y - 44, 520, 2);
+        const y = 176; c.fillStyle = 'rgba(14,12,20,.72)'; c.fillRect(W / 2 - 260, y - 44, 520, b.sub ? 74 : 56); c.fillStyle = b.color; c.fillRect(W / 2 - 260, y - 44, 520, 2);
         c.font = `800 32px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(b.title, W / 2, y - 4);
         if (b.sub) { c.font = `600 14px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.72)'; c.fillText(b.sub, W / 2, y + 20); }
         c.restore(); return;

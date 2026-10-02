@@ -5,8 +5,8 @@
   // Pontos de referência (1280×720). Quem anda usa o ponto encaixado no chão; vendedor parado fica ao lado da banca.
   const N = {
     plaza:[560,430], plazaN:[560,408], plazaS:[560,454], plazaW:[515,438], plazaE:[610,438], guardSouth:[560,470],
-    marketE:[420,462], marketM:[300,470], marketW:[150,470], marketGuide:[410,451], stallRenji:[338,469], stallYori:[379,474], stallAya:[255,469], stallMio:[303,474], stallGoro:[166,451],
-    dojo:[200,312], dojoStairs:[205,380], guild:[200,168], guildSteps:[285,190], garden:[450,300],
+    marketE:[420,462], marketM:[300,470], marketW:[150,470], marketGuide:[410,451], stallRenji:[338,463], stallYori:[379,467], stallAya:[255,463], stallMio:[303,467], stallGoro:[166,451],
+    dojo:[200,312], dojoStairs:[205,380], dojoKata:[126,317], dojoKata2:[207,319], dojoSword:[166,322], dojoMaster:[248,313], guild:[200,168], guildSteps:[285,190], garden:[450,300],
     temple:[570,162], templeL:[535,160], templeR:[610,166], templeMid:[610,240],
     forge:[770,372], forgePost:[790,395],
     bridgeW:[815,513], bridgeM:[860,506], eastLand:[935,500], shrine:[1060,410], shrineStory:[1010,470], shrineLantern:[1040,440],
@@ -31,19 +31,21 @@
     {people:['Hina','Chiyo'],lines:[['Hina','Minha avó dançava esta volta antes de existir a Fenda.'],['Chiyo','Então me ensine sem pular o passo das lanternas.'],['Hina','Duas palmas, uma volta. E deixamos o centro livre para quem chega.']]},
     {people:['Nao','Setsu'],lines:[['Nao','O chá ganhou uma pétala. Posso bebê-lo assim?'],['Setsu','Pode. Nesta noite dizemos que é um convite da primavera.'],['Nao','Vou guardar outra xícara para quem voltar da expedição.']]},
     {people:['Natsu','Yori'],lines:[['Natsu','As fitas de desejos acabaram antes dos doces!'],['Yori','Tem mais no cesto. O rosa é para os reencontros.'],['Natsu','Vou guardar uma para cada viajante que voltar.']]},
-    {people:['Emi','Riku'],lines:[['Emi','Já prendeu seu desejo no corrimão?'],['Riku','Sim: que toda primavera tenha esta roda de novo.'],['Emi','Vou prendê-lo junto ao meu. Que esta noite nunca seja esquecida.']]}
+    {people:['Emi','Riku'],lines:[['Emi','Já prendeu seu desejo no corrimão?'],['Riku','Sim: que toda primavera tenha esta roda de novo.'],['Emi','Vou prendê-lo junto ao meu. Que esta noite nunca seja esquecida.']]},
+    {people:['Gensai','Sota'],lines:[['Gensai','De novo, Sota. O quadril gira antes do punho.'],['Sota','Mestre, o festival já começou…'],['Gensai','Mais dez. Depois eu mesmo pago o seu dango.']]},
+    {people:['Kaede','Ichiro'],lines:[['Ichiro','Seu corte assobia. O meu soco só faz vento.'],['Kaede','Vento também derruba lanterna. Continue.'],['Ichiro','Então hoje eu derrubo o boneco!']]}
   ];
   const FOLK = [
     {f:0,name:'Renji',post:'stallRenji',face:1,verb:'Vendendo lámen',festival:'ribbon'},{f:1,name:'Maki',post:'forgePost',face:-1,verb:'Martelando',festival:'ribbon'},{f:2,name:'Suzu',route:['templeL','templeR'],speed:12,verb:'Varrendo'},
     {f:3,name:'Hotaru',route:['shrine','shrineLantern'],speed:13,verb:'Acendendo lanternas',festival:'lantern'},
-    {f:4,name:'Goro',post:'stallGoro',face:1,verb:'Vendendo peixe'},{f:5,name:'Aya',post:'stallAya',face:1,verb:'Servindo chá'},{f:6,name:'Tomo',route:['playMarketW','playMarketC','playMarketE'],speed:11,verb:'Brincando'},
+    {f:4,name:'Goro',post:'stallGoro',face:1,verb:'Vendendo peixe'},{f:5,name:'Aya',post:'stallAya',face:1,verb:'Servindo chá'},{f:6,name:'Tomo',route:['playMarketW','playMarketC','playMarketE','marketW'],speed:30,verb:'Correndo com o cata-vento',sheet:'kid'},
     {f:7,name:'Jinbei',route:['plazaW','guardSouth','plazaE','guardSouth'],speed:19,verb:'De ronda'},{f:8,name:'Natsu',post:'marketGuide',face:-1,verb:'Mercadora'},
-    {f:9,name:'Daigo',route:['expedition','dockMid'],speed:15,verb:'Carregando caixas'},{f:3,name:'Koharu',post:'dance',face:1,verb:'Dançando'},{f:6,name:'Riku',post:'drum',face:-1,verb:'Tocando tambor'},
+    {f:9,name:'Daigo',route:['expedition','dockMid'],speed:15,verb:'Carregando caixas'},{f:3,name:'Koharu',post:'dance',face:1,verb:'Dançando',act:'dancer'},{f:6,name:'Riku',post:'drum',face:-1,verb:'Tocando tambor',act:'taiko'},
     {f:2,name:'Emi',post:'playB',face:-1,verb:'Entregando talismãs',festival:'ribbon'},{f:5,name:'Yori',post:'stallYori',face:-1,verb:'Fazendo doces',festival:'ribbon'},{f:0,name:'Fumi',post:'shrineStory',face:-1,verb:'Contando histórias'},
     {f:4,name:'Kai',route:['dock','dockWest'],speed:12,verb:'Guiando visitantes'},{f:8,name:'Mio',post:'stallMio',face:1,verb:'Pintando máscaras'},
     {f:9,name:'Bento',route:['bankLanding','workshopGate','workshop','workshopGate'],speed:13,verb:'Levando oferendas'},
-    {f:3,name:'Hina',post:'danceA',face:-1,verb:'Dançando a roda das pétalas',festival:'fan'},
-    {f:5,name:'Chiyo',post:'danceB',face:-1,verb:'Aprendendo a dança',festival:'fan'},
+    {f:3,name:'Hina',post:'danceA',face:-1,verb:'Dançando a roda das pétalas',festival:'fan',act:'dancer'},
+    {f:5,name:'Chiyo',post:'danceB',face:1,verb:'Aprendendo a dança',festival:'fan',act:'dancer',beat:.5},
     {f:2,name:'Yume',post:'danceC',face:-1,verb:'Cantando com a roda',festival:'fan'},
     {f:8,name:'Nao',post:'teaA',face:1,verb:'Provando chá de primavera',festival:'ribbon'},
     {f:0,name:'Setsu',post:'teaB',face:-1,verb:'Servindo os viajantes',festival:'ribbon'},
@@ -57,7 +59,15 @@
     {f:2,name:'Rei',route:['templeGuest','templeL','templeR'],speed:14,verb:'Cuidando das lanternas',festival:'lantern'},
     {f:5,name:'Mari',route:['gardenGuest','garden','plazaN'],speed:15,verb:'Levando flores',festival:'fan'},
     {f:0,name:'Shun',route:['shrineGuest','shrine','shrineStory'],speed:14,verb:'Levando nomes ao santuário',festival:'lantern'},
-    {f:9,name:'Gen',route:['workshopGuest','workshop','workshopGate'],speed:16,verb:'Entregando chá e doces',festival:'ribbon'}
+    {f:9,name:'Gen',route:['workshopGuest','workshop','workshopGate'],speed:16,verb:'Entregando chá e doces',festival:'ribbon'},
+    // Dojo do Eco: o pátio de treino nunca fica vazio.
+    {f:6,name:'Ichiro',post:'dojoKata',face:1,verb:'Treinando o kata',act:'kata'},
+    {f:6,name:'Sota',post:'dojoKata2',face:-1,verb:'Treinando o kata',act:'kata',beat:.45},
+    {f:1,name:'Kaede',post:'dojoSword',face:1,verb:'Cortes com o bokken',act:'bokken',beat:.2},
+    {f:2,name:'Gensai',post:'dojoMaster',face:-1,verb:'Corrigindo a postura dos alunos',act:'sensei'},
+    // Vida solta pelas ruas.
+    {f:6,name:'Mochi',route:['plazaS','garden','templeMid','plazaN','marketE'],speed:21,verb:'Passeando',sheet:'cat',small:true},
+    {f:5,name:'Akari',route:['shrineLantern','eastLand','bridgeM','plazaE'],speed:14,verb:'Levando a lanterna ao santuário',sheet:'lanterngirl',festival:'lantern'}
   ];
   const GREETINGS = {
     Renji:['O caldo é da receita da minha mãe. Na primavera em que ela sumiu, prometi nunca fechar a banca antes da última lanterna.','Yori guarda os doces; eu guardo o fogo. Se alguém regressar da Fenda esta noite, terá uma mesa.'],
@@ -93,37 +103,20 @@
     Rei:['Suzu varreu os degraus; eu cuido das luzes. Quem chega pelo portal deve encontrar uma cidade de braços abertos.'],
     Mari:['Estas flores são para a roda da praça. As que sobrarem vão para as famílias que esperam alguém.'],
     Shun:['Não acendemos lanternas só pelos heróis. Cada nome importa: barqueiros, cozinheiras, aprendizes, todos.'],
-    Gen:['A oficina aprendeu a fazer doces sem usar os frascos de poção. Maki ainda confere as etiquetas por garantia.']
+    Gen:['A oficina aprendeu a fazer doces sem usar os frascos de poção. Maki ainda confere as etiquetas por garantia.'],
+    Ichiro:['Cem socos antes do jantar. O mestre diz que o centésimo é o único que conta.','Quero entrar na Ordem dos Aventureiros. Primeiro, preciso acertar o chute sem cair.'],
+    Sota:['O boneco de madeira nunca erra o bloqueio. Um dia eu também não vou errar.'],
+    Kaede:['O bokken pesa menos que uma lâmina, mas o corte é o mesmo: do ombro, não do pulso.','Treino aqui desde que o Eclipse levou a espada do meu pai. Vou buscá-la.'],
+    Gensai:['Postura antes de força. Quem aprende a ficar de pé não precisa aprender a cair.','O Dojo do Eco devolve o que você entrega: pressa vira tropeço, paciência vira técnica.'],
+    Mochi:['Miau.','Mrrrau!','Prrrr…'],
+    Akari:['Esta lanterna é para o nome da minha mãe. Hotaru me ensinou a não deixar a chama apagar no caminho.','Se o vento soprar forte, eu canto. A chama gosta de música.']
   };
 
   // ---- chão ----
-  // Ruas verificadas na arte, não cores escuras do telhado. Cada segmento termina numa
-  // escada, pátio ou ponte real; a oficina só se liga ao píer contornando a praça.
-  const STREETS = [
-    [10, [[100,168],[260,171],[328,158]]],
-    [8, [[254,141],[266,170],[277,191],[327,225],[290,238],[244,270],[290,288],[332,326],[388,355],[452,394],[512,439]]],
-    [10, [[244,270],[201,287],[181,306],[145,308],[90,301],[55,288]]],
-    [9, [[448,298],[482,334],[540,347],[591,319],[626,296],[605,244],[586,208],[569,187],[580,158]]],
-    [11, [[532,161],[561,174],[586,179],[623,162]]],
-    [10, [[540,347],[547,376],[556,410]]],
-    [13, [[61,413],[184,464],[263,477],[375,478],[439,445],[482,413],[516,430]]],
-    [9, [[166,451],[195,461],[255,469],[303,474],[338,469],[379,474],[420,462]]],
-    [12, [[556,410],[606,410],[677,388],[753,388],[792,370],[831,370]]],
-    [10, [[685,444],[730,455],[752,495],[787,528],[815,513],[855,506],[913,510]]],
-    [10, [[913,510],[965,474],[1017,480],[1067,410]]],
-    [10, [[913,510],[933,559],[970,600],[1080,630],[1188,648],[1242,630]]],
-    [12, [[184,464],[251,522],[337,588],[368,591],[474,619],[641,698],[740,670]]],
-    [12, [[368,591],[266,654],[181,648],[240,637]]]
-  ];
-  const COURTS = [
-    [[515,410],[568,393],[640,397],[686,419],[693,445],[664,463],[558,465],[512,443]],
-    [[54,286],[146,276],[193,283],[202,301],[173,317],[88,310]],
-    [[115,168],[267,162],[307,173],[260,184],[126,184]],
-    [[536,163],[556,155],[610,158],[625,173],[593,186],[554,179]],
-    [[150,652],[183,633],[235,631],[270,649],[245,672],[179,673]],
-    [[627,695],[676,669],[738,659],[777,675],[747,705],[665,711]],
-    [[962,600],[989,589],[1195,625],[1244,620],[1250,640],[1188,664]]
-  ];
+  // O chão é o desenho de caminhos feito sobre a arte (src/town-walk.js, gerado por tools/build_walkmap.py): ruas,
+  // escadas, pontes e pátios exatamente onde foram traçados. A praça central entra inteira (o traço em espiral deixava
+  // frestas) e frestas de uma célula são fechadas. Nada de linhas aproximadas por cima de muros e telhados.
+  const PLAZA = [[515,410],[568,393],[640,397],[686,419],[693,445],[664,463],[558,465],[512,443]];
   function inside(x, y, polygon) {
     let on = false;
     for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -137,15 +130,11 @@
     if (G) return G;
     const W = KT.TownWalk; if (!W) { G = new Uint8Array(GW * GH); EDGE = new Uint8Array(GW * GH); return G; }
     GW = W.w; GH = W.h; CELL = W.cell; G = new Uint8Array(GW * GH);
-    for (const [radius, points] of STREETS) for (let i = 1; i < points.length; i++) {
-      const [ax, ay] = points[i - 1], [bx, by] = points[i], dx = bx - ax, dy = by - ay, len = dx * dx + dy * dy;
-      for (let cy = Math.max(0, Math.floor((Math.min(ay, by) - radius) / CELL)); cy <= Math.min(GH - 1, Math.ceil((Math.max(ay, by) + radius) / CELL)); cy++)
-        for (let cx = Math.max(0, Math.floor((Math.min(ax, bx) - radius) / CELL)); cx <= Math.min(GW - 1, Math.ceil((Math.max(ax, bx) + radius) / CELL)); cx++) {
-          const x = cx * CELL + CELL / 2, y = cy * CELL + CELL / 2, t = Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / len));
-          if (Math.hypot(x - ax - dx * t, y - ay - dy * t) <= radius) G[cy * GW + cx] = 1;
-        }
-    }
-    for (let cy = 0; cy < GH; cy++) for (let cx = 0; cx < GW; cx++) if (!G[cy * GW + cx] && COURTS.some(p => inside(cx * CELL + CELL / 2, cy * CELL + CELL / 2, p))) G[cy * GW + cx] = 1;
+    W.rows.split(';').forEach((row, cy) => { let x = 0, on = false; for (const n of row.split(',')) { const len = Number(n); if (on && cy < GH) G.fill(1, cy * GW + x, cy * GW + Math.min(GW, x + len)); x += len; on = !on; } });
+    for (let cy = 0; cy < GH; cy++) for (let cx = 0; cx < GW; cx++) if (!G[cy * GW + cx] && inside(cx * CELL + CELL / 2, cy * CELL + CELL / 2, PLAZA)) G[cy * GW + cx] = 1;
+    // Fecha frestas finas do traço: célula vazia com chão dos dois lados (na horizontal ou na vertical) vira chão.
+    const gap = []; for (let cy = 1; cy < GH - 1; cy++) for (let cx = 1; cx < GW - 1; cx++) { const i = cy * GW + cx; if (!G[i] && ((G[i - 1] && G[i + 1]) || (G[i - GW] && G[i + GW]))) gap.push(i); }
+    gap.forEach(i => { G[i] = 1; });
     EDGE = new Uint8Array(GW * GH); const q = [];                    // distância até a borda: a rota prefere o meio do caminho
     for (let i = 0; i < G.length; i++) { if (G[i]) EDGE[i] = 255; else q.push(i); }
     for (let h = 0; h < q.length; h++) { const i = q[h], x = i % GW, y = (i / GW) | 0;
@@ -179,30 +168,44 @@
     return [x, y];
   }
   // A* com fila de prioridade; `avoid` = discos [x, y, r] que não podem ser pisados (gente parada no caminho).
+  // Feito para rodar durante o jogo sem engasgar: memória reaproveitada entre chamadas (carimbo de geração em vez de
+  // limpar 230 mil células), discos pintados uma vez numa máscara e heurística justa (1,5 × distância octogonal, o
+  // menor custo possível por célula). Antes cada rota levava ~14 ms e a cidade dava pequenos trancos.
+  let RT = null;
   function route(ax, ay, bx, by, avoid = []) {
     grid(); const [sx, sy] = cellOf(...snap(ax, ay)), [tx, ty] = cellOf(...snap(bx, by)), S = sy * GW + sx, T = ty * GW + tx;
     if (!G[S] || !G[T]) return null;
     if (S === T) return [];
-    const blockers = avoid.map(([ox, oy, r]) => ({ ox, oy, r, start:Math.hypot(ax - ox, (ay - oy) * 1.55) }));
-    const blockedAt = (x, y) => blockers.some(o => { const d = Math.hypot(x - o.ox, (y - o.oy) * 1.55); return d < o.r && (o.start >= o.r || d < Math.max(GAP + .05, o.start - .01)); });
-    const blocked = i => blockedAt((i % GW) * CELL + CELL / 2, ((i / GW) | 0) * CELL + CELL / 2);
-    const g = new Float32Array(GW * GH).fill(Infinity), from = new Int32Array(GW * GH).fill(-1), done = new Uint8Array(GW * GH);
-    const heap = [], push = (i, f) => { heap.push([f, i]); let k = heap.length - 1; while (k) { const p = (k - 1) >> 1; if (heap[p][0] <= heap[k][0]) break; [heap[p], heap[k]] = [heap[k], heap[p]]; k = p; } };
-    const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let k = 0; for (;;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } } return top; };
-    g[S] = 0; push(S, 0); let found = false;
-    while (heap.length) {
-      const [, i] = pop(); if (done[i]) continue; done[i] = 1; if (i === T) { found = true; break; }
+    const n = GW * GH;
+    const R = RT && RT.n === n ? RT : (RT = { n, gen:0, g:new Float32Array(n), from:new Int32Array(n), seen:new Uint32Array(n), done:new Uint32Array(n), block:new Uint32Array(n), hf:[], hi:[] });
+    const gen = ++R.gen, { g, from, seen, done, block, hf, hi } = R;
+    for (const [ox, oy, r] of avoid) {
+      const start = Math.hypot(ax - ox, (ay - oy) * 1.55), ry = r / 1.55;
+      for (let cy = Math.max(0, Math.floor((oy - ry) / CELL)); cy <= Math.min(GH - 1, Math.ceil((oy + ry) / CELL)); cy++)
+        for (let cx = Math.max(0, Math.floor((ox - r) / CELL)); cx <= Math.min(GW - 1, Math.ceil((ox + r) / CELL)); cx++) {
+          const d = Math.hypot(cx * CELL + CELL / 2 - ox, (cy * CELL + CELL / 2 - oy) * 1.55);
+          // Quem já começa dentro do disco pode sair dele (afastando-se), nunca entrar mais.
+          if (d < r && (start >= r || d < start - .01)) block[cy * GW + cx] = gen;
+        }
+    }
+    const blockedAt = (x, y) => { const [cx, cy] = cellOf(x, y); return block[cy * GW + cx] === gen; };
+    let size = 0;
+    const push = (i, f) => { let k = size++; while (k) { const p = (k - 1) >> 1; if (hf[p] <= f) break; hf[k] = hf[p]; hi[k] = hi[p]; k = p; } hf[k] = f; hi[k] = i; };
+    const pop = () => { const top = hi[0], f = hf[--size], i = hi[size]; let k = 0; for (;;) { let c = 2 * k + 1; if (c >= size) break; if (c + 1 < size && hf[c + 1] < hf[c]) c++; if (hf[c] >= f) break; hf[k] = hf[c]; hi[k] = hi[c]; k = c; } hf[k] = f; hi[k] = i; return top; };
+    g[S] = 0; seen[S] = gen; push(S, 0); let found = false;
+    while (size) {
+      const i = pop(); if (done[i] === gen) continue; done[i] = gen; if (i === T) { found = true; break; }
       const x = i % GW, y = (i / GW) | 0;
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
         if (!dx && !dy) continue; const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= GW || ny >= GH) continue;
-        const j = ny * GW + nx; if (!G[j] || done[j] || (dx && dy && (!G[y * GW + nx] || !G[ny * GW + x]))) continue;
-        if (avoid.length && j !== T && blocked(j)) continue;
+        const j = ny * GW + nx; if (!G[j] || done[j] === gen || (dx && dy && (!G[y * GW + nx] || !G[ny * GW + x]))) continue;
+        if (block[j] === gen && j !== T) continue;
         const c = g[i] + (dx && dy ? 1.414 : 1) * (1 + 2.5 / Math.min(5, EDGE[j]));
-        if (c < g[j]) { g[j] = c; from[j] = i; push(j, c + Math.hypot(nx - tx, ny - ty)); }
+        if (seen[j] !== gen || c < g[j]) { g[j] = c; seen[j] = gen; from[j] = i; const ex = Math.abs(nx - tx), ey = Math.abs(ny - ty); push(j, c + 1.5 * (Math.max(ex, ey) + .414 * Math.min(ex, ey))); }
       }
     }
     if (!found) return null;
-    const cells = []; for (let i = T; i !== -1; i = from[i]) cells.unshift(i);
+    const cells = []; for (let i = T; ; i = from[i]) { cells.unshift(i); if (i === S) break; }
     const pts = cells.map(i => [(i % GW) * CELL + CELL / 2, ((i / GW) | 0) * CELL + CELL / 2]);
     // Encurta por linha de visada, só se o trecho reto também estiver todo no chão.
     const clear = (p, q) => onGround(p, q, avoid.length ? blockedAt : null);
@@ -216,6 +219,7 @@
   const pick = list => { const total = list.reduce((s, x) => s + x.w, 0); let r = Math.random() * total; for (const x of list) if ((r -= x.w) < 0) return x; return list[0]; };
   const depth = y => .78 + .3 * Math.max(0, Math.min(1, (y - 160) / 540));
   const GAP = 16;             // espaço pessoal (px, com o eixo y achatado pela perspectiva)
+  const STAND_GAP = 12, POST_GAP = 9, FOLLOW_GAP = 15;   // distância ao contornar quem está parado / vendedor na banca / fila
   const dist = (a, b) => Math.hypot(a.x - b.x, (a.y - b.y) * 1.55);
 
   class TownLife {
@@ -225,7 +229,7 @@
       this.dialoguePair = null; this.dialogueLine = 0; this.dialogueAt = 4;
       const starts = ['plazaN', 'forge', 'marketE', 'dojo', 'garden', 'shrine'];
       this.agents = heroes.map((h, i) => { const [x, y] = at(starts[i % starts.length]); return { id:i, kind:'hero', ...h, x, y, path:[], wait:1.5 + i, face:1, speed:28 + i * 1.5, speedNow:0, verb:'', walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; })
-        .concat(FOLK.map((f, i) => { const [x, y] = f.post ? N[f.post] : at(f.route[0]); return { id:heroes.length + i, kind:'folk', f:f.f, def:f, name:f.name, x, y, fixed:!!f.post, path:[], wait:1 + Math.random() * 3, face:f.face || 1, speed:f.speed || 0, speedNow:0, verb:f.verb, ri:0, walkT:Math.random(), walkD:0, animT:Math.random() * 5, speech:'', speechFor:0 }; }));
+        .concat(FOLK.map((f, i) => { const [x, y] = f.post ? N[f.post] : at(f.route[0]); return { id:heroes.length + i, kind:'folk', f:f.f, def:f, name:f.name, x, y, fixed:!!f.post, path:[], wait:1 + Math.random() * 3, face:f.face || 1, speed:f.speed || 0, speedNow:0, verb:f.verb, ri:0, walkT:Math.random(), walkD:0, animT:f.act ? (f.beat || 0) * 4 : Math.random() * 5, speech:'', speechFor:0 }; }));
       const placed = [];
       for (const a of this.agents) {
         if (placed.some(o => dist(a, o) < GAP + 1)) {
@@ -241,82 +245,79 @@
         placed.push(a);
       }
     }
-    // Destino livre: ninguém parado nem chegando a menos de GAP.
-    free(a, p) { return this.agents.every(o => o === a || [[o.x, o.y], (a.kind === 'hero' || Math.hypot(o.x - p[0], (o.y - p[1]) * 1.55) < 80) && o.goal].every(q => !q || Math.hypot(q[0] - p[0], (q[1] - p[1]) * 1.55) > GAP + 4)); }
-    go(a, p, avoid) {
-      const nearby = avoid || this.agents.filter(o => o !== a && dist(a, o) < 100).map(o => [o.x, o.y, GAP + 3]);
-      const r = route(a.x, a.y, p[0], p[1], nearby) || route(a.x, a.y, p[0], p[1]);
-      if (!r || !r.length) { a.wait = .4 + Math.random() * .5; a.goal = null; return false; }
-      a.path = r; a.goal = p; a.tripStart = [a.x, a.y]; a.yielding = false; a.stuck = 0; a.blockedTries = 0; return true;
-    }
-    giveWay(a) {
-      const near = this.agents.filter(o => o !== a).sort((x, y) => dist(a, x) - dist(a, y))[0];
-      const direction = near ? Math.atan2(a.y - near.y, a.x - near.x) : Math.random() * Math.PI * 2;
-      const avoid = this.agents.filter(o => o !== a && dist(a, o) < 100).map(o => [o.x, o.y, GAP + 3]);
-      for (const radius of [28, 44, 60]) for (const turn of [0, -1, 1, -2, 2, 3]) {
-        const x = a.x + Math.cos(direction + turn * Math.PI / 3) * radius;
-        const y = a.y + Math.sin(direction + turn * Math.PI / 3) * radius;
-        const p = snap(x, y);
-        if (Math.hypot(p[0] - x, p[1] - y) > 8 || !this.free(a, p)) continue;
-        const path = route(a.x, a.y, ...p, avoid);
-        if (!path?.length) continue;
-        a.path = path; a.goal = p; a.spot = null; a.routeTarget = null; a.yielding = true;
-        a.idleFor = 0; a.stuck = 0; a.blockedTries = 0; return true;
+    // Destino livre: ninguém parado ali nem a caminho dali (quem só está de passagem não conta).
+    free(a, p) { return this.agents.every(o => o === a || [o.path.length ? null : [o.x, o.y], o.goal].every(q => !q || Math.hypot(q[0] - p[0], (q[1] - p[1]) * 1.55) > GAP + 4)); }
+    // Quem está parado por perto vira obstáculo da rota (vendedor na banca ocupa menos espaço que alguém no meio da rua).
+    standing(a) { return this.agents.filter(o => o !== a && !o.moving && !o.path.length && dist(a, o) < 110).map(o => [o.x, o.y, (o.fixed ? POST_GAP : STAND_GAP) + 2]); }
+    // Um ponto de chão livre perto de p (anéis de 20 a 46 px), para quando o destino está ocupado.
+    beside(a, p) {
+      const turn = a.id * 2.4;
+      for (const r of [20, 30, 46]) for (let i = 0; i < 8; i++) {
+        const q = snap(p[0] + Math.cos(turn + i * Math.PI / 4) * r, p[1] + Math.sin(turn + i * Math.PI / 4) * r / 1.55);
+        if (Math.hypot(q[0] - p[0], q[1] - p[1]) <= r + 6 && this.free(a, q)) return q;
       }
-      return false;
+      return null;
     }
+    go(a, p) {
+      const r = route(a.x, a.y, p[0], p[1], this.standing(a)) || route(a.x, a.y, p[0], p[1]);
+      if (!r || !r.length) { a.wait = .4 + Math.random() * .5; a.goal = null; return false; }
+      a.path = r; a.goal = p; a.stuck = 0; a.ghost = 0; return true;
+    }
+    // Movimento sem trava e sem vaivém:
+    //  · quem anda só desvia de quem está PARADO (a rota já contorna); dois andando se cruzam, como numa rua cheia;
+    //  · atrás de alguém mais lento no mesmo sentido, acompanha o passo em vez de atravessar;
+    //  · sem espaço para contornar (rua estreita), espera um instante e passa rente. Ninguém volta pelo caminho.
     update(dt) {
       for (const a of this.agents) {
         a.animT += dt; a.speechFor = Math.max(0, a.speechFor - dt); a.speechAge = (a.speechAge || 0) + dt;
         if (!a.speechFor) { a.speech = ''; a.manualSpeech = false; }
-        if (!a.fixed && (a.idleFor = (a.idleFor || 0) + dt) > 7 && (a.escapeIn = (a.escapeIn || 0) - dt) <= 0) {
-          a.escapeIn = 2; this.giveWay(a);
-        }
+        a.ghost = Math.max(0, (a.ghost || 0) - dt);
         if (a.path.length) {
           while (a.path.length && Math.hypot(a.path[0][0] - a.x, a.path[0][1] - a.y) < .35) a.path.shift();
           if (!a.path.length) { this.arrive(a); a.moving = false; continue; }
-          const [tx, ty] = a.path[0], dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy);
+          const [tx, ty] = a.path[0], dx = tx - a.x, dy = ty - a.y, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d;
           const remaining = Math.hypot(a.goal[0] - a.x, a.goal[1] - a.y);
-          const pace = Math.min(a.speed * depth(a.y), Math.max(8, remaining * 2.5));
+          let pace = Math.min(a.speed * depth(a.y), Math.max(8, remaining * 2.5));
+          // Fila natural: alguém andando logo à frente, no mesmo sentido, dita o passo.
+          for (const o of this.agents) {
+            if (o === a || !o.moving) continue;
+            const ox = o.x - a.x, oy = (o.y - a.y) * 1.55, od = Math.hypot(ox, oy);
+            if (od < FOLLOW_GAP && od > .01 && (ox * ux + oy * uy) / od > .6 && (o.vx || 0) * ux + (o.vy || 0) * uy > 0) pace = Math.min(pace, Math.max(4, (o.speedNow || 0) * .9));
+          }
           a.speedNow = Math.min(pace, (a.speedNow || 0) + 105 * dt);
-          const step = Math.min(d, a.speedNow * dt), nx = a.x + dx / d * step, ny = a.y + dy / d * step;
-          const blocker = this.agents.find(o => {
-            if (o === a) return false;
-            const before = dist(a, o), after = Math.hypot(nx - o.x, (ny - o.y) * 1.55);
-            return after < GAP && after < before - .01;
+          const step = Math.min(d, a.speedNow * dt), nx = a.x + ux * step, ny = a.y + uy * step;
+          const blocker = a.ghost > 0 ? null : this.agents.find(o => {
+            if (o === a || o.moving || o.path.length) return false;
+            const gap = o.fixed ? POST_GAP : STAND_GAP, before = dist(a, o), after = Math.hypot(nx - o.x, (ny - o.y) * 1.55);
+            return after < gap && after < before - .01;
           });
           if (!onGround([a.x, a.y], [nx, ny]) || blocker) {
-            a.moving = false; a.speedNow = 0; a.stuck = (a.stuck || 0) + dt;
-            if (a.stuck > .45 + (a.id % 3) * .12) {
-              a.stuck = 0;
-              if (blocker && !blocker.fixed && !a.yielding && a.tripStart && (a.kind === 'folk' && blocker.kind === 'hero' || a.id > blocker.id) && Math.hypot(a.x - a.tripStart[0], a.y - a.tripStart[1]) > 5) {
-                const back = route(a.x, a.y, ...a.tripStart);
-                if (back?.length) { a.path = back; a.goal = a.tripStart; a.routeTarget = null; a.spot = null; a.yielding = true; a.blockedTries = 0; continue; }
-              }
-              const avoid = this.agents.filter(o => o !== a && dist(a, o) < 100).map(o => [o.x, o.y, GAP + 3]);
-              const alternative = ++a.blockedTries < 3 && route(a.x, a.y, a.goal[0], a.goal[1], avoid);
-              if (alternative?.length) a.path = alternative;
-              else { a.path = []; a.goal = null; a.wait = .3 + Math.random() * .4; a.blockedTries = 0; }
-            }
+            a.moving = false; a.speedNow = 0; a.vx = a.vy = 0; a.stuck = (a.stuck || 0) + dt;
+            if (!blocker) { a.path = []; a.goal = null; a.wait = .3; continue; }      // saiu do chão: escolhe outro destino
+            // Uma única tentativa de contornar (a rota é cara); sem espaço, espera um instante e passa rente.
+            const around = !a.triedAround && route(a.x, a.y, a.goal[0], a.goal[1], this.standing(a)); a.triedAround = true;
+            if (around?.length) a.path = around;
+            else if (a.stuck > .5) { a.ghost = 1.6; a.stuck = 0; a.triedAround = false; }
             continue;
           }
-          a.stuck = 0; a.blockedTries = 0;
+          a.stuck = 0; a.triedAround = false;
           if (Math.abs(dx) > Math.max(.4, Math.abs(dy) * .3)) a.face = dx > 0 ? 1 : -1;
-          a.x = nx; a.y = ny; a.walkT += dt; a.walkD += step; a.moving = step > .01; a.idleFor = 0;
+          a.vx = ux; a.vy = uy;
+          a.x = nx; a.y = ny; a.walkT += dt; a.walkD += step; a.moving = step > .01;
           if (d <= step + .001) { a.path.shift(); if (!a.path.length) this.arrive(a); }
           continue;
         }
-        a.moving = false; a.speedNow = 0;
+        a.moving = false; a.speedNow = 0; a.vx = a.vy = 0;
         if ((a.wait -= dt) > 0) continue;
         if (a.kind === 'hero') {
           const choices = SPOTS.filter(s => this.free(a, at(s.node))), s = choices.length ? pick(choices) : null;
           if (s) { a.spot = s; a.verb = ''; this.go(a, at(s.node)); } else a.wait = 1.5;
         } else if (a.def.route) {
           const next = (a.ri + 1) % a.def.route.length, p = at(a.def.route[next]);
-          if (this.free(a, p) && this.go(a, p)) a.routeTarget = next;
-          else { const back = (a.ri - 1 + a.def.route.length) % a.def.route.length, retreat = at(a.def.route[back]);
-            if (a.def.route.length > 2 && Math.hypot(a.x - retreat[0], a.y - retreat[1]) > 25 && this.free(a, retreat) && this.go(a, retreat)) a.routeTarget = back;
-            else a.wait = .6 + Math.random() * .5; }
+          // Ponto ocupado (vendedor na banca, outro morador parado ali): para ao lado, sem espera mútua nem recuo.
+          const spot = this.free(a, p) ? p : this.beside(a, p);
+          if (spot && this.go(a, spot)) a.routeTarget = next;
+          else a.wait = .8 + Math.random() * .8;
         } else { a.face = Math.random() < .35 ? -a.face : a.face; a.wait = 3 + Math.random() * 4; }
       }
       this.updateDialogue(dt);
@@ -349,7 +350,7 @@
       a.speech = lines[(a.talkLine || 0) % lines.length]; a.talkLine = (a.talkLine || 0) + 1;
       a.speechFor = 6; a.speechAge = 0; a.manualSpeech = true; this.dialogueAt = 9; return true;
     }
-    arrive(a) { a.goal = null; a.speedNow = 0; const yielded = a.yielding; a.yielding = false; if (a.kind === 'hero') { a.face = a.spot?.face || a.face; a.verb = a.spot?.verb || ''; a.wait = yielded ? .6 : 2.5 + Math.random() * 4; } else { if (a.routeTarget != null) a.ri = a.routeTarget; a.routeTarget = null; a.wait = yielded ? .6 : 1 + Math.random() * 2; } }
+    arrive(a) { a.goal = null; a.speedNow = 0; a.vx = a.vy = 0; if (a.kind === 'hero') { a.face = a.spot?.face || a.face; a.verb = a.spot?.verb || ''; a.wait = 2.5 + Math.random() * 4; } else { if (a.routeTarget != null) a.ri = a.routeTarget; a.routeTarget = null; a.wait = 1 + Math.random() * 2; } }
     drawList() { return this.agents.map(a => ({ a, s:depth(a.y), h:34 * depth(a.y) })).sort((p, q) => p.a.y - q.a.y); }
   }
   KT.TownLife = TownLife;

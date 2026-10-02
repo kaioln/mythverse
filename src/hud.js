@@ -1,7 +1,7 @@
 // HUD limpo (padrão): na tela fica só o que se usa agora, o resto a um toque.
 //  · menu lateral com 6 atalhos principais + "Mais";  · no topo só ouro, cristais e chaves;
 //  · painel da direita recolhido, trocado por um único cartão de OBJETIVO na arena;
-//  · controles de batalha: ⚡ FORÇA, 🌙 AFK, VEL, CIDADE (AUTO e AVANÇO no ⚙);
+//  · controles de batalha: PREPARAR, COMANDO, VEL, CIDADE (AFK e AVANÇO em MAIS);
 //  · cartões dos heróis sem a linha da passiva; placas da cidade só com o nome.
 // "HUD completo" em Perfil volta ao layout com tudo.
 (() => {
@@ -40,13 +40,18 @@
     const placeChip = () => { const chip = this.el.goalChip, banner = this.el.afkBanner, mob = matchMedia('(max-width:900px)').matches, vp = document.querySelector('#viewport'), dock = document.querySelector('#party-strip'); if (chip) { if (mob) document.querySelector('#district-grid')?.before(chip); else vp?.appendChild(chip); } if (banner) { if (mob) dock?.before(banner); else vp?.appendChild(banner); }
       // Controles da batalha: sobre o palco no PC; no celular numa barra logo abaixo (o palco é pequeno e eles cobriam a luta).
       const ctl = this._ctl ||= document.querySelector('.stage-controls'), top = this._ctlHome ||= ctl?.parentElement;
-      if (ctl) { if (mob) vp?.after(ctl); else if (ctl.parentElement !== top) top?.appendChild(ctl); ctl.classList.toggle('below-stage', mob); } };
+      if (ctl) { if (mob) vp?.after(ctl); else if (ctl.parentElement !== top) top?.appendChild(ctl); ctl.classList.toggle('below-stage', mob); }
+      // Guarda e poções: no canto do palco no PC; no celular numa faixa larga logo abaixo dele (a Guarda pede um botão grande, ao alcance do polegar).
+      const cons = document.querySelector('#consumables'); if (cons) { if (mob) vp?.after(cons); else if (cons.parentElement !== vp) vp?.appendChild(cons); cons.classList.toggle('below-stage', mob); }
+      // Comando da vez do herói: no PC flutua no meio do palco, entre as duas equipes; no celular fica logo abaixo dele.
+      const lobby = document.querySelector('#lobby-bar'); if (lobby) { if (mob) vp?.after(lobby); else if (lobby.parentElement !== vp) vp?.appendChild(lobby); }
+      const turn = document.querySelector('#turn-cmd'); if (turn) { if (mob) vp?.after(turn); else if (turn.parentElement !== vp) vp?.appendChild(turn); turn.classList.toggle('below-stage', mob); } };
     placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
-    // Combate só com o essencial: FORÇA, VEL e CIDADE à vista; AFK, AUTO e AVANÇO no botão "Mais".
+    // Combate só com o essencial: PREPARAR, COMANDO, VEL e CIDADE à vista; AFK e AVANÇO no botão "Mais".
     const ctl = document.querySelector('.stage-controls');
     if (ctl && !document.querySelector('#adv-ctl-btn')) {
       const more = document.createElement('button'); more.id = 'adv-ctl-btn'; more.className = 'ctl'; more.type = 'button';
-      more.innerHTML = '<span>MAIS</span><b>···</b>'; more.dataset.tip = 'AFK, ultimates automáticas e avanço automático.';
+      more.innerHTML = '<span>MAIS</span><b>···</b>'; more.dataset.tip = 'Modo AFK e avanço automático de estágio.';
       more.addEventListener('click', () => ctl.classList.toggle('adv-open'));
       ctl.insertBefore(more, document.querySelector('#retreat-btn'));
     }

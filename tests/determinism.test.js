@@ -42,6 +42,10 @@ function scenario(zone, opts, segments, manual) {
     if (eng.seg && r() < .01 && eng.enemies.length) eng.input('focus', eng.enemies[Math.floor(r() * eng.enemies.length)].uid);
     if (eng.pendingChoice && r() < .05) eng.input('choice', eng.pendingChoice.options[Math.floor(r() * eng.pendingChoice.options.length)].id);
     if (eng.seg && r() < .002) eng.input('auto', r() < .5);
+    if (eng.seg && r() < .05) eng.input('skill', Math.floor(r() * 4));
+    if (eng.seg && r() < .02) eng.input('guard');
+    if (eng.seg && r() < .003) eng.input('mode', ['auto', 'semi', 'manual'][Math.floor(r() * 3)]);
+    if (eng.seg && eng.awaiting !== null && r() < .35) eng.input('act', r() < .75 ? 'attack' : 'defend');
   }
   const done = log.filter(x => x.fin);
   ok(done.length >= 1, `${zone}: segmentos concluídos`);
@@ -95,4 +99,54 @@ const st = server.State.createState(); const e = new server.CombatEngine(st, {})
 for (let i = 0; i < 10; i++) e.openBox(true); [0, 1, 2, 3].forEach(i => e.setParty(i, st.collection[i].uid));
 const out = new server.CombatEngine(st, {}).replaySegment({ id:9, seed:9, at:Date.now(), zone:'hunt', opts:{ stage:1 } }, Array.from({ length:500 }, (_, t) => ({ t, k:'ult', a:0 })), 400);
 ok(out.ok && st.stats.ults < 20, 'ultimates forjadas sem energia são ignoradas');
+
+// Comandos de luta: habilidade à mão respeita a recarga, a guarda corta o dano e o Aparo exige o tempo certo.
+{
+  const gs = client.State.createState(), g0 = new client.CombatEngine(gs, {});
+  for (let i = 0; i < 10; i++) g0.openBox(true); [0, 1, 2, 3].forEach(i => g0.setParty(i, gs.collection[i].uid));
+  gs.collection.forEach(r => { r.level = 30; });
+  const g = new client.CombatEngine(gs, {});
+  ok(g.setMode('manual') && g.mode === 'manual' && gs.settings.auto === false && gs.settings.autoSkill === false, 'modo MANUAL desliga habilidades e ultimates automáticas');
+  ok(!g.setMode('turbo') && g.setSetting('mode', 'semi') && g.mode === 'semi', 'modo inválido é recusado; SEMI mantém as habilidades automáticas');
+  g.setMode('manual');
+  g.enterZone('hunt', { stage:1 });
+  for (let i = 0; i < 400 && !(g.phase === 'fight' && g.enemies.some(e => e.alive && e.spawnT >= .5)); i++) g.tick();
+  ok(g.phase === 'fight', 'luta de teste começou');
+  const hero = g.party[0], foe = g.enemies.find(e => e.alive);
+  for (let i = 0; i < 400 && g.party.some(u => u.skillCd > 0); i++) { g.enemies.forEach(e => { e.hp = e.maxHp; }); g.party.forEach(u => { u.hp = u.maxHp; }); g.tick(); }
+  ok(g.party.every(u => u.skillCd <= 0) && !gs.stats.manualSkills, 'no modo MANUAL a habilidade fica pronta esperando o comando');
+  ok(g.input('skill', 0) === true && hero.skillCd > 0 && gs.stats.manualSkills === 1, 'habilidade comandada entra em recarga');
+  ok(g.input('skill', 0) === false && gs.stats.manualSkills === 1, 'habilidade em recarga é ignorada');
+  const avg = o => { let t = 0; for (let i = 0; i < 60; i++) { hero.hp = hero.maxHp; hero.shield = 0; foe.hp = foe.maxHp; foe.alive = true; t += g.hit(foe, hero, 1, o); } return t / 60; };
+  const plain = avg({ kind:'basic' });
+  ok(g.input('guard') === true && g.guardT > 0, 'guarda erguida');
+  ok(g.input('guard') === false, 'guarda em recarga não repete');
+  g.guardAge = 9; const guarded = avg({ kind:'basic' });
+  ok(guarded < plain * .6 && guarded > plain * .4, `guarda corta metade do dano (${plain.toFixed(1)} → ${guarded.toFixed(1)})`);
+  const before = gs.stats.parries || 0;
+  g.guardAge = 0; g.lastParry = -1; const parried = avg({ kind:'skill', special:true });
+  ok(parried < plain * .3 && (gs.stats.parries || 0) === before + 1, `aparo no tempo certo corta 80% e conta uma vez por golpe (${parried.toFixed(1)})`);
+  g.guardAge = 9; const late = avg({ kind:'skill', special:true });
+  ok(late > parried * 1.8 && (gs.stats.parries || 0) === before + 1, 'guarda atrasada não vira aparo');
+  g.guardT = 0; const open = avg({ kind:'skill', special:true });
+  ok(open > late * 1.6, 'sem guarda o golpe preparado entra inteiro');
+  // Vez do herói no comando MANUAL: com técnica pronta a luta espera a ordem; atacar segue, defender corta o dano.
+  g.guardCd = 0; g.awaiting = null; g.party.forEach(u => { u.skillCd = 0; u.atkCd = 5; u.go = false; u.hp = u.maxHp; }); g.enemies.forEach(e => { e.hp = e.maxHp; e.alive = true; e.atkCd = 50; e.skillCd = 50; });
+  hero.atkCd = 0; g.tick();
+  ok(g.awaiting === 0, 'na vez do herói com técnica pronta a luta espera a ordem');
+  const atkBefore = hero.counters.atk; g.tick(); g.tick();
+  ok(hero.counters.atk === atkBefore, 'enquanto espera, o herói não age sozinho');
+  ok(g.input('act', 'attack') === true && g.awaiting === null, 'ordem de atacar aceita');
+  g.tick(); ok(hero.counters.atk === atkBefore + 1 && hero.atkCd > 0, 'depois da ordem o golpe básico sai');
+  hero.atkCd = 0; g.tick(); ok(g.awaiting === 0 && g.input('act', 'defend') === true && hero.defend === true && hero.atkCd > 1, 'ordem de defender troca o golpe pela defesa');
+  const defended = avg({ kind:'basic' }); ok(defended < plain * .6 && defended > plain * .4, 'defender corta metade do dano até a próxima vez do herói');
+  hero.defend = false; ok(g.input('act', 'attack') === false, 'ordem fora da vez é recusada');
+  const order = g.turnOrder(8); ok(order.length > 0 && order.every((o, n) => !n || o.t >= order[n - 1].t), 'linha do tempo em ordem');
+  // Golpe preparado em dois tempos: bote (janela do Aparo) e, no passo seguinte, o impacto.
+  g.party.forEach(u => { u.skillCd = 99; u.atkCd = 99; u.energy = 0; }); const en = g.enemies.find(e => e.alive); const special = { name:'Teste', cd:9, windup:.1, eff:[{ k:'dmg', m:1, to:'all' }] };
+  en.windup = .05; en.windupMax = .1; en.windupSpecial = special; en.striking = false; en.spawnT = 1;
+  g.tick(); ok(en.striking === true && en.windupSpecial === special, 'primeiro o bote');
+  ok(g.input('guard', 1) === true, 'guarda no anel dourado'); const p0 = gs.stats.parries || 0;
+  g.tick(); ok(!en.striking && en.windupSpecial === null && (gs.stats.parries || 0) === p0 + 1, 'depois o impacto, aparado');
+}
 console.log(JSON.stringify({ ok:true, checks }));

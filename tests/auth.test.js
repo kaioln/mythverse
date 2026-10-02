@@ -8,7 +8,7 @@ const tick=()=>new Promise(setImmediate);
     let finish,reads=0,prompts=0,navigation='navigate',current={id:'u',username:'Teste'};
     const tabStorage=new Map();
     const saved={player:{name:'Teste'},inventory:['preservado']};
-    const KT={CONFIG:{},State:{SAVE_KEY:'save',setSaveKey(){},mergeState:s=>s},
+    const KT={CONFIG:{},bootLabel(){},State:{SAVE_KEY:'save',setSaveKey(){},mergeState:s=>s},
       Net:{detect:async()=>provider==='server',me:async()=>current,getState:async()=>{reads++;return {ok:true,state:saved};}},
       Neon:{enabled:true,currentUser:async()=>current,syncClock:async()=>true,loadSave:async()=>{reads++;return saved;}}};
     const sandbox={KT,URL,URLSearchParams,performance:{getEntriesByType:()=>[{type:navigation}]},sessionStorage:{getItem:k=>tabStorage.get(k),setItem:(k,v)=>tabStorage.set(k,v),removeItem:k=>tabStorage.delete(k)},location:{hostname:'example.test',protocol:'https:',search:'',origin:'https://example.test'}};
@@ -66,14 +66,15 @@ const tick=()=>new Promise(setImmediate);
   let plays=0;
   const audio={KT:{Neon:{signIn:async()=>({ok:true,user:{id:'u'}})}},FormData:class{entries(){return [['login','test@example.test'],['password','test-only']];}},Audio:class{constructor(url){assert.equal(url,'assets/audio/sfx/login.mp3');}pause(){this.paused=true;}play(){plays++;return Promise.resolve();}}};
   vm.runInNewContext(source('auth.js'),audio);const auth=audio.KT.Auth;auth.provider='neon';auth.hide=()=>{};
-  const form={dataset:{authForm:'login'},querySelector:()=>({textContent:'Entrar'})};
+  const classList={add(){},remove(){}};   // o botão ganha o estado "ocupado" enquanto a conta responde
+  const form={dataset:{authForm:'login'},querySelector:()=>({textContent:'Entrar',classList})};
   await auth.submit(form);assert.equal(plays,1);assert.equal(auth.loginSound.volume,.35);
   auth.soundEnabled=false;await auth.submit(form);assert.equal(plays,1,'respeitar botão de silêncio');
   auth.soundEnabled=true;form.querySelector=()=>({disabled:true});await auth.submit(form);assert.equal(plays,1,'bloquear clique duplicado durante login');
   auth.el={innerHTML:''};auth.bind=()=>{};auth.mode='login';auth.render();
   assert.ok(auth.el.innerHTML.indexOf('data-login-sound') < auth.el.innerHTML.indexOf('<section class="auth-card"'),'ícone fora do cartão de login');
   assert.ok(!auth.el.innerHTML.includes('Som de entrada:'),'remover opção textual do formulário');
-  const retryButton={textContent:'Entrar',disabled:false};form.querySelector=()=>retryButton;
+  const retryButton={textContent:'Entrar',disabled:false,classList};form.querySelector=()=>retryButton;
   let attempts=0;audio.KT.Neon.signIn=async()=>++attempts===1?{ok:false,error:'Senha incorreta'}:{ok:true,user:{id:'u'}};
   auth.error=()=>{};
   await auth.submit(form);const failedSound=auth.loginSound;assert.equal(retryButton.disabled,false);

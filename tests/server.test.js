@@ -292,9 +292,33 @@ async function worldBossSuite() {
   await server.shutdown(); fs.rmSync(dir, { recursive:true, force:true });
 }
 
+// Procedência com os padrões do servidor (1 h no mercado em ouro): item obtido jogando só pode ser anunciado depois da
+// idade mínima, e PODE ser anunciado depois dela (antes nunca podia: a procedência só era registrada ao restaurar um save).
+async function provenanceSuite() {
+  label = 'procedência';
+  let fake = Date.parse('2026-09-26T10:00:00-03:00'); const t0 = Date.now();
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mythverse-prov-'));
+  server = await createServer({ dataDir:dir, quiet:true, noBackups:true, secureCookie:false, now:() => fake + (Date.now() - t0) });
+  await new Promise(r => server.listen(0, '127.0.0.1', r)); base = `http://127.0.0.1:${server.address().port}`;
+  const c = new Client();
+  await c.req('POST', '/api/auth/register', { username:'Ferreiro1', password:'Kizuna2026x', confirm:'Kizuna2026x', acceptTerms:true });
+  let r = await c.req('POST', '/api/sync', { act:{ op:'openBoxes', args:[10] } });
+  r = await c.req('POST', '/api/sync', { act:{ op:'autoTeam', args:[] } });
+  ok(r.data.result === 4 && r.data.state.formation.filter(Boolean).length === 4, '"Montar melhor equipe" funciona no servidor autoritativo');
+  await grant(c, st => { st.guide.claimed = { g_summon:true, g_team:true, g_go:true }; st.progress.hunt.best = 1; st.player.gold = 50000; });
+  r = await c.req('POST', '/api/sync', { act:{ op:'claimGuide', args:[] } });
+  const got = r.data.state.inventory[0]; ok(r.data.result === true && got, 'item ganho jogando entra na bolsa');
+  const list = () => c.req('POST', '/api/sync', { act:{ op:'marketList', args:[{ kind:'item', itemUid:got.uid, price:1000, currency:'gold' }] } });
+  r = await list(); ok(/recém-obtidos/.test(r.data.actError || ''), 'item recém-obtido ainda não pode ser anunciado');
+  fake += 61 * 60_000;
+  r = await list(); ok(r.data.result?.id && !r.data.state.inventory.some(x => x.uid === got.uid), 'depois da idade mínima o item é anunciado');
+  await server.shutdown(); fs.rmSync(dir, { recursive:true, force:true });
+}
+
 (async () => {
   mpSignatureTest();
   await worldBossSuite();
+  await provenanceSuite();
   await suite('sqlite', {});
   const { PGlite } = await import('@electric-sql/pglite');
   await suite('postgres', { pglite:new PGlite() });

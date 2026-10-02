@@ -1,0 +1,70 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Cidade (desenvolvimento)</title>
+<base href="../../">
+<body style="margin:0;background:#111;overflow:hidden">
+<div id="wrap" style="width:1280px;height:720px;overflow:hidden;position:relative"><canvas id="c" style="display:block"></canvas></div>
+<canvas id="strip" style="display:none"></canvas>
+<script src="src/config.js"></script>
+<script src="src/data.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/items.js"></script>
+<script src="src/progression.js"></script>
+<script src="src/roster.js"></script>
+<script src="src/assets.js"></script>
+<script src="src/sprite-meta.js"></script>
+<script src="src/town-walk.js"></script>
+<script src="src/town-lights.js"></script>
+<script src="src/town.js"></script>
+<script src="src/renderer.js"></script>
+<script>
+// Ferramenta de desenvolvimento: a cidade viva sem login, para conferir caminhada, rotas e balões em alta resolução.
+//   ?t=40                 segundos simulados antes da foto (padrão 20)
+//   ?heroes=a,b,c,d       equipe (padrão erik,akira,aurelia,warden)
+//   ?zoom=3&x=420&y=330   amplia a partir do ponto (x, y) da cena 1280×720
+//   ?grid=1               pinta o chão andável
+//   ?strip=Nome&n=12&dt=.08   tira n quadros seguidos do personagem (herói ou morador) e mostra lado a lado
+//   ?trace=1              desenha o caminho percorrido por cada um durante a simulação
+(async () => {
+  const q = new URLSearchParams(location.search), num = (k, d) => (q.has(k) ? Number(q.get(k)) : d);
+  const ids = (q.get('heroes') || 'erik,akira,aurelia,warden').split(',');
+  const zoom = num('zoom', 1), ox = num('x', 0), oy = num('y', 0);
+  const canvas = document.getElementById('c');
+  canvas.style.width = 1280 * zoom + 'px'; canvas.style.marginLeft = -ox * zoom + 'px'; canvas.style.marginTop = -oy * zoom + 'px';
+  const D = KT.Data, assets = new KT.AssetBank();
+  const records = ids.map((id, i) => ({ uid:'h' + i, id }));
+  const engine = { zone:D.zones.village, phase:'idle', party:[], enemies:[], focusUid:null, opts:{}, now:() => Date.now(),
+    state:{ formation:records.map(r => r.uid), settings:{} }, record:uid => records.find(r => r.uid === uid), template:id => D.roster.find(t => t.id === id) };
+  const R = new KT.GameRenderer(canvas, assets, engine); R.resize(); R.zoneFade = 1; R.seedAmbient?.();
+  // Carrega tudo com promessas (o Chrome sem janela acelera os temporizadores, mas não a rede).
+  const load = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('falhou: ' + src)); i.src = src; });
+  const sceneUrl = KT.sceneUrl(D.zones.village.scene || 'village');
+  assets.images.set(sceneUrl, await load(sceneUrl));
+  R.festivalHomes = await load('assets/scenes/festival-homes.png').catch(() => new Image());
+  const index = await (await fetch('assets/town-walk/index.json')).json();
+  R.townArt = { index, folk:await load('assets/town-walk/folk.webp'), acts:index.acts ? await load('assets/town-walk/acts.webp') : null, failed:false, sheets:new Map() };
+  for (const id of ids) if (index.heroes[id]) R.townArt.sheets.set(id, await load(`assets/town-walk/${id}.webp`));
+  const trails = new Map();
+  const step = dt => { R.worldTime += dt; R.render(); if (q.has('trace')) R.town?.agents.forEach(a => { const t = trails.get(a) || trails.set(a, []).get(a); t.push([a.x, a.y]); }); };
+  for (let t = 0, T = num('t', 20); t < T; t += 1 / 30) step(1 / 30);
+  const c = R.ctx, overlay = () => {
+    c.setTransform(R.scale, 0, 0, R.scale, 0, 0);
+    if (q.has('grid')) { c.fillStyle = 'rgba(0,255,255,.28)'; for (let y = 0; y < 360; y++) for (let x = 0; x < 640; x++) if (KT.TownMap.isWalk(x * 2 + 1, y * 2 + 1)) c.fillRect(x * 2, y * 2, 2, 2); }
+    if (q.has('trace')) { c.lineWidth = 1.2; let i = 0; for (const [a, t] of trails) { c.strokeStyle = `hsl(${(i++ * 47) % 360} 90% 60%)`; c.beginPath(); t.forEach(([x, y], k) => k ? c.lineTo(x, y) : c.moveTo(x, y)); c.stroke(); } }
+  };
+  overlay();
+  if (q.has('strip')) {
+    const name = q.get('strip'), n = num('n', 12), dt = num('dt', .08), S = document.getElementById('strip'), g = S.getContext('2d'), CW = 150, CH = 190, per = Math.min(n, 12);
+    S.width = CW * per; S.height = CH * Math.ceil(n / per); S.style.display = 'block'; document.getElementById('wrap').style.display = 'none'; document.body.style.background = '#223';
+    const a = R.town.agents.find(x => x.name === name || x.sprite === name);
+    for (let i = 0; i < 4000 && a && !a.moving; i++) step(1 / 30);
+    for (let i = 0; i < n; i++) {
+      step(dt);
+      const k = R.scale, w = 46, h = 58;
+      g.drawImage(canvas, (a.x - w / 2) * k, (a.y - h + 8) * k, w * k, h * k, (i % per) * CW, Math.floor(i / per) * CH, CW, CH);
+      g.fillStyle = '#ff0'; g.font = '11px sans-serif'; g.fillText(`${a.moving ? 'anda' : 'para'} f${a.face} d${a.walkD.toFixed(0)}`, (i % per) * CW + 3, Math.floor(i / per) * CH + 12);
+    }
+  }
+  document.title = 'ready';
+})().catch(e => { document.body.insertAdjacentHTML('beforeend', '<pre style="font:14px monospace;color:#fff">' + e.stack + '</pre>'); document.title = 'ready'; });
+</script>

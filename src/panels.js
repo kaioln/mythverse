@@ -74,8 +74,9 @@
   // ---------------------------------------------------------------------------
   // Abertura de painéis
   // ---------------------------------------------------------------------------
+  const BANNERS = new Set(['journey', 'adventure', 'party', 'collection', 'inventory', 'talents', 'ranking', 'city', 'shop', 'bank', 'quests', 'wiki', 'arena', 'guild', 'chat', 'record', 'help', 'forge', 'workshop', 'house', 'prof', 'dojo', 'shrine', 'buildings', 'worldboss', 'rift']);
   const PANELS = {
-    journey:{ k:'JORNADA', t:'Mapa do Mundo' }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
+    journey:{ k:'JORNADA', t:'Mapa do Mundo', tabs:[['map','Mapa','compass'], ['chapters','Capítulos','scroll']] }, adventure:{ k:'AVENTURAS', t:'O que fazer agora', tabs:[['today','Hoje','lantern'], ['worldboss','Invasão Mundial','dragon'], ['expeditions','Expedições','compass'], ['bounty','Recompensas','target']] }, destination:{ k:'DESTINO', t:'Destino' }, party:{ k:'EQUIPE', t:'Formação e Sinergias' },
     hero:{ k:'HERÓI', t:'Ficha do herói', tabs:[['stats','Atributos'], ['build','Build recomendada'], ['talents','Talentos'], ['kit','Habilidades'], ['gear','Equipamento'], ['lore','História']] },
     collection:{ k:'HERÓIS', t:'Convocação e Coleção', tabs:[['summon','Convocar'], ['owned','Meus heróis'], ['catalog','Catálogo']] },
     inventory:{ k:'BOLSA', t:'Inventário' }, talents:{ k:'TALENTOS', t:'Árvore de Talentos' },
@@ -96,6 +97,7 @@
     const def = PANELS[name] || PANELS.help;
     let tab = null;
     if (def.tabs) tab = def.tabs.some(t => t[0] === param) ? param : (this.view.panel === name && this.view.tab ? this.view.tab : def.tabs[0][0]);
+    if (name === 'journey' && D.zones[param]) tab = 'map';   // "Ir" para uma região: sempre no mapa
     if (name === 'hero') tab = PANELS.hero.tabs.some(t => t[0] === this.pendingHeroTab) ? this.pendingHeroTab : this.view.panel === 'hero' ? this.view.tab : 'stats';
     this.pendingHeroTab = null;
     if (name === 'talents') { param = param || this.view.talentHero || this.state.formation.find(Boolean) || this.state.collection[0]?.uid || null; this.view.talentHero = param; }
@@ -111,6 +113,9 @@
     if (this.el.modal.hidden || !this.view.panel) return;
     const v = this.view, def = PANELS[v.panel] || PANELS.help;
     this.el.modalKicker.textContent = def.k;
+    // Cada painel abre com a pintura do lugar (assets/ui/banners); os distritos da cidade têm a deles.
+    { const art = v.panel === 'city' && BANNERS.has(v.tab) ? v.tab : v.panel === 'adventure' && v.tab === 'worldboss' ? 'worldboss' : v.panel === 'destination' ? 'journey' : v.panel === 'hero' ? 'party' : ['player', 'profile'].includes(v.panel) ? 'record' : v.panel;
+      this.el.modal.dataset.panel = v.panel; this.el.modal.dataset.tab = v.tab || ''; this.el.modal.style.setProperty('--banner', BANNERS.has(art) ? `url(assets/ui/banners/${art}.webp)` : 'none'); }
     let title = def.t;
     if (v.panel === 'destination') title = D.zones[v.param]?.title || title;
     if (v.panel === 'player') title = KT.Community?.profiles?.[v.param]?.data?.name || title;
@@ -126,7 +131,18 @@
     this.el.modalBody.scrollTop = reset ? 0 : top;
     requestAnimationFrame(() => this.el.modalBody.querySelectorAll('[data-sprite-preview]').forEach(cv => this.drawSprite(cv, cv.dataset.spritePreview)));
     // Mapa plano (a versão 3D curvava e escurecia a ilustração): o destino do "Ir" é destacado e centralizado na tela.
-    if (v.panel === 'journey') requestAnimationFrame(() => this.el.modalBody.querySelector('.map-pin.focus')?.scrollIntoView({ block:'center', behavior:'smooth' }));
+    if (v.panel === 'journey') requestAnimationFrame(() => {
+      const host = this.el.modalBody.querySelector('.illustrated-map');
+      (this.el.modalBody.querySelector('.map-pin.focus') || this.el.modalBody.querySelector('.map-pin.current'))?.scrollIntoView({ block:'center', inline:'center' });
+      // Vida do mapa: luzes, nuvens e o clima de cada região (src/map-fx.js).
+      if (host) KT.MapFx?.mount(host, host.querySelector('img'), MAP_PINS, { current:MAP_PINS[this.state.zone] ? this.state.zone : 'village', next:this.mapGoal });
+    });
+    requestAnimationFrame(() => this.scrollHint());
+  };
+  // Aviso de "há mais abaixo": aparece quando o painel tem conteúdo fora da tela e some no fim da rolagem.
+  P.scrollHint = function() {
+    const b = this.el.modalBody, h = this.el.scrollHint; if (!h) return;
+    h.hidden = this.el.modal.hidden || b.scrollHeight - b.clientHeight - b.scrollTop < 28;
   };
   P.closeModal = function() { this.el.modal.hidden = true; this.view.panel = null; this.hideTip(); document.querySelectorAll('.nav').forEach(x => x.classList.remove('active')); };
   P.serviceLockedHtml = function(gate) {
@@ -158,18 +174,25 @@
     const rec = ['hunt','dungeon','boss','rift'].includes(z.kind) ? this.engine.recommendedPower(id, opts) : 0, level = rec ? S().enemyLevel(S().zonePower(z, opts)) : 0;
     return `<button class="journey-card ${small ? 'side' : ''} ${st.cls} ${id === this.state.zone ? 'current' : ''} ${id === this.mapFocus ? 'focus' : ''}" data-preview-zone="${id}" type="button" data-tip="${esc(z.lore)}" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97) 8%,rgba(9,8,22,.35) 70%,rgba(9,8,22,.15)),url('${sceneUrl(id)}')"><span>${z.side ? 'DESVIO OPCIONAL · ' : ''}${kindLabel(z.kind)}</span><b>${esc(z.title)}</b><small>${st.txt}${rec ? ` · Nv.${level} · Poder ${compact(rec)}` : ''}</small></button>`;
   };
-  P.journeyPanel = function(focus) {
+  const PIN_ICON = { hunt:'swords', dungeon:'lantern', boss:'skull', rift:'rift', village:'star' };
+  P.journeyPanel = function(focus, tab = 'map') {
     this.mapFocus = D.zones[focus] ? focus : null;
-    // Próximo passo do guia (se for uma região): ganha destaque no mapa mesmo sem "Ir →".
-    const g = this.engine.guideStep(), gz = g ? (KT.goOf(g).split(':')[1] || null) : null;
+    // Para onde a jornada segue: a região do passo do guia ou, sem ele, a primeira ainda não concluída.
+    const g = this.engine.guideStep(), gs = g ? (KT.goOf(g).split(':')[1] || null) : null;
+    const gz = this.mapGoal = gs && D.zones[gs] && MAP_PINS[gs] ? gs : CHAPTERS.flatMap(c => c[2]).find(id => !['done', 'locked'].includes(this.zoneStatus(id).cls)) || null;
     const pin = id => { const st = this.zoneStatus(id), z = D.zones[id], cur = id === this.state.zone, next = id === gz && !cur, p = this.state.progress[id] || {};
       const opts = z.kind === 'hunt' ? { stage:Math.max(1, Math.min(z.stages, (p.best || 0) + 1)) } : z.kind === 'dungeon' ? { floor:Math.max(1, Math.min(z.floors, (p.best || 0) + 1)) } : z.kind === 'rift' ? { floor:Math.max(1, (p.best || 0) + 1) } : { tier:0 };
-      const rec = ['hunt','dungeon','boss','rift'].includes(z.kind) ? this.engine.recommendedPower(id, opts) : 0, level = rec ? S().enemyLevel(S().zonePower(z, opts)) : 0, status = cur ? 'Você está aqui' : next ? 'Próximo objetivo' : `${st.txt}${rec ? ` · Nv.${level} · ${compact(rec)}` : ''}`;
-      return `<button class="map-pin ${id === this.mapFocus ? 'focus' : ''} ${cur ? 'current' : ''} ${next ? 'next' : ''} ${st.cls} ${z.side ? 'side' : ''} ch${z.chapter}" style="left:${MAP_PINS[id][0]}%;top:${MAP_PINS[id][1]}%" data-preview-zone="${id}" type="button" aria-label="${esc(z.title)}: ${esc(status)}" title="${esc(z.title)} · ${esc(status)}"><span class="pin-name">${MAP_LABELS[id]}${z.side ? ' · Desvio' : ''}</span><small>${status}</small></button>`; };
+      const rec = ['hunt','dungeon','boss','rift'].includes(z.kind) ? this.engine.recommendedPower(id, opts) : 0, level = rec ? S().enemyLevel(S().zonePower(z, opts)) : 0, status = cur ? 'Você está aqui' : next ? 'Próximo objetivo' : `${st.txt}${rec ? ` · Nv.${level}` : ''}`;
+      const locked = st.cls === 'locked';
+      return `<button class="map-pin k-${z.kind} ${id === this.mapFocus ? 'focus' : ''} ${cur ? 'current' : ''} ${next ? 'next' : ''} ${st.cls} ${z.side ? 'side' : ''} ch${z.chapter}" style="left:${MAP_PINS[id][0]}%;top:${MAP_PINS[id][1]}%" data-preview-zone="${id}" type="button" aria-label="${esc(z.title)}: ${esc(status)}" data-tip="<b>${esc(z.title)}</b><br>${esc(status)}${rec ? ` · poder ${compact(rec)}` : ''}<br><small>${locked ? 'Ainda bloqueado: clique para ver como liberar.' : 'Clique para ver a região e partir.'}</small>"><i class="pin-ic">${ic(locked ? 'lock' : PIN_ICON[z.kind] || 'compass')}</i><span class="pin-txt"><span class="pin-name">${MAP_LABELS[id]}${z.side ? ' <em>desvio</em>' : ''}</span><small>${status}</small></span></button>`; };
+    if (tab !== 'chapters') {
+      const legend = `<div class="map-legend" aria-hidden="true"><span><i class="lg current"></i>Você está aqui</span><span><i class="lg next"></i>Próximo objetivo</span><span><i class="lg open"></i>Disponível</span><span><i class="lg done"></i>Concluído</span><span><i class="lg locked"></i>Bloqueado</span></div>`;
+      // Faixa sob o mapa: para onde a jornada segue (o passo do guia ou a primeira região ainda não concluída).
+      const goal = gz, gzn = goal && D.zones[goal], next = gzn ? `<div class="map-next"><i class="ic ic-target"></i><div><small>Próximo objetivo</small><b>${esc(gzn.title)}</b><span>${this.zoneStatus(goal).txt}</span></div><button class="action primary small" data-preview-zone="${goal}" type="button">Ver região</button></div>` : '';
+      return `<div class="map-stage"><div class="illustrated-map"><img src="${KT.sceneUrl('world-map')}" alt="Mapa do mundo" decoding="async">${Object.keys(MAP_PINS).map(pin).join('')}</div><footer class="map-foot">${legend}<p class="map-tip">Clique numa região para ver os detalhes e partir</p>${next}</footer></div>`;
+    }
     const chapterDone = ids => ids.filter(id => this.zoneStatus(id).cls === 'done').length;
-    const legend = `<div class="map-legend" aria-hidden="true"><span><i class="lg current"></i>Você está aqui</span><span><i class="lg next"></i>Próximo objetivo</span><span><i class="lg open"></i>Disponível</span><span><i class="lg done"></i>Concluído</span><span><i class="lg locked"></i>Bloqueado</span></div>`;
-    return `<div class="map-wrap"><div class="illustrated-map"><img src="${KT.sceneUrl('world-map')}" alt="Mapa do mundo" decoding="async">${Object.keys(MAP_PINS).map(pin).join('')}</div>${legend}
-      <div class="chapters">${CHAPTERS.map(([n, title, ids, side]) => { const all = [...ids, ...side], done = chapterDone(all), lore = KT.Lore?.chapters?.[n]; return `<section class="chapter ${all.every(id => this.zoneStatus(id).cls === 'locked') ? 'locked' : ''}"><header class="chapter-head"><div><h4>${title}</h4>${lore ? `<p>${esc(lore.oath)} · ${esc(lore.premise)}</p>` : ''}</div><span class="chapter-prog"><i style="width:${Math.round(done / all.length * 100)}%"></i></span><small>${done}/${all.length}</small></header><div class="chapter-steps">${ids.map((id, i) => `${i ? '<span class="arrow">→</span>' : ''}${this.journeyCard(id)}`).join('')}</div>${side.length ? `<div class="chapter-side"><small>Desvios opcionais · sempre abaixo do confronto final do capítulo</small><div>${side.map(id => this.journeyCard(id, true)).join('')}</div></div>` : ''}</section>`; }).join('')}
+    return `<div class="map-wrap"><div class="chapters">${CHAPTERS.map(([n, title, ids, side]) => { const all = [...ids, ...side], done = chapterDone(all), lore = KT.Lore?.chapters?.[n]; return `<section class="chapter ${all.every(id => this.zoneStatus(id).cls === 'locked') ? 'locked' : ''}"><header class="chapter-head"><div><h4>${title}</h4>${lore ? `<p>${esc(lore.oath)} · ${esc(lore.premise)}</p>` : ''}</div><span class="chapter-prog"><i style="width:${Math.round(done / all.length * 100)}%"></i></span><small>${done}/${all.length}</small></header><div class="chapter-steps">${ids.map((id, i) => `${i ? '<span class="arrow">→</span>' : ''}${this.journeyCard(id)}`).join('')}</div>${side.length ? `<div class="chapter-side"><small>Desvios opcionais · sempre abaixo do confronto final do capítulo</small><div>${side.map(id => this.journeyCard(id, true)).join('')}</div></div>` : ''}</section>`; }).join('')}
       <button class="journey-card village" data-enter="village" type="button" style="background-image:linear-gradient(0deg,rgba(9,8,22,.97),rgba(9,8,22,.2) 75%),url('${KT.sceneUrl('village-expanded', 'thumb')}')"><span>CAPITAL</span><b>Voltar para Tsukimori</b><small>8 distritos, atividades e melhorias</small></button></div></div>`;
   };
 
@@ -332,7 +355,7 @@
     if (tab === 'build') return `<button class="map-back" data-go="party" type="button">← Equipe</button>${head}${this.buildHtml(r)}`;
     if (tab === 'lore') {
       const L = KT.Lore?.heroes?.[KT.Data.roster.find(x => x.id === t.id)?.base || t.id] || KT.Lore?.heroes?.[t.id], wd = KT.Lore?.worlds?.[t.world];
-      const journey = KT.Lore?.heroJourney?.(t.id, s) || [];
+      const journey = KT.Lore?.heroJourney?.(t.id, this.state) || [];
       const bonds = D.bonds.filter(b => b.ids.includes(t.id)).map(b => `<li><b>${esc(b.name)}</b> · ${b.ids.map(id => esc(e.template(id)?.name || id)).join(', ')}<small>${esc(b.text)}</small></li>`).join('');
       const purpose = KT.Lore?.heroPurpose?.(t.id), baseId = KT.Data.roster.find(x => x.id === t.id)?.base || t.id, tale = KT.Lore?.tales?.[baseId] || KT.Lore?.tales?.[t.id];
       // Conto da travessia em tipografia de livro; a biografia curta vira o retrato logo abaixo.
@@ -1043,13 +1066,13 @@
     return `<div class="help-top"><button class="action primary" data-coach-restart type="button">▶ Rever tutorial</button><span class="dim">O tutorial guiado mostra, na tela, o que fazer em cada passo.</span></div>
       <div class="help-grid">
       <article class="panel"><h3>1 · Convoque e forme a equipe</h3><p>Use as 10 convocações grátis. Escolha 4 heróis: vagas 1 e 2 são a <b>linha de frente</b> (Vanguardas), 3 e 4 a <b>retaguarda</b> (Suportes, Arcanistas, Atiradores). Sinergias de classe, elemento e laços deixam a equipe mais forte.</p><button class="action primary" data-go="collection" type="button">Convocar</button></article>
-      <article class="panel"><h3>2 · Combate</h3><p>Os heróis atacam e usam habilidades sozinhos. A <b>ultimate</b> carrega com energia (barra dourada): use com <b>Q W E R</b> ou deixe no AUTO. Clique num inimigo para focar. <b>1</b> = poção, <b>2</b> = elixir. Quando um inimigo mostrar <b>危</b>, prepare escudos e curas.</p></article>
+      <article class="panel"><h3>2 · Combate</h3><p>A luta é por turnos: a faixa <b>ORDEM</b> mostra quem age em seguida. Na vez de um herói você escolhe <b>Atacar</b>, uma <b>habilidade</b> (<b>A S D F</b>), a <b>ultimate</b> (<b>Q W E R</b>, quando a barra dourada enche) ou <b>Defender</b>. Clique num inimigo para focar. Quando um inimigo mostrar <b>危</b>, ele prepara um golpe forte: aperte <b>Guarda</b> (<b>Espaço</b>) no instante do golpe para <b>aparar</b>. <b>1</b> = poção, <b>2</b> = elixir.</p></article>
       <article class="panel"><h3>3 · Progressão</h3><p>Cada região tem 12 estágios de dificuldade crescente e um <b>chefe final</b> que libera o próximo capítulo. Se a equipe cair, ela recua um estágio e treina sozinha. Fortaleça-se com <b>atributos</b>, <b>itens</b>, <b>Forja</b>, <b>Dojo</b>, <b>talentos</b> e <b>qualidade</b>.</p><button class="action" data-go="journey" type="button">Abrir mapa</button></article>
       <article class="panel"><h3>4 · Sempre evoluindo</h3><p>Tudo é salvo no servidor. Com o PC desligado, o servidor calcula até <b>12 horas</b> de caça e as <b>expedições</b> continuam. Duas vezes por dia há a <b>Invasão Mundial</b> (${D.worldBoss.windows.map(w => w.label).join(' e ')}). Missões, contratos e conquistas dão chaves, cristais e materiais.</p><button class="action" data-go="adventure" type="button">Aventuras</button> <button class="action" data-go="wiki" type="button">Wiki completa</button></article>
-      <article class="panel"><h3>5 · AUTO e escolhas</h3><p>Com <b>AUTO</b> ligado, ultimates e escolhas de rota/encontro são decididas sozinhas (opção recomendada). Com AUTO desligado, você decide, e se não responder em <b>2 minutos</b>, a recomendada é escolhida automaticamente. Ultimates usadas <b>à mão</b> são 25% mais fortes.</p></article>
+      <article class="panel"><h3>5 · Comando: MANUAL, SEMI e AUTO</h3><p>O botão <b>COMANDO</b> (tecla <b>Z</b>) troca o modo. No <b>MANUAL</b> você decide cada ação; no <b>SEMI</b> ataques e habilidades saem sozinhos e as ultimates são suas; no <b>AUTO</b> a equipe luta e escolhe rotas sozinha (opção recomendada). Ultimates usadas <b>à mão</b> são 25% mais fortes e habilidades, 15%. Sem resposta na sua vez, o herói ataca sozinho depois de 40 segundos; escolhas de rota esperam <b>2 minutos</b>.</p></article>
       <article class="panel"><h3>6 · Travou?</h3><p>Abra <b>Missões → Conselheiro</b>: ele mostra o que falta (pontos, itens melhores, formação, onde treinar) com botões para resolver na hora. Cada herói também tem uma <b>Build recomendada</b> na ficha.</p><button class="action" data-go="quests:advisor" type="button">Abrir Conselheiro</button></article>
       <article class="panel"><h3>7 · Refino e Mercado</h3><p>Refinar deixa o item muito mais forte, mas pode regredir ou quebrar, dependendo do material (Tamahagane, Aço Estelar, Oricalco, Adamantina). Itens raros, refinos altos, cartas e materiais podem ser vendidos a outros jogadores por Gemas no <b>Mercado de Jogadores</b>.</p><button class="action" data-go="wiki:refine" type="button">Regras de refino</button></article>
-      <article class="panel"><h3>Atalhos</h3><p><b>Q W E R</b> ultimates · <b>1</b> poção · <b>2</b> elixir · <b>A</b> auto · <b>M</b> mapa · <b>I</b> bolsa · <b>T</b> talentos · <b>ESC</b> fechar</p></article></div>`;
+      <article class="panel"><h3>Atalhos</h3><p><b>Q W E R</b> ultimates · <b>A S D F</b> habilidades · <b>Espaço</b> atacar na sua vez, guarda fora dela · <b>G</b> defender · <b>Z</b> comando · <b>X</b> próximo alvo · <b>1</b> poção · <b>2</b> elixir · <b>M</b> mapa · <b>I</b> bolsa · <b>T</b> talentos · <b>ESC</b> fechar</p></article></div>`;
   };
 
   // ---------------------------------------------------------------------------

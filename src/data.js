@@ -593,7 +593,7 @@
     { id:'g_c2', title:'Vença a Costa 2-6', desc:'Afogados drenam energia. Raio e Natureza são fortes aqui.', go:'journey', cond:{ stage:['hunt_tide', 6] }, reward:{ ore:40, gold:6000 } },
     { id:'g_frost', title:'Atravesse o Planalto, 4º estágio', desc:'A nevasca rouba energia. Leve Fogo e Terra.', go:'journey', cond:{ stage:['hunt_frost', 4] }, reward:{ crystal:30, dust:40 } },
     { id:'g_a1', title:'Conquiste o Arquivo: Andar I', desc:'O Guardião da Tempestade atordoa toda a equipe.', go:'journey', cond:{ floor:['dungeon_tide', 1] }, reward:{ crystal:60, item:'epic' } },
-    { id:'g_forge', title:'Apague a Forja Abissal: Andar I', desc:'Quebre a blindagem dos Autômatos com perfuração de DEF.', go:'journey', cond:{ floor:['dungeon_forge', 1] }, reward:{ crystal:40, item:'legendary' } },
+    { id:'g_abyss_forge', title:'Apague a Forja Abissal: Andar I', desc:'Quebre a blindagem dos Autômatos com perfuração de DEF.', go:'journey', cond:{ floor:['dungeon_forge', 1] }, reward:{ crystal:40, item:'legendary' } },
     { id:'g_c12', title:'Vença a Costa 2-12', desc:'O fim da costa, o abismo espera.', go:'journey', cond:{ stage:['hunt_tide', 12] }, reward:{ key:1, gold:12000 } },
     { id:'g_mizuchi', title:'Derrote Mizuchi', desc:'O dragão abissal. Proteja a retaguarda na fase final.', go:'journey', cond:{ kills:['boss_tide', 1] }, reward:{ key:2, crystal:150 } },
     { id:'g_nightmare', title:'Vença um chefe no Pesadelo', desc:'Chefes derrotados liberam dificuldades maiores com itens de conjunto.', go:'journey', cond:{ tierKill:1 }, reward:{ key:1, item:'legendary' } },

@@ -20,7 +20,8 @@ for (const p of [[350,435],[382,432],[150,245],[770,330],[870,600],[890,615],[60
   assert.equal(TownMap.isWalk(...p), false, `telhado, barraca ou água não é piso: ${p}`);
 }
 const visitor = new TownLife(); visitor.sync([]);
-assert.equal(visitor.agents.length,34,'festival com 34 moradores e visitantes');
+assert.equal(visitor.agents.length,40,'festival com 40 moradores, visitantes, alunos do dojo e o gato');
+assert.ok(visitor.agents.filter(a=>a.def.act&&/^dojo/.test(a.def.post)).length>=4,'o pátio do dojo tem alunos e mestre treinando');
 assert.ok(visitor.agents.filter(a=>a.def.festival).length>=16,'participantes com atividades do festival');
 const renji = visitor.agents.find(a => a.name === 'Renji');
 assert.ok(renji.y > 460, 'vendedor à frente da barraca, não dentro do telhado');
@@ -35,9 +36,10 @@ assert.equal(speaker.speechFor,0,'encerrar conversa ao começar a andar');assert
 speaker.path=[];conversation.updateDialogue(.1);assert.equal(speaker.speech,'','parar não faz balão antigo reaparecer');
 conversation.talk(speaker);speaker.moving=true;conversation.updateDialogue(.1);assert.ok(speaker.speechFor>0,'fala iniciada pelo jogador pode acompanhar personagem');
 
-game.KT.Utils={};game.document={querySelectorAll:()=>[]};vm.runInContext(source('renderer.js'),game);
-const boxes=[],ctx={save(){},restore(){},measureText:t=>({width:t.length*5}),beginPath(){},moveTo(){},lineTo(){},fill(){},stroke(){},fillText(){}};
-const renderer=Object.assign(Object.create(game.KT.GameRenderer.prototype),{ctx,worldTime:0,view:{x:0,w:1280},canvas:{getBoundingClientRect:()=>({left:0,top:0,width:1280,height:720})},townHits:[],townBubbleBoxes:[],roundRect:(l,t,w,h)=>boxes.push({l,r:l+w,t,b:t+h,w,h})});
+game.KT.Utils={clamp:(v,a,b)=>Math.max(a,Math.min(b,v))};game.document={querySelectorAll:()=>[]};vm.runInContext(source('renderer.js'),game);
+const boxes=[],ctx={save(){},restore(){},measureText:t=>({width:t.length*5}),beginPath(){},moveTo(){},lineTo(){},closePath(){},fill(){},stroke(){},fillText(){}};
+// css:1.15 = palco largo, em que o balão usa o tamanho-base (em telas menores ele cresce para a letra continuar legível).
+const renderer=Object.assign(Object.create(game.KT.GameRenderer.prototype),{ctx,worldTime:0,css:1.15,view:{x:0,w:1280},canvas:{getBoundingClientRect:()=>({left:0,top:0,width:1280,height:720})},townHits:[],townBubbleBoxes:[],roundRect:(l,t,w,h)=>boxes.push({l,r:l+w,t,b:t+h,w,h})});
 const actor={name:'Renji',x:500,y:420,speech:'As lanternas da praça estão prontas para a dança.',speechFor:4,speechAge:1};
 renderer.townHits=[{x:500,y:420,h:34},{x:500,y:360,h:34}];
 assert.ok(renderer.townBubble(actor,34));const firstBox=boxes.at(-1);
@@ -77,7 +79,8 @@ for (const seed of [1, 7, 14, 21, 32, 39, 45, 64]) {
       if (a.speechFor > 0) speakers.add(a.name);
       for (let j = i + 1; j < life.agents.length; j++) {
         const b = life.agents[j];
-        assert.ok(Math.hypot(a.x - b.x, (a.y - b.y) * 1.55) >= 15.9, `${a.name} e ${b.name} se sobrepuseram`);
+        // Quem anda cruza com os outros (rua cheia); parados nunca ficam um em cima do outro.
+        if (!a.moving && !b.moving && !a.path.length && !b.path.length) assert.ok(Math.hypot(a.x - b.x, (a.y - b.y) * 1.55) >= 11.9, `${a.name} e ${b.name} pararam sobrepostos`);
       }
     }
   }

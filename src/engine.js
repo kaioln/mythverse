@@ -16,10 +16,23 @@
   const CHOICE_WAIT = 120; // segundos até a escolha recomendada ser feita sozinha (AUTO desligado)
   const DT = .05;           // passo fixo da simulação (20 passos por segundo de jogo)
   const MAX_SPEED = 3;
-  const INPUT_KINDS = new Set(['ult', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance', 'afk']);
+  const INPUT_KINDS = new Set(['ult', 'skill', 'guard', 'act', 'mode', 'potion', 'elixir', 'focus', 'choice', 'auto', 'advance', 'afk']);
   // Quebra de postura (elites e chefes) e Elo Kizuna (ultimates encadeadas).
   const BREAK = { gain:5, max:100, grow:1.3, time:4, dmg:.35, kindMult:{ ult:2.2, skill:1.5, basic:1, proc:.6 } };
   const CHAIN = { window:4, per:.15, finale:4, finaleMult:.9 };
+  // Guarda ativa (comando do jogador): por um instante a equipe leva metade do dano dos golpes diretos. Apertada bem na
+  // hora de um ataque preparado (os de ⚠), vira APARO: corta 80% do dano, anula atordoamento/congelamento/silêncio
+  // daquele golpe, abala a postura de quem atacou e devolve energia. O modo AUTO não usa a guarda.
+  const GUARD = { time:1.1, perfect:.4, cd:6, cut:.5, perfectCut:.8, breakHit:30, energy:10 };
+  // Habilidade ou ultimate comandada à mão rende mais que a automática.
+  const MANUAL = { ult:1.25, skill:1.15 };
+  // Ritmo de RPG: a luta é uma fila de ações, uma por vez. Ao vivo, depois de cada ação o relógio da luta espera a
+  // animação dela (BEAT: segundos reais na velocidade x1; o bote de um golpe preparado tem tempo fixo, é a janela do
+  // Aparo) e o tempo em que ninguém age corre depressa. No AFK, no TURBO, no servidor e nas simulações não há espera:
+  // a conta é a mesma, só o relógio de parede muda.
+  const BEAT = { attack:.36, enemyAttack:.34, skill:.72, ult:1.1, enemySkill:.62, windup:.85, strike:.9, burst:.7, spawn:.6, defend:.35 };
+  // Defender (comando na vez do herói, modo MANUAL): abre mão do golpe, corta o dano recebido até a próxima vez dele e ganha energia.
+  const DEFEND = { cut:.5, energy:15 };
   // Economia: chefes dão espólio completo só nas primeiras vitórias do dia (como o bloqueio de raide do WoW);
   // Oricalco e Adamantina de fontes repetíveis (Fenda, masmorras, guardiões) têm teto diário.
   const BOSS_LOOT_PER_DAY = 3;
@@ -40,7 +53,7 @@
       prof:{ lv:{ mining:1, herbalism:1, essence:1, alchemy:1, smithing:1 }, xp:{ mining:0, herbalism:0, essence:0, alchemy:0, smithing:0 }, mats:{} }, cards:{},
       progress:Object.fromEntries(Object.values(D.zones).filter(z => z.kind !== 'village').map(z => [z.id, z.kind === 'boss' ? { kills:0, tier:0, tierKills:[0, 0, 0] } : { best:0, cur:1 }])),
       zone:'village', lastHunt:'hunt',
-      settings:{ auto:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:false, speed:1, sound:true, autoSalvage:'none' }, afkTrain:0,
+      settings:{ auto:true, autoSkill:true, autoAdvance:true, autoRepeat:true, afk:false, autoPoints:false, speed:1, sound:true, autoSalvage:'none' }, afkTrain:0,
       stats:{ kills:0, elites:0, bossKills:0, stages:0, floors:0, ults:0, manualUlts:0, loot:0, salvage:0, encounters:0, legendaries:0, maxUpgrade:0, upgrades:0, upgradeTries:0, goldEarned:0, deaths:0, cards:0, alphas:0, autoChoices:0 },
       talents:{}, training:{ atk:0, hp:0, def:0, crit:0 },
       buildings:{ forge:1, dojo:1, shrine:1, workshop:1, guild:1, market:1, house:1 }, house:{ display:[], seen:{} }, paragon:{ lv:0, xp:0 }, dojoV:2,
@@ -476,6 +489,10 @@
     applyInput(inp) {
       switch (inp.k) {
         case 'ult': return this.castUlt(Number(inp.a), true);
+        case 'skill': return this.castSkillManual(Number(inp.a));
+        case 'guard': return this.guard(inp.a);
+        case 'act': return this.command(String(inp.a));
+        case 'mode': return this.setMode(String(inp.a));
         case 'potion': return this.usePotion();
         case 'elixir': return this.useElixir();
         case 'focus': return this.setFocus(String(inp.a || '')) !== undefined;
@@ -512,6 +529,8 @@
       const ctx = this.ctx();
       this.party = this.state.formation.map((uid, slot) => { const rec = uid && this.record(uid); return rec ? this.makeHeroUnit(rec, slot, ctx) : null; }).filter(Boolean);
       this.wave = 0; this.room = 0; this.bossPhase = 0; this.ultChain = 0; this.lastUltAt = -99; this.lastUltHero = -1; this.chainBonus = 0; this.stageMods = {}; this.encounterUsed = false; this.potionCd = 0; this.elixirCd = 0;
+      this.guardT = 0; this.guardAge = 0; this.guardCd = 0; this.lastParry = -1; this.parryNow = false;
+      this.holdT = 0; this.awaiting = null; this.acted = false;
       if (this.zone.kind === 'arena') this.party.forEach(u => { u.maxHp = Math.round(u.maxHp * D.PVP.hpParty); u.hp = u.maxHp; });
       this.nextWave();
     }
@@ -555,7 +574,7 @@
     // ---------- ondas ----------
     nextWave() {
       const z = this.zone;
-      this.enemies = []; this.focusUid = null;
+      this.enemies = []; this.focusUid = null; this.awaiting = null;
       if (z.kind === 'hunt') {
         this.wave++;
         const stage = this.opts.stage, P = zonePower(z, { stage });
@@ -617,7 +636,8 @@
         this.emit('onWave', { label:this.enemies[0].name, detail:`Dificuldade: ${D.bossTiers[this.opts.tier || 0].name}`, boss:true });
       }
       this.phase = 'fight';
-      this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; if (u.alive) this.fire(u, 'start', {}); });
+      this.party.forEach(u => { u.flags.lowWave = false; u.flags.allyLowWave = false; u.go = false; u.defend = false; if (u.alive) this.fire(u, 'start', {}); });
+      this.beat('spawn');   // os inimigos entram em campo antes da primeira ação
     }
 
     // Herói rival (defesa de outro jogador): atributos já calculados no jogo dele; age pela IA,
@@ -716,7 +736,23 @@
         if (this.state.settings.auto || this.pendingChoice.wait >= CHOICE_WAIT) { const c = this.pendingChoice; this.input('choice', c.recommended); if (this.pendingChoice === c) this.resolveChoice(c, c.recommended, true); }
       }
       if (!this.active || this.paused) return;
-      this.acc = Math.min(this.acc + dtReal * U.clamp(this.state.settings.speed || 1, 1, MAX_SPEED), DT * 80);
+      const speed = U.clamp(this.state.settings.speed || 1, 1, MAX_SPEED);
+      if (this.sequenced()) {
+        if (this.awaiting !== null) return;                                      // vez de um herói: a luta espera o comando
+        if (this.holdT > 0) { this.holdT -= dtReal * speed; if (this.holdT > 0) return; this.holdT = 0; }
+        // Entre uma ação e outra o tempo corre no máximo (nunca acima do limite que o servidor aceita).
+        this.acc = Math.min(this.acc + dtReal * MAX_SPEED, DT * 80);
+        let k = 0;
+        while (this.acc >= DT && k++ < 160) {
+          if (this.pendingRoute || this.pendingEncounter || this.segWaiting || !this.active) { this.acc = 0; break; }
+          this.acc -= DT;
+          this.tick();
+          if (this.holdT > 0 || this.awaiting !== null || !this.sequenced()) break;
+        }
+        return;
+      }
+      this.holdT = 0;
+      this.acc = Math.min(this.acc + dtReal * speed, DT * 80);
       let n = 0;
       while (this.acc >= DT && n++ < 160) {
         if (this.pendingRoute || this.pendingEncounter || this.segWaiting || !this.active) { this.acc = 0; break; }
@@ -724,10 +760,19 @@
         this.tick();
       }
     }
+    // Luta no ritmo de RPG (uma ação por vez, com espera): só ao vivo, fora do AFK e do TURBO.
+    sequenced() { const st = this.state.settings; return !!this.cinematic && !this.replay && this.phase === 'fight' && !st.afk && !(st.pace === 'turbo' && st.auto); }
+    // Marca que uma ação aconteceu neste passo (ninguém mais age nele) e, ao vivo, segura o relógio pela animação.
+    beat(kind) {
+      if (kind !== 'spawn') this.acted = true;     // a entrada dos inimigos não é a ação de ninguém
+      if (this.cinematic && !this.replay && !this.state.settings.afk && !(this.state.settings.pace === 'turbo' && this.state.settings.auto))
+        this.holdT = Math.max(this.holdT || 0, kind === 'strike' ? BEAT.strike * U.clamp(this.state.settings.speed || 1, 1, MAX_SPEED) : BEAT[kind] || .3);
+    }
     step(dt) {
       if (!this.active || this.pendingRoute || this.pendingEncounter) return;
       this.zoneElapsed += dt;
       this.potionCd = Math.max(0, this.potionCd - dt); this.elixirCd = Math.max(0, this.elixirCd - dt);
+      this.guardCd = Math.max(0, (this.guardCd || 0) - dt); if (this.guardT > 0) { this.guardT -= dt; this.guardAge += dt; }
       if (this.phase === 'between') { this.timer -= dt; if (this.timer <= 0) this.nextWave(); return; }
       if (this.phase === 'stageClear') { this.timer -= dt; if (this.timer <= 0) this.afterStageClear(); return; }
       if (this.phase === 'defeat') { this.timer -= dt; if (this.timer <= 0) this.afterDefeat(); return; }
@@ -736,6 +781,8 @@
       if (this.state.settings.afk) this.afkTick();
       const all = [...this.party, ...this.enemies];
       all.forEach(u => this.tickEffects(u, dt));
+      this.acted = false;
+      if (this.awaiting !== null) { const w = this.party[this.awaiting]; if (!w || !this.canAct(w) || this.state.settings.auto || this.state.settings.autoSkill !== false) this.awaiting = null; }
       this.party.forEach((u, i) => this.actHero(u, i, dt));
       this.enemies.forEach(u => this.actEnemy(u, dt));
       this.enemies.forEach(e => { if (e.treasure && e.alive) { e.fleeT = (e.fleeT || 0) + dt; if (e.fleeT > 12) { e.alive = false; e.fled = true; this.emit('onFx', { type:'text', uid:e.uid, text:'FUGIU!', color:'#ffd76a' }); this.emit('onLog', { text:'A Raposa Dourada fugiu!', type:'system' }); } } });
@@ -820,22 +867,83 @@
       const living = this.enemies.filter(e => e.alive); if (!living.length) return;
       u.atkCd -= dt * this.stat(u, 'spd');
       u.skillCd -= dt * (1 + u.st.cdr);
+      if (this.acted) return;                                                      // uma ação por vez: quem ficou pronto age no passo seguinte
       const silenced = this.has(u, 'silence');
-      if (!silenced && u.energy >= ULT_COST && this.state.settings.auto && this.shouldUlt(u)) { this.castUlt(i, false); return; }
-      if (!silenced && u.skillCd <= 0) { if (this.shouldSkill(u, dt)) { this.castSkill(u); return; } }
-      if (u.atkCd <= 0) { this.basicAttack(u); u.atkCd = 1.5; }
+      const st = this.state.settings;
+      if (!silenced && u.energy >= ULT_COST && st.auto && this.shouldUlt(u)) { this.castUlt(i, false); return; }
+      if (!silenced && u.skillCd <= 0 && (st.auto || st.autoSkill !== false)) { if (this.shouldSkill(u, dt)) { this.castSkill(u); return; } }
+      if (u.atkCd <= 0) {
+        u.defend = false;
+        // Comando MANUAL: é a vez do herói e ele tem uma técnica pronta. A luta espera a ordem do jogador
+        // (atacar, habilidade, ultimate ou defender); sem técnica pronta, ele ataca sozinho.
+        if (!u.go && this.manualTurn(u, silenced)) {
+          if (this.awaiting !== i) { this.awaiting = i; this.acted = true; this.emit('onFx', { type:'turn', uid:u.uid, heroIndex:i }); }
+          return;
+        }
+        u.go = false;
+        this.basicAttack(u); u.atkCd = 1.5;
+      }
+    }
+    manualTurn(u, silenced) {
+      const st = this.state.settings;
+      if (st.auto || st.autoSkill !== false || st.afk) return false;
+      return !silenced && (u.skillCd <= 0 || u.energy >= ULT_COST);
+    }
+    // Ordem dada na vez do herói (modo MANUAL): 'attack' segue com o golpe básico; 'defend' troca o golpe pela defesa.
+    command(what) {
+      const i = this.awaiting, u = i === null || i === undefined ? null : this.party[i];
+      if (!u || !u.alive || this.phase !== 'fight') { this.awaiting = null; return false; }
+      if (what === 'attack') { u.go = true; this.awaiting = null; return true; }
+      if (what === 'defend') {
+        u.defend = true; u.atkCd = 1.5; this.awaiting = null;
+        this.gainEnergy(u, DEFEND.energy);
+        this.state.stats.defends = (this.state.stats.defends || 0) + 1;
+        this.emit('onFx', { type:'defend', uid:u.uid, color:u.color }); this.beat('defend');
+        return true;
+      }
+      return false;
+    }
+    // Próximas ações, da mais próxima para a mais distante (a linha do tempo da luta).
+    turnOrder(n = 8) {
+      const out = [], cc = u => Math.max(u.broken || 0, 0, ...u.effects.filter(e => CC.has(e.s)).map(e => e.d));
+      this.party.forEach((u, i) => {
+        if (!u.alive) return;
+        const spd = Math.max(.25, this.stat(u, 'spd')), t = cc(u) + Math.max(0, u.atkCd) / spd;
+        out.push({ uid:u.uid, t:this.awaiting === i ? -1 : t, kind:'hero' }, { uid:u.uid, t:t + 1.5 / spd, kind:'hero' });
+      });
+      this.enemies.forEach(u => {
+        if (!u.alive || u.treasure) return;
+        const spd = Math.max(.25, this.stat(u, 'spd')), wait = cc(u) + Math.max(0, .5 - u.spawnT);
+        if (u.windup > 0 || u.striking) { out.push({ uid:u.uid, t:wait + Math.max(0, u.windup), kind:'special' }); return; }
+        const t = wait + Math.max(0, u.atkCd) / spd;
+        out.push({ uid:u.uid, t, kind:'enemy' }, { uid:u.uid, t:t + 1.5 / spd, kind:'enemy' });
+        const sp = (u.specials || []).slice().sort((a, b) => a.t - b.t)[0];
+        if (sp && sp.t < 6) out.push({ uid:u.uid, t:wait + Math.max(0, sp.t) + (sp.windup || 0), kind:'special' });
+      });
+      return out.sort((a, b) => a.t - b.t).slice(0, n);
     }
     actEnemy(u, dt) {
       if (!this.canAct(u)) return;
       if (u.spawnT < .5) { u.spawnT += dt; return; }
       const living = this.party.filter(h => h.alive); if (!living.length) return;
-      if (u.windup > 0) { u.windup -= dt; if (u.windup <= 0) { const sp = u.windupSpecial; u.windupSpecial = null; this.emit('onFx', { type:'bossBurst', uid:u.uid, color:u.color }); this.emit('onLog', { text:`${u.name.split(',')[0]} usou ${sp.name}!`, type:'boss' }); this.execute(u, sp.eff, { isSkill:true }); } return; }
+      if (u.windup > 0 || u.striking) {
+        if (u.windup > 0) { u.windup -= dt; if (u.windup > 0) return; }
+        if (!u.windupSpecial) { u.striking = false; u.windup = 0; return; }          // o preparo foi cancelado (postura quebrada)
+        if (this.acted) return;
+        // O golpe preparado sai em dois tempos: primeiro o bote (ao vivo, a janela do Aparo), depois o impacto.
+        if (!u.striking) { u.striking = true; u.windup = 0; this.emit('onFx', { type:'strike', uid:u.uid, color:u.color, name:u.windupSpecial.name }); this.beat('strike'); return; }
+        const sp = u.windupSpecial; u.windupSpecial = null; u.striking = false;
+        this.emit('onFx', { type:'bossBurst', uid:u.uid, color:u.color }); this.emit('onLog', { text:`${u.name.split(',')[0]} usou ${sp.name}!`, type:'boss' });
+        this.execute(u, sp.eff, { isSkill:true, special:true }); this.beat('burst');
+        return;
+      }
       u.atkCd -= dt * this.stat(u, 'spd'); u.skillCd -= dt;
       for (const sp of u.specials || []) { sp.t -= dt; }
+      if (this.acted) return;
       const ready = (u.specials || []).find(sp => sp.t <= 0);
-      if (ready && !this.has(u, 'silence')) { ready.t = ready.cd; u.windup = ready.windup; u.windupMax = ready.windup; u.windupSpecial = ready; this.emit('onFx', { type:'bossWindup', uid:u.uid, time:ready.windup }); this.emit('onWarn', `${u.name.split(',')[0]} prepara ${ready.name}!`); return; }
-      if (u.t.skill && u.skillCd <= 0 && !this.has(u, 'silence')) { u.skillCd = u.t.skill.cd; this.emit('onFx', { type:'cast', source:u.uid, name:u.t.skill.name, color:u.color, enemy:true }); this.execute(u, u.t.skill.eff, { isSkill:true }); return; }
-      if (u.atkCd <= 0 && !u.treasure) { u.atkCd = 1.5; const tgt = this.pickTarget(u); if (!tgt) return; this.emit('onFx', { type:'enemyAttack', source:u.uid, target:tgt.uid }); this.hit(u, tgt, 1, { kind:'basic', dodgeable:true }); }
+      if (ready && !this.has(u, 'silence')) { ready.t = ready.cd; u.windup = ready.windup; u.windupMax = ready.windup; u.windupSpecial = ready; this.emit('onFx', { type:'bossWindup', uid:u.uid, time:ready.windup, name:ready.name }); this.emit('onWarn', `${u.name.split(',')[0]} prepara ${ready.name}!`); this.beat('windup'); return; }
+      if (u.t.skill && u.skillCd <= 0 && !this.has(u, 'silence')) { u.skillCd = u.t.skill.cd; this.emit('onFx', { type:'cast', source:u.uid, name:u.t.skill.name, color:u.color, enemy:true }); this.execute(u, u.t.skill.eff, { isSkill:true }); this.beat('enemySkill'); return; }
+      if (u.atkCd <= 0 && !u.treasure) { u.atkCd = 1.5; const tgt = this.pickTarget(u); if (!tgt) return; this.emit('onFx', { type:'enemyAttack', source:u.uid, target:tgt.uid }); this.hit(u, tgt, 1, { kind:'basic', dodgeable:true }); this.beat('enemyAttack'); }
     }
 
     shouldSkill(u, dt) {
@@ -857,6 +965,7 @@
       const tgt = this.pickTarget(u); if (!tgt) return;
       u.counters.atk++;
       this.emit('onFx', { type:'attack', source:u.uid, target:tgt.uid, role:u.cls, color:u.color });
+      this.beat('attack');
       const dealt = this.hit(u, tgt, 1, { kind:'basic', dodgeable:true });
       if (u.cleave) this.enemies.filter(e => e.alive && e !== tgt).forEach(e => this.hit(u, e, u.cleave, { kind:'proc' }));
       this.gainEnergy(u, 10);
@@ -865,13 +974,49 @@
         (u.hooks.every || []).forEach(h => { if (u.counters.atk % h.n === 0) this.execute(u, h.eff, { target:tgt, proc:true }); });
       }
     }
-    castSkill(u) {
+    castSkill(u, manual = false) {
       const t = u.template;
-      u.skillCd = t.skill.cd;
-      this.emit('onFx', { type:'cast', source:u.uid, name:t.skill.name, color:u.color, kind:t.skill.fx });
-      this.execute(u, t.skill.eff, { isSkill:true });
+      u.skillCd = t.skill.cd; u.skillHeld = 0;
+      this.emit('onFx', { type:'cast', source:u.uid, name:t.skill.name, color:u.color, kind:t.skill.fx, manual });
+      this.beat('skill');
+      this.execute(u, t.skill.eff, { isSkill:true, manual });
       this.fire(u, 'onSkill', {});
       this.emit('onState');
+    }
+    // Habilidade comandada pelo jogador (rende +15% e mira o alvo em foco).
+    castSkillManual(i) {
+      const u = this.party[i];
+      if (!u || !u.alive || !this.active || this.phase !== 'fight' || this.pendingRoute || this.pendingEncounter || u.skillCd > 0 || this.has(u, 'silence') || !this.canAct(u)) return false;
+      if (!this.enemies.some(e => e.alive)) return false;
+      this.state.stats.manualSkills = (this.state.stats.manualSkills || 0) + 1;
+      this.castSkill(u, true);
+      if (this.awaiting === i) { u.go = true; this.awaiting = null; }                // a técnica foi a ordem da vez: o golpe básico segue
+      return true;
+    }
+    // Modo de comando: 'auto' (a equipe decide tudo), 'semi' (habilidades sozinhas, ultimates à mão) ou 'manual' (tudo à mão).
+    get mode() { const st = this.state.settings; return st.auto ? 'auto' : st.autoSkill === false ? 'manual' : 'semi'; }
+    setMode(mode) {
+      if (!['auto', 'semi', 'manual'].includes(mode)) return false;
+      const st = this.state.settings; st.auto = mode === 'auto'; st.autoSkill = mode !== 'manual'; return true;
+    }
+    // Guarda ativa da equipe (ver GUARD).
+    // quality: no ritmo de RPG quem julga o tempo é o desafio de tela (1 = no anel dourado, 0 = fora dele); sem ele
+    // (luta em tempo corrido), vale o relógio da luta: guarda erguida até GUARD.perfect segundos antes do golpe.
+    guard(quality) {
+      if (!this.active || this.phase !== 'fight' || this.guardCd > 0 || this.pendingRoute || this.pendingEncounter || !this.party.some(u => u.alive)) return false;
+      this.guardT = GUARD.time; this.guardAge = quality === 0 || quality === '0' ? GUARD.perfect : 0; this.guardCd = GUARD.cd;
+      this.state.stats.guards = (this.state.stats.guards || 0) + 1;
+      this.emit('onFx', { type:'guard', time:GUARD.time });
+      return true;
+    }
+    onParry(src) {
+      if (this.lastParry === this.zoneElapsed) return;     // um golpe em área apara uma vez só
+      this.lastParry = this.zoneElapsed;
+      this.state.stats.parries = (this.state.stats.parries || 0) + 1;
+      this.party.forEach(u => this.gainEnergy(u, GUARD.energy / (1 + (u.st.nrg || 0))));
+      this.emit('onFx', { type:'parry', uid:src.uid, color:src.color });
+      this.emit('onLog', { text:`APARO! A equipe bloqueou ${src.name.split(',')[0]} no instante certo.`, type:'skill' });
+      if (src.alive && (src.elite || src.boss || src.miniboss || src.guardian) && !(src.broken > 0)) this.breakAdd(src, GUARD.breakHit);
     }
     castUlt(i, manual = true) {
       const u = this.party[i];
@@ -881,6 +1026,8 @@
       this.state.stats.ults++; this.count('ults');
       if (manual) { this.state.stats.manualUlts++; }
       this.emit('onFx', { type:'cast', source:u.uid, heroIndex:i, manual, ult:true, name:u.template.ult.name, color:u.color, kind:'ult' });
+      this.beat('ult');
+      if (this.awaiting === i) { u.go = true; this.awaiting = null; }
       // Elo Kizuna: ultimates de heróis diferentes em sequência rápida se fortalecem.
       this.ultChain = this.zoneElapsed - this.lastUltAt <= CHAIN.window + 1e-6 && this.lastUltHero !== i ? this.ultChain + 1 : 1;
       this.lastUltAt = this.zoneElapsed; this.lastUltHero = i; this.chainBonus = (this.ultChain - 1) * (CHAIN.per + (u.st.chainPow || 0));
@@ -904,10 +1051,13 @@
     // Quebra de postura: dano em elites/chefes enche a barra; cheia, o inimigo fica atordoado e vulnerável.
     addBreak(src, tg, final, kind, em) {
       if (src.side !== 'hero' || tg.side !== 'enemy' || !(tg.elite || tg.boss || tg.miniboss || tg.guardian) || tg.broken > 0 || !tg.alive) return;
-      tg.breakG += final / tg.maxHp * 100 * BREAK.gain * (BREAK.kindMult[kind] || 1) * (em === 1.3 ? 1.5 : 1) * (1 + (src.st.breakPow || 0));
+      this.breakAdd(tg, final / tg.maxHp * 100 * BREAK.gain * (BREAK.kindMult[kind] || 1) * (em === 1.3 ? 1.5 : 1) * (1 + (src.st.breakPow || 0)));
+    }
+    breakAdd(tg, amount) {
+      tg.breakG += amount;
       if (tg.breakG < tg.breakMax) return;
       tg.breakG = 0; tg.breakMax *= BREAK.grow; tg.broken = BREAK.time;
-      const canceled = !!tg.windupSpecial; tg.windup = 0; tg.windupSpecial = null;
+      const canceled = !!tg.windupSpecial; tg.windup = 0; tg.windupSpecial = null; tg.striking = false;
       this.state.stats.breaks = (this.state.stats.breaks || 0) + 1;
       this.emit('onFx', { type:'break', uid:tg.uid, canceled, color:tg.color });
       this.emit('onLog', { text:`${tg.name.split(',')[0]} teve a postura QUEBRADA${canceled ? ' e perdeu o ataque preparado' : ''}!`, type:'skill' });
@@ -949,7 +1099,13 @@
     }
 
     // ---------- execução de efeitos ----------
+    manualMult(ctx) { return ctx.manual ? (ctx.isUlt ? MANUAL.ult : ctx.isSkill ? MANUAL.skill : 1) : 1; }
     execute(u, effs, ctx = {}) {
+      // Ataque preparado caindo com a guarda recém-erguida: o Aparo também anula o controle (atordoar, congelar, silenciar).
+      const outer = this.parryNow; this.parryNow = !!ctx.special && this.guardT > 0 && this.guardAge <= GUARD.perfect;
+      try { return this.executeEffects(u, effs, ctx); } finally { this.parryNow = outer; }
+    }
+    executeEffects(u, effs, ctx) {
       let dealt = 0;
       const kind = ctx.isUlt ? 'ult' : ctx.isSkill ? 'skill' : 'proc';
       for (const e of effs || []) {
@@ -959,7 +1115,7 @@
           const hits = e.hits || 1;
           for (let h = 0; h < hits; h++) {
             const targets = this.resolve(u, e.to, ctx, false);
-            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m, { kind, manual:ctx.manual, pierce:e.pierce, crit:e.crit, exec:e.exec, dodgeable:e.to !== 'all' && kind === 'proc' })); });
+            targets.forEach(tg => { dealt += Math.max(0, this.hit(u, tg, e.m, { kind, manual:ctx.manual, special:ctx.special, pierce:e.pierce, crit:e.crit, exec:e.exec, dodgeable:e.to !== 'all' && kind === 'proc' })); });
             if (targets.length) ctx.target = ctx.target || targets[0];
           }
           if (kind !== 'proc') this.emit('onFx', { type:e.to === 'all' ? 'aoe' : 'burst', source:u.uid, target:(ctx.target || {}).uid, color:u.color });
@@ -968,8 +1124,8 @@
         const targets = this.resolve(u, e.to || 'self', ctx, supportive);
         switch (e.k) {
           case 'st': targets.forEach(tg => this.applyStatus(u, tg, e)); break;
-          case 'heal': targets.forEach(tg => this.heal(u, tg, (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (ctx.isSkill ? 1 + (u.st.skillMastery || 0) : 1) * (ctx.isUlt && ctx.manual ? 1.25 : 1))); break;
-          case 'shield': targets.forEach(tg => { const amt = (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (1 + (u.st.healPow || 0)) * (ctx.isUlt && ctx.manual ? 1.25 : 1); tg.shield = Math.min(tg.maxHp * .7, tg.shield + amt); tg.shieldT = Math.max(tg.shieldT, e.d || 6); this.emit('onFx', { type:'shield', uid:tg.uid, value:Math.round(amt) }); }); break;
+          case 'heal': targets.forEach(tg => this.heal(u, tg, (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (ctx.isSkill ? 1 + (u.st.skillMastery || 0) : 1) * this.manualMult(ctx))); break;
+          case 'shield': targets.forEach(tg => { const amt = (e.p ? tg.maxHp * e.p : this.stat(u, 'atk') * e.m) * (1 + (u.st.healPow || 0)) * this.manualMult(ctx); tg.shield = Math.min(tg.maxHp * .7, tg.shield + amt); tg.shieldT = Math.max(tg.shieldT, e.d || 6); this.emit('onFx', { type:'shield', uid:tg.uid, value:Math.round(amt) }); }); break;
           case 'buff': targets.forEach(tg => this.addEffect(tg, { s:e.s, v:e.v, d:e.d, stackMax:e.stack, src:u })); break;
           case 'nrg': targets.forEach(tg => { if (tg.side === 'hero') tg.energy = U.clamp(tg.energy + e.v, 0, ULT_COST); }); break;
           case 'cleanse': targets.forEach(tg => { tg.effects = tg.effects.filter(x => !DEBUFFS.has(x.s)); this.emit('onFx', { type:'text', uid:tg.uid, text:'PURIFICADO', color:'#bff4ff' }); }); break;
@@ -985,7 +1141,7 @@
           // Finaliza quem está abaixo do limite de HP (chefes e chefes de andar resistem).
           case 'execute': targets.forEach(tg => { if (!tg.boss && !tg.miniboss && tg.alive && tg.hp / tg.maxHp <= e.th) { this.emit('onFx', { type:'text', uid:tg.uid, text:'EXECUTADO', color:'#ff5d6c' }); this.applyRawDamage(tg, tg.hp + tg.shield + 1, u, { kind:'skill' }); } }); break;
           // Dano que salta entre inimigos, perdendo força a cada salto.
-          case 'chain': { let m = e.m, last = null; const pool = this.opponents(u); for (let j = 0; j < (e.n || 3) && pool.some(x => x.alive); j++) { const opts = pool.filter(x => x.alive && x !== last); const tg = j === 0 && ctx.target?.alive ? ctx.target : opts.length ? U.pick(opts) : null; if (!tg) break; dealt += Math.max(0, this.hit(u, tg, m, { kind })); last = tg; m *= (e.fall || .7); } break; }
+          case 'chain': { let m = e.m, last = null; const pool = this.opponents(u); for (let j = 0; j < (e.n || 3) && pool.some(x => x.alive); j++) { const opts = pool.filter(x => x.alive && x !== last); const tg = j === 0 && ctx.target?.alive ? ctx.target : opts.length ? U.pick(opts) : null; if (!tg) break; dealt += Math.max(0, this.hit(u, tg, m, { kind, manual:ctx.manual, special:ctx.special })); last = tg; m *= (e.fall || .7); } break; }
           case 'hp': u.hp = Math.max(1, u.hp + u.maxHp * e.p); this.emit('onFx', { type:'damage', uid:u.uid, value:Math.round(-u.maxHp * e.p), side:u.side, color:'#ff9aa4' }); break;
         }
       }
@@ -1001,6 +1157,7 @@
 
     applyStatus(src, tg, e) {
       if (!tg.alive || U.random() > (e.ch ?? 1)) return;
+      if (this.parryNow && tg.side === 'hero' && (CC.has(e.s) || e.s === 'silence')) { this.emit('onFx', { type:'text', uid:tg.uid, text:'APARADO', color:'#ffe9b0' }); return; }
       let d = e.d;
       if (tg.boss && (CC.has(e.s) || e.s === 'silence')) d *= .4;
       else if ((tg.miniboss || tg.elite) && CC.has(e.s)) d *= .7;
@@ -1026,6 +1183,7 @@
       if (!tg || !tg.alive) return -1;
       if (o.dodgeable && U.random() < this.stat(tg, 'dodge')) {
         this.emit('onFx', { type:'text', uid:tg.uid, text:'ESQUIVA', color:'#9ce9cc' });
+        this.emit('onFx', { type:'dodge', uid:tg.uid });
         this.fire(tg, 'onDodge', { attacker:src });
         return -1;
       }
@@ -1033,7 +1191,7 @@
       if (o.kind === 'skill' || o.kind === 'ult') raw *= 1 + (src.st.skill || 0);
       if (o.kind === 'skill') raw *= 1 + (src.st.skillMastery || 0);
       if (o.kind === 'ult') raw *= 1 + (src.st.ultDmg || 0);
-      if (o.kind === 'ult' && o.manual) raw *= 1.25; // comando manual: ultimate no momento certo rende mais
+      if (o.manual && (o.kind === 'ult' || o.kind === 'skill')) raw *= o.kind === 'ult' ? MANUAL.ult : MANUAL.skill; // comando do jogador rende mais
       if (o.kind === 'ult' && this.chainBonus) raw *= 1 + this.chainBonus;
       if (tg.broken > 0) raw *= 1 + BREAK.dmg;
       if (src.side === 'hero' && tg.worldBoss && this.opts.ally) raw *= 1 + Math.min(.5, this.opts.ally * .02); // Bênção da Aliança
@@ -1058,15 +1216,20 @@
         if (inn.drPerSummon) { const n = this.enemies.filter(x => x.alive && x.summoned).length; if (n) raw *= 1 - Math.min(.6, n * inn.drPerSummon); }
       }
       const pierce = Math.min(1, (o.pierce || 0) + (src.st.pierce || 0));
-      const def = this.stat(tg, 'def') * (1 - pierce);
+      const def = this.stat(tg, 'def') * (1 - pierce) * (tg.side === 'hero' ? 1 + (this.stageMods.def || 0) : 1);
       raw *= 1 - def / (def + 2.2 * (src.st.baseAtk || src.st.atk));
       raw *= (1 + this.eff(tg, 'mark')) * (1 - this.stat(tg, 'dr'));
       if (src.side === 'hero' && this.stageMods.atk) raw *= 1 + this.stageMods.atk;
       if (tg.side === 'hero' && this.stageMods.dr) raw *= 1 - this.stageMods.dr;
+      // Guarda ativa da equipe; com o tempo certo contra um ataque preparado, Aparo.
+      const guarded = tg.side === 'hero' && this.guardT > 0 && o.kind !== 'dot', parry = guarded && !!o.special && this.guardAge <= GUARD.perfect;
+      if (guarded) raw *= 1 - (parry ? GUARD.perfectCut : GUARD.cut);
+      if (tg.defend && o.kind !== 'dot') raw *= 1 - DEFEND.cut;
       raw *= U.rand(.92, 1.08);
       const dmg = Math.max(1, Math.round(raw));
       const final = this.applyRawDamage(tg, dmg, src, { crit, kind:o.kind, elem:em, broken:tg.broken > 0 });
       this.addBreak(src, tg, final, o.kind, em);
+      if (parry) this.onParry(src); else if (guarded) this.emit('onFx', { type:'guardHit', uid:tg.uid });
       if (o.kind !== 'dot' && tg.thorns > 0 && src.alive) this.applyRawDamage(src, Math.max(1, Math.round(final * tg.thorns)), tg, { kind:'thorns', color:'#d8ad6a' });
       if (inn?.reflect && src.side === 'hero' && o.kind !== 'dot' && src.alive && final > 0) this.applyRawDamage(src, Math.max(1, Math.round(final * inn.reflect)), tg, { kind:'thorns', color:'#4fb3ff' });
       const ls = this.stat(src, 'lifesteal');
@@ -1127,7 +1290,7 @@
     // ---------- consumíveis em combate ----------
     // ---------- Modo AFK Total ----------
     // AFK Total = FARM: fica no estágio atual repetindo (nunca avança sozinho). Se perder, recua um estágio e farma ali.
-    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoAdvance = false; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
+    setAfk(on) { const st = this.state.settings; st.afk = on; if (on) { st.auto = true; st.autoSkill = true; st.autoAdvance = false; st.autoRepeat = true; } this.state.afkTrain = 0; return true; }
     // Durante a luta: poção quando a equipe está mal, elixir contra chefes com a energia baixa.
     afkTick() {
       const alive = this.party.filter(u => u.alive); if (!alive.length) return;
@@ -1140,13 +1303,14 @@
       if (!this.active || this.phase !== 'fight' || this.potionCd > 0 || (this.state.consumables.potion || 0) < 1) return false;
       this.state.consumables.potion--; this.potionCd = 20;
       this.party.forEach(u => { if (u.alive) this.heal(u, u, u.maxHp * .35, true); this.emit('onFx', { type:'heal', uid:u.uid, value:0, color:'#7dffa8' }); });
+      this.emit('onFx', { type:'potion' });
       this.emit('onLog', { text:'Poção de Cura usada: +35% HP na equipe.', type:'skill' }); this.emit('onState'); return true;
     }
     useElixir() {
       if (!this.active || this.phase !== 'fight' || this.elixirCd > 0 || (this.state.consumables.elixir || 0) < 1) return false;
       this.state.consumables.elixir--; this.elixirCd = 30;
       this.party.forEach(u => this.gainEnergy(u, 50 / (1 + (u.st.nrg || 0))));
-      this.emit('onLog', { text:'Elixir de Energia: +50 de energia para a equipe.', type:'skill' }); this.emit('onState'); return true;
+      this.emit('onLog', { text:'Elixir de Energia: +50 de energia para a equipe.', type:'skill' }); this.emit('onFx', { type:'elixir' }); this.emit('onState'); return true;
     }
     setFocus(uid) { const e = this.enemies.find(x => x.uid === uid && x.alive); this.focusUid = e && this.focusUid !== uid ? uid : null; return this.focusUid; }
 
@@ -1698,6 +1862,9 @@
       const st = this.state.settings;
       if (key === 'auto' || key === 'autoAdvance' || key === 'autoRepeat') { st[key] = !!value; return true; }
       if (key === 'afk') { this.setAfk(!!value); return true; }
+      if (key === 'mode') return this.setMode(String(value));
+      if (key === 'autoSkill') { st.autoSkill = !!value; return true; }
+      if (key === 'pace' && ['rpg', 'turbo'].includes(value)) { st.pace = value; return true; }
       if (key === 'autoPoints') { st.autoPoints = false; return value === false; }
       if (key === 'autoSalvage' && ['none', 'common', 'rare', 'epic'].includes(value)) { st.autoSalvage = value; return true; }
       return false;
@@ -2400,6 +2567,6 @@
     resetSave() { [saveKey, `${saveKey}:a`, `${saveKey}:b`, `${saveKey}:active`].forEach(k => U.safeStorage.remove(k)); }
   }
 
-  KT.State = { guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
+  KT.State = { GUARD, MANUAL, BEAT, DEFEND, guildRankOf, guildPerks, itemLevelFor:itemLevelFor, BOSS_LOOT_PER_DAY, DAILY_MAT_CAP, BREAK, CHAIN, houseStats, albumIds, buffStats, DT, MAX_SPEED, setSaveKey, createState, loadState, saveState, mergeState, heroStats, statPower, teamContext, formationRecords, rewardPower, goldPow, powerScore, heroScore, POWER_EXP, heroXpNext, classXpNext, accountXpNext, enemyLevel, xpFactor, XP_RULES, heroMaxLevel, awakenCost, zonePower, itemLevelFor, activeEvent, upcomingEvents, dayKey, CHOICE_WAIT, newHeroRecord, SAVE_KEY, ULT_COST };
   KT.CombatEngine = CombatEngine;
 })();

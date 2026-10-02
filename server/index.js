@@ -258,7 +258,7 @@ async function createServer(options = {}) {
   // Arquivos estáticos
   // ---------------------------------------------------------------------------
   const MIME = { '.html':'text/html; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.css':'text/css; charset=utf-8', '.png':'image/png', '.jpg':'image/jpeg', '.svg':'image/svg+xml', '.json':'application/json', '.ico':'image/x-icon', '.webp':'image/webp', '.txt':'text/plain; charset=utf-8', '.md':'text/markdown; charset=utf-8' };
-  const PUBLIC = ['/index.html', '/styles.css', '/theme-sumi.css', '/src/', '/assets/', '/legal/', '/admin/', '/manifest.webmanifest', '/version.json', '/vendor/'];
+  const PUBLIC = ['/index.html', '/styles.css', '/theme-sumi.css', '/theme-game.css', '/src/', '/assets/', '/legal/', '/admin/', '/manifest.webmanifest', '/version.json', '/vendor/'];
   function serveStatic(req, res) {
     let urlPath;
     try { urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (_) { return fail(res, 400, 'URL inválida.'); }
