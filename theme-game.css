@@ -302,3 +302,13 @@ body:not(.in-combat) .stage-controls{display:none!important}
   .lobby-btn.todo{order:3}
 }
 @media (max-width:560px){.lobby-cta{grid-template-columns:minmax(0,1fr) 56px 56px 56px}}
+
+/* =========================================================
+   DESEMPENHO
+   ========================================================= */
+/* Desfoque de fundo (backdrop-filter) por cima de um palco animado refaz o desfoque a cada quadro: é o efeito mais caro
+   da interface e some sem fazer falta. Os painéis ganham um véu um pouco mais fechado no lugar. */
+*,*::before,*::after{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+.modal-backdrop{background:radial-gradient(1200px 700px at 50% 30%,rgba(18,13,20,.84),rgba(5,4,9,.94))!important}
+/* Brilhos que pulsam mudando a sombra repintam o elemento a cada quadro: em passos, repintam ~8 vezes por segundo. */
+.signpost.featured,.signpost.primary,.ult-btn.ready,.skill-btn.ready,.guide-card.done,.journey-cta::after,.map-pin.current,.map-pin.next,.ctl.boost.pulse,.coach-hole,#goal-chip.done,.cons.guard.alert,.turn-bar .tb.special,#village-actions .signpost.ready .sp-icon{animation-timing-function:steps(10,end)!important}

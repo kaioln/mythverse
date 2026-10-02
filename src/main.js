@@ -201,6 +201,13 @@
     });
   }
   KT.askBox = askBox;
+  // Há quanto tempo (ms) ninguém toca, clica nem tecla: o jogo usa para gastar menos quando roda sozinho.
+  let lastInput = Date.now();
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev => addEventListener(ev, () => { lastInput = Date.now(); }, { passive:true, capture:true }));
+  KT.idleFor = () => Date.now() - lastInput;
+  // Modo econômico (Configurações): 30 quadros por segundo e desenho em resolução menor.
+  KT.saver = () => { try { return localStorage.getItem('mythverse-saver') === 'on'; } catch (_) { return false; } };
+
   // Tela de carregamento: volta a aparecer (com o que está acontecendo) sempre que o jogo ainda não está pronto.
   KT.bootLabel = text => { const el = document.querySelector('#boot'); if (!el) return; el.classList.remove('done'); const l = el.querySelector('#boot-label'); if (l && text) l.textContent = text; };
 
@@ -272,7 +279,7 @@
       const sound = new SoundEngine(); KT.sound = sound;
       const ui = new KT.UIController(state, engine, assets, renderer, {
         sound:on => sound.enable(on), warn:() => sound.warn(), victory:() => sound.victory(),
-        summon:r => sound.summon(r), reward:() => sound.ui('uiConfirm'), click:() => sound.ui('uiClick')
+        summon:r => sound.summon(r), reward:() => sound.ui('uiConfirm'), click:() => sound.ui('uiClick'), resize:() => renderer.resize()
       });
       ui.session = session; ui.ask = askBox;
       // Interface com som: todo botão responde ao toque; os painéis abrem e fecham como papel deslizando.
@@ -282,7 +289,7 @@
         if (open0) ui.openPanel = (...a) => { if (ui.el.modal.hidden) sound.ui('uiOpen'); return open0(...a); };
         if (close0) ui.closeModal = (...a) => { if (!ui.el.modal.hidden) sound.ui('uiClose'); return close0(...a); }; }
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
-      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { KT.dev = { ui, engine, renderer }; const q = new URLSearchParams(location.search), f = q.get('devfight'); if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
+      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const q = new URLSearchParams(location.search), f = q.get('devfight'); KT.dev = { ui, engine, renderer, awake:q.has('devmode') || q.has('devawake') }; if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); }, onPhase:p => ui.onPhase(p),
@@ -311,13 +318,15 @@
         KT.Social?.attach(engine, ui);
         // Tesouro Imperial: ajustes de ouro, preços e impostos (a cada 30 min).
         const econ = () => KT.NeonMarket?.economy(engine).catch(() => {}); econ(); setInterval(econ, 30 * 60_000);
-        setInterval(() => KT.Neon.syncClock().catch(() => {}), 10 * 60_000);
+        setInterval(() => KT.Neon.syncClock().catch(() => {}), 30 * 60_000);
         const gifts = () => KT.NeonMarket?.claimGifts(engine).then(list => list.forEach(g => {
           const t = g.kind === 'hero' && engine.template(g.payload.id);
           ui.toast(g.kind === 'keys' ? `<b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação!` : `<b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção!`, 'gold');
           ui.callbacks.summon?.(g.kind === 'hero' ? g.payload.rarity : 'epic'); ui.renderResources();
         })).catch(() => {});
-        setTimeout(gifts, 2500); setInterval(gifts, 5 * 60_000);
+        // Presentes: na abertura, a cada 30 min e ao voltar para a aba (no máximo uma consulta a cada 5 min).
+        let giftAt = 0; const giftCheck = () => { if (Date.now() - giftAt < 5 * 60_000) return; giftAt = Date.now(); gifts(); };
+        setTimeout(giftCheck, 2500); setInterval(giftCheck, 30 * 60_000); addEventListener('visibilitychange', () => { if (!document.hidden) giftCheck(); });
         if (KT.Neon.conflict) KT.Neon.onConflict();
         addEventListener('visibilitychange', () => { if (document.hidden && Date.now() - KT.Neon.lastHide > 15000) { KT.Neon.lastHide = Date.now(); engine.save(); KT.Neon.flush(); } });
         addEventListener('pagehide', () => { engine.save(); KT.Neon.flush(); });
@@ -326,18 +335,19 @@
       }
       // Versão nova publicada: salva e recarrega sozinho (fora de luta), para ninguém ficar preso na versão antiga.
       if (location.protocol !== 'file:') {
-        let reloading = false;
+        let reloading = false, versionAt = 0;
         const checkVersion = async () => {
-          if (reloading) return;
+          if (reloading || Date.now() - versionAt < 5 * 60_000) return;
+          versionAt = Date.now();
           try {
             const r = await fetch(`version.json?t=${Date.now()}`, { cache:'no-store' }); if (!r.ok) return;
             const v = (await r.json()).v; if (!v || v === KT.VERSION) return;
             reloading = true; ui.toast('<b>Nova versão do jogo!</b> Salvando e atualizando…', 'gold');
-            const go = async () => { if (engine.phase === 'fight' && engine.zone?.kind !== 'village') { setTimeout(go, 5000); return; } engine.save(); try { await KT.Neon?.flush?.(); await KT.Server?.flush?.(); } catch (_) {} location.reload(); };
+            const go = async () => { if (engine.phase === 'fight' && engine.zone?.kind !== 'village') { setTimeout(go, 5000); return; } engine.save(); try { await KT.Neon?.flush?.(); if (KT.Server?.enabled) await KT.Server.flush(); } catch (_) {} location.reload(); };
             setTimeout(go, 3000);
           } catch (_) {}
         };
-        setTimeout(checkVersion, 20_000); setInterval(checkVersion, 3 * 60_000);
+        setTimeout(checkVersion, 20_000); setInterval(checkVersion, 10 * 60_000); addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
       }
       if (session.mode === 'cloud') { KT.Server.attach(engine, ui, session.revision); ui.loadMarket(true); setInterval(() => KT.Net.syncClock(), 10 * 60_000); setInterval(() => { if (!engine.seg && !engine.segWaiting && KT.Server.status !== 'saving') KT.Server.flush(); }, 5 * 60_000); }
 
@@ -365,16 +375,31 @@
       sound.setScene(engine.zone);
       ui.renderAll();
 
-      let last = performance.now(), uiClock = 0, slowClock = 0, saveClock = 0;
+      let last = performance.now(), uiClock = 0, slowClock = 0, saveClock = 0, faults = 0;
+      // Ritmo de desenho: 60 quadros por segundo no máximo (monitores de 120/144 Hz não dobram o gasto); 30 no AFK e no
+      // modo econômico; 15 com um painel aberto por cima do palco (ele fica escondido). A luta em si não muda: o motor
+      // recebe sempre o tempo real que passou.
+      const interval = () => !ui.el.modal.hidden ? 1000 / 15 : state.settings.afk || KT.saver() ? 1000 / 30 : 1000 / 60;
       function frame(now) {
-        const dt = Math.min(.06, (now - last) / 1000 || 0); last = now;
-        if (renderer.hitstop <= 0 && !(renderer.freeze > 0)) engine.update(dt);
-        renderer.update(dt); renderer.render();
-        uiClock += dt; slowClock += dt; saveClock += dt;
-        if (uiClock > .08) { uiClock = 0; ui.renderParty(); ui.renderBoss(); }
-        if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); ui.renderChoiceTimer(); }
-        if (saveClock > 5) { saveClock = 0; engine.save(); }
         requestAnimationFrame(frame);
+        const gap = now - last, want = interval();
+        if (gap < want - 1) return;
+        last = gap > 250 ? now : now - (gap % want);
+        const dt = Math.min(.1, gap / 1000 || 0);
+        // Um erro num quadro nunca derruba o jogo: registra, segue no próximo e, se insistir, oferece recarregar.
+        try {
+          if (renderer.hitstop <= 0 && !(renderer.freeze > 0)) engine.update(dt);
+          renderer.update(dt); renderer.render();
+          uiClock += dt; slowClock += dt; saveClock += dt;
+          if (uiClock > .08) { uiClock = 0; ui.renderParty(); ui.renderBoss(); }
+          if (slowClock > .5) { slowClock = 0; ui.renderResources(); ui.renderZone(); ui.renderControls(); ui.renderSide(); ui.renderChoiceTimer(); }
+          if (saveClock > 5) { saveClock = 0; engine.save(); }
+          faults = 0;
+        } catch (err) {
+          if (faults++ === 0) console.error('quadro com erro', err);
+          renderer.hitstop = 0; renderer.freeze = 0;
+          if (faults === 120) askBox('O jogo encontrou um problema', 'Algo falhou repetidas vezes ao desenhar a tela. Seu progresso está salvo. Recarregar costuma resolver.', [{ id:'reload', label:'Recarregar', primary:true }, { id:'keep', label:'Continuar assim' }]).then(id => { if (id === 'reload') location.reload(); });
+        }
       }
       requestAnimationFrame(frame);
       // Aba em segundo plano, minimizada ou coberta: o requestAnimationFrame para e o navegador espaça os timers
@@ -413,12 +438,21 @@
       setInterval(() => {
         if (!document.hidden && performance.now() - last < 1000) { bgLast = performance.now(); return; }
         if (catching) return;
-        catchUp(false); if (++bgSave >= 10) { bgSave = 0; engine.save(); }
+        try { catchUp(false); if (++bgSave >= 10) { bgSave = 0; engine.save(); } } catch (err) { console.error('recuperação em segundo plano', err); }
       }, 1000);
       addEventListener('beforeunload', () => engine.save());
+      let modeAway = null;
       document.addEventListener('visibilitychange', () => {
-        if (document.hidden) { bgLast = performance.now(); caught = { secs:0, loot:0, cards:0, gold:state.player.gold }; engine.save(); }
-        else catchUp(true);
+        if (document.hidden) {
+          bgLast = performance.now(); caught = { secs:0, loot:0, cards:0, gold:state.player.gold };
+          // Ninguém olhando: as falas vão para o registro e a equipe luta sozinha (o comando escolhido volta com a aba).
+          ui.dropDialog?.();
+          if (engine.mode !== 'auto' && !KT.dev?.awake) { modeAway = engine.mode; engine.input('mode', 'auto'); if (engine.awaiting !== null) engine.input('act', 'attack'); }
+          engine.save();
+        } else {
+          if (modeAway) { engine.input('mode', modeAway); modeAway = null; ui.renderControls?.(); }
+          catchUp(true);
+        }
         last = performance.now();
       });
       state.settings.sound = KT.Utils.safeStorage.get('mythverse-sound') !== 'off';

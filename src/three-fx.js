@@ -7,7 +7,9 @@
   const U = KT.Utils;
   const PREF = 'mythverse-3d';
   let modP = null;
-  const enabled = () => { try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return false; return U.safeStorage.get(PREF) !== 'off'; } catch { return true; } };
+  // Desligada por padrão: a cidade viva (src/scene-fx.js) e as partículas 2D já cuidam da atmosfera; a camada 3D custa
+  // 535 KB de biblioteca e uma segunda tela de vídeo. Quem quiser liga em Configurações.
+  const enabled = () => { try { if (matchMedia('(prefers-reduced-motion: reduce)').matches) return false; return U.safeStorage.get(PREF) === 'on'; } catch { return false; } };
   const webgl = (() => { let ok = null; return () => { if (ok !== null) return ok; try { const c = document.createElement('canvas'); ok = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch { ok = false; } return ok; }; })();
   const load = () => (modP ||= import(new URL('vendor/three.min.js', document.baseURI).href).catch(err => { console.warn('three.js indisponível', err); modP = null; return null; }));
   KT.Three = { load, enabled, webgl, setEnabled(on) { U.safeStorage.set(PREF, on ? 'on' : 'off'); KT.Atmos?.refresh(); } };

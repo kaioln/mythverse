@@ -129,7 +129,9 @@
       this.setStatus('pending');
       // Economia de horas de computação do Neon: cada envio acorda o banco. Com o jogo na tela, no máximo 1 envio por minuto;
       // em segundo plano (AFK), 1 a cada 10 min. A cópia local continua a cada ciclo e trocar de aba/fechar envia na hora.
-      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, (typeof document !== 'undefined' && document.hidden) ? 600_000 : 60_000);
+      // Sem ninguém mexendo (AUTO/AFK há mais de 2 min), 1 envio a cada 5 min: o banco pode dormir entre um e outro.
+      const away = typeof document !== 'undefined' && document.hidden, idle = !away && (KT.idleFor?.() || 0) > 120_000;
+      if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, away ? 600_000 : idle ? 300_000 : 60_000);
       return durable;
     },
     // Um envio por vez: chamadas simultâneas (timer, trocar de aba, botão) esperam a anterior terminar.
@@ -145,9 +147,10 @@
       state.activeSession = { id:this.sessionId, at:this.sessionAt }; state.powerScale = 3;
       const body = { data:state, updated_at:new Date().toISOString(), ...this.summary(state) };
       let r;
-      if (!this.row) { r = await this.api('POST', '/mv_saves', { ...body, revision:1 }, 'return=representation'); if (r.ok) this.row = { revision:Number(r.data?.[0]?.revision) || 1 }; }
+      // select=revision: a resposta traz só o número da revisão (antes voltava o save inteiro, dobrando o tráfego).
+      if (!this.row) { r = await this.api('POST', '/mv_saves?select=revision', { ...body, revision:1 }, 'return=representation'); if (r.ok) this.row = { revision:Number(r.data?.[0]?.revision) || 1 }; }
       else {
-        r = await this.api('PATCH', `/mv_saves?revision=eq.${this.row.revision}`, { ...body, revision:this.row.revision + 1 }, 'return=representation');
+        r = await this.api('PATCH', `/mv_saves?revision=eq.${this.row.revision}&select=revision`, { ...body, revision:this.row.revision + 1 }, 'return=representation');
         if (r.ok && !r.data?.length) {
           const latest = await this.api('GET', '/mv_saves?select=data,revision');
           const current = latest.ok ? latest.data?.[0] : null;

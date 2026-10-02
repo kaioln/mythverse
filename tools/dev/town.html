@@ -41,7 +41,7 @@
   const load = src => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('falhou: ' + src)); i.src = src; });
   const sceneUrl = KT.sceneUrl(D.zones.village.scene || 'village');
   assets.images.set(sceneUrl, await load(sceneUrl));
-  R.festivalHomes = await load('assets/scenes/festival-homes.png').catch(() => new Image());
+  R.festivalHomes = await load('assets/scenes/web/festival-homes.webp').catch(() => new Image());
   const index = await (await fetch('assets/town-walk/index.json')).json();
   R.townArt = { index, folk:await load('assets/town-walk/folk.webp'), acts:index.acts ? await load('assets/town-walk/acts.webp') : null, animals:index.animals ? await load('assets/town-walk/animals.webp') : null, failed:false, sheets:new Map() };
   for (const id of ids) if (index.heroes[id]) R.townArt.sheets.set(id, await load(`assets/town-walk/${id}.webp`));

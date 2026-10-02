@@ -82,7 +82,8 @@
     }
     resize() {
       const rect = this.canvas.getBoundingClientRect(); if (!rect.width) return;
-      const dpr = Math.min(2, globalThis.devicePixelRatio || 1);
+      // Tela densa ou monitor grande: a área de desenho não passa de 1920 px de largura (acima disso só gasta placa de vídeo).
+      const dpr = Math.max(1, Math.min(2, globalThis.devicePixelRatio || 1, 1920 / rect.width)) * (KT.saver?.() ? .75 : 1);
       // Celular em pé: janela mais estreita da cena (VIEW_P), então o palco fica mais alto e os personagens ~40% maiores.
       const portrait = globalThis.innerWidth <= 700 && globalThis.innerHeight > globalThis.innerWidth * 1.2;
       document.body?.classList.toggle('stage-portrait', portrait);
@@ -580,7 +581,7 @@
       const live = town && img ? KT.SceneFx?.frame('village', img, this.worldTime, this.canvas.width, this.canvas.height, this.cloudColor()) : null;
       if (img) { const sw = W * zoom, sh = H * zoom; c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(live || img, (W - sw) / 2 + dx, (H - sh) / 2 - (town ? 0 : 6), sw, sh); } else { c.fillStyle = '#141833'; c.fillRect(0, 0, W, H); }
       if (town) {
-        if (!this.festivalHomes) { this.festivalHomes = this.assets.image?.('assets/scenes/festival-homes.png'); if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/festival-homes.png'; } }
+        if (!this.festivalHomes) { this.festivalHomes = this.assets.image?.('assets/scenes/web/festival-homes.webp'); if (!this.festivalHomes) { this.festivalHomes = new Image(); this.festivalHomes.src = 'assets/scenes/web/festival-homes.webp'; } }
         // A ilha das casas do festival é uma camada à parte: sobe e desce devagar, como quem flutua.
         if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65 + Math.sin(this.worldTime * .42) * 3, 390, 260);
       }
@@ -1209,7 +1210,7 @@
     }
     drawSprite(id, x, y, height, o = {}) {
       const img = this.assets.spriteImage(id), c = this.ctx;
-      if (!img) { c.fillStyle = 'rgba(255,255,255,.2)'; c.fillRect(x - 30, y - height, 60, height); return; }
+      if (!img) return;      // ainda chegando (sprites vêm sob demanda)
       const w = height * img.width / img.height, sy = o.sy || 1;
       c.save(); c.translate(x, y); if (o.tilt) c.rotate(o.tilt); c.scale((o.flip ? -1 : 1) * (2 - sy), sy); c.globalAlpha *= (o.alpha ?? 1);
       if (o.gray) c.filter = 'grayscale(1) brightness(.6)';
@@ -1226,6 +1227,7 @@
     // Aura com a forma do personagem: silhueta colorida e desfocada, em camadas.
     glowSprite(id, color) {
       const key = `${id}|${color}`; let g = this.glowCache.get(key); if (g) return g;
+      if (this.glowCache.size > 24) this.glowCache.delete(this.glowCache.keys().next().value);      // auras guardadas: só as mais recentes
       const img = this.assets.spriteImage(id); if (!img) return null;
       const pad = 24, sc = .5;
       const tmp = document.createElement('canvas'); tmp.width = Math.round(img.width * sc) + pad * 2; tmp.height = Math.round(img.height * sc) + pad * 2;

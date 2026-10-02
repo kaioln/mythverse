@@ -591,7 +591,14 @@
       this.openPanel('quests', 'advisor');
       this.toast('A equipe caiu duas vezes no mesmo desafio. <b>Sayo preparou um plano.</b>', 'gold');
     }
-    onDialog(lines) { this.dialogQueue.push(...lines); if (this.el.dialog.hidden) this.advanceDialog(); }
+    // Falas de história. Sem ninguém olhando (AFK ou aba em segundo plano) elas vão direto para o registro: a luta
+    // nunca fica parada esperando um clique. No AUTO, cada fala avança sozinha depois do tempo de leitura.
+    onDialog(lines) {
+      if (this.state.settings.afk || document.hidden) { lines.forEach(l => this.onLog({ text:`${l.who}: ${l.text}`, type:'system' })); return; }
+      this.dialogQueue.push(...lines); if (this.el.dialog.hidden) this.advanceDialog();
+    }
+    // Fecha as falas em aberto (a aba foi para segundo plano ou o AFK foi ligado).
+    dropDialog() { clearTimeout(this.dialogTimer); if (this.el.dialog.hidden && !this.dialogQueue.length) return; this.dialogQueue.forEach(l => this.onLog({ text:`${l.who}: ${l.text}`, type:'system' })); this.dialogQueue.length = 0; this.el.dialog.hidden = true; this.engine.paused = false; }
     revealFieldLore(zoneId, stage) {
       const notes = (KT.Lore?.fieldNotes?.[zoneId] || []).filter(n => n.at === stage);
       if (!notes.length) return;
@@ -599,13 +606,15 @@
       this.onLog({ text:`Uma página do Caderno de Campo foi recuperada em ${D.zones[zoneId].title}.`, type:'system' });
     }
     advanceDialog() {
-      const line = this.dialogQueue.shift();
+      const line = this.dialogQueue.shift(); clearTimeout(this.dialogTimer);
       if (!line) { this.el.dialog.hidden = true; this.engine.paused = false; return; }
       const sp = D.speakers[line.who] || { color:'#fff', title:'' };
       this.engine.paused = true;
       this.el.dialog.innerHTML = `<div class="dlg-portrait" style="--sc:${sp.color}">${sp.sprite ? `<img src="${KT.spriteUrl(sp.sprite)}" alt="">` : `<span class="dlg-mark">${KT.glyph('torii')}</span>`}</div><div class="dlg-body"><span class="dlg-name" style="color:${sp.color}">${esc(line.who)} <small>${esc(line.by || sp.title)}</small></span><p>${esc(line.text)}</p>${line.book ? `<button class="action small ghost" data-story-book="${esc(line.book)}" type="button">Ler o capítulo completo</button>` : ''}<small class="dlg-next">${this.dialogQueue.length ? 'Clique para continuar ▸' : 'Clique para fechar ✕'}</small></div>`;
       this.el.dialog.hidden = false;
       const p = this.el.dialog.querySelector('p'); p.classList.remove('typing'); void p.offsetWidth; p.classList.add('typing');
+      // No AUTO (ou sem ninguém mexendo há 25 s) a fala passa sozinha: 3,5 s mais o tempo de ler o texto.
+      if (this.state.settings.auto || (KT.idleFor?.() || 0) > 25000) this.dialogTimer = setTimeout(() => this.advanceDialog(), Math.min(14000, 3500 + line.text.length * 45));
     }
     onResult(r) {
       if (r.first && r.kind === 'dungeon') this.revealFieldLore(r.zone.id, r.floor);
