@@ -14,7 +14,11 @@
   const GLYPH = { '火':'el-fire', '水':'el-water', '木':'el-nature', '土':'el-earth', '雷':'el-lightning', '風':'el-wind', '氷':'el-ice', '光':'el-light', '闇':'el-shadow',
     '盾':'cls-vanguarda', '刃':'cls-executor', '術':'cls-arcanista', '弓':'cls-atirador', '癒':'cls-suporte',
     '焼':'st-burn', '毒':'st-poison', '血':'st-bleed', '眩':'st-stun', '凍':'st-freeze', '遅':'st-slow', '破':'st-armorBreak', '印':'st-mark', '⬇':'st-weaken', '黙':'st-silence',
-    '怒':'st-atk', '守':'st-def', '速':'st-spd', '精':'st-crit', '殺':'st-critDmg', '避':'st-dodge', '吸':'st-lifesteal', '障':'st-dr', '✚':'st-regen', '影':'st-stealth', '挑':'st-taunt', '剣':'st-counter' };
+    '怒':'st-atk', '守':'st-def', '速':'st-spd', '精':'st-crit', '殺':'st-critDmg', '避':'st-dodge', '吸':'st-lifesteal', '障':'st-dr', '✚':'st-regen', '影':'st-stealth', '挑':'st-taunt', '剣':'st-counter',
+    // prédios, eventos do mundo, caixas e avulsos
+    '鍛':'b-forge', '道':'b-dojo', '社':'b-shrine', '神':'b-shrine', torii:'b-shrine', '工':'b-workshop', '匠':'b-workshop', '鎚':'ic-anvil', '城':'b-guild', '市':'b-market', '家':'b-house',
+    '金':'res-gold', '灯':'ic-lantern', '桜':'res-gem', '季':'res-gem', '鬼':'z-boss', '霊':'res-ether', '魂':'ic-orb', '星':'ic-star', '✦':'ic-star', '月':'ic-moon', '界':'z-world',
+    '武':'ic-swords', '矢':'ic-arrows', '薬':'potion', '錬':'potion', '屏':'sys-panel', '箱':'res-chest', '龍':'ic-dragon', '書':'nav-wiki', '鋼':'res-ore', '鉱':'res-ore', '章':'nav-guild', '晶':'res-crystal', '◆':'res-gem', '危':'sys-alert' };
   const images = new Map();
   const load = src => { let im = images.get(src); if (!im && typeof Image !== 'undefined') { im = new Image(); im.decoding = 'async'; im.src = src; images.set(src, im); } return im; };
   const Icon = {

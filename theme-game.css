@@ -338,8 +338,19 @@ body:not(.in-combat) .stage-controls{display:none!important}
 .lobby-goal b{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:13.5px;text-wrap:balance}
 .ctl .pi{width:22px;height:22px}
 #district-grid .pi{width:30px;height:30px}
+.b-icon .pi{width:38px;height:38px}
+.stat-table span{display:flex;align-items:center;gap:6px;min-width:0}
+.stat-table .pi{width:20px;height:20px}
+.stat-table.compact .pi{width:16px;height:16px}
 @media (max-width:860px){
   .nav .pi{width:27px;height:27px}
   .res .pi{width:22px;height:22px}
   .icon-btn .pi{width:22px;height:22px}
 }
+
+/* ---------- árvore de talentos: a pintura dentro do selo ---------- */
+.tnode .glyph-art{overflow:hidden;pointer-events:none}
+.tnode.locked .glyph-art{filter:grayscale(.9) brightness(.6)}
+.tnode.avail .glyph-art{filter:grayscale(.3) brightness(.92)}
+.tdetail-ico .pi{display:block}
+.wiki-ico .pi{display:block}

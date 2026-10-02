@@ -63,12 +63,13 @@
     </article>`;
   };
   P.statTable = function(st, compact = false) {
-    const rows = [['ATK', U.fmt(st.atk)], ['HP', U.fmt(st.maxHp)], ['DEF', U.fmt(st.def)], ['Velocidade', `×${st.spd.toFixed(2).replace('.', ',')}`], ['Crítico', pct(st.crit, 1)], ['Dano crítico', pct(st.critDmg)], ['Esquiva', pct(st.dodge, 1)]];
-    const extra = [['lifesteal','Roubo de vida'], ['dr','Redução de dano'], ['skill','Dano de habilidade'], ['skillMastery','Maestria de habilidade'], ['ultDmg','Dano de ultimate'], ['thorns','Reflexo de dano'], ['healPow','Cura e escudos'], ['nrg','Ganho de energia'], ['cdr','Recarga'], ['pierce','Perfuração de DEF'], ['boss','Contra chefes'], ['dot','Dano contínuo'], ['elem','Dano elemental']];
-    extra.forEach(([k, n]) => { if (Math.abs(st[k] || 0) > .001) rows.push([n, `${st[k] > 0 ? '+' : ''}${pct(st[k], 1)}`]); });
-    if (st.regen > 0) rows.push(['Regeneração', `${(st.regen * 100).toFixed(2).replace('.', ',')}%/s`]);
-    if (st.startNrg > 0) rows.push(['Energia inicial', Math.round(st.startNrg)]);
-    return `<div class="stat-table ${compact ? 'compact' : ''}">${rows.map(([n, v]) => `<div><span>${n}</span><b>${v}</b></div>`).join('')}</div>`;
+    // cada linha: nome, valor e a pintura do atributo (assets/icons: at-<atributo>)
+    const rows = [['ATK', U.fmt(st.atk), 'atk'], ['HP', U.fmt(st.maxHp), 'hp'], ['DEF', U.fmt(st.def), 'def'], ['Velocidade', `×${st.spd.toFixed(2).replace('.', ',')}`, 'spd'], ['Crítico', pct(st.crit, 1), 'crit'], ['Dano crítico', pct(st.critDmg), 'critDmg'], ['Esquiva', pct(st.dodge, 1), 'dodge']];
+    const extra = [['lifesteal','Roubo de vida'], ['dr','Redução de dano'], ['skill','Dano de habilidade'], ['skillMastery','Maestria de habilidade'], ['ultDmg','Dano de ultimate'], ['thorns','Reflexo de dano'], ['healPow','Cura e escudos'], ['nrg','Ganho de energia'], ['cdr','Economia de técnica'], ['pierce','Perfuração de DEF'], ['boss','Contra chefes'], ['dot','Dano contínuo'], ['elem','Dano elemental']];
+    extra.forEach(([k, n]) => { if (Math.abs(st[k] || 0) > .001) rows.push([n, `${st[k] > 0 ? '+' : ''}${pct(st[k], 1)}`, k === 'skillMastery' ? 'skill' : k]); });
+    if (st.regen > 0) rows.push(['Regeneração', `${(st.regen * 100).toFixed(2).replace('.', ',')}%/s`, 'regen']);
+    if (st.startNrg > 0) rows.push(['Energia inicial', Math.round(st.startNrg), 'startNrg']);
+    return `<div class="stat-table ${compact ? 'compact' : ''}">${rows.map(([n, v, k]) => `<div><span>${KT.Icon?.html(`at-${k}`) || ''}${n}</span><b>${v}</b></div>`).join('')}</div>`;
   };
 
   // ---------------------------------------------------------------------------
@@ -543,7 +544,14 @@
   // TALENTOS
   // ---------------------------------------------------------------------------
   const TREE_Y = { 0:112, 1:300, 2:650, 3:840 }, NOTABLE_Y = 440, CAPSTONE_Y = 950;
-  const svgIcon = (key, size = 26, color = 'currentColor') => `<svg class="ticon" viewBox="0 0 24 24" width="${size}" height="${size}" style="color:${color}"><path d="${PR.icons[key] || PR.icons.star}"/></svg>`;
+  // Ícone de talento: a pintura (assets/icons) no lugar do traço; quem ainda não tem pintura fica com o traço.
+  const TALENT_ART = { sword:'cls-executor', wind:'el-wind', star:'ic-star', skull:'ic-skull', spear:'at-pierce', orb:'ic-orb', sparkle:'at-ultDmg', shield:'ic-shield', heart:'at-hp', wall:'at-def', drop:'el-water',
+    cross:'at-healPow', target:'ic-target', battery:'at-nrg', fist:'ic-fist', crown:'ic-crown', bolt:'ic-bolt', hourglass:'at-cdr', arrows:'ic-arrows', book:'at-skill', thorns:'at-thorns', fang:'at-lifesteal',
+    flame:'ic-flame', wings:'at-dodge', moon:'ic-moon', eye:'at-crit', gem:'res-gem' };
+  const talentArt = key => { const id = TALENT_ART[key]; return id && KT.ICON_ART?.icons[id] ? id : null; };
+  const svgIcon = (key, size = 26, color = 'currentColor') => { const id = talentArt(key); return id ? `<i class="pi pi-${id} ticon" style="width:${size}px;height:${size}px" aria-hidden="true"></i>` : `<svg class="ticon" viewBox="0 0 24 24" width="${size}" height="${size}" style="color:${color}"><path d="${PR.icons[key] || PR.icons.star}"/></svg>`; };
+  // A mesma pintura dentro do SVG da árvore: um <svg> aninhado recorta a célula do atlas.
+  const svgArt = (key, size) => { const id = talentArt(key); if (!id) return ''; const A = KT.ICON_ART, [pack, col, row] = A.icons[id], pk = A.packs[pack], S = A.size; return `<svg class="glyph-art" x="${-size / 2}" y="${-size / 2}" width="${size}" height="${size}" viewBox="${col * S} ${row * S} ${S} ${S}"><image href="assets/icons/ui-${pack}.webp?v=${pk.v}" width="${pk.cols * S}" height="${pk.rows * S}"/></svg>`; };
   P.nodeEffectText = function(n, rank, t) {
     const lines = Object.entries(n.stats || {}).map(([k, v]) => statValue(k === 'skillMastery' ? 'skillMastery' : k, v * rank));
     if (n.hookText) lines.push(n.hookText(rank));
@@ -600,7 +608,7 @@
       const sk = Object.keys(n.stats || {})[0] || '', fam = /^(atk|pierce|boss|breakPow)/.test(sk) ? 'atk' : /^(def|dr|thorns)/.test(sk) ? 'def' : /^(hp|regen|lifesteal|healPow)/.test(sk) ? 'hp' : /^(spd|dodge|cdr)/.test(sk) ? 'spd' : /^crit/.test(sk) ? 'crit' : 'arc';
       return `<g class="tnode ${state} k-${kind} fam-${fam} ${n.branch && n.branch !== PR.branchOf(r) ? 'other-branch' : ''} ${sel.id === n.id ? 'selected' : ''}" data-talent-node="${n.id}" transform="translate(${P2.x},${P2.y})">
         <circle class="halo" r="${rad + 9}"/>${shape}
-        ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" class="sig-art"/><circle class="sig-ring" r="${rad - 3}"/>` : `<g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>`}
+        ${n.sig ? `<clipPath id="clip-${n.id}"><circle r="${rad - 4}"/></clipPath><image href="${portrait(t.id)}" x="${-rad + 4}" y="${-rad + 4}" width="${(rad - 4) * 2}" height="${(rad - 4) * 2}" clip-path="url(#clip-${n.id})" class="sig-art"/><circle class="sig-ring" r="${rad - 3}"/>` : svgArt(n.icon, Math.round(rad * 1.36)) || `<g transform="translate(-15,-15) scale(1.25)" class="glyph"><path d="${PR.icons[n.icon]}"/></g>`}
         ${pips}
         <text y="${rad + (n.max > 1 ? 32 : 24)}" class="lbl">${esc(n.sig === 'skill' ? t.skill.name : n.sig === 'ult' ? t.ult.name : n.name)}</text></g>`;
     }).join('');

@@ -1,6 +1,6 @@
 /* Gerado por tools/icon_gen.py: ícones pintados da interface. Não editar à mão. */
 .pi{display:inline-block;width:1em;height:1em;flex:none;vertical-align:-.16em;background-repeat:no-repeat}
-.pi-nav-journey,.pi-nav-adventure,.pi-nav-party,.pi-nav-collection,.pi-nav-inventory,.pi-nav-ranking,.pi-nav-arena,.pi-nav-chat,.pi-nav-guild,.pi-nav-talents,.pi-nav-city,.pi-nav-shop,.pi-nav-quests,.pi-nav-wiki,.pi-nav-menu,.pi-nav-profile,.pi-sys-save,.pi-sys-panel,.pi-sys-sound,.pi-sys-mute,.pi-sys-help,.pi-sys-settings,.pi-sys-close,.pi-sys-back,.pi-sys-lock,.pi-sys-unlock,.pi-sys-check,.pi-sys-alert,.pi-sys-gift,.pi-sys-mail,.pi-sys-calendar,.pi-sys-clock,.pi-res-gold,.pi-res-crystal,.pi-res-ether,.pi-res-ore,.pi-res-key,.pi-res-gem,.pi-res-star,.pi-res-ori,.pi-res-adam,.pi-res-shard,.pi-res-xp,.pi-res-energy,.pi-res-power,.pi-res-card,.pi-res-chest,.pi-res-scroll,.pi-el-fire,.pi-el-water,.pi-el-nature,.pi-el-earth,.pi-el-lightning,.pi-el-wind,.pi-el-ice,.pi-el-light,.pi-el-shadow,.pi-cls-vanguarda,.pi-cls-executor,.pi-cls-arcanista,.pi-cls-atirador,.pi-cls-suporte,.pi-weak,.pi-intent{background-image:url(ui-a.webp?v=fc801653);background-size:800% 800%}
+.pi-nav-journey,.pi-nav-adventure,.pi-nav-party,.pi-nav-collection,.pi-nav-inventory,.pi-nav-ranking,.pi-nav-arena,.pi-nav-chat,.pi-nav-guild,.pi-nav-talents,.pi-nav-city,.pi-nav-shop,.pi-nav-quests,.pi-nav-wiki,.pi-nav-menu,.pi-nav-profile,.pi-sys-save,.pi-sys-panel,.pi-sys-sound,.pi-sys-mute,.pi-sys-help,.pi-sys-settings,.pi-sys-close,.pi-sys-back,.pi-sys-lock,.pi-sys-unlock,.pi-sys-check,.pi-sys-alert,.pi-sys-gift,.pi-sys-mail,.pi-sys-calendar,.pi-sys-clock,.pi-res-gold,.pi-res-crystal,.pi-res-ether,.pi-res-ore,.pi-res-key,.pi-res-gem,.pi-res-star,.pi-res-ori,.pi-res-adam,.pi-res-shard,.pi-res-xp,.pi-res-energy,.pi-res-power,.pi-res-card,.pi-res-chest,.pi-res-scroll,.pi-el-fire,.pi-el-water,.pi-el-nature,.pi-el-earth,.pi-el-lightning,.pi-el-wind,.pi-el-ice,.pi-el-light,.pi-el-shadow,.pi-cls-vanguarda,.pi-cls-executor,.pi-cls-arcanista,.pi-cls-atirador,.pi-cls-suporte,.pi-weak,.pi-intent,.ic.ic-chest,.ic.ic-gem,.ic.ic-scroll,.ic.ic-calendar,.ic.ic-lock,.ic.ic-unlock{background-image:url(ui-a.webp?v=fc801653);background-size:800% 800%}
 .pi-nav-journey{background-position:0.00% 0.00%}
 .pi-nav-adventure{background-position:14.29% 0.00%}
 .pi-nav-party{background-position:28.57% 0.00%}
@@ -25,20 +25,20 @@
 .pi-sys-settings{background-position:71.43% 28.57%}
 .pi-sys-close{background-position:85.71% 28.57%}
 .pi-sys-back{background-position:100.00% 28.57%}
-.pi-sys-lock{background-position:0.00% 42.86%}
-.pi-sys-unlock{background-position:14.29% 42.86%}
+.pi-sys-lock,.ic.ic-lock{background-position:0.00% 42.86%}
+.pi-sys-unlock,.ic.ic-unlock{background-position:14.29% 42.86%}
 .pi-sys-check{background-position:28.57% 42.86%}
 .pi-sys-alert{background-position:42.86% 42.86%}
 .pi-sys-gift{background-position:57.14% 42.86%}
 .pi-sys-mail{background-position:71.43% 42.86%}
-.pi-sys-calendar{background-position:85.71% 42.86%}
+.pi-sys-calendar,.ic.ic-calendar{background-position:85.71% 42.86%}
 .pi-sys-clock{background-position:100.00% 42.86%}
 .pi-res-gold{background-position:0.00% 57.14%}
 .pi-res-crystal{background-position:14.29% 57.14%}
 .pi-res-ether{background-position:28.57% 57.14%}
 .pi-res-ore{background-position:42.86% 57.14%}
 .pi-res-key{background-position:57.14% 57.14%}
-.pi-res-gem{background-position:71.43% 57.14%}
+.pi-res-gem,.ic.ic-gem{background-position:71.43% 57.14%}
 .pi-res-star{background-position:85.71% 57.14%}
 .pi-res-ori{background-position:100.00% 57.14%}
 .pi-res-adam{background-position:0.00% 71.43%}
@@ -47,8 +47,8 @@
 .pi-res-energy{background-position:42.86% 71.43%}
 .pi-res-power{background-position:57.14% 71.43%}
 .pi-res-card{background-position:71.43% 71.43%}
-.pi-res-chest{background-position:85.71% 71.43%}
-.pi-res-scroll{background-position:100.00% 71.43%}
+.pi-res-chest,.ic.ic-chest{background-position:85.71% 71.43%}
+.pi-res-scroll,.ic.ic-scroll{background-position:100.00% 71.43%}
 .pi-el-fire{background-position:0.00% 85.71%}
 .pi-el-water{background-position:14.29% 85.71%}
 .pi-el-nature{background-position:28.57% 85.71%}
@@ -179,4 +179,4 @@
 .pi-ic-beam,.ic.ic-beam{background-position:71.43% 100.00%}
 .pi-ic-burst,.ic.ic-burst{background-position:85.71% 100.00%}
 .pi-ic-bag,.ic.ic-bag{background-position:100.00% 100.00%}
-.ic.ic-star,.ic.ic-crown,.ic.ic-skull,.ic.ic-compass,.ic.ic-lantern,.ic.ic-bulb,.ic.ic-cards,.ic.ic-target,.ic.ic-orb,.ic.ic-dragon,.ic.ic-rift,.ic.ic-chain,.ic.ic-clones,.ic.ic-arrows,.ic.ic-heal,.ic.ic-fist,.ic.ic-anvil,.ic.ic-scale,.ic.ic-shield,.ic.ic-swords,.ic.ic-bolt,.ic.ic-moon,.ic.ic-flame,.ic.ic-frost,.ic.ic-leaf,.ic.ic-rock,.ic.ic-wave,.ic.ic-vortex,.ic.ic-slash,.ic.ic-beam,.ic.ic-burst,.ic.ic-bag{background-color:transparent;background-repeat:no-repeat;-webkit-mask:none;mask:none}
+.ic.ic-star,.ic.ic-crown,.ic.ic-skull,.ic.ic-compass,.ic.ic-lantern,.ic.ic-bulb,.ic.ic-cards,.ic.ic-target,.ic.ic-orb,.ic.ic-dragon,.ic.ic-rift,.ic.ic-chain,.ic.ic-clones,.ic.ic-arrows,.ic.ic-heal,.ic.ic-fist,.ic.ic-anvil,.ic.ic-scale,.ic.ic-shield,.ic.ic-swords,.ic.ic-bolt,.ic.ic-moon,.ic.ic-flame,.ic.ic-frost,.ic.ic-leaf,.ic.ic-rock,.ic.ic-wave,.ic.ic-vortex,.ic.ic-slash,.ic.ic-beam,.ic.ic-burst,.ic.ic-bag,.ic.ic-chest,.ic.ic-gem,.ic.ic-scroll,.ic.ic-calendar,.ic.ic-lock,.ic.ic-unlock{background-color:transparent;background-repeat:no-repeat;-webkit-mask:none;mask:none}

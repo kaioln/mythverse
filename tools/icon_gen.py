@@ -265,6 +265,10 @@ def ui_prompt(items):
 PACKS = {'a': ('nav', 'res', 'kind'), 'b': ('battle', 'status'), 'c': ('city', 'stat', 'misc')}
 
 
+# Ícones de traço antigos (.ic.ic-<nome>) sem pintura de mesmo nome: usam a pintura equivalente de outro grupo.
+IC_ALIAS = {'ic-chest': 'res-chest', 'ic-gem': 'res-gem', 'ic-scroll': 'res-scroll', 'ic-calendar': 'sys-calendar', 'ic-lock': 'sys-lock', 'ic-unlock': 'sys-unlock'}
+
+
 def build_ui_atlas():
     """Monta os atlas da interface, a folha de estilos e o índice do jogo. Devolve quantos ícones entraram."""
     import hashlib
@@ -293,15 +297,16 @@ def build_ui_atlas():
         ver = hashlib.md5(open(out, 'rb').read()).hexdigest()[:8]
         packs[pack] = {'cols': cols, 'rows': rows, 'v': ver}
         pos = lambda i: f"{(i % cols) / (cols - 1) * 100:.2f}% {((i // cols) / (rows - 1) * 100) if rows > 1 else 0:.2f}%"  # noqa: E731
-        sel = [f".pi-{iid}" for iid in ids] + [f".ic.{iid}" for iid in ids if iid.startswith('ic-')]
+        sel = [f".pi-{iid}" for iid in ids] + [f".ic.{iid}" for iid in ids if iid.startswith('ic-')] + [f".ic.{a}" for a, t in IC_ALIAS.items() if t in ids]
         css.append(','.join(sel) + f"{{background-image:url(ui-{pack}.webp?v={ver});background-size:{cols * 100}% {rows * 100}%}}")
         for i, iid in enumerate(ids):
             index[iid] = [pack, i % cols, i // cols]
-            css.append((f".pi-{iid},.ic.{iid}" if iid.startswith('ic-') else f".pi-{iid}") + f"{{background-position:{pos(i)}}}")
+            names = [f".pi-{iid}"] + ([f".ic.{iid}"] if iid.startswith('ic-') else []) + [f".ic.{a}" for a, t in IC_ALIAS.items() if t == iid]
+            css.append(','.join(names) + f"{{background-position:{pos(i)}}}")
         total += len(tiles)
         print(f'  ui-{pack}.webp  {len(tiles)} ícones  {os.path.getsize(out) // 1024} KB', flush=True)
     # os ícones de traço antigos (.ic.ic-<nome>, máscara de uma cor) viram a pintura de mesmo nome
-    painted = [iid for iid in index if iid.startswith('ic-')]
+    painted = [iid for iid in index if iid.startswith('ic-')] + [a for a, t in IC_ALIAS.items() if t in index]
     if painted:
         css.append(','.join(f".ic.{iid}" for iid in painted) + "{background-color:transparent;background-repeat:no-repeat;-webkit-mask:none;mask:none}")
     io.open(os.path.join(UI_OUT, 'ui.css'), 'w', encoding='utf-8', newline='\n').write('\n'.join(css) + '\n')

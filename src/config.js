@@ -7,6 +7,6 @@
 (() => {
   const KT = globalThis.KT = globalThis.KT || {};
   // Versão publicada: igual a version.json. O jogo aberto confere a cada 10 min (e ao voltar para a aba) e recarrega sozinho quando muda.
-  KT.VERSION = '20261002p';
+  KT.VERSION = '20261002q';
   KT.CONFIG = { server:'', neon:'https://ep-blue-grass-b5ocd09f.c-7.us-east-2.aws.neon.tech/neondb' };
 })();
