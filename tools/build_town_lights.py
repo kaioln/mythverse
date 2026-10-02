@@ -16,7 +16,9 @@ import sys
 
 import cv2
 import numpy as np
-from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import art_src  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOWNS = {
@@ -57,8 +59,9 @@ TOWNS = {
 
 def main(key='capital'):
     cfg = TOWNS[key]; MANUAL = cfg['manual']; NOT_LAMPS = cfg['not_lamps']
-    ART = os.path.join(ROOT, 'assets', 'scenes', 'web', cfg['art'] + '.webp'); OUT = os.path.join(ROOT, 'src', cfg['out'])
-    im = Image.open(ART).convert('RGB')
+    OUT = os.path.join(ROOT, 'src', cfg['out'])
+    # a pintura sem o tratamento de estilo: as chamas são achadas pela cor, e o tratamento muda a cor
+    im = art_src.open_source(f"assets/scenes/web/{cfg['art']}.webp", 'RGB')
     W, H = im.size
     kx, ky = 1280 / W, 720 / H
     a = np.asarray(im).astype(np.float32)

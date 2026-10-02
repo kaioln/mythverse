@@ -636,9 +636,57 @@
       if (this.shake > 0 && this.intense) c.translate(U.rand(-this.shake, this.shake) * .6, U.rand(-this.shake, this.shake) * .6);
       { const cm = this.cam; if (cm.z !== 1 && this.engine.zone.kind !== 'village') { c.translate(cm.x, cm.y); c.scale(cm.z, cm.z); c.translate(-cm.x, -cm.y); } }
       this.hotspots = [];
-      this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawTiming(); this.drawAmbient(false);
+      this.drawScene(); this.drawAmbient(true); this.drawDanger(); this.drawActors(); this.drawLight(); this.drawProjectiles(); this.drawLoot(); this.drawParticles(); this.drawTiming(); this.drawAmbient(false);
       c.restore();
+      this.drawPaper();
       this.drawOverlay(); this.drawCutin(); this.drawBanner(); this.drawChain();
+    }
+    // Luz da cena sobre quem está nela: o tom do cenário (medido na própria estampa) banha personagens e chão juntos,
+    // de leve. Sem isso o boneco tem luz neutra de estúdio em qualquer lugar e parece colado por cima do fundo. Golpes,
+    // projéteis e partículas vêm depois e ficam com a cor cheia.
+    sceneTone(img) {
+      const map = this.toneOf ||= new WeakMap(); let tone = map.get(img); if (tone !== undefined) return tone;
+      tone = null;
+      try {
+        const cv = document.createElement('canvas'); cv.width = 16; cv.height = 9;
+        const g = cv.getContext('2d', { willReadFrequently:true }); g.drawImage(img, 0, 0, 16, 9);
+        const d = g.getImageData(0, 0, 16, 9).data; let r = 0, gg = 0, b = 0;
+        for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; }
+        const lum = (.3 * r + .59 * gg + .11 * b) || 1, k = 128 * (d.length / 4) / lum;      // mesmo tom, luminância média: tinge sem escurecer
+        // o tom fica mais dito que na média da cena (que é quase cinza): afasta do cinza antes de aplicar
+        const n = d.length / 4, m = (r + gg + b) / 3 / n * k, push = v => Math.round(U.clamp(m + (v / n * k - m) * 2.2, 0, 255));
+        tone = [push(r), push(gg), push(b)];
+      } catch (_) { tone = null; }
+      map.set(img, tone); return tone;
+    }
+    drawLight() {
+      const z = this.engine.zone; if (z.kind === 'village' || typeof document === 'undefined') return;
+      const img = this.assets.scene(z.id), tone = img && this.sceneTone(img); if (!tone) return;
+      const c = this.ctx; c.save(); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .38; c.fillStyle = `rgb(${tone[0]},${tone[1]},${tone[2]})`; c.fillRect(-40, -40, W + 80, H + 80); c.restore();
+    }
+    // Papel: um único grão por cima da cena inteira (fundo e personagens), preso à tela. É o que costura a estampa do
+    // cenário com os bonecos recortados: os dois passam a estar impressos na mesma folha. O grão é fixo (não ferve) e
+    // neutro em média (soft-light sobre cinza médio): não escurece nem lava a cena.
+    drawPaper() {
+      const c = this.ctx; if (!c.createPattern || typeof document === 'undefined') return;
+      if (this.paper === undefined) {
+        this.paper = null;
+        try {
+          const n = 256, cv = document.createElement('canvas'); cv.width = cv.height = n;
+          const g = cv.getContext('2d'), img = g.createImageData(n, n), d = img.data;
+          let seed = 20261002; const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+          const fine = new Float32Array(n * n), fib = new Float32Array(n * n);
+          for (let i = 0; i < n * n; i++) fine[i] = rnd() - .5;
+          // fibras deitadas: ruído alisado ao longo de x (dá a volta na borda, para o ladrilho não mostrar emenda)
+          for (let y = 0; y < n; y++) { let acc = 0; for (let x = -24; x < n; x++) { acc = acc * .86 + (rnd() - .5); if (x >= 0) fib[y * n + x] = acc; } for (let x = 0; x < 24; x++) { const k = x / 24; fib[y * n + x] = fib[y * n + x] * k + fib[y * n + ((x + n - 24) % n)] * (1 - k) * .5; } }
+          for (let i = 0; i < n * n; i++) { const v = Math.max(0, Math.min(255, 128 + fine[i] * 26 + fib[i] * 7)); d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v; d[i * 4 + 3] = 255; }
+          g.putImageData(img, 0, 0); this.paper = c.createPattern(cv, 'repeat');
+        } catch (_) { this.paper = null; }
+      }
+      if (!this.paper) return;
+      const dpr = Math.max(1, Math.round(globalThis.devicePixelRatio || 1));
+      c.save(); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.globalCompositeOperation = 'soft-light'; c.globalAlpha = .36; c.fillStyle = this.paper;
+      c.fillRect(0, 0, this.canvas.width / dpr + 1, this.canvas.height / dpr + 1); c.restore();
     }
     // Bairro da cidade em cena: 'capital' ou 'market' (a Cidade Mercado). Cada um tem a própria arte, luzes, chão e gente.
     // A troca só acontece quando a arte do bairro já chegou (escurece e volta, como ao mudar de região).
@@ -664,7 +712,8 @@
         // A ilha das casas do festival é uma camada à parte: sobe e desce devagar, como quem flutua.
         if (this.festivalHomes.complete && this.festivalHomes.naturalWidth) c.drawImage(this.festivalHomes, 860, 65 + Math.sin(this.worldTime * .42) * 3, 390, 260);
       }
-      c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H);
+      // A cor de cada região já vem na própria estampa (tools/art_style.py); o véu por cima fica só como um sopro.
+      c.save(); c.globalAlpha = .45; c.fillStyle = (THEMES[z.theme] || THEMES.village).grade; c.fillRect(0, 0, W, H); c.restore();
       if (!town) { const floor = c.createLinearGradient(0, H * .55, 0, H); floor.addColorStop(0, 'rgba(8,6,20,0)'); floor.addColorStop(1, 'rgba(8,6,20,.45)'); c.fillStyle = floor; c.fillRect(0, 0, W, H); }
       const vig = c.createRadialGradient(W / 2, H * .55, H * .35, W / 2, H * .55, H * .95); vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, `rgba(6,4,18,${town ? .32 : .62})`); c.fillStyle = vig; c.fillRect(0, 0, W, H);
       if (z.kind === 'village') this.drawVillageLife();
@@ -1161,7 +1210,7 @@
       const gx = pos.x + off.x, gy = pos.y + off.y;                                  // onde ele pisa agora
       const x = gx + (moving ? 14 : 0), y = gy + off.lift + hm[1] * HERO_H;
       const air = 1 + off.lift / 60;                                                  // sombra encolhe no salto
-      c.save(); c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(gx, gy + 4, 46 * air, 13 * air, 0, 0, Math.PI * 2); c.fill(); c.restore();
+      c.save(); c.fillStyle = 'rgba(20,17,34,.52)'; c.beginPath(); c.ellipse(gx, gy + 4, 46 * air, 13 * air, 0, 0, Math.PI * 2); c.fill(); c.restore();
       const ultReady = alive && u.energy >= 100;
       if (alive) this.runeCircle(gx, gy + 4, ultReady ? 52 : 46, u.color, ultReady ? .7 : .16, ultReady ? 1.5 : .25);
       // É a vez dele e a luta espera a ordem: anel dourado no chão e seta em cima.
@@ -1195,7 +1244,7 @@
       const by = pos.y + hm[1] * HERO_H - HERO_H;
       this.statusIcons(u, pos.x - 44, by - 28);
       if (u.effects.some(e => e.s === 'stun' || e.s === 'freeze')) this.stunStars(x, y - HERO_H - 6);
-      this.bar(pos.x - 44, by - 16, 88, 9, s, '#57e389', u.shield / u.maxHp);
+      this.bar(pos.x - 44, by - 16, 88, 9, s, '#86a86e', u.shield / u.maxHp);
       this.thin(pos.x - 44, by - 5, 88, U.clamp(u.energy / 100, 0, 1), ultReady ? '#ffd76a' : '#e0a93b');
     }
     // Guarda erguida: arco de luz à frente do herói; quando segura um golpe, fica branco e largo.
@@ -1245,7 +1294,7 @@
       if (!e.boss) {
         // Barra e nome ficam no lugar do monstro na formação.
         const top = pos.y + floatY - height - 14, bw = e.miniboss ? 150 : e.elite ? 120 : 96;
-        this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#ff9a3b' : e.elite ? '#c77dff' : '#ff5d6c', e.shield / e.maxHp);
+        this.bar(pos.x - bw / 2, top, bw, e.elite ? 10 : 8, s, e.miniboss ? '#e2aa4e' : e.elite ? '#a98bd0' : '#cb422c', e.shield / e.maxHp);
         this.nameTag(`${e.guardian ? '◆ ' : e.elite ? '★ ' : ''}Nv.${e.level} ${e.name}`, pos.x, top - 14, e.elite || e.guardian, D.elements[e.el]?.color);
         this.statusIcons(e, pos.x - bw / 2, top - 30);
         this.toughBar(e, pos.x - bw / 2, top + (e.elite ? 13 : 11), bw);
@@ -1428,8 +1477,9 @@
     flames(x, y, height) { const c = this.ctx; c.save(); c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 5; k++) { const fx = x + Math.sin(this.worldTime * 5 + k * 2) * height * .22, fy = y - height * (.2 + ((this.worldTime * .9 + k * .2) % 1) * .6); c.globalAlpha = .5; c.fillStyle = k % 2 ? '#ff8a4f' : '#ffc16b'; c.beginPath(); c.arc(fx, fy, 4 + (k % 3), 0, Math.PI * 2); c.fill(); } c.restore(); }
     stunStars(x, y) { const c = this.ctx; c.save(); c.fillStyle = '#ffe98a'; c.font = `16px ${UI_FONT}`; c.textAlign = 'center'; for (let k = 0; k < 3; k++) { const a = this.worldTime * 4 + k * 2.1; c.fillText('✦', x + Math.cos(a) * 26, y + Math.sin(a) * 7); } c.restore(); }
     bar(x, y, w, h, s, color, shieldPct) {
-      const c = this.ctx, r = h / 2; c.save();
-      this.roundRect(x - 2, y - 2, w + 4, h + 4, r + 2); c.fillStyle = 'rgba(10,8,24,.85)'; c.fill();
+      // Barra de tinta: reta, com moldura sumi (a de cápsula verde-menta era de aplicativo, não deste mundo).
+      const c = this.ctx, r = 1.5; c.save();
+      this.roundRect(x - 2, y - 2, w + 4, h + 4, r + 1); c.fillStyle = 'rgba(20,17,34,.9)'; c.fill();
       this.roundRect(x, y, w, h, r); c.clip();
       c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(x, y, w, h);
       c.fillStyle = '#fff4d8'; c.fillRect(x, y, w * U.clamp(s.chip ?? 1, 0, 1), h);

@@ -61,7 +61,7 @@ void main() {
   if (m2.r > .012) {
     float c1 = texture2D(uNoise, v * vec2(.9, 1.6) - vec2(t * .0065, 0.)).r;
     float c2 = texture2D(uNoise, v * vec2(2.3, 3.4) - vec2(t * .0125, t * .0012)).g;
-    col = mix(col, uCloud, smoothstep(.50, .78, c1 * .68 + c2 * .32) * m2.r * .44);
+    col = mix(col, uCloud, smoothstep(.50, .78, c1 * .68 + c2 * .32) * m2.r * .24);
   }
   gl_FragColor = vec4(col, 1.);
 }`;

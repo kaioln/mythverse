@@ -17,7 +17,7 @@ COPY assets ./assets
 COPY vendor ./vendor
 COPY legal ./legal
 COPY admin ./admin
-COPY index.html styles.css theme-sumi.css theme-game.css theme-battle.css version.json ./
+COPY index.html styles.css theme-sumi.css theme-game.css theme-battle.css theme-estampa.css version.json ./
 
 RUN mkdir -p /data && chown -R node:node /data /app
 USER node
