@@ -84,11 +84,11 @@
       const rect = this.canvas.getBoundingClientRect(); if (!rect.width) return;
       // Tela densa ou monitor grande: a área de desenho não passa de 1920 px de largura (acima disso só gasta placa de vídeo).
       const dpr = Math.max(1, Math.min(2, globalThis.devicePixelRatio || 1, 1920 / rect.width)) * (KT.saver?.() ? .75 : 1);
-      // Tela estreita (celular e tablet em pé): a cena é cortada dos lados (até VIEW_P), então o palco fica mais alto e os
-      // personagens até ~40% maiores.
-      //   cidade  corte inteiro quando a tela está em pé (o resto da página rola por baixo);
-      //   luta    o palco ocupa exatamente a altura que sobra entre a barra do topo, o console de batalha e a navegação:
-      //           corta só o quanto couber, e nada rola.
+      // Tela estreita (celular e tablet em pé):
+      //   cidade  aparece INTEIRA, sem corte: cada prédio é um lugar do jogo, nenhum pode ficar de fora;
+      //   luta    o palco ocupa exatamente a altura que sobra entre a barra do topo, o console de batalha e a navegação.
+      //           Para isso a cena de fundo é cortada dos lados só o quanto couber (até VIEW_P) e a formação se junta ao
+      //           centro (squeeze): os personagens ficam até ~40% maiores e todos continuam inteiros dentro do palco.
       // A altura usada é a maior já vista nesta largura, para a barra de endereço do navegador não ficar trocando a cena.
       const iw = globalThis.innerWidth, ih = globalThis.innerHeight;
       if (this._pw !== iw) { this._pw = iw; this._ph = 0; }
@@ -100,11 +100,13 @@
           const fixed = (document.querySelector('.hud-top')?.offsetHeight || 52) + 21 + (this._ph <= 690 ? 233 : 289) + (document.querySelector('.side-nav')?.offsetHeight || 69);
           vw = U.clamp(Math.round((iw - 10) * H / Math.max(1, this._ph - fixed)), VIEW_P.w, W);
         }
-        else if (iw <= 700 && ih > iw * 1.2) vw = VIEW_P.w;
       }
       document.body?.classList.toggle('stage-portrait', vw < W);
       document.body?.style.setProperty('--stage-vw', vw);
       this.view = vw >= W ? VIEW_L : vw === VIEW_P.w ? VIEW_P : { x:(W - vw) / 2, w:vw };
+      // Quanto a formação se junta ao centro para caber no corte: o herói mais à esquerda (x 205, meia largura ~78) e o
+      // inimigo mais à direita (x 1190, meia largura ~90 contando elites) ficam inteiros, com folga, em qualquer corte.
+      this.sqL = U.clamp((this.view.w / 2 - 78) / 435, .6, 1); this.sqR = U.clamp((this.view.w / 2 - 90) / 550, .6, 1);
       const w = Math.round(rect.width * dpr), h = Math.round(rect.width * dpr * H / this.view.w);
       if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
       this.scale = w / this.view.w;
@@ -124,8 +126,8 @@
     }
     // Câmera de luta: aproxima de leve do que importa (ultimate, quebra, aparo) e volta sozinha.
     punch(z, x, y, hold = .5) { const cm = this.cam; if (cm.hold > 0 && z < cm.tz) return; cm.tz = z; cm.tx = U.clamp(x, 360, 920); cm.ty = U.clamp(y, 330, 560); cm.hold = hold; }
-    // No enquadramento em pé a formação se aproxima do centro para caber na janela.
-    squeeze(p) { return this.view?.x ? { ...p, x:640 + (p.x - 640) * .8 } : p; }
+    // Com a cena cortada dos lados a formação se aproxima do centro o bastante para caber inteira na janela (ver resize).
+    squeeze(p) { return this.view?.x ? { ...p, x:640 + (p.x - 640) * (p.x < 640 ? this.sqL : this.sqR) } : p; }
 
     // ---------- atores ----------
     v(uid) { let s = this.vis.get(uid); if (!s) { s = { lunge:null, hit:0, hitDir:1, flash:0, dispHp:null, chip:null, death:0, spawn:0, cast:0, castColor:'#fff', level:0, shieldHit:0, revive:0, clip:null, clipAt:0, combo:0, guardHit:0 }; this.vis.set(uid, s); } return s; }

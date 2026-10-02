@@ -451,3 +451,20 @@ body .side-nav .nav em[hidden]{display:none}
   .lobby-go b{font-size:14.5px;line-height:1.12;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-wrap:balance}
   .lobby-goal{flex:1 1 230px;min-width:230px}
 }
+
+/* ---------- celular na cidade: o nome do lugar numa linha acima do palco (a cidade aparece inteira, sem nada por cima) ---------- */
+.zone-chip.in-head{flex:none;align-self:stretch;display:flex;align-items:center;flex-wrap:wrap;gap:3px 8px;max-width:none!important;margin:0;padding:1px 4px 0!important;background:none!important;border:0!important;box-shadow:none!important}
+.zone-chip.in-head .zone-kicker,.zone-chip.in-head #power-check{display:none!important}
+.zone-chip.in-head h1{margin:0!important;font:800 15px/1.2 var(--display)!important;color:var(--washi);white-space:nowrap}
+.zone-chip.in-head .zone-meta{display:flex!important;flex-wrap:wrap;gap:4px;margin:0;max-height:19px;overflow:hidden}
+.zone-chip.in-head .zone-meta span{flex:none;padding:2px 8px!important;border-radius:999px;font:700 10px/14px var(--ui)!important;white-space:nowrap}
+
+/* ---------- nada passa da borda em tela estreita (conferido por tools/ui/fit.js em 320, 375 e 437) ---------- */
+.modal-body canvas[data-sprite-preview]{max-width:100%;height:auto}
+.help-grid{grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr))}
+.wb-tiers{grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr))}
+@media (max-width:420px){
+  .building-head{flex-wrap:wrap}
+  .building-head>div{flex:1 1 150px;min-width:0}
+  .building-head>.action,.building-head>button{flex:1 1 100%}
+}

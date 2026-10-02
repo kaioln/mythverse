@@ -115,7 +115,8 @@
       // estourar, para não ficar trocando.
       if (!narrow.matches || !hud.offsetHeight) { hud.classList.remove('roomy'); return; }
       const nav = document.querySelector('.side-nav'), free = innerHeight - (nav ? nav.offsetHeight : 0) - (hud.getBoundingClientRect().bottom + scrollY);
-      if (!hud.classList.contains('roomy')) { if (free >= ROOMY + 14) hud.classList.add('roomy'); }
+      const need = hud.clientWidth < 520 ? 82 : ROOMY;                                // quanto o desenho folgado cresce (celular / largura média)
+      if (!hud.classList.contains('roomy')) { if (free >= need + 14) hud.classList.add('roomy'); }
       else if (free < 0) hud.classList.remove('roomy');
     };
     if (globalThis.ResizeObserver) { const ro = new ResizeObserver(fit); ro.observe(col); ro.observe(hud); }
@@ -240,7 +241,7 @@
         const t = u.template, idx = e.party.indexOf(u);
         return `<article class="bh-unit bh-panel" data-uid="${u.uid}" style="--hc:${t.color}">
           <button class="bh-face" data-hero-detail="${u.recUid}" type="button" data-tip="Ficha de ${esc(t.name)}"><img src="${portrait(t.id)}" alt=""><em>${u.level}</em></button>
-          <div class="bh-vit"><header><b>${esc(t.name.split(',')[0])}</b><span class="bh-tags">${icon(KT.Icon?.cls(t.cls))}<i class="tx">${t.cls}</i>${icon(KT.Icon?.element(t.el))}<i class="tx">${t.el}</i></span><span class="bh-fx"></span></header><div class="bh-hp"><i class="fill"></i><i class="sh"></i><em><span></span><small></small></em></div><div class="bh-en"><i></i></div><span class="bh-fx row"></span></div>
+          <div class="bh-vit"><header><b>${(n => { const [first, ...rest] = n.split(' '); return `${esc(first)}${rest.length ? `<span class="ln"> ${esc(rest.join(' '))}</span>` : ''}`; })(t.name.split(',')[0])}</b><span class="bh-tags">${icon(KT.Icon?.cls(t.cls))}<i class="tx">${t.cls}</i>${icon(KT.Icon?.element(t.el))}<i class="tx">${t.el}</i></span><span class="bh-fx"></span></header><div class="bh-hp"><i class="fill"></i><i class="sh"></i><em><span></span><small></small></em></div><div class="bh-en"><i></i></div><span class="bh-fx row"></span></div>
           <button class="bh-ult" data-ult="${idx}" data-tip-touch type="button">${kitIcon(t.id, 'u', icon('cmd-ult', '<i class="ic ic-star"></i>'))}<kbd>${ULT_KEYS[idx] || ''}</kbd><span class="pct"></span></button>
         </article>`;
       }).join('');

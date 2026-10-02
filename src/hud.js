@@ -49,7 +49,8 @@
 
   // Onde fica cada peça conforme a tela. PC: nome da região e controles sobre o palco. Celular e tablet: o palco é
   // pequeno, então durante a luta a barra do topo vira a BARRA DA BATALHA (região e onda à esquerda, controles à
-  // direita) e o palco fica só com a luta; o objetivo e a faixa do AFK vão para baixo do palco.
+  // direita) e o palco fica só com a luta; na cidade o nome do lugar vai para uma linha acima do palco; o objetivo e a
+  // faixa do AFK vão para baixo do palco.
   P.placeHud = function() {
     const $ = s => document.querySelector(s), mob = matchMedia('(max-width:900px)').matches, fight = document.body.classList.contains('in-combat');
     const vp = $('#viewport'), top = $('.hud-top'), stageTop = $('.stage-top'), dock = $('#party-strip');
@@ -59,7 +60,15 @@
     const ctl = this._ctl ||= $('.stage-controls');
     if (ctl && top && stageTop) { const home = mob ? top : stageTop; if (ctl.parentElement !== home) home.appendChild(ctl); ctl.classList.toggle('in-top', mob); ctl.classList.remove('below-stage'); }
     const zc = this._zc ||= $('.zone-chip');
-    if (zc && top && stageTop) { const inTop = mob && fight; if (inTop) { if (zc.parentElement !== top) top.insertBefore(zc, ctl && ctl.parentElement === top ? ctl : null); } else if (zc.parentElement !== stageTop) stageTop.prepend(zc); zc.classList.toggle('in-top', inTop); }
+    // Nome do lugar: PC sobre o palco; celular em luta na barra do topo; celular na cidade numa linha acima do palco (a
+    // cidade fica pequena no celular, e a placa do nome cobria um quarto dela).
+    if (zc && top && stageTop && vp) {
+      const where = !mob ? 'stage' : fight ? 'top' : 'head';
+      if (where === 'top') { if (zc.parentElement !== top) top.insertBefore(zc, ctl && ctl.parentElement === top ? ctl : null); }
+      else if (where === 'head') { if (zc.nextElementSibling !== vp) vp.before(zc); }
+      else if (zc.parentElement !== stageTop) stageTop.prepend(zc);
+      zc.classList.toggle('in-top', where === 'top'); zc.classList.toggle('in-head', where === 'head');
+    }
     // Peças antigas do palco (guarda, poções e comando da vez): escondidas na luta pelo console; seguem o mesmo critério.
     const cons = $('#consumables'); if (cons) { if (mob) vp?.after(cons); else if (cons.parentElement !== vp) vp?.appendChild(cons); cons.classList.toggle('below-stage', mob); }
     const turn = $('#turn-cmd'); if (turn) { if (mob) vp?.after(turn); else if (turn.parentElement !== vp) vp?.appendChild(turn); turn.classList.toggle('below-stage', mob); }

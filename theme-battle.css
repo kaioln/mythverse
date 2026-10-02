@@ -367,7 +367,7 @@ body.in-combat .boss-panel{min-width:0}
   .bh-mid .bh-team{grid-area:team;justify-content:flex-end;gap:5px}
   .bh-mid .bh-team .ab{flex:0 0 40px}
   .bh-mid .bh-team .ab-ic{box-shadow:0 2px 0 rgba(0,0,0,.5)}
-  .bh-mid .bh-team .ab.guard{display:flex;align-items:center;gap:5px;flex:0 1 128px;min-width:0;height:40px;padding:0 9px 0 3px;border-radius:11px;border:2px solid #2c2838;background:#0f0d15;box-shadow:0 2px 0 rgba(0,0,0,.5)}
+  .bh-mid .bh-team .ab.guard{display:flex;align-items:center;justify-content:center;gap:5px;flex:1 1 128px;min-width:0;height:40px;padding:0 9px 0 3px;border-radius:11px;border:2px solid #2c2838;background:#0f0d15;box-shadow:0 2px 0 rgba(0,0,0,.5)}
   .bh-mid .bh-team .ab.guard .ab-ic{flex:none;width:32px;border:0;border-radius:8px;background:none;box-shadow:none;animation:none;transform:none}
   .bh-mid .bh-team .ab.guard .ab-name{display:block;min-width:0;font:700 12.5px/1 var(--ui);color:var(--washi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bh-mid .bh-team .ab.guard:disabled .ab-name{color:var(--dim)}
@@ -436,6 +436,43 @@ body.in-combat .boss-panel{min-width:0}
     .bhud.roomy .ab-cost{right:-3px;bottom:-3px;padding:3px 4px}
     .bhud.roomy .ab-cost i{width:10px;height:10px}
   }
+}
+/* celular alto (.roomy em console estreito): a folga que sobraria embaixo vira botões, barras e texto maiores */
+@media (max-width:900px){
+  @container bhud (max-width:519.98px){
+    .bhud.roomy .bh-grid{gap:8px}
+    /* moldura com o nome do herói numa linha própria */
+    .bhud.roomy .bh-unit{grid-template-rows:40px 14px auto auto;gap:4px 4px;padding:4px 4px 5px}
+    .bhud.roomy .bh-vit header{display:contents}
+    .bhud.roomy .bh-vit header b{display:block;grid-area:2/1/3/-1;font:700 11px/14px var(--ui);text-align:center;-webkit-mask-image:none;mask-image:none;text-overflow:clip}
+    .bhud.roomy .bh-vit header b .ln{display:none}                                 /* moldura estreita: só o primeiro nome */
+    .bhud.roomy .bh-vit header .bh-fx{grid-area:1/2;align-self:center;justify-self:center}
+    .bhud.roomy .bh-hp{grid-area:3/1/4/-1}
+    .bhud.roomy .bh-en{grid-area:4/1/5/-1}
+    /* alvo com o nome */
+    .bhud.roomy .bh-target{grid-template-rows:16px 17px 17px}
+    .bhud.roomy .bt-thumb{grid-area:1/1/4/2;align-self:center}
+    .bhud.roomy .bt-name{display:flex;grid-area:1/2/2/4}
+    .bhud.roomy .bt-hp{grid-area:2/2}
+    .bhud.roomy .bt-tough{grid-area:3/2}
+    .bhud.roomy .bt-row.weak{grid-area:2/3}
+    .bhud.roomy .bt-row.intent{grid-area:3/3}
+    .bhud.roomy .bh-hp{height:14px}
+    .bhud.roomy .bh-hp em{font-size:10.5px;line-height:13px}
+    .bhud.roomy .bh-en{height:5px}
+    .bhud.roomy .bh-mid{gap:10px 8px;padding:10px 8px 8px}
+    .bhud.roomy .bh-mid .bh-team .ab{flex:0 0 44px}
+    .bhud.roomy .bh-mid .bh-team .ab.guard{flex:1 1 100px;height:44px}
+    .bhud.roomy .bh-mid .bh-team .ab.guard .ab-ic{width:34px}
+    .bhud.roomy .bh-info{height:48px;font-size:12.5px;line-height:16px}
+    .bhud.roomy .bh-info>span{-webkit-line-clamp:3}
+    .bhud.roomy.allout .bh-info{height:48px}
+    .bhud.roomy .bh-allout{height:46px;font-size:16px}
+  }
+}
+/* celular muito estreito: a Guarda fica só com o ícone (o nome não cabe ao lado dos Pontos de Técnica) */
+@container bhud (max-width:345px){
+  .bh-mid .bh-team .ab.guard .ab-name{display:none}
 }
 /* tela baixa: o painel do alvo sai (vida, Resistência, fraqueza e intenção já estão na placa do inimigo, no palco) */
 @media (max-width:900px) and (max-height:690px){
