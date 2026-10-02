@@ -20,8 +20,7 @@
       const more = document.createElement('button'); more.className = 'nav nav-more'; more.type = 'button';
       more.innerHTML = '<i class="pi pi-nav-menu"></i><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
       more.dataset.tip = 'Todos os outros lugares: Aventuras, Ranking, Arena, Guilda, Talentos, Loja e Wiki.';
-      more.addEventListener('click', () => { if (matchMedia('(max-width:900px)').matches) this.toggleMoreSheet(); else nav.classList.toggle('more-open'); });
-      nav.addEventListener('click', e => { if (e.target.closest('.nav-extra')) nav.classList.remove('more-open'); });
+      more.addEventListener('click', () => this.toggleMoreSheet());
       nav.appendChild(more);
     }
     const vp = document.querySelector('#viewport');
@@ -35,17 +34,7 @@
       const grid = document.createElement('nav'); grid.id = 'district-grid'; grid.setAttribute('aria-label', 'Distritos da cidade'); dock.before(grid); this.el.districts = grid;
       grid.addEventListener('click', e => { const b = e.target.closest('[data-district]'); if (!b) return; const src = document.querySelectorAll('#village-actions .signpost')[+b.dataset.district]; src?.click(); });
     }
-    // O cartão de objetivo fica sobre a arena no PC e abaixo dela no celular (não cobre a luta).
-    // No celular o objetivo e a faixa do AFK ficam abaixo do palco (não cobrem a luta e usam o espaço livre da tela).
-    const placeChip = () => { const chip = this.el.goalChip, banner = this.el.afkBanner, mob = matchMedia('(max-width:900px)').matches, vp = document.querySelector('#viewport'), dock = document.querySelector('#party-strip'); if (chip) { if (mob) document.querySelector('#district-grid')?.before(chip); else vp?.appendChild(chip); } if (banner) { if (mob) dock?.before(banner); else vp?.appendChild(banner); }
-      // Controles da batalha: sobre o palco no PC; no celular numa barra logo abaixo (o palco é pequeno e eles cobriam a luta).
-      const ctl = this._ctl ||= document.querySelector('.stage-controls'), top = this._ctlHome ||= ctl?.parentElement;
-      if (ctl) { if (mob) vp?.after(ctl); else if (ctl.parentElement !== top) top?.appendChild(ctl); ctl.classList.toggle('below-stage', mob); }
-      // Guarda e poções: no canto do palco no PC; no celular numa faixa larga logo abaixo dele (a Guarda pede um botão grande, ao alcance do polegar).
-      const cons = document.querySelector('#consumables'); if (cons) { if (mob) vp?.after(cons); else if (cons.parentElement !== vp) vp?.appendChild(cons); cons.classList.toggle('below-stage', mob); }
-      // Comando da vez do herói: no PC flutua no meio do palco, entre as duas equipes; no celular fica logo abaixo dele.
-      const turn = document.querySelector('#turn-cmd'); if (turn) { if (mob) vp?.after(turn); else if (turn.parentElement !== vp) vp?.appendChild(turn); turn.classList.toggle('below-stage', mob); } };
-    placeChip(); matchMedia('(max-width:900px)').addEventListener?.('change', placeChip);
+    this.placeHud(); matchMedia('(max-width:900px)').addEventListener?.('change', () => this.placeHud());
     // Combate só com o essencial: PREPARAR, COMANDO, VEL e CIDADE à vista; AFK e AVANÇO no botão "Mais".
     const ctl = document.querySelector('.stage-controls');
     if (ctl && !document.querySelector('#adv-ctl-btn')) {
@@ -58,16 +47,48 @@
     setInterval(() => { this.renderGoalChip(); this.renderDistricts(); }, 1000);
   };
 
-  // Celular: "Mais" abre uma folha com os atalhos em grade (a barra de baixo continua com 6 + Mais).
+  // Onde fica cada peça conforme a tela. PC: nome da região e controles sobre o palco. Celular e tablet: o palco é
+  // pequeno, então durante a luta a barra do topo vira a BARRA DA BATALHA (região e onda à esquerda, controles à
+  // direita) e o palco fica só com a luta; o objetivo e a faixa do AFK vão para baixo do palco.
+  P.placeHud = function() {
+    const $ = s => document.querySelector(s), mob = matchMedia('(max-width:900px)').matches, fight = document.body.classList.contains('in-combat');
+    const vp = $('#viewport'), top = $('.hud-top'), stageTop = $('.stage-top'), dock = $('#party-strip');
+    const chip = this.el.goalChip, banner = this.el.afkBanner;
+    if (chip) { if (mob) $('#district-grid')?.before(chip); else if (chip.parentElement !== vp) vp?.appendChild(chip); }
+    if (banner) { if (mob) dock?.before(banner); else if (banner.parentElement !== vp) vp?.appendChild(banner); }
+    const ctl = this._ctl ||= $('.stage-controls');
+    if (ctl && top && stageTop) { const home = mob ? top : stageTop; if (ctl.parentElement !== home) home.appendChild(ctl); ctl.classList.toggle('in-top', mob); ctl.classList.remove('below-stage'); }
+    const zc = this._zc ||= $('.zone-chip');
+    if (zc && top && stageTop) { const inTop = mob && fight; if (inTop) { if (zc.parentElement !== top) top.insertBefore(zc, ctl && ctl.parentElement === top ? ctl : null); } else if (zc.parentElement !== stageTop) stageTop.prepend(zc); zc.classList.toggle('in-top', inTop); }
+    // Peças antigas do palco (guarda, poções e comando da vez): escondidas na luta pelo console; seguem o mesmo critério.
+    const cons = $('#consumables'); if (cons) { if (mob) vp?.after(cons); else if (cons.parentElement !== vp) vp?.appendChild(cons); cons.classList.toggle('below-stage', mob); }
+    const turn = $('#turn-cmd'); if (turn) { if (mob) vp?.after(turn); else if (turn.parentElement !== vp) vp?.appendChild(turn); turn.classList.toggle('below-stage', mob); }
+  };
+
+  // "Menu" abre os outros lugares em grade: no celular uma folha que sobe do pé da tela; no PC um painel ao lado da
+  // navegação, na altura do botão (antes a coluna crescia para baixo e ganhava barra de rolagem em tela baixa).
   P.toggleMoreSheet = function(force) {
     let sh = document.querySelector('#more-sheet');
     if (!sh) {
       sh = document.createElement('div'); sh.id = 'more-sheet'; sh.hidden = true; document.body.appendChild(sh);
-      sh.addEventListener('click', e => { const b = e.target.closest('[data-more-panel]'); if (b) { sh.hidden = true; document.querySelector(`.nav[data-panel="${b.dataset.morePanel}"]`)?.click(); } else if (e.target === sh) sh.hidden = true; });
+      const close = () => { sh.hidden = true; document.querySelector('.side-nav')?.classList.remove('more-open'); };
+      sh.addEventListener('click', e => { const b = e.target.closest('[data-more-panel]'); if (b) { close(); document.querySelector(`.nav[data-panel="${b.dataset.morePanel}"]`)?.click(); } else if (e.target === sh) close(); });
+      addEventListener('keydown', e => { if (e.key === 'Escape' && !sh.hidden) close(); });
+      addEventListener('resize', () => { if (!sh.hidden) close(); });
     }
-    const open = force ?? sh.hidden;
-    if (open) sh.innerHTML = `<div class="more-grid"><b>Menu</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" data-more-panel="${n.dataset.panel}">${n.querySelector('.pi, svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
-    sh.hidden = !open;
+    const open = force ?? sh.hidden, nav = document.querySelector('.side-nav');
+    if (open) {
+      sh.innerHTML = `<div class="more-grid" role="menu"><b>Menu</b>${[...document.querySelectorAll('.side-nav .nav-extra')].map(n => `<button type="button" role="menuitem" data-more-panel="${n.dataset.panel}">${n.querySelector('.pi, svg')?.outerHTML || ''}<span>${n.querySelector('b')?.textContent || n.textContent.trim()}</span>${[...n.querySelectorAll('[id$="-badge"]')].some(x => !x.hidden && x.textContent.trim()) ? '<em>!</em>' : ''}</button>`).join('')}</div>`;
+      sh.hidden = false;
+      // PC: o painel fica ao lado da navegação, centrado no botão Menu e sempre inteiro na tela.
+      const grid = sh.firstElementChild, btn = nav?.querySelector('.nav-more');
+      if (btn && !matchMedia('(max-width:900px)').matches) {
+        const z = KT.pageZoom?.() || 1, r = btn.getBoundingClientRect(), g = grid.getBoundingClientRect();
+        const top = U.clamp(r.top + r.height / 2 - g.height / 2, (document.querySelector('.hud-top')?.getBoundingClientRect().bottom || 0) + 8, Math.max(8, innerHeight - g.height - 8));
+        grid.style.top = `${top / z}px`; grid.style.left = `${(nav.getBoundingClientRect().right + 8) / z}px`;
+      }
+    } else sh.hidden = true;
+    nav?.classList.toggle('more-open', open);
   };
   P.applyHud = function() {
     const clean = !this.hudFull();

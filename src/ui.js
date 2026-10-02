@@ -10,6 +10,14 @@
     manual:['MANUAL', TOUCH ? '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: atacar, uma das três habilidades ou defender.' : '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: <kbd>ESPAÇO</kbd> ataca, <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> habilidades, <kbd>G</kbd> defende.']
   };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+  // Telas largas ampliam a página inteira (html{zoom}, theme-sumi.css). getBoundingClientRect e o mouse falam em pixels da
+  // tela; left/top/width de um elemento valem em pixels da página. Quem posiciona algo pelo retângulo de outra coisa
+  // faz a conta em pixels da tela e divide por este fator no fim (medido, para valer em qualquer navegador).
+  KT.pageZoom = () => {
+    let p = KT._zoomProbe;
+    if (!p || !p.isConnected) { p = KT._zoomProbe = document.createElement('i'); p.style.cssText = 'position:fixed;left:0;top:0;width:100px;height:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(p); }
+    const w = p.getBoundingClientRect().width; return w > 0 ? w / 100 : 1;
+  };
   const portrait = id => KT.portraitUrl(id);
   const fmtTime = s => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? `${h}h ${String(m).padStart(2, '0')}m` : `${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}`; };
   // "Ir →" de um objetivo: quando ele fala de uma região, o mapa abre com ela destacada.
@@ -38,7 +46,7 @@
         inventoryBadge:$('#inventory-badge'), adventureBadge:$('#adventure-badge'), questBadge:$('#quest-badge'), summonBadge:$('#summon-badge'), talentBadge:$('#talent-badge'), partyBadge:$('#party-badge'),
         mode:$('#mode-btn'), guardBtn:$('#guard-btn'), turnBar:$('#turn-bar'), turnCmd:$('#turn-cmd'), advance:$('#advance-btn'), speed:$('#speed-btn'), retreat:$('#retreat-btn'),
         modal:$('#modal'), modalTitle:$('#modal-title'), modalKicker:$('#modal-kicker'), modalBody:$('#modal-body'), modalTabs:$('#modal-tabs'), modalBackNav:$('#modal-back-nav'), scrollHint:$('#scroll-hint'),
-        villageHub:$('#village-hub'), lobby:$('#lobby-bar'), toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip')
+        villageHub:$('#village-hub'), lobby:$('#lobby-bar'), toastStack:$('#toast-stack'), reveal:$('#summon-reveal'), tooltip:$('#tooltip'), hudTop:$('.hud-top'), hudNotice:$('#hud-notice')
       };
     }
 
@@ -154,18 +162,25 @@
       document.addEventListener('click', e => { if (this.tipHeld) { this.tipHeld = false; e.stopPropagation(); e.preventDefault(); } }, true);
     }
 
+    // Põe a dica colada ao alvo e inteira dentro da tela. A medida é feita com a dica no canto (0,0): perto da borda
+    // direita ela se espremia numa coluna estreita.
+    placeTip(x, y, flipTop = null) {
+      const t = this.el.tooltip, z = KT.pageZoom(); t.style.left = '0px'; t.style.top = '0px';
+      const b = t.getBoundingClientRect(), tw = b.width, th = b.height;
+      const px = x(tw); let py = y(th);
+      if (py + th > innerHeight - 8 && flipTop !== null) py = flipTop - th - 8;
+      t.style.left = `${U.clamp(px, 8, Math.max(8, innerWidth - tw - 8)) / z}px`; t.style.top = `${U.clamp(py, 8, Math.max(8, innerHeight - th - 8)) / z}px`;
+    }
     showTip(html, anchor) {
       const t = this.el.tooltip; t.innerHTML = html; t.hidden = false;
-      const r = anchor.getBoundingClientRect(), tw = t.offsetWidth, th = t.offsetHeight;
-      let x = r.left + r.width / 2 - tw / 2, y = r.bottom + 8;
-      if (y + th > innerHeight - 8) y = r.top - th - 8;
-      t.style.left = `${U.clamp(x, 8, innerWidth - tw - 8)}px`; t.style.top = `${Math.max(8, y)}px`;
+      const r = anchor.getBoundingClientRect();
+      this.placeTip(tw => r.left + r.width / 2 - tw / 2, () => r.bottom + 8, r.top);
     }
     showEnemyTip(uid, ev) {
       const e = this.engine.enemies.find(x => x.uid === uid); if (!e) return;
       const el = D.elements[e.el], weak = Object.entries(D.elements).filter(([, v]) => v.strong.includes(e.el)).map(([k, v]) => `${KT.glyph(v.icon)} ${k}`).join(', ');
       this.el.tooltip.innerHTML = `<b style="color:${el.color}">${KT.glyph(el.icon)} ${esc(e.name)}</b><br><small>Nv.${e.level} · ${e.t.role} · HP ${U.fmt(Math.max(0, e.hp))}/${U.fmt(e.maxHp)}</small><br><small>${esc(e.t.desc || '')}</small>${weak ? `<br><small>Fraco contra: <b>${weak}</b></small>` : ''}${e.t.skill ? `<br><small>Habilidade: <b>${esc(e.t.skill.name)}</b></small>` : ''}<br><small class="dim">Clique para focar a equipe neste alvo.</small>`;
-      const t = this.el.tooltip; t.hidden = false; t.style.left = `${Math.min(ev.clientX + 16, innerWidth - t.offsetWidth - 8)}px`; t.style.top = `${Math.min(ev.clientY + 16, innerHeight - t.offsetHeight - 8)}px`;
+      this.el.tooltip.hidden = false; this.placeTip(() => ev.clientX + 16, () => ev.clientY + 16, ev.clientY - 8);
     }
     hideTip() { this.el.tooltip.hidden = true; }
 
@@ -238,13 +253,14 @@
       this.renderCloud();
       const attrPts = this.engine.heroes.reduce((s, r) => s + Math.max(0, this.engine.freeAttr(r)), 0);
       const awakenReady = this.engine.heroes.some(r => r.stars < 6 && (this.state.shards[r.id] || 0) >= KT.State.awakenCost(r.stars, this.state.buildings.shrine).shards);
-      this.el.partyBadge.hidden = !(attrPts || awakenReady || this.engine.heroes.length < 4); this.el.partyBadge.textContent = attrPts || '!';
+      this.el.partyBadge.hidden = !(attrPts || awakenReady || this.engine.heroes.length < 4); this.el.partyBadge.textContent = attrPts > 99 ? '99+' : attrPts || '!';
     }
 
     renderZone() {
       const z = this.engine.zone, e = this.engine;
       document.body.classList.toggle('in-combat', z.kind !== 'village');
       document.body.classList.toggle('boss-combat', z.kind === 'boss' || e.enemies?.some(x => x.alive && (x.boss || x.miniboss)));
+      if (this._fightHud !== (z.kind !== 'village')) { this._fightHud = z.kind !== 'village'; this.placeHud?.(); this.renderer.resize(); }   // o corte do palco depende de estar em luta
       this.el.zoneTitle.textContent = z.title; this.el.zoneKick.textContent = z.kicker;
       let diff = z.difficulty, wave = z.kind === 'village' ? '8 distritos em celebração' : 'Cidade segura';
       if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido!' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
@@ -599,13 +615,51 @@
       return tips.slice(0, 4);
     }
     // Aviso curto no alto do palco (embaixo, com um painel aberto). key: avisos do mesmo assunto se substituem em vez de empilhar.
+    // Avisos. Na cidade e na luta o aviso entra na BARRA DO TOPO, no lugar dos recursos, por alguns segundos: é uma faixa só
+    // dele, então nunca cobre o palco, a placa do chefe, a ordem das ações nem os heróis. Com um painel (ou outra tela
+    // cheia) aberto a barra fica escondida, e o aviso vai para a pilha no pé da tela.
     toast(text, tone = '', key = '') {
+      if (this.fightLane()) { const plain = String(text).replace(/<[^>]+>/g, '').length; return this.bhSay(`<span class="say ${tone}">${String(text).replace(/<br\s*\/?>/g, ' ')}</span>`, U.clamp(1700 + plain * 42, 2800, 6000)); }
+      if (this.noticeLane()) return this.notice(text, tone, key);
       const stack = this.el.toastStack;
       if (key) stack.querySelectorAll(`.toast[data-key="${key}"]`).forEach(x => x.remove());
       const t = document.createElement('div'); t.className = `toast ${tone}`; if (key) t.dataset.key = key;
       t.innerHTML = `<span class="toast-msg">${text}</span>`; stack.appendChild(t);
       while (stack.children.length > 3) stack.firstChild.remove();
       setTimeout(() => t.remove(), 4200);
+    }
+    // Celular em luta: a barra do topo é a barra da batalha (região e controles), então o aviso vai para a linha de
+    // informação do console, que é o lugar do texto da luta.
+    fightLane() { return !!this.bh && document.body.classList.contains('in-combat') && matchMedia('(max-width:900px)').matches && !this.overlayOpen(); }
+    overlayOpen() { return ['#modal', '#summon-reveal', '#auth', '#ask-modal', '#more-sheet'].some(sel => { const el = document.querySelector(sel); return el && !el.hidden; }); }
+    noticeLane() {
+      const n = this.el.hudNotice; if (!n || !this.el.hudTop?.offsetWidth || document.body.classList.contains('booting')) return false;
+      return !this.overlayOpen();
+    }
+    notice(text, tone = '', key = '') {
+      const q = this.noticeQ ||= [];
+      if (key) { for (let i = q.length - 1; i >= 0; i--) if (q[i].key === key) q.splice(i, 1); }
+      q.push({ text, tone, key }); if (q.length > 4) q.splice(0, q.length - 4);
+      const cur = this.noticeNow;
+      if (!cur) return this.nextNotice();
+      // Já há um aviso na faixa: o do mesmo assunto troca na hora; os outros encurtam a espera de quem está lá.
+      if (key && cur.key === key) return this.nextNotice();
+      const left = cur.until - performance.now(), min = Math.max(0, 1300 - (performance.now() - cur.at));
+      if (left > min) { cur.until = performance.now() + min; clearTimeout(this.noticeTimer); this.noticeTimer = setTimeout(() => this.nextNotice(), min); }
+    }
+    nextNotice() {
+      const box = this.el.hudNotice, top = this.el.hudTop, q = this.noticeQ || [], n = q.shift();
+      clearTimeout(this.noticeTimer);
+      if (!n) { this.noticeNow = null; box.hidden = true; box.innerHTML = ''; top.classList.remove('noticing'); return; }
+      // A faixa vai do fim do cartão do jogador até os botões da direita (no celular, até a borda: os recursos são estreitos).
+      const res = top.querySelector('.resources'), narrow = matchMedia('(max-width:900px)').matches;
+      box.style.left = `${res.offsetLeft}px`; box.style.right = narrow ? '8px' : `${Math.max(8, top.clientWidth - res.offsetLeft - res.offsetWidth)}px`;
+      box.innerHTML = `<button class="hn ${n.tone || ''}" type="button" aria-label="Fechar aviso"><span class="hn-msg">${n.text}</span></button>`;
+      box.hidden = false; top.classList.add('noticing');
+      const plain = box.textContent.length, ms = U.clamp(1700 + plain * 42, 2800, 6000);
+      this.noticeNow = { key:n.key, at:performance.now(), until:performance.now() + ms };
+      this.noticeTimer = setTimeout(() => this.nextNotice(), ms);
+      if (!box.dataset.bound) { box.dataset.bound = '1'; box.addEventListener('click', () => this.nextNotice()); }
     }
 
     // ======================= REVELAÇÃO DE CONVOCAÇÃO =======================

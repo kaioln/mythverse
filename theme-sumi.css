@@ -762,7 +762,7 @@ body:not(.in-combat) .zone-chip .zone-kicker{font-size:8px}
 body:not(.in-combat) .zone-chip h1{margin:1px 0 3px;font-size:clamp(15px,1.35vw,19px)}
 body:not(.in-combat) .zone-chip .zone-meta span{font-size:8px;padding:1px 6px}
 /* Celular em pé: palco mais alto (a cena é recortada nas laterais em src/renderer.js), sem faixa vazia embaixo. */
-body.stage-portrait .stage{aspect-ratio:920/720!important}
+body.stage-portrait .stage{aspect-ratio:var(--stage-vw,920)/720!important}
 @media (max-width:700px){body .stage-controls #boost-btn{padding:0 4px!important;min-width:68px!important;flex-direction:column!important;justify-content:center!important;gap:2px!important}body .stage-controls #boost-btn b{font-size:10.5px!important;letter-spacing:0!important}}
 /* Barra do palco: todos os controles na mesma altura e no mesmo eixo (PREPARAR e MAPA idênticos em tamanho). */
 body .stage-controls{align-items:center!important}

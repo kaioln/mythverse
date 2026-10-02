@@ -77,15 +77,16 @@
         <div class="coach-actions">${s.btn ? `<button class="action small primary" data-coach-next type="button">${s.btn}</button>` : `<span class="coach-wait">${target ? 'Toque no destaque' : 'Aguardando…'}</span>`}<button class="action small ghost" data-coach-skip type="button">Pular tutorial</button></div>`;
     }
     if (target) {
-      const r = target.getBoundingClientRect(), pad = 8;
-      Object.assign(hole.style, { display:'block', left:`${r.left - pad}px`, top:`${r.top - pad}px`, width:`${r.width + pad * 2}px`, height:`${r.height + pad * 2}px` });
-      const bw = Math.min(360, innerWidth - 24), below = r.bottom + 14 + 200 < innerHeight;
+      // Contas em pixels da tela, divididas pelo zoom da página no fim (ver KT.pageZoom).
+      const r = target.getBoundingClientRect(), pad = 8, z = KT.pageZoom?.() || 1, px = v => `${v / z}px`;
+      Object.assign(hole.style, { display:'block', left:px(r.left - pad), top:px(r.top - pad), width:px(r.width + pad * 2), height:px(r.height + pad * 2) });
+      const bw = Math.min(360 * z, innerWidth - 24), below = r.bottom + 14 + 200 * z < innerHeight;
       let left = U.clamp(r.left + r.width / 2 - bw / 2, 12, innerWidth - bw - 12);
-      Object.assign(bub.style, { width:`${bw}px`, left:`${left}px`, top:below ? `${r.bottom + 14}px` : '', bottom:below ? '' : `${innerHeight - r.top + 14}px`, transform:'' });
+      Object.assign(bub.style, { width:px(bw), left:px(left), top:below ? px(r.bottom + 14) : '', bottom:below ? '' : px(innerHeight - r.top + 14), transform:'' });
     } else {
       hole.style.display = 'none';
-      const bw = Math.min(420, innerWidth - 24);
-      Object.assign(bub.style, s.float ? { width:`${bw}px`, left:`${(innerWidth - bw) / 2}px`, top:'78px', bottom:'', transform:'' } : { width:`${bw}px`, left:`${(innerWidth - bw) / 2}px`, top:'50%', bottom:'', transform:'translateY(-50%)' });
+      const z = KT.pageZoom?.() || 1, bw = Math.min(420 * z, innerWidth - 24), px = v => `${v / z}px`;
+      Object.assign(bub.style, s.float ? { width:px(bw), left:px((innerWidth - bw) / 2), top:'78px', bottom:'', transform:'' } : { width:px(bw), left:px((innerWidth - bw) / 2), top:'50%', bottom:'', transform:'translateY(-50%)' });
     }
   };
 })();

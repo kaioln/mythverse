@@ -255,17 +255,40 @@ body:not(.in-combat) .stage-controls{display:none!important}
 .illustrated-map .map-pin.locked:hover .pin-txt,.illustrated-map .map-pin.locked.focus .pin-txt{display:flex}
 .illustrated-map .map-pin.locked .pin-name{display:block;position:static;transform:none;padding:0;background:none;font-size:12px}
 .illustrated-map .map-pin.locked small{display:block}
+.map-list{display:none}
 @media (max-width:900px){
-  /* celular: o mapa fica na altura do painel e desliza para os lados */
-  .modal[data-panel="journey"][data-tab="map"] .modal-body{overflow-x:auto;overflow-y:hidden;padding:8px}
-  .map-stage{width:max-content;justify-items:start;align-content:start;gap:8px}
-  .map-stage .illustrated-map{width:auto;height:calc(100cqh - 62px)}
-  .map-foot{position:sticky;left:0;width:calc(100cqw);min-height:54px;padding:6px 8px 6px 10px}
-  .map-foot .map-legend{display:none}
+  /* celular: o mapa cabe inteiro na largura (nada cortado na borda) e os nomes vêm na lista logo abaixo.
+     No mapa só três marcos levam nome: onde você está, o próximo objetivo e o destino de um "Ir". */
+  .modal[data-panel="journey"][data-tab="map"] .modal-body{container-type:normal;overflow-x:hidden;overflow-y:auto;padding:8px 8px calc(84px + env(safe-area-inset-bottom))}
+  .map-stage{display:block;width:auto;height:auto;justify-items:normal}   /* justify-items:center também vale em bloco nos navegadores novos: encolhia a lista */
+  .map-stage .illustrated-map{width:100%;height:auto;aspect-ratio:16/9}
+  .illustrated-map .map-pin,.illustrated-map .map-pin.locked,.illustrated-map .map-pin.locked:hover,.illustrated-map .map-pin.locked.focus{padding:1px;gap:0;border-radius:50%}
+  .illustrated-map .map-pin .pin-ic{width:22px;height:22px;font-size:12px}
+  .illustrated-map .map-pin.locked .pin-ic{width:15px;height:15px;font-size:9px}
+  .illustrated-map .map-pin .pin-txt,.illustrated-map .map-pin.locked:hover .pin-txt,.illustrated-map .map-pin.locked.focus .pin-txt{display:none}
+  .illustrated-map .map-pin.current .pin-txt,.illustrated-map .map-pin.next .pin-txt,.illustrated-map .map-pin.focus .pin-txt{display:block;position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);padding:2px 7px;border-radius:7px;background:rgba(14,12,20,.92);border:1px solid rgba(236,226,208,.22);white-space:nowrap}
+  .illustrated-map .map-pin.edge-l .pin-txt{left:0;transform:none}
+  .illustrated-map .map-pin.edge-r .pin-txt{left:auto;right:0;transform:none}
+  .illustrated-map .map-pin .pin-name{font:800 11px/1.2 var(--display);color:var(--washi)}
+  .illustrated-map .map-pin.current .pin-name{color:var(--gold-hi)}
+  .illustrated-map .map-pin .pin-name em,.illustrated-map .map-pin small{display:none!important}
+  .illustrated-map .map-pin:hover{transform:translate(-50%,-50%)}
+  .map-foot{position:static;width:auto;min-height:0;margin-top:8px;padding:8px 8px 8px 10px}
+  .map-foot .map-legend,.map-foot .map-tip{display:none}
   .map-next{margin-left:0;padding-left:0;border-left:0;width:100%}.map-next .action{margin-left:auto}
-  .illustrated-map .map-pin{padding:2px 9px 2px 2px;gap:5px}
-  .map-pin .pin-ic{width:22px;height:22px;font-size:12px}
-  .map-pin .pin-name{font-size:12px}.map-pin small{display:block!important;font-size:9.5px}
+  .map-next b{white-space:normal}
+  .map-list{display:grid;gap:5px;margin-top:10px}
+  .map-list h4{margin:10px 2px 2px;font:800 10.5px/1.2 var(--ui);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .map-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;min-height:50px;padding:6px 10px 6px 8px;border-radius:11px;text-align:left;color:var(--washi);background:linear-gradient(180deg,#1b1824,#131119);border:1px solid var(--line2)}
+  .map-row .pin-ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:15px;background:radial-gradient(circle at 34% 28%,#3d354d,#17141f 72%);border:1.5px solid var(--gold)}
+  .map-row b{display:block;font:800 14px/1.15 var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .map-row small{display:block;font:600 11px/1.3 var(--ui);color:var(--muted)}
+  .map-row em{font:400 20px/1 var(--ui);font-style:normal;color:var(--dim)}
+  .map-row.done .pin-ic{border-color:#8fcf9d}.map-row.done small{color:#9fd3a8}
+  .map-row.k-boss:not(.locked) .pin-ic{border-color:var(--shu-hi)}
+  .map-row.locked{opacity:.55}.map-row.locked .pin-ic{border-color:rgba(236,226,208,.35)}
+  .map-row.current{border-color:var(--gold)}.map-row.current small{color:var(--gold-hi)}
+  .map-row.next{border-color:var(--shu-hi)}.map-row.next small{color:#ffb9a6}
 }
 @media(prefers-reduced-motion:reduce){.scroll-hint i,.illustrated-map .map-pin.next{animation:none}}
 
@@ -358,3 +381,73 @@ body:not(.in-combat) .stage-controls{display:none!important}
 /* ---------- itens: as quatro peças de um conjunto, lado a lado ---------- */
 .set-art{display:flex;gap:6px;margin:6px 0 2px}
 .set-art .item-art{width:40px;height:40px}
+
+/* ---------- avisos na barra do topo ----------
+   O aviso ocupa, por alguns segundos, o lugar dos recursos (que somem enquanto ele está lá): é uma faixa só dele, não
+   cobre o palco nem nenhum outro contêiner. Posição (left/right) posta por ui.js. Toque fecha. */
+.hud-notice{position:absolute;z-index:3;top:6px;bottom:6px;display:flex;align-items:center;justify-content:center;min-width:0;pointer-events:none}
+.hud-notice[hidden]{display:none}
+.hud-top.noticing .resources{visibility:hidden}
+.hn{pointer-events:auto;display:flex;align-items:center;gap:10px;max-width:100%;max-height:100%;padding:5px 16px 5px 11px;border-radius:10px;background:linear-gradient(180deg,#231f2d,#17151e);border:1px solid rgba(236,226,208,.16);border-left:4px solid #86c5d0;box-shadow:0 2px 0 rgba(0,0,0,.35);color:var(--washi);font:500 13.5px/1.34 var(--ui);text-align:left;cursor:pointer;animation:hnIn .2s ease-out}
+.hn::before{content:"";flex:none;width:18px;height:18px;background:#86c5d0;-webkit-mask:url(assets/ui/ic-lantern.svg) center/contain no-repeat;mask:url(assets/ui/ic-lantern.svg) center/contain no-repeat}
+.hn.gold{border-left-color:var(--gold)}.hn.gold::before{background:var(--gold);-webkit-mask-image:url(assets/ui/ic-star.svg);mask-image:url(assets/ui/ic-star.svg)}
+.hn.red{border-left-color:var(--shu)}.hn.red::before{background:var(--shu-hi);-webkit-mask-image:url(assets/ui/ic-skull.svg);mask-image:url(assets/ui/ic-skull.svg)}
+.hn-msg{min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.hn b{font-weight:700;color:#fff3dc}
+.hn.gold b{color:var(--gold-hi)}
+.hn kbd{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 4px;margin:0 1px;border-radius:5px;font:700 10.5px var(--ui);color:#1c1508;background:linear-gradient(180deg,#f3dfae,#cfa75a);vertical-align:1px}
+@keyframes hnIn{from{opacity:0;transform:translateY(-10px)}}
+@media (max-width:900px){
+  .hud-notice{top:4px;bottom:4px;justify-content:flex-start}
+  .hud-top.noticing .top-actions{visibility:hidden}
+  .hn{gap:7px;padding:3px 10px 3px 8px;font-size:11.5px;line-height:1.26;border-radius:9px}
+  .hn::before{width:15px;height:15px}
+  .hn-msg{-webkit-line-clamp:3}
+}
+/* pilha de avisos (só com painel aberto): centrada de verdade (left:50% espremia o aviso em meia tela) */
+.toast-stack{left:12px;right:12px;transform:none;align-items:center}
+.toast{max-width:min(600px,100%)}
+
+/* ---------- navegação: só os lugares principais e o Menu; o resto abre num painel (nunca rola nem ganha barra) ---------- */
+.side-nav .nav-extra{display:none!important}
+.side-nav .nav-more{display:flex!important}
+.side-nav{scrollbar-width:none}.side-nav::-webkit-scrollbar{display:none}
+.more-grid{background:linear-gradient(180deg,#1f1b29,#141219);border-top:1px solid var(--edge-gold)}
+.more-grid>b{font:800 15px/1.2 var(--display);color:var(--washi)}
+.more-grid button{gap:6px;padding:10px 4px 9px;border-radius:12px;background:linear-gradient(180deg,rgba(236,226,208,.06),rgba(236,226,208,.02));border:1px solid var(--line2);color:var(--washi);font:700 12px/1.1 var(--ui);transition:transform .1s,border-color .12s}
+.more-grid button:hover{border-color:var(--gold);transform:translateY(-1px)}
+.more-grid button:active{transform:translateY(1px)}
+.more-grid em{top:6px;right:8px;background:var(--shu-hi);color:#fff}
+@media (min-width:901px){
+  #more-sheet{background:rgba(8,7,12,.28);display:block}
+  .more-grid{position:absolute;left:92px;top:120px;width:auto;grid-template-columns:repeat(2,112px);gap:8px;padding:12px;border:1px solid var(--edge-gold);border-radius:14px;box-shadow:0 18px 44px rgba(0,0,0,.6);animation:moreIn .14s ease-out}
+  .more-grid>b{display:none}
+  .more-grid .pi{width:40px;height:40px}
+}
+@keyframes moreIn{from{opacity:0;transform:translateX(-8px)}}
+
+/* ---------- selos da navegação: no canto do botão, ao lado do ícone (nunca em cima do desenho) ---------- */
+body .side-nav .nav em{position:absolute;top:3px;left:calc(50% + 9px);right:auto;transform:none;min-width:15px;max-width:26px;height:15px;padding:0 4px;border-radius:8px;overflow:hidden;white-space:nowrap;font:800 9.5px/15px var(--ui);letter-spacing:-.02em;font-style:normal;text-align:center;color:#fff;background:var(--shu-hi);box-shadow:0 0 0 2px var(--bg0,#100e16);animation:none}
+body .side-nav .nav em[hidden]{display:none}
+@media (max-width:900px){
+  body .side-nav .nav em{top:2px;left:calc(50% + 8px);min-width:14px;height:14px;padding:0 3px;font-size:9px;line-height:14px}
+}
+
+/* ---------- botões do saguão: ícone pintado em cima e o nome embaixo, em qualquer largura (ícone sozinho não diz nada) ---------- */
+.lobby-btn,.lobby-bar .lobby-btn{flex-direction:column;gap:3px;min-width:64px;padding:4px 8px 5px}
+.lobby-bar .lobby-btn b,.lobby-bar .lobby-btn.todo b,.lobby-bar .lobby-btn:not(.todo) b{display:block;font:800 9px/1 var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--washi);white-space:nowrap}
+.lobby-bar .lobby-btn .ic,.lobby-bar .lobby-btn .pi{width:28px;height:28px}
+.lobby-btn.todo em{top:3px;right:4px}
+@media (max-width:900px){
+  .lobby-bar .lobby-btn{min-width:0;gap:4px;padding:4px 2px 6px}
+  .lobby-bar .lobby-btn .ic,.lobby-bar .lobby-btn .pi{width:30px;height:30px}
+}
+@media (max-width:560px){
+  .lobby-bar .lobby-btn b,.lobby-bar .lobby-btn.todo b,.lobby-bar .lobby-btn:not(.todo) b{font-size:8.5px;letter-spacing:.02em}
+}
+/* faixa apertada: o nome da região e o objetivo quebram em duas linhas (nunca reticências no meio do nome) */
+@container lobby (max-width:1180px){
+  .lobby-go{gap:10px;padding:5px 10px 6px 14px}
+  .lobby-go b{font-size:14.5px;line-height:1.12;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-wrap:balance}
+  .lobby-goal{flex:1 1 230px;min-width:230px}
+}

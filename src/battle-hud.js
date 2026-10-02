@@ -104,21 +104,29 @@
     // Janela larga e baixa (a de quase todo notebook): sobra tela dos lados e falta em cima. Os heróis vão para uma coluna
     // à esquerda do palco e só o comando fica embaixo; se assim o palco não ficar maior, fica tudo embaixo.
     // As medidas espelham theme-battle.css: coluna de 250 + 6, comando de 106, console inteiro de 168 (180 no estreito).
-    const col = hud.parentElement, low = matchMedia('(max-height:778px)'), SIDE = 256, DOCK_L = 106;
+    const col = hud.parentElement, low = matchMedia('(max-height:778px)'), SIDE = 256, DOCK_L = 106, ROOMY = 84;
     const fit = () => {
       const cs = getComputedStyle(col), w = col.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), h = col.clientHeight - 34;
       const below = Math.min(w, (h - (low.matches ? 180 : 168)) * 16 / 9), beside = Math.min(w - SIDE, (h - DOCK_L) * 16 / 9);
       document.body.classList.toggle('bh-l', !narrow.matches && beside >= 640 && beside > below);
       modeSeen();
+      // Uma coluna com tela sobrando embaixo do console (janela estreita e alta, tablet pequeno): o comando passa para o
+      // desenho folgado (botões grandes, de ponta a ponta). ROOMY é quanto ele cresce; só entra se couber e só sai se
+      // estourar, para não ficar trocando.
+      if (!narrow.matches || !hud.offsetHeight) { hud.classList.remove('roomy'); return; }
+      const nav = document.querySelector('.side-nav'), free = innerHeight - (nav ? nav.offsetHeight : 0) - (hud.getBoundingClientRect().bottom + scrollY);
+      if (!hud.classList.contains('roomy')) { if (free >= ROOMY + 14) hud.classList.add('roomy'); }
+      else if (free < 0) hud.classList.remove('roomy');
     };
     if (globalThis.ResizeObserver) { const ro = new ResizeObserver(fit); ro.observe(col); ro.observe(hud); }
     fit(); narrow.addEventListener?.('change', fit); low.addEventListener?.('change', fit);
-    // Celular de tela baixa: o console não cabe inteiro acima da navegação. Ao começar a luta a página desce só o que
-    // falta para a barra de ações ficar à vista (some o alto do cenário, nunca os heróis). Uma vez por luta.
+    // Celular de tela muito baixa: se o console não couber inteiro acima da navegação, a página desce só o que falta para
+    // a barra de ações ficar à vista (some o alto do cenário, nunca os heróis); se couber, volta para o alto.
     this.bhSeat = () => {
-      if (!narrow.matches) return;
-      const nav = document.querySelector('.side-nav'), over = hud.getBoundingClientRect().bottom + 6 - (innerHeight - (nav ? nav.offsetHeight : 0));
-      if (over > 4) scrollBy({ top:over, behavior:'smooth' });
+      if (!narrow.matches || !hud.offsetHeight) return;
+      const nav = document.querySelector('.side-nav'), over = hud.getBoundingClientRect().bottom + scrollY + 6 - (innerHeight - (nav ? nav.offsetHeight : 0));
+      const want = over > 4 ? Math.round(over) : 0;
+      if (Math.abs(scrollY - want) > 2) scrollTo({ top:want, behavior:'smooth' });
     };
     // A descrição da ação sob o cursor, com o foco do teclado ou sob o dedo aparece na linha de baixo da barra.
     const hover = ev => { const b = ev.target.closest?.('[data-ab],[data-ult]'); this.bhHover = !b ? null : b.dataset.ab || `u${b.dataset.ult}`; }, leave = () => { this.bhHover = null; };
@@ -127,6 +135,8 @@
       box.addEventListener('pointerdown', ev => { if (ev.pointerType !== 'mouse') hover(ev); }); box.addEventListener('pointerup', ev => { if (ev.pointerType !== 'mouse') leave(); }); box.addEventListener('pointercancel', leave);
       box.addEventListener('focusin', ev => { if (ev.target.matches?.(':focus-visible')) hover(ev); }); box.addEventListener('focusout', leave);
     });
+    // Palco pequeno: o que a faixa central do canvas diria (ONDA, FASE, ASSALTO TOTAL…) vem para a linha de informação.
+    this.renderer.onBanner = (title, sub) => this.bhSay(`<span class="say"><b>${esc(title)}</b>${sub ? ` · ${esc(sub)}` : ''}</span>`, 2800);
     // Durante o golpe cronometrado, um clique no palco confirma o tempo.
     this.el.canvas.addEventListener('pointerdown', ev => { if (this.bhPending) { ev.stopPropagation(); ev.preventDefault(); this.bhConfirm(); } }, true);
   };
@@ -209,6 +219,7 @@
     } else if (fx.type === 'sp' && fx.delta > 0) this.bhSpGain = performance.now();
     else if (fx.type === 'break') { const t = e.enemies.find(x => x.uid === fx.uid); if (t) this.bhSay(`<b>QUEBRA!</b> ${esc(t.name.split(',')[0])} fica atordoado e recebe +35% de dano. +1 PT.`, 3000); }
     else if (fx.type === 'reaction') this.bhSay(`Reação elemental: <b>${esc(fx.name)}</b>.`, 2600);
+    else if (fx.type === 'chain') { const u = e.party.find(x => x.uid === fx.uid); this.bhSay(`<span class="say gold"><b>Elo Kizuna ×${fx.n}</b></span> · ${u ? `<b>${esc(u.template.ult.name)}</b> ` : ''}com +${Math.round(e.chainBonus * 100)}%. Outro herói em até ${KT.State.CHAIN.window}s aumenta o elo.`, 3600); }
     else if (fx.type === 'allOutReady' && e.mode === 'manual') this.bhSay(`Todos os inimigos quebrados: <b>ASSALTO TOTAL</b> disponível${TOUCH ? '' : ' (<kbd>T</kbd>)'}.`, 4000);
   };
 
@@ -217,9 +228,9 @@
 
   P.renderBattleHud = function() {
     const e = this.engine, B = this.bh; if (!B) return;
-    if (!e.active) { this.bhSeated = false; return; }
+    if (!e.active) { this.bhSeated = false; this.turnIdleTold = false; return; }
     const party = [0, 1, 2, 3].map(i => e.party.find(u => u.slot === i) || null), now = performance.now(), fight = e.phase === 'fight';
-    if (!this.bhSeated && fight) { this.bhSeated = true; setTimeout(() => this.bhSeat?.(), 350); }
+    if (!this.bhSeated && fight) { this.bhSeated = true; setTimeout(() => this.bhSeat?.(), 450); setTimeout(() => this.bhSeat?.(), 1400); }
     // ----- equipe -----
     const key = party.map(u => (u ? u.uid : '-')).join('|');
     if (key !== this.bhKey) {
@@ -244,7 +255,10 @@
       text(c.hpTxt, u.alive ? U.fmt(Math.max(0, Math.ceil(u.hp))) : 'K.O.'); text(c.hpMax, u.alive ? ` / ${brief(Math.ceil(u.maxHp))}` : ''); cls(c.hp, 'low', hp < .3);
       css(c.en, 'width', `${U.clamp(u.energy, 0, 100).toFixed(0)}%`);
       const fxs = fxIcons(u, 6); html(c.fx, fxs); html(c.fxRow, fxs); text(c.lv, String(u.level));
-      attr(c.ult, 'disabled', !ready); cls(c.ult, 'ready', ready); css(c.ult, '--nrg', (U.clamp(u.energy / 100, 0, 1)).toFixed(2)); text(c.pct, u.alive ? `${Math.floor(u.energy)}` : '');
+      // Elo Kizuna aberto: quem pode continuar a corrente (outro herói, com a ultimate pronta) mostra o bônus no botão.
+      const CH = KT.State.CHAIN, link = ready && e.ultChain >= 1 && e.zoneElapsed - e.lastUltAt <= CH.window && e.party.indexOf(u) !== e.lastUltHero;
+      attr(c.ult, 'disabled', !ready); cls(c.ult, 'ready', ready); cls(c.ult, 'chain', link); css(c.ult, '--nrg', (U.clamp(u.energy / 100, 0, 1)).toFixed(2));
+      text(c.pct, !u.alive ? '' : link ? `+${Math.round(e.ultChain * (CH.per + (u.st.chainPow || 0)) * 100)}%` : `${Math.floor(u.energy)}`);
       cls(c.card, 'ultready', ready); cls(c.card, 'dead', !u.alive);
       const prev = this.lastHp.get(u.uid); if (prev !== undefined && u.hp < prev - u.maxHp * .05) { c.card.classList.remove('hurt'); void c.card.offsetWidth; c.card.classList.add('hurt'); }
       this.lastHp.set(u.uid, u.hp);
@@ -324,10 +338,11 @@
     // ----- alvo -----
     const tgt = fight ? this.bhTargetOf(actor) : null;
     this.renderBattleTarget(tgt, actor);
-    // Ninguém no comando há muito tempo: o herói ataca sozinho para a luta não ficar parada.
+    // Comando MANUAL é manual: a luta espera a ordem pelo tempo que for (com a aba escondida, quem assume é o AUTO, em
+    // main.js). Depois de um tempo parado o console só lembra o que fazer, uma vez por luta.
     if (waiting && !this.bhPending) {
       if (this.turnHero !== waiting.uid) { this.turnHero = waiting.uid; this.turnSince = now; }
-      if (this.turnSince && now - this.turnSince > 40000) { this.bhSend({ what:'attack', i:waitI }, 0); if (!this.turnIdleTold) { this.turnIdleTold = true; this.toast('A equipe esperou sua ordem por muito tempo e atacou sozinha. No comando <b>AUTO</b> ou <b>SEMI</b> ela nunca espera.'); } }
+      if (this.turnSince && now - this.turnSince > 25000 && !this.turnIdleTold) { this.turnIdleTold = true; this.bhSay(`A luta espera a sua ordem: <b>Atacar</b>, uma <b>habilidade</b> ou <b>Defender</b>. No comando AUTO ou SEMI a equipe age sozinha.`, 9000); }
     } else if (!waiting) { this.turnHero = null; this.turnSince = 0; }
     if (this.bhPending && (!waiting || e.awaiting !== this.bhPending.i)) { clearTimeout(this.bhTimer); this.bhPending = null; if (this.renderer.timing) this.renderer.timing = null; }
   };

@@ -84,10 +84,27 @@
       const rect = this.canvas.getBoundingClientRect(); if (!rect.width) return;
       // Tela densa ou monitor grande: a área de desenho não passa de 1920 px de largura (acima disso só gasta placa de vídeo).
       const dpr = Math.max(1, Math.min(2, globalThis.devicePixelRatio || 1, 1920 / rect.width)) * (KT.saver?.() ? .75 : 1);
-      // Celular em pé: janela mais estreita da cena (VIEW_P), então o palco fica mais alto e os personagens ~40% maiores.
-      const portrait = globalThis.innerWidth <= 700 && globalThis.innerHeight > globalThis.innerWidth * 1.2;
-      document.body?.classList.toggle('stage-portrait', portrait);
-      this.view = portrait ? VIEW_P : VIEW_L;
+      // Tela estreita (celular e tablet em pé): a cena é cortada dos lados (até VIEW_P), então o palco fica mais alto e os
+      // personagens até ~40% maiores.
+      //   cidade  corte inteiro quando a tela está em pé (o resto da página rola por baixo);
+      //   luta    o palco ocupa exatamente a altura que sobra entre a barra do topo, o console de batalha e a navegação:
+      //           corta só o quanto couber, e nada rola.
+      // A altura usada é a maior já vista nesta largura, para a barra de endereço do navegador não ficar trocando a cena.
+      const iw = globalThis.innerWidth, ih = globalThis.innerHeight;
+      if (this._pw !== iw) { this._pw = iw; this._ph = 0; }
+      this._ph = Math.max(this._ph, ih);
+      let vw = W;
+      if (iw <= 900) {
+        if (this.engine?.zone?.kind && this.engine.zone.kind !== 'village') {
+          // o que não é palco: barra do topo, margens (5 + 10 + 6), console (289 com o painel do alvo, 233 sem ele) e navegação
+          const fixed = (document.querySelector('.hud-top')?.offsetHeight || 52) + 21 + (this._ph <= 690 ? 233 : 289) + (document.querySelector('.side-nav')?.offsetHeight || 69);
+          vw = U.clamp(Math.round((iw - 10) * H / Math.max(1, this._ph - fixed)), VIEW_P.w, W);
+        }
+        else if (iw <= 700 && ih > iw * 1.2) vw = VIEW_P.w;
+      }
+      document.body?.classList.toggle('stage-portrait', vw < W);
+      document.body?.style.setProperty('--stage-vw', vw);
+      this.view = vw >= W ? VIEW_L : vw === VIEW_P.w ? VIEW_P : { x:(W - vw) / 2, w:vw };
       const w = Math.round(rect.width * dpr), h = Math.round(rect.width * dpr * H / this.view.w);
       if (this.canvas.width !== w || this.canvas.height !== h) { this.canvas.width = w; this.canvas.height = h; }
       this.scale = w / this.view.w;
@@ -510,7 +527,40 @@
     impact(x, y, color, size = 1) { this.particles.push({ kind:'impact', x, y, color, life:.28, max:.28, size, rot:U.rand(0, Math.PI) }); }
     ring(x, y, color, radius = 80, filled = false) { this.particles.push({ kind:'ring', x, y, color, radius, life:.5, max:.5, filled }); }
     sparks(x, y, n, color, speed = 260) { for (let i = 0; i < n; i++) { const a = U.rand(0, Math.PI * 2), sp = U.rand(.35, 1) * speed; this.particles.push({ kind:'spark', x, y, vx:Math.cos(a) * sp, vy:Math.sin(a) * sp - 60, color, life:U.rand(.25, .55), max:.55, size:U.rand(2, 4.5) }); } }
-    showBanner(title, sub = '', color = '#ffd76a') { this.banner = { title, sub, color, t:0, dur:1.9 }; }
+    // Palco pequeno (celular em pé): menos de meia escala. Nele a faixa central só aparece se couber acima das cabeças dos
+    // heróis; senão o texto dela vai para a linha de informação do console (onBanner).
+    small() { return (this.css || 1) < .5; }
+    showBanner(title, sub = '', color = '#ffd76a') {
+      if (this.small() && this.engine.zone?.kind !== 'village') {
+        const bh = sub ? 74 : 56, y = this.hudPlace(W / 2 - 260, 132, 520, bh).y;
+        if (y + bh > H * .42) { this.banner = null; this.onBanner?.(title, sub, color); return; }
+      }
+      this.banner = { title, sub, color, t:0, dur:1.9 };
+    }
+    // Caixas da interface que ficam sobre o palco (nome da região, placa do chefe, ordem das ações, controles), em
+    // unidades da cena. O que o canvas desenha por cima da luta (faixa central, cartão da ultimate, contador de elo)
+    // desvia delas: nenhum contêiner invade o espaço do outro.
+    hudBoxes() {
+      if (this._hud && this.worldTime < this._hudAt) return this._hud;
+      const rect = this.canvas.getBoundingClientRect(), v = this.view || VIEW_L, out = [];
+      if (rect.width && rect.height) document.querySelectorAll('#viewport .zone-chip, #boss-panel, #turn-bar, #viewport .stage-controls, #afk-banner').forEach(el => {
+        if (!el.getClientRects().length) return;
+        const r = el.getBoundingClientRect(); if (!r.width || !r.height) return;
+        out.push({ l:v.x + (r.left - rect.left) / rect.width * v.w, r:v.x + (r.right - rect.left) / rect.width * v.w, t:(r.top - rect.top) / rect.height * H, b:(r.bottom - rect.top) / rect.height * H });
+      });
+      this._hud = out; this._hudAt = this.worldTime + .25;
+      return out;
+    }
+    // Lugar para uma caixa de w × h que quer ficar em (x, y): desce para sair de baixo do que está no alto do palco e
+    // vai para o lado de uma coluna alta e estreita (a ordem das ações no PC).
+    hudPlace(x, y, w, h) {
+      for (let pass = 0; pass < 6; pass++) {
+        const hit = this.hudBoxes().find(b => b.r > x - 8 && b.l < x + w + 8 && b.b > y - 8 && b.t < y + h + 8);
+        if (!hit) break;
+        if (hit.b - hit.t > 190 && hit.r - hit.l < 160) x = hit.r + 12; else y = hit.b + 10;
+      }
+      return { x, y };
+    }
 
     // ---------- atualização ----------
     update(dt) {
@@ -1029,7 +1079,8 @@
     townNameTag(x, y, name) {
       const c = this.ctx, k = this.townUi(8, 10), fs = 8 * k;
       c.save(); c.font = `700 ${fs}px ${UI_FONT}`; c.textAlign = 'center'; c.textBaseline = 'middle';
-      const w = c.measureText(name).width + 8 * k, hh = fs + 3.5 * k, top = y - 1;
+      const w = c.measureText(name).width + 8 * k, hh = fs + 3.5 * k, top = y - 1, v = this.view || VIEW_L;
+      x = U.clamp(x, v.x + w / 2 + 4, v.x + v.w - w / 2 - 4);                      // a plaquinha fica inteira dentro do palco
       this.roundRect(x - w / 2, top, w, hh, hh / 2); c.fillStyle = 'rgba(14,11,24,.74)'; c.fill();
       c.fillStyle = '#ffeccb'; c.fillText(name, x, top + hh / 2 + .3 * k);
       c.restore();
@@ -1158,7 +1209,8 @@
         this.toughBar(e, pos.x - bw / 2, top + (e.elite ? 13 : 11), bw);
         this.plateMarks(e, pos.x, top, bw);
       } else this.plateMarks(e, pos.x, pos.y - height - 26, 150);
-      if (e.broken > 0) { this.stunStars(x, y - height - 4); c.save(); c.globalAlpha = .18 + .1 * Math.sin(this.worldTime * 10); c.fillStyle = '#ffe9b0'; c.beginPath(); c.ellipse(x, y - height * .45, height * .36, height * .52, 0, 0, Math.PI * 2); c.fill(); c.restore(); }
+      // Quebrado: estrelas de atordoamento sobre a cabeça e um anel dourado no chão (o véu claro por cima do corpo parecia defeito).
+      if (e.broken > 0) { this.stunStars(x, y - height - 4); c.save(); c.globalAlpha = .55 + .25 * Math.sin(this.worldTime * 8); c.strokeStyle = '#ffe28a'; c.lineWidth = 3; c.setLineDash([10, 7]); c.lineDashOffset = -this.worldTime * 24; c.beginPath(); c.ellipse(x, y - 3, Math.max(30, height * .34), Math.max(9, height * .085), 0, 0, Math.PI * 2); c.stroke(); c.restore(); }
       if (e.windup > 0) {
         c.save(); c.font = `800 64px ${DISPLAY_FONT_W}`; c.textAlign = 'center'; c.fillStyle = '#ff4a6a'; c.strokeStyle = '#1a0610'; c.lineWidth = 8; const bob = Math.sin(this.worldTime * 14) * 6;
         c.strokeText('!', x, y - height - 30 + bob); c.fillText('!', x, y - height - 30 + bob);
@@ -1385,7 +1437,11 @@
         c.save(); c.globalAlpha = Math.min(1, a * 2.2) * (p.kind === 'num' || p.kind === 'label' ? 1 : glowK);
         if (p.kind === 'num' || p.kind === 'label') {
           const calm = !this.intense, pop = p.kind === 'num' ? (age < .12 ? 1 + (1 - age / .12) * (calm ? (p.crit ? .25 : .12) : (p.crit ? .9 : .5)) : 1) : easeOutBack(Math.min(1, age / .25));
-          c.translate(p.x, p.y); c.scale(pop, pop); c.font = `800 ${p.size}px ${UI_FONT}`; c.lineJoin = 'round';
+          // Números e palavras que sobem (dano, QUEBRA!, reações) nunca entram por baixo da interface do palco (ordem das
+          // ações, placa do chefe, controles): param inteiros logo abaixo dela, com folga para o contorno e o "pulo".
+          let py = p.y; const grow = Math.max(1, pop), half = p.size * .7 * grow + 5, wide = String(p.text).length * p.size * .32 * grow + 6;
+          for (const b of this.hudBoxes()) if (p.x + wide > b.l && p.x - wide < b.r && py - half < b.b + 8 && py + half > b.t) py = b.b + 8 + half;
+          c.translate(p.x, py); c.scale(pop, pop); c.font = `800 ${p.size}px ${UI_FONT}`; c.lineJoin = 'round';
           c.lineWidth = calm ? (p.kind === 'num' ? 4.5 : 4) : (p.kind === 'num' ? 7 : 6); c.strokeStyle = 'rgba(14,10,20,.92)'; c.strokeText(p.text, 0, 0);
           if (p.crit && !calm) { c.shadowColor = '#ff9d2e'; c.shadowBlur = 16; }
           c.fillStyle = p.color; c.fillText(p.text, 0, 0);
@@ -1435,19 +1491,11 @@
     }
     drawCutin() {
       const ci = this.cutin; if (!ci || !ci.unit) return;
-      if (!this.intense) {
-        const c = this.ctx, k = ci.t / ci.dur, inK = easeOut(Math.min(1, ci.t / .2)), outK = k > .8 ? (k - .8) / .2 : 0;
-        const w = 460, h = 64, x = 24 - (1 - inK) * 40, y = this.banner ? 196 : 118; // abaixo da faixa de estágio quando as duas aparecem juntas
-        c.save(); c.globalAlpha = inK * (1 - outK);
-        c.fillStyle = 'rgba(14,12,20,.86)'; c.fillRect(x, y, w, h); c.fillStyle = ci.color; c.fillRect(x, y, 3, h);
-        const img = this.portrait(ci.unit.sprite); if (img) { c.save(); c.beginPath(); c.rect(x + 3, y, 64, h); c.clip(); c.drawImage(img, x + 3, y - 4, 72, 72); c.restore(); }
-        c.textAlign = 'left'; c.textBaseline = 'alphabetic';
-        c.font = `600 13px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.72)'; c.fillText(`${ci.unit.name} · ultimate`, x + 80, y + 24);
-        c.font = `800 24px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(ci.name, x + 80, y + 52, w - 96);
-        c.restore(); return;
-      }
+      // Modo calmo (padrão): sem cartão sobre o palco. O nome da ultimate já sobe sobre o herói e o console conta quem usou o
+      // quê; um cartão a mais só disputava espaço com as placas e os números. A faixa diagonal é do modo intenso.
+      if (!this.intense) return;
       const c = this.ctx, k = ci.t / ci.dur, inK = easeOut(Math.min(1, ci.t / .18)), outK = k > .78 ? easeOut((k - .78) / .22) : 0;
-      const y = 250, h = ci.manual ? 170 : 110, slide = (1 - inK) * -W + outK * W;
+      const h = ci.manual ? 170 : 110, y = Math.max(250, this.hudPlace(W / 2 - 200, 250, 400, h).y), slide = (1 - inK) * -W + outK * W;
       c.save(); c.globalAlpha = 1 - outK * .6; c.translate(slide, ci.manual ? 0 : 40);
       c.beginPath(); c.moveTo(0, y + 26); c.lineTo(W, y - 10); c.lineTo(W, y + h - 26); c.lineTo(0, y + h + 10); c.closePath();
       const g = c.createLinearGradient(0, 0, W, 0); g.addColorStop(0, 'rgba(10,8,26,.94)'); g.addColorStop(.55, 'rgba(10,8,26,.82)'); g.addColorStop(1, 'rgba(10,8,26,0)'); c.fillStyle = g; c.fill();
@@ -1465,16 +1513,10 @@
     // Contador do Elo Kizuna (canto superior direito do palco).
     drawChain() {
       const f = this.chainFx; if (!f) return;
-      if (!this.intense) {
-        const c = this.ctx, k = f.t / f.dur, fade = k > .7 ? 1 - (k - .7) / .3 : 1;
-        c.save(); c.globalAlpha = fade * Math.min(1, f.t / .15); c.textAlign = 'right'; c.textBaseline = 'alphabetic';
-        const x = W - 32, y = 150; c.fillStyle = 'rgba(14,12,20,.8)'; c.fillRect(x - 196, y - 38, 200, 58); c.fillStyle = '#d8b062'; c.fillRect(x + 1, y - 38, 3, 58);
-        c.font = `600 12px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.7)'; c.fillText(`Elo Kizuna · +${f.n * 15 - 15}% nas ultimates`, x - 10, y - 18);
-        c.font = `800 26px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(`×${f.n}`, x - 10, y + 10);
-        c.restore(); return;
-      }
+      if (!this.intense) return;   // modo calmo: o elo aparece no console (botões de ultimate e linha de informação)
       const c = this.ctx, k = f.t / f.dur, pop = easeOutBack(Math.min(1, f.t / .25)), fade = k > .7 ? 1 - (k - .7) / .3 : 1;
-      c.save(); c.globalAlpha = fade; c.translate(W - 170, 150); c.scale(pop, pop); c.rotate(-.06); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
+      const cv = this.view || VIEW_L, ca = this.hudPlace(cv.x + 30, 96, 250, 130);
+      c.save(); c.globalAlpha = fade; c.translate(ca.x + 125, ca.y + 60); c.scale(pop, pop); c.rotate(-.06); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round';
       c.font = `800 22px ${DISPLAY_FONT_W}`; c.lineWidth = 6; c.strokeStyle = '#1a0a1e'; c.strokeText('ELO KIZUNA', 0, -34); c.fillStyle = '#efe7d8'; c.fillText('ELO KIZUNA', 0, -34);
       c.font = `800 72px ${DISPLAY_FONT_W}`; c.lineWidth = 10; c.strokeText(`×${f.n}`, 0, 16); c.shadowColor = f.color; c.shadowBlur = 22; c.fillStyle = '#fff6df'; c.fillText(`×${f.n}`, 0, 16); c.shadowBlur = 0;
       c.font = `600 15px ${UI_FONT}`; c.fillStyle = '#ffd1e8'; c.fillText(`+${f.n * 15 - 15}% nas ultimates`, 0, 60);
@@ -1485,14 +1527,16 @@
       if (!this.intense) {
         const c = this.ctx, k = b.t / b.dur, inK = easeOut(Math.min(1, b.t / .25)), fade = k > .75 ? 1 - (k - .75) / .25 : 1;
         c.save(); c.globalAlpha = fade * inK; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
-        const y = 176; c.fillStyle = 'rgba(14,12,20,.72)'; c.fillRect(W / 2 - 260, y - 44, 520, b.sub ? 74 : 56); c.fillStyle = b.color; c.fillRect(W / 2 - 260, y - 44, 520, 2);
+        const bh = b.sub ? 74 : 56, y = this.hudPlace(W / 2 - 260, 132, 520, bh).y + 44; this.bannerBottom = y - 44 + bh;
+        c.fillStyle = 'rgba(14,12,20,.72)'; c.fillRect(W / 2 - 260, y - 44, 520, bh); c.fillStyle = b.color; c.fillRect(W / 2 - 260, y - 44, 520, 2);
         c.font = `800 32px ${DISPLAY_FONT_W}`; c.fillStyle = '#efe6d4'; c.fillText(b.title, W / 2, y - 4);
         if (b.sub) { c.font = `600 14px ${UI_FONT}`; c.fillStyle = 'rgba(239,230,212,.72)'; c.fillText(b.sub, W / 2, y + 20); }
         c.restore(); return;
       }
       const c = this.ctx, k = b.t / b.dur, inK = easeOutBack(Math.min(1, b.t / .35)), fade = k > .75 ? 1 - (k - .75) / .25 : 1;
       c.save(); c.globalAlpha = fade; c.textAlign = 'center'; c.textBaseline = 'middle';
-      const y = 200, band = c.createLinearGradient(0, 0, W, 0); band.addColorStop(0, 'rgba(10,8,26,0)'); band.addColorStop(.5, 'rgba(10,8,26,.8)'); band.addColorStop(1, 'rgba(10,8,26,0)');
+      const y = this.hudPlace(W / 2 - 230, 142, 460, 116).y + 58, band = c.createLinearGradient(0, 0, W, 0); band.addColorStop(0, 'rgba(10,8,26,0)'); band.addColorStop(.5, 'rgba(10,8,26,.8)'); band.addColorStop(1, 'rgba(10,8,26,0)');
+      this.bannerBottom = y + 58;
       c.fillStyle = band; c.fillRect(0, y - 58 * inK, W, 116 * inK);
       c.fillStyle = b.color; c.fillRect(W / 2 - 220 * inK, y - 58 * inK, 440 * inK, 2); c.fillRect(W / 2 - 220 * inK, y + 56 * inK, 440 * inK, 2);
       c.translate(W / 2, y - 8); c.scale(inK, inK);

@@ -422,7 +422,11 @@
         catching = false; renderer.hitstop = 0; renderer.particles = []; renderer.delayed = []; renderer.projectiles = [];
         document.querySelector('#catchup')?.remove();
         const c = caught; caught = null; engine.save(); ui.renderAll();
-        if (c && c.secs >= 30 && engine.active) { const g = state.player.gold - c.gold, min = Math.max(1, Math.round(c.secs / 60)); ui.toast(`<b>De volta!</b> A equipe seguiu caçando por ${min} min: +${KT.Utils.fmt(Math.max(0, g))} ouro${c.loot ? `, ${c.loot} itens` : ''}${c.cards ? `, ${c.cards} carta(s)` : ''}.`); }
+        if (c && c.secs >= 30 && engine.active) {
+          const g = state.player.gold - c.gold, min = Math.max(1, Math.round(c.secs / 60));
+          if (engine.mode === 'manual') ui.toast('<b>De volta!</b> No comando MANUAL a luta esperou por você.');
+          else ui.toast(`<b>De volta!</b> A equipe seguiu caçando por ${min} min: +${KT.Utils.fmt(Math.max(0, g))} ouro${c.loot ? `, ${c.loot} itens` : ''}${c.cards ? `, ${c.cards} carta(s)` : ''}.`);
+        }
       };
       const catchUp = (visible) => {
         const now = performance.now(), gap = (now - bgLast) / 1000; bgLast = now;
@@ -444,16 +448,15 @@
         try { catchUp(false); if (++bgSave >= 10) { bgSave = 0; engine.save(); } } catch (err) { console.error('recuperação em segundo plano', err); }
       }, 1000);
       addEventListener('beforeunload', () => engine.save());
-      let modeAway = null;
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           bgLast = performance.now(); caught = { secs:0, loot:0, cards:0, gold:state.player.gold };
-          // Ninguém olhando: as falas vão para o registro e a equipe luta sozinha (o comando escolhido volta com a aba).
+          // Ninguém olhando: as falas vão para o registro. O comando escolhido NÃO muda: no AUTO e no SEMI a equipe segue
+          // lutando; no MANUAL a luta para na vez do próximo herói e espera a volta do jogador (antes o jogo passava para o
+          // AUTO sozinho e gastava golpes, Pontos de Técnica e ultimates de quem só tinha trocado de janela).
           ui.dropDialog?.();
-          if (engine.mode !== 'auto' && !KT.dev?.awake) { modeAway = engine.mode; engine.input('mode', 'auto'); if (engine.awaiting !== null) engine.input('act', 'attack'); }
           engine.save();
         } else {
-          if (modeAway) { engine.input('mode', modeAway); modeAway = null; ui.renderControls?.(); }
           catchUp(true);
         }
         last = performance.now();
