@@ -1,5 +1,5 @@
 ---
-description: Auditoria de "cara de IA" no jogo. Texto e CSS (audit.js), imagens (art-check.py) e, se houver tools/ui, telas. Uso /artesao [texto|arte|tela|tudo] [caminhos]
+description: Auditoria de "cara de IA" no jogo. Texto e CSS (audit.js), imagens (art-check.py) e, se houver tools/ui, telas. Uso /mythverse [texto|arte|tela|tudo] [caminhos]
 argument-hint: "[texto|arte|tela|tudo] [caminhos]"
 allowed-tools: Bash(node:*), Bash(python:*), Bash(python3:*), Read, Glob, Grep
 ---

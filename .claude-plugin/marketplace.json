@@ -1,14 +1,14 @@
 {
-  "name": "artesao",
+  "name": "mythverse",
   "owner": { "name": "Kaio", "url": "https://github.com/kaioln" },
   "description": "Plugins do Mythverse para o Claude Code: jogo com cara de feito à mão, não por IA.",
   "version": "1.0.0",
   "metadata": { "pluginRoot": "./plugins" },
   "plugins": [
     {
-      "name": "artesao",
-      "source": "./plugins/artesao",
-      "description": "Tira a cara de 'feito por IA' do jogo: régua de arte, HUB/UI/UX, texto e assets, auditoria automática, agente revisor e comando /artesao.",
+      "name": "mythverse",
+      "source": "./plugins/mythverse",
+      "description": "Tira a cara de 'feito por IA' do jogo: régua de arte, HUB/UI/UX, texto e assets, auditoria automática, agente revisor e comando /mythverse.",
       "version": "1.0.0",
       "category": "game-development",
       "tags": ["jogo", "ui", "ux", "arte", "texto", "assets", "pt-BR"]

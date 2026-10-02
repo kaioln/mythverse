@@ -53,5 +53,5 @@ description: Padrões de HUB, HUD de combate, painéis, botões e layout de jogo
 - Screenshot em 375, 768 e 1440 da tela mexida, e em 1366×657.
 - `?overflow=1` (ou `overflow.js`) sem elemento passando da borda.
 - Mexeu em painel: `panels.js` sem achados.
-- `/artesao texto` e `/artesao tela` sem achado alto.
+- `/mythverse texto` e `/mythverse tela` sem achado alto.
 - Testes do projeto verdes.

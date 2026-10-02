@@ -2,13 +2,13 @@
 
 Data: 2026-10-02. Gatilho: um designer gráfico olhou o jogo e disse "essa arte tá com cara de IA". Ele tem razão, e este
 documento diz exatamente onde, com número, e o que fazer em cada frente. A régua geral está no plugin
-[`artesao`](../plugins/artesao/README.md) (skills `sem-cara-de-ia`, `arte-feita-a-mao`, `hub-ui-ux`, `voz-do-jogo`).
+[`mythverse`](../plugins/mythverse/README.md) (skills `sem-cara-de-ia`, `arte-feita-a-mao`, `hub-ui-ux`, `voz-do-jogo`).
 
 ## O que foi medido
 
 ### Cenários (`assets/scenes`)
 
-`python3 plugins/artesao/scripts/art-check.py assets/scenes/thumb`:
+`python3 plugins/mythverse/scripts/art-check.py assets/scenes/thumb`:
 
 | o que | resultado |
 |---|---|
@@ -28,7 +28,7 @@ O logotipo era o de todo jogo gerado: letra dourada chanfrada com brilho, orbe r
 Outfit (a sem-serifa de todo site gerado) em toda a interface, mais Lilita One sem uso. Trocadas hoje.
 
 ### Texto
-`node plugins/artesao/scripts/audit.js --min=médio src index.html *.css`: 90 achados altos antes das correções. Os reais:
+`node plugins/mythverse/scripts/audit.js --min=médio src index.html *.css`: 90 achados altos antes das correções. Os reais:
 "(s)" em 31 lugares, "Clique para continuar ▸" no diálogo, "Clique aqui" na dica do alvo, "Bem-vindo(a)", "Preparando a
 jornada…", telas vazias que explicam a tela, "clique neles para focar a equipe!". O resto eram ★ ✓ ✕ (tipografia, o
 auditor foi ajustado) e "próximo nível" (RPG tem nível; o auditor foi ajustado).
@@ -47,14 +47,14 @@ pílulas (`border-radius:999px`) e vidro fosco em alguns selos e barras; são ac
 - **Texto**: função de plural (`KT.Utils.plural`, `KT.Utils.count`, `KT.Utils.fill`) e 31 trechos reescritos; cursor ▼
   no diálogo em vez de "Clique para continuar"; dica do alvo fala de toque no celular e de tecla no computador; telas
   vazias apontam o próximo passo; abertura diz "Acendendo as lanternas…"; faixa da temporada sem a vírgula no nome.
-- **Plugin `artesao`** em `plugins/artesao` (marketplace na raiz do repositório; `.claude/settings.json` já aponta).
+- **Plugin `mythverse`** em `plugins/mythverse` (marketplace na raiz do repositório; `.claude/settings.json` já aponta).
 
 ## O que falta, por ordem
 
 1. **Cenários: repintar por briefing**, não por filtro. Prioridade pelo número: as cinco caçadas que são uma só
    (`hunt_desert`, `hunt_sky`, `hunt_tide`, `hunt_frost`, `hunt_swamp`), as três arenas de chefe (`boss`, `boss_sand`,
    `boss_sky`), `boss_tide` (uma cor estourada), as masmorras gêmeas (`dungeon_sky`, `dungeon_tide`), a cidade e o mapa
-   (tudo aceso). Modelo e exemplo em `plugins/artesao/skills/arte-feita-a-mao/references/briefing.md`: esboço 3×3
+   (tudo aceso). Modelo e exemplo em `plugins/mythverse/skills/arte-feita-a-mao/references/briefing.md`: esboço 3×3
    diferente por cena, uma luz, carta de cor com nome, cota de lanternas e cerejeiras, lista do que não aparece, quatro
    variações, escolha pela composição, passe humano, medição.
 2. **Pinturas de painel** (`assets/ui/banners`): a mesma régua; todas têm luz de todo lado.
@@ -63,5 +63,5 @@ pílulas (`border-radius:999px`) e vidro fosco em alguns selos e barras; são ac
 5. **Texto humano** em habilidades e itens: a linha técnica fica; cada um ganha uma linha escrita à mão.
 6. **Som**: conferir se os efeitos têm assinatura ou são biblioteca (fora desta auditoria).
 
-Antes de aceitar qualquer peça nova: `/artesao arte <pasta>` e `/artesao texto <arquivo>`, e a lista do skill
+Antes de aceitar qualquer peça nova: `/mythverse arte <pasta>` e `/mythverse texto <arquivo>`, e a lista do skill
 `sem-cara-de-ia`.

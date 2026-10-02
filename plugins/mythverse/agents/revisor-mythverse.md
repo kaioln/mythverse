@@ -1,5 +1,5 @@
 ---
-name: revisor-artesao
+name: revisor-mythverse
 description: Revisa telas, assets, textos e diffs do jogo procurando sinais de "feito por IA" e devolve achados com gravidade, local exato e correção concreta. Use depois de mudar interface, arte ou texto, ou quando alguém disser que algo parece genérico, template ou IA.
 tools: [Read, Grep, Glob, Bash]
 ---

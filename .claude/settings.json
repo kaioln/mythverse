@@ -1,8 +1,8 @@
 {
   "extraKnownMarketplaces": {
-    "artesao": {
+    "mythverse": {
       "source": { "source": "github", "repo": "kaioln/mythverse", "ref": "plugin" }
     }
   },
-  "enabledPlugins": ["artesao@artesao"]
+  "enabledPlugins": ["mythverse@mythverse"]
 }

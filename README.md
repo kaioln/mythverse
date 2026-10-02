@@ -249,8 +249,8 @@ node tools/sim.js 10 7      # simula 10h de um jogador automático: marcos, ouro
 python tools/build_sprites.py  # regenera sprites, retratos, ícones e variantes a partir dos atlas
 python tools/build_icons.py    # regenera os ícones vetoriais da interface (assets/ui)
 node tools/brand.js            # regenera a marca (círculo de tinta, letra de título e selo) em todos os tamanhos
-node plugins/artesao/scripts/audit.js --min=médio src index.html *.css   # texto e estilo com cara de gerado
-python3 plugins/artesao/scripts/art-check.py assets/scenes/thumb          # luz, cor e composições repetidas nos cenários
+node plugins/mythverse/scripts/audit.js --min=médio src index.html *.css   # texto e estilo com cara de gerado
+python3 plugins/mythverse/scripts/art-check.py assets/scenes/thumb          # luz, cor e composições repetidas nos cenários
 ```
 
 O simulador serviu para calibrar o balanceamento (detalhes em `docs/ECONOMIA.md`). Um jogador atento chega ao estágio 12 do Bosque em cerca de 1h, ao Templo III em cerca de 2h40 e derrota o chefe do Capítulo I perto das 6h. O ouro por hora sobe de ~55 mil no início para ~700 mil no Capítulo II.
@@ -258,13 +258,13 @@ O simulador serviu para calibrar o balanceamento (detalhes em `docs/ECONOMIA.md`
 ## Acabamento: sem cara de IA
 
 A régua do projeto para o jogo não parecer feito por IA (arte, marca, tipografia, HUB, texto e nomes) está no plugin
-[`artesao`](plugins/artesao/README.md) para o Claude Code: quatro skills, um agente revisor, o comando `/artesao` e um
+[`mythverse`](plugins/mythverse/README.md) para o Claude Code: quatro skills, um agente revisor, o comando `/mythverse` e um
 hook que avisa quando um texto ou estilo sai com cara de gerado. Este repositório é o marketplace do plugin
 (`.claude-plugin/marketplace.json`), e `.claude/settings.json` já o recomenda a quem abrir o projeto:
 
 ```
 /plugin marketplace add kaioln/mythverse
-/plugin install artesao@artesao
+/plugin install mythverse@mythverse
 ```
 
 A auditoria com números e o plano de repintura estão em [`docs/SEM-CARA-DE-IA.md`](docs/SEM-CARA-DE-IA.md).

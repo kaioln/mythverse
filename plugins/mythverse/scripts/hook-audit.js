@@ -14,7 +14,7 @@ process.stdin.on('end', () => {
     const found = scanFile(file).filter(a => a.sev !== 'baixo').slice(0, 8);
     if (!found.length) return;
     const rel = path.relative(process.cwd(), file) || file;
-    const text = `Artesão: ${found.length} sinal(is) de texto ou estilo gerado em ${rel}:\n` + found.map(a => `- linha ${a.line} [${a.sev}] ${a.msg}: "${a.snippet}" → ${a.fix}`).join('\n') + '\nCorrija antes de dar por pronto, ou diga por que fica assim.';
+    const text = `Mythverse: ${found.length} sinal(is) de texto ou estilo gerado em ${rel}:\n` + found.map(a => `- linha ${a.line} [${a.sev}] ${a.msg}: "${a.snippet}" → ${a.fix}`).join('\n') + '\nCorrija antes de dar por pronto, ou diga por que fica assim.';
     process.stdout.write(JSON.stringify({ hookSpecificOutput:{ hookEventName:'PostToolUse', additionalContext:text } }));
   } catch {}
 });

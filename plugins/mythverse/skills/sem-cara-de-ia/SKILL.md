@@ -51,7 +51,7 @@ Detalhes e antes/depois no skill `voz-do-jogo`.
 
 ## Como trabalhar
 1. **Antes de criar**, diga em uma linha que decisão a peça mostra e o que ficou de fora.
-2. **Depois de criar**, rode `/artesao` (texto e CSS por `audit.js`, imagens por `art-check.py`) e olhe a tela em 375, 768 e 1366×657.
+2. **Depois de criar**, rode `/mythverse` (texto e CSS por `audit.js`, imagens por `art-check.py`) e olhe a tela em 375, 768 e 1366×657.
 3. **Nunca resolver com filtro em massa** (posterizar, borrar, grão por cima de tudo). Unifica acabamento e apaga detalhe; o jogador vê "filtro", não "arte". Foi tentado neste projeto e desfeito no mesmo dia.
 4. **Peça gerada é rascunho.** Vira arte quando passa por esboço de composição próprio, carta de cor, limpeza humana e conferência de conteúdo.
 5. **Quando alguém diz "parece IA"**: peça três sinais concretos desta lista, corrija os sinais, não a peça inteira. Se os sinais são de composição (tudo aceso, mesma cena recolorida), a peça precisa ser refeita, e é melhor dizer isso do que remendar.
@@ -62,5 +62,5 @@ Detalhes e antes/depois no skill `voz-do-jogo`.
 - [ ] Zero emoji, zero degradê decorativo, zero glow.
 - [ ] Texto sem travessão, sem "(s)", sem "Clique aqui", sem exclamação em série.
 - [ ] Nomes com uma ideia.
-- [ ] `/artesao tudo` sem achado alto.
+- [ ] `/mythverse tudo` sem achado alto.
 - [ ] Screenshot em 375, 768 e 1366×657 sem estouro.

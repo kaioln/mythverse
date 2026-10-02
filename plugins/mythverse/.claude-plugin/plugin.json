@@ -1,0 +1,11 @@
+{
+  "name": "mythverse",
+  "displayName": "Mythverse",
+  "version": "1.0.0",
+  "description": "Tira a cara de 'feito por IA' de jogos web: régua de arte, HUB/UI/UX, texto e assets, com auditoria automática (texto, CSS, imagens), agente revisor e comando /mythverse.",
+  "author": { "name": "Kaio", "url": "https://github.com/kaioln" },
+  "homepage": "https://github.com/kaioln/mythverse",
+  "repository": "https://github.com/kaioln/mythverse",
+  "license": "MIT",
+  "keywords": ["game", "ui", "ux", "art-direction", "copywriting", "assets", "pt-BR", "mythverse"]
+}
