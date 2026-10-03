@@ -399,7 +399,7 @@ ok(ui.helpPanel().includes('Invasão Mundial'), 'ajuda atualizada');
   ui.mktFilter.currency = 'gems'; ok(ui.p2pPanel().includes('data-buy-listing="10"'), 'aba de Gemas');
   ui.rankCache = { power:{ at:Date.now(), data:{ ok:true, me:null, rows:[{ id:1, name:'Eu', power:900, team:JSON.stringify([{ id:D.roster[0].id, stars:2 }]), account_level:5 }, { id:2, name:'Outro', power:800, team:null, account_level:4 }, { id:3, name:'C', power:700, team:null, account_level:3 }, { id:4, name:'D', power:100, team:null, account_level:2 }] } } };
   const rk = ui.rankingPanel(null, 'power');
-  ok(rk.includes('rk-pod p1 me') && rk.includes('rk-row') && rk.includes('Sua posição em poder'), 'ranking com pódio e posição');
+  ok(rk.includes('rk-pod p1 me') && rk.includes('rk-row') && rk.includes('Sua posição por poder'), 'ranking com pódio e posição');
   ui.session = s0; ui.loadMarket = lm;
 }
 ok(new Set(D.roster.map(h => KT.UIController.helpers.skillGlyph(h))).size >= 8, 'glifos de ultimate variados');

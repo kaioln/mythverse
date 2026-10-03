@@ -22,19 +22,19 @@
   // Vagas 1 e 2 são a LINHA DE FRENTE; vagas 3 e 4, a RETAGUARDA.
   // ---------------------------------------------------------------------------
   const classes = {
-    Vanguarda: { icon:'盾', title:'Guardião do Véu', promise:'Controla a linha de frente, protege aliados e transforma pressão em contra-ataque.', tradeoff:'Resiste muito, mas depende da equipe para encerrar lutas longas.', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
-      trait:'Linha de frente: base de HP e DEF altas; atrai mais ataques por estar à frente.', baseBonus:{ def:.15 }, threat:2,
+    Vanguarda: { icon:'盾', title:'Guardião do Véu', promise:'Segura a linha de frente e apanha no lugar da equipe.', tradeoff:'Resiste muito, mas depende da equipe para encerrar lutas longas.', color:'#6fb8ff', row:'Frente', base:{ hp:1500, atk:78, def:80, spd:.85, crit:.05, critDmg:1.5, dodge:.03 },
+      trait:'Linha de frente: HP e DEF altos. Atrai mais ataques por estar à frente.', baseBonus:{ def:.15 }, threat:2,
       synergy:[{ n:2, text:'Equipe +10% DEF', stats:{ def:.10 } }, { n:3, text:'Equipe +10% DEF e +10% HP', stats:{ def:.10, hp:.10 } }] },
-    Executor:  { icon:'刃', title:'Lâmina Jurada', promise:'Caça alvos prioritários e converte leitura de risco em explosões de dano.', tradeoff:'Brilha com precisão; posicionamento ruim é punido depressa.', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
-      trait:'Duelista: base de ATK e dano crítico altas, pouca defesa.', baseBonus:{ critDmg:.25 }, threat:1,
+    Executor:  { icon:'刃', title:'Lâmina Jurada', promise:'Caça o inimigo mais ferido e o derruba em poucos golpes.', tradeoff:'Bate forte e aguenta pouco. Fora de posição, cai depressa.', color:'#ff7a8a', row:'Frente', base:{ hp:1020, atk:122, def:46, spd:1.08, crit:.15, critDmg:1.6, dodge:.08 },
+      trait:'Duelista: ATK e dano crítico altos, pouca defesa.', baseBonus:{ critDmg:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe +12% dano crítico', stats:{ critDmg:.12 } }, { n:3, text:'Equipe +12% dano crítico e +5% crítico', stats:{ critDmg:.12, crit:.05 } }] },
-    Arcanista: { icon:'術', title:'Tecedor da Fenda', promise:'Manipula elementos, Pontos de Técnica e efeitos para mudar o ritmo da batalha.', tradeoff:'Grande impacto por habilidade, pouca tolerância a foco inimigo.', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
-      trait:'Canalizador: base de dano de habilidade alta, corpo frágil.', baseBonus:{ skill:.20 }, threat:1,
+    Arcanista: { icon:'術', title:'Tecedor da Fenda', promise:'Manipula elementos, Pontos de Técnica e efeitos para mudar o ritmo da batalha.', tradeoff:'Cada habilidade pesa, mas não aguenta virar alvo.', color:'#c9a4ff', row:'Retaguarda', base:{ hp:900, atk:118, def:40, spd:.9, crit:.08, critDmg:1.5, dodge:.05 },
+      trait:'Canalizador: dano de habilidade alto, corpo frágil.', baseBonus:{ skill:.20 }, threat:1,
       synergy:[{ n:2, text:'Equipe +10% dano de habilidade', stats:{ skill:.10 } }, { n:3, text:'Equipe +10% dano de habilidade e +10% energia', stats:{ skill:.10, nrg:.10 } }] },
-    Atirador:  { icon:'弓', title:'Vigia das Rotas', promise:'Mantém dano constante, explora marcas e desmonta ameaças antes que se aproximem.', tradeoff:'Precisa de tempo e cobertura para alcançar sua melhor cadência.', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
-      trait:'Atirador: base de velocidade e crítico altas.', baseBonus:{ spd:.10 }, threat:1,
+    Atirador:  { icon:'弓', title:'Vigia das Rotas', promise:'Bate de longe sem parar e aproveita cada marca no inimigo.', tradeoff:'Precisa de tempo e de alguém na frente para render.', color:'#ffd76a', row:'Retaguarda', base:{ hp:950, atk:112, def:42, spd:1.15, crit:.16, critDmg:1.5, dodge:.07 },
+      trait:'Vigia: velocidade e crítico altos.', baseBonus:{ spd:.10 }, threat:1,
       synergy:[{ n:2, text:'Equipe +8% velocidade de ataque', stats:{ spd:.08 } }, { n:3, text:'Equipe +8% velocidade e ignora 10% da DEF', stats:{ spd:.08, pierce:.10 } }] },
-    Suporte:   { icon:'癒', title:'Faroleiro de Almas', promise:'Cura, protege e cria a janela certa para o Elo Kizuna decidir a luta.', tradeoff:'Seu valor aparece na sobrevivência e no tempo, não no dano bruto.', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
+    Suporte:   { icon:'癒', title:'Faroleiro de Almas', promise:'Mantém a equipe de pé até o Elo Kizuna decidir a luta.', tradeoff:'Ganha a luta pelo tempo, não pelo dano.', color:'#5fe39a', row:'Retaguarda', base:{ hp:1080, atk:84, def:55, spd:.95, crit:.06, critDmg:1.5, dodge:.05 },
       trait:'Protetor: base de poder de cura e escudo alta.', baseBonus:{ healPow:.25 }, threat:1,
       synergy:[{ n:2, text:'Equipe regenera 0,6% do HP por segundo', stats:{ regen:.006 } }, { n:3, text:'Equipe regenera 0,6% HP/s e recebe 8% menos dano', stats:{ regen:.006, dr:.08 } }] }
   };
@@ -54,7 +54,7 @@
     { id:'sails', name:'Tripulação das Velas', ids:['tobias','kenji'], text:'+10% ATK, +10% HP e +5% roubo de vida', stats:{ atk:.10, hp:.10, lifesteal:.05 } },
     { id:'saiyan_awake', name:'Herdeiros de Aurum', ids:['goku_ui','vegeta_ego'], text:'+14% ATK e +15 de energia inicial', stats:{ atk:.14, startNrg:15 } },
     { id:'shinobi_awake', name:'Juramento Desperto', ids:['naruto_kurama','sasuke_susanoo'], text:'+12% ATK e +12% HP', stats:{ atk:.12, hp:.12 } },
-    { id:'guardians_light', name:'Guardiãs da Luz', ids:['mercy_valkyrie','sailor_eternal'], text:'+12% cura e escudos e +8% velocidade', stats:{ healPow:.12, spd:.08 } },
+    { id:'guardians_light', name:'Guardiãs da Luz', ids:['mercy_valkyrie','sailor_eternal'], text:'+12% cura e escudos, +8% velocidade', stats:{ healPow:.12, spd:.08 } },
     { id:'souls', name:'Mosteiro Minguante', ids:['hiro','yuki'], text:'+15% dano de habilidade e +10% DEF', stats:{ skill:.15, def:.10 } },
     { id:'minase', name:'Irmãos Minase', ids:['akira','hana'], text:'+1% HP/s de regeneração e +10% ATK', stats:{ regen:.01, atk:.10 } },
     { id:'veil', name:'Academia do Véu', ids:['sora','daichi'], text:'+10% crítico e +15% dano crítico', stats:{ crit:.10, critDmg:.15 } },
@@ -106,7 +106,7 @@
     golem_obsidian:E({ name:'Golem de Obsidiana', sprite:'golem_obsidian', el:'Terra', role:'Tanque', hp:1700, atk:62, def:95, spd:.6, desc:'Reflete parte do dano sofrido.', thorns:.15, skill:{ name:'Muralha Negra', cd:11, eff:[{ k:'buff', s:'dr', v:.35, d:5, to:'allies' }] } }),
     oni_crimson:  E({ name:'Oni Carmesim', sprite:'oni_crimson', el:'Fogo', role:'Guardião', elite:true, hp:3900, atk:118, def:70, spd:.8, xp:70, gold:[50, 75], desc:'Entra em fúria ao perder vida.', enrageAt:.5, skill:{ name:'Tempestade Carmesim', cd:9, eff:[{ k:'dmg', m:1.2, to:'all' }, { k:'st', s:'burn', d:4, v:.3, ch:.7, to:'all' }] } }),
     fox_specter:  E({ name:'Kitsune Espectral', sprite:'fox_specter', el:'Luz', role:'Guardiã', elite:true, hp:2800, atk:108, spd:1.15, dodge:.22, xp:70, gold:[50, 75], desc:'Some e reaparece silenciando heróis.', skill:{ name:'Ilusão Espectral', cd:9, eff:[{ k:'st', s:'silence', d:4, ch:1, to:'high' }, { k:'dmg', m:1.6, to:'high' }, { k:'buff', s:'dodge', v:.3, d:4, to:'self' }] } }),
-    golem_lava:   E({ name:'Guardião Ígneo', sprite:'golem_lava', el:'Fogo', role:'Chefe de Andar', elite:true, miniboss:true, hp:9000, atk:120, def:95, spd:.65, xp:180, gold:[140, 200], desc:'Chefe do Templo. Prepara uma Erupção devastadora: proteja a equipe!', skill:{ name:'Punho de Magma', cd:7, eff:[{ k:'dmg', m:1.8, to:'tgt' }, { k:'st', s:'burn', d:4, v:.35, ch:1, to:'tgt' }] },
+    golem_lava:   E({ name:'Guardião Ígneo', sprite:'golem_lava', el:'Fogo', role:'Chefe de Andar', elite:true, miniboss:true, hp:9000, atk:120, def:95, spd:.65, xp:180, gold:[140, 200], desc:'Chefe do Templo. Quando prepara a Erupção, escude a equipe.', skill:{ name:'Punho de Magma', cd:7, eff:[{ k:'dmg', m:1.8, to:'tgt' }, { k:'st', s:'burn', d:4, v:.35, ch:1, to:'tgt' }] },
       specials:[{ name:'Erupção', cd:16, windup:2.4, eff:[{ k:'dmg', m:2.1, to:'all' }, { k:'st', s:'burn', d:5, v:.4, ch:1, to:'all' }] }] }),
 
     // Costa das Marés, criaturas do mar (fracas contra Raio e Natureza).
@@ -124,7 +124,7 @@
     spider_ink:   E({ name:'Aranha de Tinta', sprite:'spider_ink', el:'Sombra', role:'Venenosa', hp:980, atk:80, spd:1.0, desc:'Tinta que cega e envenena.', skill:{ name:'Tinta Venenosa', cd:8, eff:[{ k:'dmg', m:.8, to:'all' }, { k:'st', s:'poison', d:6, v:.15, ch:1, to:'all' }] } }),
     golem_crystal:E({ name:'Autômato de Jade', sprite:'golem_crystal', el:'Natureza', role:'Tanque', hp:1800, atk:70, def:100, spd:.6, desc:'Regenera e protege os escribas.', regen:.01, skill:{ name:'Núcleo Restaurador', cd:10, eff:[{ k:'heal', m:1.8, to:'lowAlly' }, { k:'shield', m:1.4, to:'lowAlly', d:6 }] } }),
     fox_storm:    E({ name:'Raposa-Trovão', sprite:'fox_storm', el:'Raio', role:'Ágil', hp:880, atk:96, spd:1.25, dodge:.18, desc:'Salta para a retaguarda.', skill:{ name:'Salto Relâmpago', cd:7, eff:[{ k:'dmg', m:1.7, to:'back' }, { k:'st', s:'stun', d:1, ch:.4, to:'back' }] } }),
-    revenant_crimson:E({ name:'Arquivista Carmesim', sprite:'revenant_crimson', el:'Sombra', role:'Guardião', elite:true, hp:4600, atk:130, def:80, spd:.9, xp:95, gold:[70, 100], desc:'Amaldiçoa a equipe: cura recebida reduzida.', skill:{ name:'Maldição do Arquivo', cd:9, eff:[{ k:'dmg', m:1.1, to:'all' }, { k:'st', s:'weaken', d:6, v:.25, ch:1, to:'all' }, { k:'st', s:'mark', d:6, v:.15, ch:1, to:'all' }] } }),
+    revenant_crimson:E({ name:'Arquivista Carmesim', sprite:'revenant_crimson', el:'Sombra', role:'Guardião', elite:true, hp:4600, atk:130, def:80, spd:.9, xp:95, gold:[70, 100], desc:'Amaldiçoa a equipe: todos batem menos e apanham mais.', skill:{ name:'Maldição do Arquivo', cd:9, eff:[{ k:'dmg', m:1.1, to:'all' }, { k:'st', s:'weaken', d:6, v:.25, ch:1, to:'all' }, { k:'st', s:'mark', d:6, v:.15, ch:1, to:'all' }] } }),
     oni_storm:    E({ name:'Guardião da Tempestade', sprite:'oni_storm', el:'Raio', role:'Chefe de Andar', elite:true, miniboss:true, hp:11500, atk:135, def:100, spd:.75, xp:220, gold:[170, 240], desc:'Chefe do Arquivo. Carrega um Trovão que atordoa toda a equipe.', skill:{ name:'Martelo Elétrico', cd:7, eff:[{ k:'dmg', m:1.9, to:'tgt' }, { k:'st', s:'armorBreak', d:5, v:.25, ch:1, to:'tgt' }] },
       specials:[{ name:'Trovão Ancestral', cd:17, windup:2.4, eff:[{ k:'dmg', m:1.8, to:'all' }, { k:'st', s:'stun', d:1.8, ch:1, to:'all' }] }] }),
 
@@ -141,7 +141,7 @@
     wisp_jade:    E({ name:'Chama de Jade', sprite:'wisp_jade', el:'Natureza', role:'Conjurador', hp:760, atk:92, def:28, spd:1.0, dodge:.1, desc:'Fogo esmeralda que derrete armaduras da retaguarda.', skill:{ name:'Fogo Esmeralda', cd:8, eff:[{ k:'dmg', m:1.3, to:'back' }, { k:'st', s:'armorBreak', d:5, v:.2, ch:1, to:'back' }] } }),
     fox_jade:     E({ name:'Raposa de Jade', sprite:'fox_jade', el:'Natureza', role:'Ágil', hp:840, atk:86, spd:1.2, dodge:.18, desc:'Caça os feridos e some entre as lápides.', skill:{ name:'Salto Esmeralda', cd:7, eff:[{ k:'dmg', m:1.5, to:'low' }, { k:'buff', s:'dodge', v:.2, d:4, to:'self' }] } }),
     golem_emerald:E({ name:'Guardião Esmeralda', sprite:'golem_emerald', el:'Terra', role:'Tanque', hp:1750, atk:64, def:100, spd:.6, desc:'Ergue muralhas de jade sobre os aliados.', skill:{ name:'Muro de Jade', cd:10, eff:[{ k:'shield', m:1.8, to:'allies', d:5 }] } }),
-    revenant_jade:E({ name:'Sacerdote de Jade', sprite:'revenant_jade', el:'Sombra', role:'Guardião', elite:true, hp:3700, atk:112, def:70, spd:.85, xp:70, gold:[50, 75], desc:'Ressuscita os mortos da cripta. Derrube-o primeiro!', skill:{ name:'Rito da Ressurreição', cd:12, eff:[{ k:'revive', p:.4 }, { k:'heal', m:1.2, to:'allies' }] } }),
+    revenant_jade:E({ name:'Sacerdote de Jade', sprite:'revenant_jade', el:'Sombra', role:'Guardião', elite:true, hp:3700, atk:112, def:70, spd:.85, xp:70, gold:[50, 75], desc:'Levanta os mortos da cripta. Derrube-o primeiro.', skill:{ name:'Rito da Ressurreição', cd:12, eff:[{ k:'revive', p:.4 }, { k:'heal', m:1.2, to:'allies' }] } }),
     oni_jade:     E({ name:'Oni Carcereiro', sprite:'oni_jade', el:'Terra', role:'Guardião', elite:true, hp:4100, atk:120, def:80, spd:.8, xp:70, gold:[50, 75], desc:'Acorrenta o herói mais forte.', skill:{ name:'Correntes da Cripta', cd:9, eff:[{ k:'st', s:'stun', d:1.5, ch:1, to:'high' }, { k:'dmg', m:1.6, to:'high' }] } }),
     revenant_king:E({ name:'Rei Sem Túmulo', sprite:'revenant_king', el:'Sombra', role:'Chefe de Andar', elite:true, miniboss:true, hp:9800, atk:125, def:95, spd:.75, xp:190, gold:[150, 210], desc:'Chefe da Cripta. Sua Coroa das Almas silencia toda a equipe.', skill:{ name:'Cetro Maldito', cd:7, eff:[{ k:'dmg', m:1.8, to:'tgt' }, { k:'st', s:'mark', d:5, v:.25, ch:1, to:'tgt' }] },
       specials:[{ name:'Coroa das Almas', cd:17, windup:2.4, eff:[{ k:'dmg', m:2.0, to:'all' }, { k:'st', s:'silence', d:3, ch:1, to:'all' }] }] }),
@@ -177,7 +177,7 @@
     wisp_ghost:   E({ name:'Lamento', sprite:'wisp_ghost', el:'Sombra', role:'Conjurador', hp:820, atk:100, def:30, spd:1.05, dodge:.12, desc:'Um grito que emudece heróis.', skill:{ name:'Grito Fantasmagórico', cd:8, eff:[{ k:'dmg', m:.8, to:'all' }, { k:'st', s:'silence', d:1.5, ch:.35, to:'all' }] } }),
     spider_ghost: E({ name:'Aranha Etérea', sprite:'spider_ghost', el:'Sombra', role:'Venenosa', hp:1000, atk:94, spd:1.0, desc:'Teia que suga a alma.', skill:{ name:'Teia de Almas', cd:8, eff:[{ k:'dmg', m:1.4, to:'tgt' }, { k:'drain', v:.6 }, { k:'st', s:'mark', d:5, v:.15, ch:1, to:'tgt' }] } }),
     oni_ghost:    E({ name:'Oni Espectral', sprite:'oni_ghost', el:'Sombra', role:'Brutamontes', hp:1450, atk:108, def:70, spd:.75, desc:'Cada golpe esvazia a energia do alvo.', skill:{ name:'Clava do Além', cd:8, eff:[{ k:'dmg', m:2.0, to:'tgt' }, { k:'nrg', v:-20, to:'tgt' }] } }),
-    golem_ghost:  E({ name:'Sentinela Assombrada', sprite:'golem_ghost', el:'Sombra', role:'Guardião', elite:true, hp:6000, atk:110, def:140, spd:.6, thorns:.18, xp:105, gold:[80, 115], desc:'Vigília eterna: provoca e devolve dano.', skill:{ name:'Vigília Eterna', cd:10, eff:[{ k:'shield', m:2.0, to:'self', d:6 }, { k:'taunt', d:4 }] } }),
+    golem_ghost:  E({ name:'Sentinela Assombrada', sprite:'golem_ghost', el:'Sombra', role:'Guardiã', elite:true, hp:6000, atk:110, def:140, spd:.6, thorns:.18, xp:105, gold:[80, 115], desc:'Vigília eterna: provoca e devolve dano.', skill:{ name:'Vigília Eterna', cd:10, eff:[{ k:'shield', m:2.0, to:'self', d:6 }, { k:'taunt', d:4 }] } }),
     revenant_ghost:E({ name:'Noiva Espectral', sprite:'revenant_ghost', el:'Luz', role:'Guardiã', elite:true, hp:4800, atk:142, def:80, spd:.95, xp:105, gold:[80, 115], desc:'Uma valsa mortal que marca toda a equipe.', skill:{ name:'Valsa Mortal', cd:9, eff:[{ k:'dmg', m:.7, to:'randEach', hits:4 }, { k:'st', s:'mark', d:6, v:.2, ch:1, to:'all' }] } }),
 
     // Torre do Relógio, o tempo quebrado (fracos contra Terra e Gelo).
@@ -196,15 +196,15 @@
     spider_wind:  E({ name:'Aranha dos Ventos', sprite:'spider_wind', el:'Vento', role:'Venenosa', hp:1080, atk:100, spd:1.05, desc:'Fios de vento que cortam a armadura.', skill:{ name:'Seda Cortante', cd:8, eff:[{ k:'dmg', m:1.3, to:'tgt' }, { k:'st', s:'bleed', d:6, v:.25, ch:1, to:'tgt' }, { k:'st', s:'armorBreak', d:5, v:.2, ch:1, to:'tgt' }] } }),
     oni_thunder:  E({ name:'Oni do Trovão', sprite:'oni_thunder', el:'Raio', role:'Brutamontes', hp:1600, atk:120, def:78, spd:.75, desc:'Toca o tambor do céu e atordoa a linha de frente.', skill:{ name:'Tambor Trovejante', cd:9, eff:[{ k:'dmg', m:1.9, to:'front' }, { k:'st', s:'stun', d:1, ch:.45, to:'front' }] } }),
     golem_sky:    E({ name:'Colosso Alado', sprite:'golem_sky', el:'Terra', role:'Guardião', elite:true, hp:6600, atk:124, def:150, spd:.6, xp:118, gold:[90, 130], desc:'Pedra que voa. Protege a matilha com asas de granito.', skill:{ name:'Asas de Granito', cd:10, eff:[{ k:'shield', m:2.1, to:'allies', d:6 }, { k:'dmg', m:.9, to:'all' }] } }),
-    revenant_sky: E({ name:'Tengu Ancião', sprite:'revenant_sky', el:'Vento', role:'Guardião', elite:true, hp:5600, atk:150, def:92, spd:1.0, xp:118, gold:[90, 130], desc:'O leque do Tengu devolve heróis para trás.', skill:{ name:'Leque do Tengu', cd:9, eff:[{ k:'dmg', m:1.2, to:'all' }, { k:'delay', v:2, to:'all' }, { k:'buff', s:'spd', v:.3, d:5, to:'allies' }] } }),
+    revenant_sky: E({ name:'Tengu Ancião', sprite:'revenant_sky', el:'Vento', role:'Guardião', elite:true, hp:5600, atk:150, def:92, spd:1.0, xp:118, gold:[90, 130], desc:'O leque do Tengu atrasa a vez dos heróis.', skill:{ name:'Leque do Tengu', cd:9, eff:[{ k:'dmg', m:1.2, to:'all' }, { k:'delay', v:2, to:'all' }, { k:'buff', s:'spd', v:.3, d:5, to:'allies' }] } }),
 
     // Vale das Cerejeiras Eternas (fracos contra Fogo e Sombra).
     fox_sakura:   E({ name:'Kitsune Rosada', sprite:'fox_sakura', el:'Luz', role:'Ágil', hp:1000, atk:116, spd:1.3, dodge:.22, desc:'Encanta o herói mais forte com pétalas.', skill:{ name:'Encanto de Pétalas', cd:8, eff:[{ k:'st', s:'stun', d:1.2, ch:.6, to:'high' }, { k:'dmg', m:1.5, to:'high' }] } }),
     wisp_petal:   E({ name:'Espírito da Pétala', sprite:'wisp_petal', el:'Natureza', role:'Conjurador', hp:900, atk:110, def:36, spd:1.1, dodge:.14, desc:'Cura os aliados com a chuva de flores.', skill:{ name:'Chuva de Flores', cd:8, eff:[{ k:'heal', p:.1, to:'allies' }, { k:'dmg', m:.9, to:'rand' }] } }),
     spider_silk:  E({ name:'Tecelã de Seda', sprite:'spider_silk', el:'Natureza', role:'Venenosa', hp:1120, atk:104, spd:1.0, desc:'Casulos que prendem e envenenam.', skill:{ name:'Casulo de Seda', cd:8, eff:[{ k:'st', s:'slow', d:5, v:.45, ch:1, to:'tgt' }, { k:'st', s:'poison', d:6, v:.28, ch:1, to:'tgt' }, { k:'dmg', m:1.1, to:'tgt' }] } }),
     oni_blossom:  E({ name:'Oni Florido', sprite:'oni_blossom', el:'Natureza', role:'Brutamontes', hp:1700, atk:122, def:80, spd:.75, desc:'Quanto mais apanha, mais floresce.', skill:{ name:'Floração Brutal', cd:9, eff:[{ k:'dmg', m:2.1, to:'tgt' }, { k:'heal', p:.08, to:'self' }, { k:'buff', s:'atk', v:.25, d:6, to:'self' }] } }),
-    golem_root:   E({ name:'Guardião de Raízes', sprite:'golem_root', el:'Natureza', role:'Guardião', elite:true, hp:7000, atk:126, def:155, spd:.6, thorns:.16, xp:122, gold:[95, 135], desc:'Raízes que provocam e regeneram.', skill:{ name:'Raízes Antigas', cd:10, eff:[{ k:'taunt', d:4 }, { k:'buff', s:'regen', v:.03, d:6, to:'self' }] } }),
-    revenant_geisha:E({ name:'Dama das Flores', sprite:'revenant_geisha', el:'Luz', role:'Guardiã', elite:true, hp:5700, atk:152, def:90, spd:1.0, xp:122, gold:[95, 135], desc:'Uma dança que silencia e marca a equipe.', skill:{ name:'Dança do Hanami', cd:9, eff:[{ k:'dmg', m:.8, to:'randEach', hits:4 }, { k:'st', s:'silence', d:1.5, ch:.4, to:'all' }] } }),
+    golem_root:   E({ name:'Guardião de Raízes', sprite:'golem_root', el:'Natureza', role:'Guardião', elite:true, hp:7000, atk:126, def:155, spd:.6, thorns:.16, xp:122, gold:[95, 135], desc:'Raízes que provocam e regeneram.', skill:{ name:'Enraizar', cd:10, eff:[{ k:'taunt', d:4 }, { k:'buff', s:'regen', v:.03, d:6, to:'self' }] } }),
+    revenant_geisha:E({ name:'Dama das Flores', sprite:'revenant_geisha', el:'Luz', role:'Guardiã', elite:true, hp:5700, atk:152, def:90, spd:1.0, xp:122, gold:[95, 135], desc:'Quatro passos de dança, e a equipe emudece.', skill:{ name:'Dança do Hanami', cd:9, eff:[{ k:'dmg', m:.8, to:'randEach', hits:4 }, { k:'st', s:'silence', d:1.5, ch:.4, to:'all' }] } }),
 
     // Santuário das Nuvens (fracos contra Terra e Sombra).
     fox_lightning:E({ name:'Raiju', sprite:'fox_lightning', el:'Raio', role:'Ágil', hp:1000, atk:120, spd:1.35, dodge:.18, desc:'A fera do relâmpago: dois golpes num piscar.', skill:{ name:'Garras de Raio', cd:7, eff:[{ k:'dmg', m:1.3, to:'low', hits:2 }, { k:'st', s:'stun', d:.6, ch:.3, to:'low' }] } }),
@@ -228,7 +228,7 @@
 
     // Invocações dos chefes (exclusivas de cada chefe).
     eclipse_shade:E({ name:'Sombra Lunar', sprite:'eclipse_shade', el:'Sombra', role:'Ágil', hp:1400, atk:110, spd:1.2, dodge:.2, desc:'Criada por Shirogane a partir da lua devorada.', skill:{ name:'Lâmina Minguante', cd:8, eff:[{ k:'dmg', m:1.5, to:'back' }, { k:'st', s:'bleed', d:4, v:.25, ch:1, to:'back' }] } }),
-    mizuchi_spawn:E({ name:'Cria de Mizuchi', sprite:'mizuchi_spawn', el:'Água', role:'Lutador', hp:1500, atk:112, def:60, spd:.9, lifesteal:.2, desc:'Filhotes do dragão que curam o pai ao morrer.', skill:{ name:'Jato Abissal', cd:8, eff:[{ k:'dmg', m:1.4, to:'rand' }, { k:'heal', p:.03, to:'lowAlly' }] } }),
+    mizuchi_spawn:E({ name:'Cria de Mizuchi', sprite:'mizuchi_spawn', el:'Água', role:'Lutador', hp:1500, atk:112, def:60, spd:.9, lifesteal:.2, desc:'Filhotes do dragão. Curam o aliado mais ferido.', skill:{ name:'Jato Abissal', cd:8, eff:[{ k:'dmg', m:1.4, to:'rand' }, { k:'heal', p:.03, to:'lowAlly' }] } }),
     sand_servant: E({ name:'Servo de Âmbar', sprite:'sand_servant', el:'Terra', role:'Brutamontes', hp:1700, atk:118, def:80, spd:.75, desc:'Guerreiro moldado pela Serpente com areia do tempo.', skill:{ name:'Grilhão do Tempo', cd:9, eff:[{ k:'dmg', m:1.5, to:'front' }, { k:'delay', v:2, to:'front' }] } }),
     storm_servant:E({ name:'Arauto do Tambor', sprite:'storm_servant', el:'Raio', role:'Brutamontes', hp:1800, atk:124, def:82, spd:.8, desc:'Servo de Raijin: carrega o trovão até os heróis.', skill:{ name:'Batida do Céu', cd:9, eff:[{ k:'dmg', m:1.5, to:'all' }, { k:'nrg', v:-10, to:'all' }] } }),
     archive_sentinel:E({ name:'Bibliotecária Espectral', sprite:'archive_sentinel', el:'Luz', role:'Guardiã', elite:true, hp:3000, atk:118, spd:1.0, dodge:.15, xp:90, gold:[65, 95], desc:'Protege os livros proibidos silenciando quem os lê.', skill:{ name:'Silêncio na Biblioteca', cd:9, eff:[{ k:'st', s:'silence', d:3, ch:1, to:'back' }, { k:'dmg', m:1.4, to:'back' }] } }),
@@ -243,7 +243,7 @@
         { at:.8, text:'Coração de magma', buff:{ spd:.3, atk:.2 }, specials:[{ name:'Erupção Interior', cd:10, windup:2.0, eff:[{ k:'dmg', m:2.6, to:'all' }, { k:'st', s:'burn', d:6, v:.5, ch:1, to:'all' }] }] }
       ] }),
     wb_frost_dragon:E({ name:'Glacius, o Dragão Invernal', sprite:'wb_frost_dragon', el:'Gelo', role:'Chefe Mundial', boss:true, worldBoss:true, hp:2200000, atk:180, def:140, spd:.8, crit:.1, xp:0, gold:[0, 0], enrage:60,
-      desc:'Congela quem hesita. Seu sopro atinge a retaguarda.',
+      desc:'Inverno com asas. Seu sopro congela a retaguarda.',
       skill:{ name:'Garra Glacial', cd:6, eff:[{ k:'dmg', m:2.0, to:'tgt' }, { k:'st', s:'freeze', d:1.5, ch:.5, to:'tgt' }] },
       phases:[
         { at:1, text:'Vento gelado', specials:[{ name:'Sopro Invernal', cd:14, windup:2.4, eff:[{ k:'dmg', m:2.4, to:'back' }, { k:'st', s:'freeze', d:2, ch:1, to:'back' }] }] },
@@ -269,12 +269,12 @@
 
     // Invocações de evento.
     wisp_ember:   E({ name:'Fogo-Fátuo do Festival', sprite:'wisp_ember', el:'Fogo', role:'Conjurador', hp:900, atk:100, def:30, spd:1.1, dodge:.1, desc:'Lanterna viva que explode em chamas.', skill:{ name:'Estouro de Lanterna', cd:8, eff:[{ k:'dmg', m:1.2, to:'all' }, { k:'st', s:'burn', d:4, v:.3, ch:.6, to:'all' }] } }),
-    fox_gold:     E({ name:'Raposa Dourada', sprite:'fox_gold', el:'Luz', role:'Tesouro', hp:2400, atk:1, def:40, spd:.5, dodge:.35, xp:40, gold:[400, 600], treasure:true, desc:'Rara e rica. Foge depois de 12 segundos!' }),
+    fox_gold:     E({ name:'Raposa Dourada', sprite:'fox_gold', el:'Luz', role:'Tesouro', hp:2400, atk:1, def:40, spd:.5, dodge:.35, xp:40, gold:[400, 600], treasure:true, desc:'Rara e rica. Foge depois de 12 segundos.' }),
     mimic:        E({ name:'Baú Mímico', sprite:'mimic', el:'Sombra', role:'Armadilha', elite:true, hp:3200, atk:120, def:70, spd:.9, xp:80, gold:[150, 250], desc:'Parecia um baú...', skill:{ name:'Mordida do Baú', cd:7, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'bleed', d:5, v:.3, ch:1, to:'tgt' }] } }),
 
     // Chefes, mecânicas de fase, ataques telegrafados, invocações e fúria.
     boss:         E({ name:'Shirogane, Rei do Eclipse', sprite:'eclipse', el:'Sombra', role:'Chefe', boss:true, hp:90000, atk:150, def:110, spd:.8, crit:.1, xp:1400, gold:[1500, 2000], enrage:150,
-      innate:{ heroDeathHeal:.04, text:'Coroa de Sombras: cada herói nocauteado cura 4% da vida de Shirogane. Mantenha a equipe viva: curas e escudos valem mais que dano.' }, desc:'Senhor do eclipse. Invoca Kitsunes Espectrais, marca heróis e lança o Eclipse Total, que precisa ser absorvido com escudos e curas.',
+      innate:{ heroDeathHeal:.04, text:'Coroa de Sombras: cada herói nocauteado cura 4% da vida de Shirogane. Mantenha a equipe viva: curas e escudos valem mais que dano.' }, desc:'Senhor do eclipse. Invoca Sombras Lunares, marca a retaguarda e lança o Eclipse Total: segure com escudos e curas.',
       skill:{ name:'Lâmina Lunar', cd:6, eff:[{ k:'dmg', m:2.0, to:'tgt' }, { k:'st', s:'bleed', d:5, v:.35, ch:1, to:'tgt' }] },
       phases:[
         { at:1,  text:'Selo intacto', specials:[{ name:'Eclipse Total', cd:18, windup:2.8, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'weaken', d:6, v:.25, ch:1, to:'all' }] }] },
@@ -290,7 +290,7 @@
         { at:.3, text:'Redemoinho, o abismo desperta', buff:{ spd:.3, atk:.25 }, specials:[{ name:'Tsunami', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }, { name:'Afogamento', cd:11, windup:1.4, eff:[{ k:'dmg', m:3.2, to:'back' }, { k:'st', s:'stun', d:2, ch:1, to:'back' }] }] }
       ] }),
     boss_event:   E({ name:'Kitsune das Lanternas', sprite:'lantern_kitsune', el:'Fogo', role:'Chefe', boss:true, hp:120000, atk:165, def:115, spd:.9, crit:.12, dodge:.12, xp:2000, gold:[2000, 2800], enrage:150,
-      innate:{ drPerSummon:.2, text:'Luz do Festival: cada lanterna viva reduz em 20% o dano que a Kitsune recebe (até 60%). Mate as lanternas primeiro (toque nelas para focar).' }, desc:'Espírito do festival. Suas Nove Caudas incendeiam tudo; lanternas vivas explodem pelo campo.',
+      innate:{ drPerSummon:.2, text:'Luz do Festival: cada lanterna viva reduz em 20% o dano que a Kitsune recebe (até 60%). Mate as lanternas primeiro: foque a equipe nelas.' }, desc:'Espírito do festival. Suas Nove Caudas incendeiam tudo. Lanternas vivas explodem pelo campo.',
       skill:{ name:'Fogo de Raposa', cd:6, eff:[{ k:'dmg', m:1.2, to:'randEach', hits:2 }, { k:'st', s:'burn', d:5, v:.4, ch:1, to:'rand' }] },
       phases:[
         { at:1, text:'Dança das lanternas', summon:{ id:'wisp_ember', n:2, every:26 }, specials:[{ name:'Nove Caudas', cd:17, windup:2.6, eff:[{ k:'dmg', m:2.2, to:'all' }, { k:'st', s:'burn', d:6, v:.5, ch:1, to:'all' }] }] },
@@ -298,7 +298,7 @@
         { at:.3, text:'Chama eterna', buff:{ spd:.3, atk:.2 }, specials:[{ name:'Nove Caudas', cd:11, windup:2.2, eff:[{ k:'dmg', m:2.5, to:'all' }, { k:'st', s:'burn', d:6, v:.6, ch:1, to:'all' }] }] }
       ] }),
     boss_sand:    E({ name:'Apep, Serpente do Tempo', sprite:'dragon_amber', el:'Terra', role:'Chefe', boss:true, weak:'Executor', hp:260000, atk:200, def:150, spd:.8, crit:.12, xp:4200, gold:[4200, 5400], enrage:170,
-      innate:{ drain:{ every:16, min:60, nrg:60, atk:.12, max:5 }, text:'Devorador de Horas: a cada 16s rouba 60 de energia do herói mais carregado e ganha +12% de ATK (até 5×). Gaste as ultimates; quebrar a postura dele apaga os acúmulos.' }, desc:'A serpente que devora as horas. Engole o herói mais forte, invoca guerreiros de areia e, no fim, quebra a Ampulheta.',
+      innate:{ drain:{ every:16, min:60, nrg:60, atk:.12, max:5 }, text:'Devorador de Horas: a cada 16s rouba 60 de energia do herói mais carregado e ganha +12% de ATK (até 5×). Gaste as ultimates. Quebrar a postura dele apaga os acúmulos.' }, desc:'A serpente que devora as horas. Engole o herói mais forte, invoca guerreiros de areia e, no fim, quebra a Ampulheta.',
       skill:{ name:'Presas de Âmbar', cd:6, eff:[{ k:'dmg', m:2.2, to:'tgt' }, { k:'st', s:'poison', d:6, v:.3, ch:1, to:'tgt' }] },
       phases:[
         { at:1, text:'As areias correm', specials:[{ name:'Tempestade do Deserto', cd:17, windup:2.8, eff:[{ k:'dmg', m:2.3, to:'all' }, { k:'st', s:'slow', d:6, v:.4, ch:1, to:'all' }] }] },
@@ -306,7 +306,7 @@
         { at:.33, text:'A Ampulheta se quebra', buff:{ spd:.3, atk:.25 }, heal:.05, specials:[{ name:'Ampulheta Quebrada', cd:12, windup:2.4, eff:[{ k:'dmg', m:2.8, to:'all' }, { k:'st', s:'weaken', d:6, v:.3, ch:1, to:'all' }] }, { name:'Engolir o Tempo', cd:11, windup:1.4, eff:[{ k:'st', s:'stun', d:3, ch:1, to:'high' }, { k:'dmg', m:3.2, to:'high' }] }] }
       ] }),
     boss_sky:     E({ name:'Raijin, o Tambor do Trovão', sprite:'raijin', el:'Raio', role:'Chefe', boss:true, weak:'Vanguarda', hp:215000, atk:208, def:150, spd:.85, crit:.14, xp:6400, gold:[6200, 7800], enrage:180,
-      innate:{ immune:'Raio', absorb:.2, text:'Condutor Divino: imune a heróis de Raio, e 20% desse dano o cura. Monte a equipe sem Raio; Terra é o elemento forte contra ele.' }, desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
+      innate:{ immune:'Raio', absorb:.2, text:'Condutor Divino: imune a heróis de Raio, e 20% desse dano o cura. Monte a equipe sem Raio. Terra é o elemento forte contra ele.' }, desc:'O deus do trovão enlouquecido pelo eclipse. Toca os tambores do céu, invoca arautos e, no fim, faz chover raios sem parar.',
       skill:{ name:'Rufar dos Tambores', cd:6, eff:[{ k:'chain', m:1.6, n:4, fall:.8 }] },
       phases:[
         { at:1, text:'Os tambores despertam', specials:[{ name:'Trovão Divino', cd:16, windup:2.8, eff:[{ k:'dmg', m:2.4, to:'all' }, { k:'st', s:'stun', d:1, ch:.5, to:'all' }] }] },
@@ -337,8 +337,8 @@
     'Fogo+Natureza':RX('burnoff', 'Queimada', '#ff7a4f', { bonus:.15, st:['burn', 6, .7] }),
     'Gelo+Vento':RX('blizzard', 'Nevasca', '#bfefff', { stAll:['slow', 4, .35] }),
     'Gelo+Água':RX('frozen', 'Congelamento', '#91dfff', { st:['freeze', 1.5] }),
-    'Natureza+Água':RX('bloom', 'Florescer', '#7dffa8', { bonus:.1, heal:.08 }),
-    'Natureza+Raio':RX('catalyze', 'Catalisar', '#b6f27a', { bonus:.35, nrg:8 }),
+    'Natureza+Água':RX('bloom', 'Floração', '#7dffa8', { bonus:.1, heal:.08 }),
+    'Natureza+Raio':RX('catalyze', 'Catálise', '#b6f27a', { bonus:.35, nrg:8 }),
     'Luz+Sombra':RX('eclipse', 'Eclipse', '#e7c9ff', { bonus:.2, st:['mark', 6, .2] })
   };
   const RX_EARTH = RX('shatter', 'Estilhaço', '#d8ad6a', { bonus:.1, brk:3 }), RX_WIND = RX('swirl', 'Redemoinho', '#9ce9cc', { spread:.4 }), RX_ANY = RX('resonance', 'Ressonância', '#ffe19a', { bonus:.25 });
@@ -384,7 +384,7 @@
   };
   const levelOfPower = P => { P = Math.max(1, P); if (P <= LP33) return 1 + Math.log(P) / Math.log(1.065); let lo = 33, hi = 400; for (let i = 0; i < 50; i++) { const m = (lo + hi) / 2; if (levelPower(m) < P) lo = m; else hi = m; } return (lo + hi) / 2; };
   const zones = {
-    village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos vivos entre montanhas, cerejeiras e canais.', kicker:'FESTIVAL DAS CEREJEIRAS · TSUKIMORI', difficulty:'Festival ativo', theme:'village', scene:'village-expanded',
+    village: { id:'village', kind:'village', chapter:0, title:'Grande Cidade de Tsukimori', subtitle:'Oito distritos entre montanhas, cerejeiras e canais.', kicker:'FESTIVAL DAS CEREJEIRAS · TSUKIMORI', difficulty:'Festival ativo', theme:'village', scene:'village-expanded',
       lore:'A capital sob a proteção do Véu cresceu em torno da Praça da Lua. Guilda, dojo, forja, mercado, santuário e oficinas recebem heróis antes de cada expedição.' },
     hunt: { id:'hunt', kind:'hunt', chapter:1, title:'Bosque das Lanternas', subtitle:'Raposas, onis e guardiões antigos entre cerejeiras.', kicker:'CAPÍTULO I · CAÇADA', difficulty:'Estágios 1 a 12', theme:'forest',
       pool:['fox','golem','spider_jade','oni'], elites:['golem_elder','fox_nine'], stages:12, basePower:1, ilvl:1,
@@ -395,23 +395,23 @@
       weakTo:['Luz','Raio','Água'], lore:'O templo guardava o selo que prendia Shirogane. Seus corredores agora ardem com fogo do vazio.',
       unlock:{ stage:{ hunt:5 } } },
     boss: { id:'boss', kind:'boss', chapter:1, title:'Altar do Eclipse', subtitle:'Shirogane desperta em três fases.', kicker:'CAPÍTULO I · CHEFE', difficulty:'Chefe', theme:'boss', enemy:'boss', power:9, ilvl:13,
-      weakTo:['Luz'], lore:'No topo da montanha, o Rei do Eclipse devora a luz da lua. Só uma equipe preparada sobrevive ao Eclipse Total.',
+      weakTo:['Luz'], lore:'No topo da montanha, o Rei do Eclipse devora a luz da lua. Seu Eclipse Total atinge a equipe inteira.',
       unlock:{ stage:{ hunt:12 }, floor:{ dungeon:3 } } },
     hunt_tide: { id:'hunt_tide', kind:'hunt', chapter:2, title:'Costa das Marés', subtitle:'Ruínas afogadas, espectros e colossos de coral.', kicker:'CAPÍTULO II · CAÇADA', difficulty:'Estágios 1 a 12', theme:'coast',
       pool:['wisp','revenant','fox_foam','spider_coral','oni_tide'], elites:['revenant_captain','golem_coral'], stages:12, lv:[36, 60], ilvl:14,
       weakTo:['Raio','Natureza'], lore:'Com o eclipse, a maré trouxe de volta os afogados. Um capitão fantasma recruta novos marinheiros.',
       unlock:{ kills:{ boss:1 } } },
-    dungeon_tide: { id:'dungeon_tide', kind:'dungeon', chapter:2, title:'Arquivo Submerso', subtitle:'Conhecimento proibido sob a maré.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'archive',
+    dungeon_tide: { id:'dungeon_tide', kind:'dungeon', chapter:2, title:'Arquivo Submerso', subtitle:'A biblioteca afogada ainda escreve.', kicker:'CAPÍTULO II · DUNGEON', difficulty:'Andares I a III', theme:'archive',
       pool:['revenant_scribe','wisp_arc','spider_ink','golem_crystal','fox_storm'], elites:['revenant_crimson','archive_sentinel'], floorBoss:'oni_storm', floors:3, lvs:[48, 52, 56], ilvl:18,
       weakTo:['Luz','Terra','Vento'], lore:'A biblioteca que registrava a história do Véu. Seus escribas continuam escrevendo, com tinta venenosa.',
       unlock:{ stage:{ hunt_tide:5 } } },
     boss_tide: { id:'boss_tide', kind:'boss', chapter:2, title:'Abismo de Mizuchi', subtitle:'O dragão das marés aguarda no fundo do mar.', kicker:'CAPÍTULO II · CHEFE', difficulty:'Chefe', theme:'abyss', enemy:'boss_tide', lv:62, ilvl:27,
-      weakTo:['Raio','Natureza'], lore:'Mizuchi foi o guardião do mar até o eclipse corromper seu coração. Seu Tsunami pode varrer uma equipe despreparada.',
+      weakTo:['Raio','Natureza'], lore:'Mizuchi guardava o mar até o eclipse o corromper. Seu Tsunami atinge a equipe inteira e a deixa lenta.',
       unlock:{ stage:{ hunt_tide:12 }, floor:{ dungeon_tide:3 } } },
     // --- Capítulo I: rotas secundárias ---
     hunt_swamp: { id:'hunt_swamp', kind:'hunt', chapter:1, side:true, title:'Pântano dos Vaga-lumes', subtitle:'Lodo, bruxas e luzes que hipnotizam.', kicker:'CAPÍTULO I · CAÇADA', difficulty:'Estágios 1 a 8', theme:'swamp',
       pool:['fox_bog','spider_bog','wisp_bog','oni_moss'], elites:['golem_bog','revenant_bog'], stages:8, basePower:1.8, ilvl:4,
-      weakTo:['Fogo','Gelo'], lore:'Ao sul do bosque, os vaga-lumes nunca se apagam. Quem os segue à noite não volta, a Bruxa do Brejo coleciona viajantes.',
+      weakTo:['Fogo','Gelo'], lore:'Ao sul do bosque, os vaga-lumes nunca se apagam. Quem os segue à noite não volta: a Bruxa do Brejo coleciona viajantes.',
       unlock:{ stage:{ hunt:4 } } },
     dungeon_crypt: { id:'dungeon_crypt', kind:'dungeon', chapter:1, side:true, title:'Cripta de Jade', subtitle:'Mortos-vivos esmeralda e um rei sem túmulo.', kicker:'CAPÍTULO I · DUNGEON', difficulty:'Andares I a III', theme:'crypt',
       pool:['spider_bone','wisp_jade','fox_jade','golem_emerald'], elites:['revenant_jade','oni_jade'], floorBoss:'revenant_king', floors:3, floorPower:[4.2, 6.8, 11], ilvl:7,
@@ -522,11 +522,11 @@
   const worldEvents = [
     { id:'golden', name:'Maré Dourada', icon:'金', color:'#ffcf6b', text:'+40% de ouro em todas as regiões.', mods:{ gold:.4 } },
     { id:'bloodmoon', name:'Lua de Sangue', icon:'血', color:'#ff5d6c', text:'Inimigos +20% ATK. +40% EXP e +25% chance de itens.', mods:{ enemyAtk:.2, xp:.4, drop:.25 } },
-    { id:'festival', name:'Festival das Lanternas', icon:'灯', color:'#ff9ec7', text:'Kitsune das Lanternas disponível. +30% Éter e fogos-fátuos pelo campo.', mods:{ dust:.3 } },
+    { id:'festival', name:'Festival das Lanternas', icon:'灯', color:'#ff9ec7', text:'A Kitsune desperta. +30% de Éter e fogos-fátuos pelo campo.', mods:{ dust:.3 } },
     { id:'sakura', name:'Festival das Cerejeiras', icon:'桜', color:'#ffb3d6', text:'+30% de EXP e +15% de Éter. Pétalas cobrem Tsukimori.', mods:{ xp:.3, dust:.15 } },
     { id:'oninight', name:'Noite dos Oni', icon:'鬼', color:'#ff7a4f', text:'Inimigos +15% ATK. +35% chance de itens e +15% de ouro.', mods:{ enemyAtk:.15, drop:.35, gold:.15 } },
     { id:'aether', name:'Maré de Éter', icon:'霊', color:'#9fb3ff', text:'+50% de Éter e encontros especiais 50% mais comuns.', mods:{ dust:.5, encounter:.5 } },
-    { id:'starfall', name:'Chuva de Estrelas', icon:'星', color:'#6fe3ff', text:'Raridade dos itens melhorada e encontros especiais 2x mais comuns.', mods:{ rarity:.35, encounter:1 } }
+    { id:'starfall', name:'Chuva de Estrelas', icon:'星', color:'#6fe3ff', text:'Mais itens raros e encontros especiais 2× mais comuns.', mods:{ rarity:.35, encounter:1 } }
   ];
   const calmEvent = { id:'calm', name:'Céu Calmo', icon:'月', color:'#9aa6d8', text:'Nenhum evento ativo. Confira o calendário para o próximo.', mods:{} };
   const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -546,17 +546,17 @@
   // ENCONTROS ALEATÓRIOS, podem surgir ao fim de uma onda nas caçadas.
   // ---------------------------------------------------------------------------
   const encounters = [
-    { id:'gold_fox', name:'Raposa Dourada!', weight:4, text:'Uma raposa dourada carregando moedas apareceu. Derrote-a antes que fuja (12s)!' },
-    { id:'merchant', name:'Mercador Errante', weight:3, text:'Um mercador ambulante oferece mercadorias raras.' },
-    { id:'shrine', name:'Santuário Antigo', weight:3, text:'Um santuário esquecido oferece uma bênção. Escolha uma.' },
-    { id:'ambush', name:'Emboscada!', weight:3, text:'Guardiões cercam a equipe! Vença para recompensas em dobro.' },
+    { id:'gold_fox', name:'Raposa Dourada', weight:4, text:'Uma raposa dourada com moedas apareceu. Você tem 12s antes que ela fuja.' },
+    { id:'merchant', name:'Mercador Errante', weight:3, text:'Um mercador parou no caminho com itens raros.' },
+    { id:'shrine', name:'Santuário Antigo', weight:3, text:'Um santuário esquecido no caminho. Escolha uma bênção.' },
+    { id:'ambush', name:'Emboscada', weight:3, text:'Guardiões cercam a equipe. Vença e a recompensa dobra.' },
     { id:'chest', name:'Baú Misterioso', weight:3, text:'Um baú abandonado no caminho... abrir?' }
   ];
   const blessings = [
     { id:'might', name:'Bênção da Força', text:'+25% ATK para a equipe até o fim do estágio.', stats:{ atk:.25 } },
     { id:'ward', name:'Bênção da Guarda', text:'+25% DEF e 10% menos dano até o fim do estágio.', stats:{ def:.25, dr:.10 } },
     { id:'fortune', name:'Bênção da Fortuna', text:'+60% chance de itens até o fim do estágio.', mods:{ drop:.6 } },
-    { id:'renewal', name:'Bênção da Renovação', text:'Restaura todo o HP e revive heróis caídos agora.', instant:'heal' }
+    { id:'renewal', name:'Bênção da Renovação', text:'Restaura todo o HP e revive os caídos na hora.', instant:'heal' }
   ];
 
   // ---------------------------------------------------------------------------
@@ -566,20 +566,20 @@
     intro:[
       { who:'Sayo', text:'Viajante... você atravessou o Véu. Eu sou Sayo, a última guardiã de Tsukimori.' },
       { who:'Sayo', text:'Um eclipse engoliu a lua, e com ele vieram monstros. Para enfrentá-los, o Véu pode convocar heróis de outros mundos.' },
-      { who:'Sayo', text:'Use a Caixa dos Mundos: você tem dez convocações. Escolha quatro heróis, as duas primeiras vagas são a linha de frente.' }
+      { who:'Sayo', text:'Use a Caixa dos Mundos: você tem dez convocações. Escolha quatro heróis. As duas primeiras vagas são a linha de frente.' }
     ],
     team:[
-      { who:'Sayo', text:'Uma equipe! Lembre-se: Vanguardas protegem a frente, Suportes curam, Executores e Atiradores causam dano, Arcanistas dominam habilidades.' },
+      { who:'Sayo', text:'Boa equipe. Vanguardas protegem a frente, Suportes curam, Executores e Atiradores causam dano, Arcanistas vivem das habilidades.' },
       { who:'Sayo', text:'Heróis do mesmo elemento, da mesma classe ou com laços de história ficam mais fortes juntos. Veja as sinergias na tela de Equipe.' },
-      { who:'Sayo', text:'Agora abra o Mapa e parta para o Bosque das Lanternas. Cada estágio é mais difícil que o anterior, fortaleça-se antes de avançar.' }
+      { who:'Sayo', text:'Agora abra o Mapa e parta para o Bosque das Lanternas. Cada estágio pesa mais que o anterior. Treine antes de avançar.' }
     ],
     zone:{
-      hunt:[{ who:'Sayo', text:'O Bosque das Lanternas. Raposas e onis rondam as trilhas. A cada 4ª onda, um Guardião bloqueia o caminho.' }, { who:'Sayo', text:'Se a equipe cair, recuaremos um estágio para treinar. Use Q, W, E, R para soltar as ultimates quando a energia encher!' }],
-      dungeon:[{ who:'Sayo', text:'O Templo do Véu. Cinco câmaras, na terceira, você escolhe o caminho. No fim, o Guardião Ígneo.' }, { who:'Sayo', text:'Quando um inimigo começar a brilhar em vermelho, ele prepara um ataque devastador. Tenha escudos e curas prontos!' }],
+      hunt:[{ who:'Sayo', text:'O Bosque das Lanternas. Raposas e onis rondam as trilhas. A cada 4ª onda, um Guardião bloqueia o caminho.' }, { who:'Sayo', text:'Se a equipe cair, recuaremos um estágio para treinar. Use Q, W, E, R para soltar as ultimates quando a energia encher.' }],
+      dungeon:[{ who:'Sayo', text:'O Templo do Véu. Cinco câmaras. Na terceira, você escolhe o caminho. No fim, o Guardião Ígneo.' }, { who:'Sayo', text:'Quando um inimigo brilhar em vermelho, ele prepara um golpe forte. Tenha escudos e curas prontos.' }],
       boss:[{ who:'Shirogane', text:'Mais heróis de mundos distantes... O eclipse devorará vocês como devorou a lua.' }, { who:'Sayo', text:'Cuidado com o Eclipse Total! Guarde ultimates de escudo e cura para esse momento.' }],
-      hunt_tide:[{ who:'Sayo', text:'A Costa das Marés. Os afogados roubam vida e energia. Heróis de Raio e Natureza serão valiosos aqui.' }],
+      hunt_tide:[{ who:'Sayo', text:'A Costa das Marés. Os afogados roubam vida e energia. Traga heróis de Raio e Natureza.' }],
       dungeon_tide:[{ who:'Sayo', text:'O Arquivo Submerso. Escribas silenciam heróis e o Guardião da Tempestade atordoa todos. Planeje sua equipe.' }],
-      boss_tide:[{ who:'Mizuchi', text:'O mar lembra de tudo que afoga. Vocês serão lembrados... por pouco tempo.' }, { who:'Sayo', text:'O Tsunami de Mizuchi atinge todos. Na fase final, ele afoga a retaguarda, proteja seus Suportes!' }],
+      boss_tide:[{ who:'Mizuchi', text:'O mar lembra de tudo que afoga. Vocês serão lembrados... por pouco tempo.' }, { who:'Sayo', text:'O Tsunami de Mizuchi atinge todos. Na fase final ele afoga a retaguarda. Proteja os Suportes.' }],
       boss_event:[{ who:'Kitsune', text:'Hihihi... Vieram brincar no meu festival? As lanternas adoram novos amigos.' }],
       hunt_swamp:[{ who:'Sayo', text:'O Pântano dos Vaga-lumes. Não olhe muito para as luzes, elas atordoam. A Bruxa do Brejo cura seus servos: derrube-a primeiro.' }],
       dungeon_crypt:[{ who:'Sayo', text:'A Cripta de Jade. Os Sacerdotes levantam os mortos. Foque a equipe neles primeiro.' }, { who:'Sayo', text:'O Rei Sem Túmulo silencia todos com a Coroa das Almas. Tenha escudos prontos antes que ela caia.' }],
@@ -588,17 +588,17 @@
       hunt_desert:[{ who:'Sayo', text:'As Areias do Tempo. Um dia aqui dura um segundo lá fora. Chacais saltam na retaguarda, proteja seus curandeiros.' }, { who:'Apep', text:'Sssss... mais horas para devorar. Venham, pequenos. O deserto é paciente.' }],
       hunt_ghost:[{ who:'Sayo', text:'A Cidade Fantasma. Os moradores ainda dançam o último baile. Luz os liberta, e a Noiva Espectral não perdoa.' }],
       dungeon_clock:[{ who:'Sayo', text:'A Torre do Relógio. À Meia-Noite, tudo para. Guarde ultimates de escudo para o badalar.' }],
-      boss_sand:[{ who:'Apep', text:'Eu engoli impérios, luas e memórias. O que são quatro heróis perdidos entre mundos?' }, { who:'Sayo', text:'Quando Apep mirar no herói mais forte, ele será engolido. Tenha outro pronto para carregar a equipe!' }],
+      boss_sand:[{ who:'Apep', text:'Eu engoli impérios, luas e memórias. O que são quatro heróis perdidos entre mundos?' }, { who:'Sayo', text:'Quando Apep mirar no herói mais forte, ele será engolido. Tenha outro pronto para carregar a equipe.' }],
       hunt_sky:[{ who:'Sayo', text:'As Ilhas Flutuantes! O céu rachou quando Apep caiu. Raposas correm sobre as nuvens e atacam a retaguarda: proteja os curandeiros.' }, { who:'Raijin', text:'BUM. BUM. Estão ouvindo? É o som do fim do mundo.' }],
       hunt_sakura:[{ who:'Sayo', text:'O Vale das Cerejeiras Eternas. As Kitsunes encantam o herói mais forte, e os Espíritos curam todos: derrube-os primeiro.' }],
-      dungeon_sky:[{ who:'Sayo', text:'O Santuário das Nuvens. Quando Fujin abrir o Saco dos Ventos, quebre a postura dele antes! Um chefe quebrado perde o ataque preparado.' }],
+      dungeon_sky:[{ who:'Sayo', text:'O Santuário das Nuvens. Fujin prepara o Saco dos Ventos. Quebre a postura dele antes: chefe quebrado perde o ataque preparado.' }],
       boss_sky:[{ who:'Raijin', text:'Quatro heróis contra o trovão? Toquem mais alto, tambores!' }, { who:'Sayo', text:'Use o Elo Kizuna: ultimates em sequência quebram a postura de Raijin rápido. Na fase final ele esvazia a energia de todos.' }],
       rift:[{ who:'Sayo', text:'A Fenda Abissal... foi por aqui que vocês chegaram. Não tem fundo. Cada andar é mais forte, lute até onde conseguir.' }]
     },
     bossWin:{
-      boss:[{ who:'Shirogane', text:'Impossível... a lua... volta a brilhar...' }, { who:'Sayo', text:'O primeiro selo está restaurado! Mas o mar ainda chora. A Costa das Marés foi liberada.' }],
-      boss_tide:[{ who:'Mizuchi', text:'O mar... está calmo de novo. Obrigado, heróis de outro mundo.' }, { who:'Sayo', text:'Dois selos restaurados. Continue fortalecendo a equipe: o Pesadelo e o Inferno aguardam os mais corajosos.' }],
-      boss_event:[{ who:'Kitsune', text:'Hmph! Tudo bem, vocês ganharam. Levem a chave... e voltem no próximo festival!' }],
+      boss:[{ who:'Shirogane', text:'Impossível... a lua... volta a brilhar...' }, { who:'Sayo', text:'O primeiro selo está restaurado! Mas o mar ainda chora. A Costa das Marés está aberta.' }],
+      boss_tide:[{ who:'Mizuchi', text:'O mar... está calmo de novo. Obrigado, heróis de outro mundo.' }, { who:'Sayo', text:'Dois selos restaurados. Fortaleça a equipe: Shirogane e Mizuchi voltam mais fortes no Pesadelo e no Inferno.' }],
+      boss_event:[{ who:'Kitsune', text:'Hmph. Tudo bem, vocês ganharam. Levem a chave... e voltem no próximo festival!' }],
       boss_sky:[{ who:'Raijin', text:'O tambor... silenciou...' }, { who:'Sayo', text:'Quatro selos! O céu está se fechando. Mas os tambores de Raijin acordaram algo no fundo da Fenda.' }],
       boss_sand:[{ who:'Apep', text:'As horas... escapam... de mim...' }, { who:'Sayo', text:'Três selos! O tempo volta a correr. Mas a Fenda Abissal continua aberta, e algo nos observa lá do fundo.' }]
     }
@@ -611,14 +611,14 @@
   // ---------------------------------------------------------------------------
   const guide = [
     { id:'g_summon', title:'Convoque seus heróis', desc:'Abra Convocar e use as 10 convocações gratuitas.', go:'collection', cond:{ boxes:10 }, reward:{ gold:200 } },
-    { id:'g_team', title:'Monte sua equipe', desc:'Coloque 4 heróis na formação. Vagas 1 e 2: frente; 3 e 4: retaguarda.', go:'collection', cond:{ team:4 }, reward:{ gold:300, potion:3 } },
+    { id:'g_team', title:'Monte sua equipe', desc:'Coloque 4 heróis na formação. Vagas 1 e 2 na frente, 3 e 4 na retaguarda.', go:'collection', cond:{ team:4 }, reward:{ gold:300, potion:3 } },
     { id:'g_go', title:'Parta para o Bosque', desc:'Abra o Mapa e inicie o Estágio 1 do Bosque das Lanternas.', go:'journey', cond:{ entered:'hunt' }, reward:{ gold:200 } },
     { id:'g_s1', title:'Vença o Estágio 1-1', desc:'Derrote as 4 ondas do primeiro estágio.', go:'journey', cond:{ stage:['hunt', 1] }, reward:{ gold:400, item:'rare' } },
     { id:'g_equip', title:'Equipe um item', desc:'Abra a Bolsa e equipe uma arma ou acessório em um herói.', go:'inventory', cond:{ equipped:1 }, reward:{ gold:300, ore:5 } },
-    { id:'g_ult', title:'Use uma Ultimate', desc:'Quando a barra dourada de energia encher, aperte Q/W/E/R ou clique no botão do herói.', go:null, cond:{ ults:1 }, reward:{ crystal:20 } },
-    { id:'g_s3', title:'Vença o Estágio 1-3', desc:'Suba de nível caçando. Estágios anteriores podem ser repetidos para treinar.', go:'journey', cond:{ stage:['hunt', 3] }, reward:{ gold:800, potion:2 } },
+    { id:'g_ult', title:'Use uma Ultimate', desc:'Quando a barra dourada de energia encher, aperte Q/W/E/R ou o botão do herói.', go:null, cond:{ ults:1 }, reward:{ crystal:20 } },
+    { id:'g_s3', title:'Vença o Estágio 1-3', desc:'Suba de nível caçando. Repita estágios anteriores para treinar.', go:'journey', cond:{ stage:['hunt', 3] }, reward:{ gold:800, potion:2 } },
     { id:'g_forge', title:'Aprimore um item na Forja', desc:'Na Cidade → Forja, aprimore um equipamento para +1.', go:'forge', cond:{ upgrades:1 }, reward:{ ore:10, gold:500 } },
-    { id:'g_s5', title:'Vença o Estágio 1-5', desc:'O Guardião do 5º estágio é forte. Confira as sinergias da equipe!', go:'journey', cond:{ stage:['hunt', 5] }, reward:{ key:1, gold:1000 } },
+    { id:'g_s5', title:'Vença o Estágio 1-5', desc:'O Guardião do 5º estágio é forte. Confira as sinergias da equipe.', go:'journey', cond:{ stage:['hunt', 5] }, reward:{ key:1, gold:1000 } },
     { id:'g_swamp', title:'Explore o Pântano, 3º estágio', desc:'Uma rota secundária ao sul do Bosque. Monstros novos, itens novos.', go:'journey', cond:{ stage:['hunt_swamp', 3] }, reward:{ gold:1200, ore:10 } },
     { id:'g_dungeon', title:'Conquiste o Templo: Andar I', desc:'Entre no Templo do Véu e derrote o Guardião Ígneo.', go:'journey', cond:{ floor:['dungeon', 1] }, reward:{ crystal:30, item:'epic' } },
     { id:'g_s8', title:'Vença o Estágio 1-8', desc:'Aprimore itens, eleve a qualidade dos heróis e treine no Dojo.', go:'journey', cond:{ stage:['hunt', 8] }, reward:{ ore:20, gold:2000 } },
@@ -626,7 +626,7 @@
     { id:'g_s12', title:'Vença o Estágio 1-12', desc:'O último estágio do Bosque abre caminho ao Altar do Eclipse.', go:'journey', cond:{ stage:['hunt', 12] }, reward:{ key:1, gold:4000 } },
     { id:'g_d3', title:'Conquiste o Templo: Andar III', desc:'O andar mais profundo do Templo.', go:'journey', cond:{ floor:['dungeon', 3] }, reward:{ crystal:60, item:'legendary' } },
     { id:'g_boss', title:'Derrote Shirogane', desc:'O Rei do Eclipse. Prepare escudos para o Eclipse Total.', go:'journey', cond:{ kills:['boss', 1] }, reward:{ key:1, crystal:80 } },
-    { id:'g_rift5', title:'Desça 5 andares da Fenda Abissal', desc:'Conteúdo infinito: cada andar é mais forte. Recordes vão para o ranking.', go:'journey', cond:{ floor:['rift', 5] }, reward:{ crystal:40, ore:30 } },
+    { id:'g_rift5', title:'Desça 5 andares da Fenda Abissal', desc:'Não tem fundo: cada andar é mais forte. Recordes vão para o ranking.', go:'journey', cond:{ floor:['rift', 5] }, reward:{ crystal:40, ore:30 } },
     { id:'g_c2', title:'Vença a Costa 2-6', desc:'Afogados drenam energia. Raio e Natureza são fortes aqui.', go:'journey', cond:{ stage:['hunt_tide', 6] }, reward:{ ore:40, gold:6000 } },
     { id:'g_frost', title:'Atravesse o Planalto, 4º estágio', desc:'A nevasca rouba energia. Leve Fogo e Terra.', go:'journey', cond:{ stage:['hunt_frost', 4] }, reward:{ crystal:30, dust:40 } },
     { id:'g_a1', title:'Conquiste o Arquivo: Andar I', desc:'O Guardião da Tempestade atordoa toda a equipe.', go:'journey', cond:{ floor:['dungeon_tide', 1] }, reward:{ crystal:60, item:'epic' } },
@@ -677,7 +677,7 @@
     { id:'c_loot', title:'Coleta', text:'Obtenha {n} itens.', type:'loot', n:[10, 20, 30], reward:{ gold:1, dust:15 } },
     { id:'c_salvage', title:'Reciclagem', text:'Desmonte {n} itens na Forja.', type:'salvage', n:[5, 10, 15], reward:{ ore:10, dust:10 } },
     { id:'c_dungeon', title:'Exploração', text:'Conclua {n|andar|andares} de dungeon.', type:'floors', n:[1, 2, 3], reward:{ crystal:20, ore:8 } },
-    { id:'c_encounter', title:'Aventureiro', text:'Resolva {n} encontros especiais.', type:'encounters', n:[1, 2, 3], reward:{ crystal:15, gold:1 } }
+    { id:'c_encounter', title:'Aventureiro', text:'Resolva {n|encontro especial|encontros especiais}.', type:'encounters', n:[1, 2, 3], reward:{ crystal:15, gold:1 } }
   ];
 
   // Conquistas, metas longas com recompensas.
@@ -694,7 +694,7 @@
     ...[1, 10, 30].map((n, i) => ({ id:`a_card_${n}`, title:`Colecionador de Cartas ${['I','II','III'][i]}`, text:`Obtenha ${n} ${n === 1 ? 'carta' : 'cartas'} de monstros.`, stat:'cards', n, reward:{ crystal:15 * (i + 1) } })),
     ...[1, 10, 50].map((n, i) => ({ id:`a_alpha_${n}`, title:`Caçador de Alfas ${['I','II','III'][i]}`, text:`Derrote ${n} ${n === 1 ? 'monstro' : 'monstros'} Alfa.`, stat:'alphas', n, reward:{ ore:25 * (i + 1) } })),
     { id:'a_star5', title:'Qualidade Máxima', text:'Eleve um herói até 6★.', stat:'maxStars', n:6, reward:{ key:3 } },
-    { id:'a_bonds', title:'Laços Verdadeiros', text:'Ative 2 laços na mesma equipe.', stat:'bondsActive', n:2, reward:{ key:1 } }
+    { id:'a_bonds', title:'Laços Firmes', text:'Ative 2 laços na mesma equipe.', stat:'bondsActive', n:2, reward:{ key:1 } }
   ];
 
   // ---------------------------------------------------------------------------
@@ -707,7 +707,7 @@
     workshop: { id:'workshop', name:'Oficina de Aoi', icon:'工', desc:'Cria poções e encantamentos. Cada nível reduz custos em 5% e libera receitas.', baseCost:700, growth:1.42 },
     guild:    { id:'guild', name:'Guilda de Tsukimori', icon:'城', desc:'Contratos de caça. +3% de ouro em combate por nível.', baseCost:1000, growth:1.45 },
     market:   { id:'market', name:'Mercado do Porto', icon:'市', desc:'Vende itens que mudam a cada 2 horas. Cada nível adiciona uma oferta e melhora a raridade.', baseCost:1500, growth:1.5 },
-    house:    { id:'house', name:'Casa do Time', icon:'家', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e cada nível abre um espaço a mais a cada 2 níveis.', baseCost:2500, growth:1.5 }
+    house:    { id:'house', name:'Casa do Time', icon:'家', desc:'O lar da equipe. A Galeria expõe cartas (cada uma dá 25% dos seus atributos à equipe inteira) e ganha um espaço a cada 2 níveis.', baseCost:2500, growth:1.5 }
   };
   // Casa do Time: Galeria de cartas expostas e Álbum (coleção, como o livro de cartas do Ragnarok).
   const HOUSE = {
@@ -718,7 +718,7 @@
       { n:8, name:'Caderno de campo', stats:{ hp:.03 } },
       { n:15, name:'Estudioso de criaturas', stats:{ def:.04 } },
       { n:25, name:'Colecionador', stats:{ crit:.015, critDmg:.06 } },
-      { n:40, name:'Curador de Relíquias', stats:{ atk:.04, hp:.04 } },
+      { n:40, name:'Curador de relíquias', stats:{ atk:.04, hp:.04 } },
       { n:60, name:'Arquivista lendário', stats:{ skill:.08, dr:.03 } },
       { n:94, name:'Álbum completo', stats:{ atk:.08, hp:.08, def:.08 } }
     ]
@@ -730,7 +730,7 @@
     { id:'star', name:'Aço Estelar', price:60, limit:5, text:'Material raro de refino. Negociável no Mercado.' },
     { id:'ori', name:'Oricalco', price:400, limit:1, text:'Material épico de refino. Negociável no Mercado.' },
     { id:'glad_box', name:'Baú do Gladiador', price:300, limit:2, text:'Um item épico do nível da sua melhor caçada. Negociável.' },
-    { id:'elixir', name:'Elixires de Batalha ×3', price:40, limit:5, text:'Três Elixires de Energia.' },
+    { id:'elixir', name:'Elixires de Energia ×3', price:40, limit:5, text:'Três Elixires de Energia.' },
     { id:'key', name:'Chave de Convocação', price:180, limit:2, text:'Uma convocação.' },
     { id:'glad_weapon', name:'Arma do Gladiador', price:700, limit:1, text:'Peça do conjunto Gladiador Carmesim (arma). Negociável.' },
     { id:'glad_focus', name:'Foco do Gladiador', price:550, limit:1, text:'Peça do conjunto Gladiador Carmesim (foco). Negociável.' },
@@ -747,7 +747,7 @@
     { letter:'C', lv:9, title:'Caçador de Selos', exam:{ text:'Vença o estágio 12 da Costa das Marés.', zone:'hunt_tide', best:12 }, perk:'+6% chance de itens.', mods:{ drop:.06 }, stats:{} },
     { letter:'B', lv:13, title:'Guardião do Véu', exam:{ text:'Derrote Mizuchi, Dragão Abissal.', zone:'boss_tide', kills:1 }, perk:'+4% de ATK e HP para toda a equipe.', mods:{}, stats:{ atk:.04, hp:.04 } },
     { letter:'A', lv:17, title:'Lâmina da Ordem', exam:{ text:'Derrote Apep, Serpente do Tempo.', zone:'boss_sand', kills:1 }, perk:'+1 vaga de Expedição e +1 contrato simultâneo.', mods:{}, stats:{}, slots:1, expedition:1 },
-    { letter:'S', lv:22, title:'Lenda de Tsukimori', exam:{ text:'Derrote Raijin, o Tambor do Trovão.', zone:'boss_sky', kills:1 }, perk:'+6% de ATK e HP e Contratos Lendários (Adamantina).', mods:{}, stats:{ atk:.06, hp:.06 }, legendary:true }
+    { letter:'S', lv:22, title:'Lenda de Tsukimori', exam:{ text:'Derrote Raijin, Tambor do Trovão.', zone:'boss_sky', kills:1 }, perk:'+6% de ATK e HP e Contratos Lendários (Adamantina).', mods:{}, stats:{ atk:.06, hp:.06 }, legendary:true }
   ];
   const GUILD = { createCost:1500000, perks:[{ lv:2, text:'+3% de ouro', mods:{ gold:.03 } }, { lv:4, text:'+3% de EXP', mods:{ xp:.03 } }, { lv:6, text:'+5% de ouro', mods:{ gold:.05 } }, { lv:8, text:'+5% chance de itens', mods:{ drop:.05 } }, { lv:10, text:'+5% de EXP', mods:{ xp:.05 } }],
     war:{ days:[3, 6], from:20, to:22, attacks:3 } };
