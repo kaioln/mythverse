@@ -6,7 +6,7 @@
   const TOUCH = !!globalThis.matchMedia?.('(hover:none)').matches;   // sem teclado: os avisos falam dos botões, não das teclas
   const MODES = {
     auto:['AUTO', '<b>Comando AUTO</b><br>A equipe decide tudo sozinha.'],
-    semi:['SEMI', TOUCH ? '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: toque nelas quando acenderem.' : '<b>Comando SEMI</b><br>A equipe age sozinha; as ultimates são suas: <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd>'],
+    semi:['SEMI', TOUCH ? '<b>Comando SEMI</b><br>A equipe age sozinha. As ultimates são suas: toque nelas quando acenderem.' : '<b>Comando SEMI</b><br>A equipe age sozinha. As ultimates são suas: <kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> <kbd>R</kbd>'],
     manual:['MANUAL', TOUCH ? '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: atacar, uma das três habilidades ou defender.' : '<b>Comando MANUAL</b><br>Na vez de cada herói a luta espera a sua ordem: <kbd>ESPAÇO</kbd> ataca, <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> habilidades, <kbd>G</kbd> defende.']
   };
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -80,7 +80,7 @@
       on('#panel-toggle', 'click', () => { const narrow = matchMedia('(max-width:1100px)').matches; this.el.app.classList.toggle(narrow ? 'panel-open' : 'panel-hidden'); setTimeout(() => this.renderer.resize(), 320); });
       on('#save-status', 'click', () => {
         const local = this.engine.save(), mode = this.session?.mode;
-        if (mode === 'neon') KT.Neon.flush().then(ok => this.toast(ok && local ? 'Progresso confirmado na nuvem.' : 'Save protegido localmente; tentando sincronizar.', ok && local ? 'gold' : 'red'));
+        if (mode === 'neon') KT.Neon.flush().then(ok => this.toast(ok && local ? 'Progresso confirmado na nuvem.' : 'Salvo neste navegador. Ainda tentando a nuvem.', ok && local ? 'gold' : 'red'));
         else if (mode === 'cloud') KT.Server.flush().then(r => this.toast(r.ok ? 'Progresso confirmado no servidor.' : 'Sincronização pendente.', r.ok ? 'gold' : 'red'));
         else this.toast(local ? 'Progresso salvo neste navegador.' : 'O navegador bloqueou o save.', local ? 'gold' : 'red');
       });
@@ -206,7 +206,7 @@
     cycleSpeed() {
       const st = this.state.settings, turbo = st.pace === 'turbo' && st.auto;
       if (turbo) { st.pace = 'rpg'; st.speed = 1; this.cmd('setSetting', 'pace', 'rpg'); }
-      else if (st.speed >= 3) { if (st.auto) { st.pace = 'turbo'; this.cmd('setSetting', 'pace', 'turbo'); this.toast('<b>TURBO</b>: a luta corre sem parar a cada ação. Bom para repetir estágios; para comandar, volte a x1.'); } else st.speed = 1; }
+      else if (st.speed >= 3) { if (st.auto) { st.pace = 'turbo'; this.cmd('setSetting', 'pace', 'turbo'); this.toast('<b>TURBO</b>: a luta corre sem parar a cada ação. Bom para repetir estágios. Para comandar, volte a x1.'); } else st.speed = 1; }
       else st.speed = (st.speed || 1) + 1;
       this.renderControls();
     }
@@ -266,9 +266,9 @@
       const bazaar = z.kind === 'village' && this.quarter === 'market';
       this.el.zoneTitle.textContent = bazaar ? 'Cidade Mercado de Tsukimori' : z.title; this.el.zoneKick.textContent = bazaar ? 'BAIRRO DOS MERCADORES · TSUKIMORI' : z.kicker;
       let diff = z.difficulty, wave = bazaar ? '6 casas de comércio' : z.kind === 'village' ? '8 distritos em celebração' : 'Cidade segura';
-      if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido!' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
+      if (z.kind === 'hunt') { diff = `Estágio ${e.opts.stage}/${z.stages}`; wave = e.phase === 'stageClear' ? 'Estágio vencido' : e.wave === 4 ? 'Guardião' : `Onda ${e.wave}/4`; }
       if (z.kind === 'dungeon') { diff = `Andar ${['I','II','III'][e.opts.floor - 1]}`; wave = `Sala ${e.room}/5`; }
-      if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido!' : `Sala ${e.room}/${D.RIFT.rooms}`; }
+      if (z.kind === 'rift') { diff = `Andar ${e.opts.floor} · recorde ${this.state.progress.rift?.best || 0}`; wave = e.phase === 'stageClear' ? 'Andar vencido' : `Sala ${e.room}/${D.RIFT.rooms}`; }
       if (z.kind === 'boss') { diff = D.bossTiers[e.opts.tier || 0].name; wave = `Fase ${(e.bossPhase || 0) + 1}/3`; }
       if (z.kind === 'arena') { diff = `vs ${e.arenaFoe?.name || 'rival'}`; wave = e.phase === 'fight' ? `${Math.max(0, Math.ceil(D.PVP.time - (e.arenaTime || 0)))}s` : 'Arena'; }
       this.el.difficulty.textContent = diff; this.el.wave.textContent = wave;
@@ -278,7 +278,7 @@
         const dl = KT.difficultyLabel ? KT.difficultyLabel(ratio) : null;
         this.el.powerCheck.textContent = `${compact(pow)} / ${compact(rec)}${dl ? ` · ${dl[0]}` : ''}`;
         this.el.powerCheck.dataset.tip = 'Seu Poder / Poder recomendado. Fácil ou Justo: pode seguir. Difícil: arrisque. Muito difícil: fique mais forte (FORÇA, Forja, Dojo, nível).';
-        this.el.powerCheck.dataset.tip = `Poder da equipe / poder recomendado.${ratio < .8 ? ' Sua equipe está fraca para esta região, treine em estágios anteriores.' : ''}`;
+        this.el.powerCheck.dataset.tip = `Poder da equipe / poder recomendado.${ratio < .8 ? ' Equipe fraca para esta região. Treine em estágios anteriores.' : ''}`;
       } else this.el.powerCheck.hidden = true;
       this.el.locations.hidden = z.kind !== 'village' || this.engine.heroes.length < 4;
       document.querySelector('#journey-cta').hidden = this.engine.heroes.length < 4;
@@ -289,8 +289,8 @@
       if (key !== this.hintKey) {
         this.hintKey = key; this.el.hint.hidden = !needTeam;
         if (needTeam) this.el.hint.innerHTML = this.state.starterRolls > 0
-          ? `<p>Você tem <b>${this.state.starterRolls} convocações grátis</b>. Descubra seus heróis!</p><button class="action pink" data-go="collection" type="button">Convocar agora</button>`
-          : `<p>Equipe <b>${this.engine.heroes.length}/4</b>, escolha quem viaja com você.</p><button class="action primary" data-go="party" type="button">Montar equipe</button>`;
+          ? `<p>Você tem <b>${U.count(this.state.starterRolls, 'convocação', 'convocações')} grátis</b>.</p><button class="action pink" data-go="collection" type="button">Convocar</button>`
+          : `<p>Equipe <b>${this.engine.heroes.length}/4</b>. Escolha quem viaja com você.</p><button class="action primary" data-go="party" type="button">Montar equipe</button>`;
       }
       // Consumíveis.
       const c = this.state.consumables;
@@ -322,7 +322,7 @@
       const cap = PRG.trainingCap(s.buildings.dojo), dojo = Object.keys(PRG.training).filter(k => (s.training[k] || 0) < cap && s.player.gold >= PRG.trainingCost(s.training[k] || 0)).length;
       const shrine = s.collection.filter(r => { const c = KT.State.awakenCost(r.stars, s.buildings.shrine); return r.stars < 6 && (s.shards[r.id] || 0) >= c.shards && s.player.gold >= c.gold; }).length;
       const badges = { guild:contracts, dojo, collection:s.starterRolls + s.player.keys, shrine, house:freeCards ? Math.max(0, freeSlots) : 0, expeditions:exp };
-      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = (b.dataset.open || '').split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta nv ${gate.level}` : lv ? `Nv ${lv}` : b.dataset.sub || ''; });
+      document.querySelectorAll('#village-actions [data-badge]').forEach(b => { const [panel, tab] = (b.dataset.open || '').split(':'), gate = e.serviceStatus(PRG.serviceFor(panel, tab)), n = gate.locked ? 0 : badges[b.dataset.badge] || 0, em = b.querySelector('.sp-badge'); if (em) { em.hidden = !n; em.textContent = n > 9 ? '9+' : n; } b.classList.toggle('ready', !!n); b.classList.toggle('service-locked', gate.locked); const lv = s.buildings[b.dataset.badge], tag = b.querySelector('.sp-lv'); if (tag) tag.textContent = gate.locked ? `Conta Nv ${gate.level}` : lv ? `Nv ${lv}` : b.dataset.sub || ''; });
       this.lobbyPending = exp + contracts + daily + (s.worldBoss.day && !s.worldBoss.claimed ? 1 : 0);
       this.renderLobby(hz, stage);
     }
@@ -337,19 +337,19 @@
       const slots = team.map((r, i) => {
         if (!r) return `<button class="lt-hero empty" data-go="party" type="button" data-tip="Vaga ${i + 1}: escolha um herói"><span>+</span></button>`;
         const t = e.template(r.id);
-        return `<button class="lt-hero rarity-${r.rarity}" data-hero-detail="${r.uid}" type="button" style="--hc:${t.color}" data-tip="<b>${esc(t.name)}</b><br>${t.cls} · ${t.el} · Nv.${r.level}<br><small>Clique para abrir a ficha.</small>"><img src="${portrait(t.id)}" alt=""><em>${r.level}</em><i>${KT.glyph(D.classes[t.cls].icon)}</i></button>`;
+        return `<button class="lt-hero rarity-${r.rarity}" data-hero-detail="${r.uid}" type="button" style="--hc:${t.color}" data-tip="<b>${esc(t.name)}</b><br>${t.cls} · ${t.el} · Nv.${r.level}<br><small>Abre a ficha.</small>"><img src="${portrait(t.id)}" alt=""><em>${r.level}</em><i>${KT.glyph(D.classes[t.cls].icon)}</i></button>`;
       }).join('');
       const cta = !full
         ? (s.starterRolls > 0
-          ? `<button class="lobby-go" data-go="collection" type="button"><span><small>COMECE AQUI</small><b>Convocar seus heróis</b></span><em>${s.starterRolls} grátis</em></button>`
-          : `<button class="lobby-go" data-go="party" type="button"><span><small>EQUIPE ${e.heroes.length}/4</small><b>Montar a equipe</b></span><em>4 vagas</em></button>`)
+          ? `<button class="lobby-go" data-go="collection" type="button"><span><small>PRIMEIROS HERÓIS</small><b>Convocar</b></span><em>${s.starterRolls} grátis</em></button>`
+          : `<button class="lobby-go" data-go="party" type="button"><span><small>EQUIPE ${e.heroes.length}/4</small><b>Montar equipe</b></span><em>${U.count(4 - e.heroes.length, 'vaga')}</em></button>`)
         : `<button class="lobby-go" data-enter="${hz.id}" data-opts='${JSON.stringify({ stage })}' type="button" data-tip="Volta para a jornada de onde você parou."><span><small>CONTINUAR A JORNADA</small><b>${esc(hz.title)}</b></span><em>Estágio ${stage}</em></button>`;
       const goal = g ? `<div class="lobby-goal ${gDone ? 'done' : ''}" data-tip="<b>Objetivo</b><br>${esc(g.title)}"><i class="ic ic-target"></i><span><small>OBJETIVO</small><b>${esc(g.title)}</b></span>${gDone ? '<button class="action primary small" data-claim-guide type="button">Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir</button>` : ''}</div>` : '<div class="lobby-goal empty"></div>';
       const todo = `<button class="lobby-btn todo ${pending ? 'has' : ''}" data-go="adventure" type="button" data-tip="${pending ? `${U.count(pending, 'recompensa')} esperando: expedições, contratos, missões do dia.` : 'O que dá para fazer agora: invasão, expedições, eventos, chefes.'}"><i class="ic ic-${pending ? 'chest' : 'lantern'}"></i><b>${pending ? 'Resgatar' : 'Agora'}</b>${pending ? `<em>${pending > 9 ? '9+' : pending}</em>` : ''}</button>`;
-      el.innerHTML = `<div class="lobby-team"><div class="lt-heroes">${slots}</div><button class="lt-power" data-go="party" type="button" data-tip="Poder total da equipe. Clique para ver a formação e as sinergias."><small>PODER</small><b>${compact(e.getPower())}</b></button></div>
+      el.innerHTML = `<div class="lobby-team"><div class="lt-heroes">${slots}</div><button class="lt-power" data-go="party" type="button" data-tip="Poder total da equipe. Abre a formação e as sinergias."><small>PODER</small><b>${compact(e.getPower())}</b></button></div>
         ${goal}
         <div class="lobby-cta">${todo}${cta}
-          <button class="lobby-btn" data-go="journey" type="button" data-tip="Mapa do mundo (M)"><i class="ic ic-compass"></i><b>Mapa</b></button>
+          <button class="lobby-btn" data-go="journey" type="button" data-tip="Mapa do mundo${TOUCH ? '' : ' (M)'}"><i class="ic ic-compass"></i><b>Mapa</b></button>
           <button class="lobby-btn" data-lobby-prep type="button" data-tip="Preparar a equipe: farm, equipamento, atributos ou talentos."><i class="ic ic-bolt"></i><b>Preparar</b></button></div>`;
     }
 
@@ -386,7 +386,7 @@
       const phases = boss.t.phases || [];
       this.el.bossMark1.hidden = !phases[1]; this.el.bossMark2.hidden = !phases[2];
       if (phases[1]) this.el.bossMark1.style.left = `${phases[1].at * 100}%`; if (phases[2]) this.el.bossMark2.style.left = `${phases[2].at * 100}%`;
-      this.el.bossPhase.textContent = boss.windup > 0 ? `危 Preparando ${boss.windupSpecial?.name || 'ataque'}!` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
+      this.el.bossPhase.textContent = boss.windup > 0 ? `危 Preparando ${boss.windupSpecial?.name || 'ataque'}` : boss.boss ? `Fase ${(boss.phaseIdx || 0) + 1}/3 · ${phases[boss.phaseIdx || 0]?.text || ''}` : boss.t.desc;
       this.el.bossPanel.classList.toggle('danger', boss.windup > 0);
       const broken = boss.broken > 0, bp = broken ? boss.broken / KT.State.TOUGH.time : U.clamp(boss.tough / Math.max(1, boss.toughMax), 0, 1);
       this.el.bossBreakFill.style.width = `${bp * 100}%`; this.el.bossBreak.classList.toggle('broken', broken); this.el.bossBreakLabel.textContent = broken ? 'QUEBRADO · +35% DE DANO' : `RESISTÊNCIA ${Math.ceil(boss.tough)}/${Math.ceil(boss.toughMax)}`;
@@ -426,7 +426,7 @@
         const v = e.chronicleValue(ch), done = v >= ch.target;
         main = `${head('Crônica', `nº ${ch.k}`)}<strong>${esc(ch.title)}</strong><div class="meter"><span style="width:${Math.min(1, (v - ch.start) / Math.max(1, ch.target - ch.start)) * 100}%"></span></div>
           <div class="sec-row"><small class="dim">${U.fmt(v)} / ${U.fmt(ch.target)}</small>${done ? '<button class="action primary small" data-claim-chronicle type="button">Resgatar</button>' : ''}</div>`;
-      } else main = `${head('Missão')}<strong>Jornada concluída!</strong>`;
+      } else main = `${head('Missão')}<strong>Missões cumpridas. Desça a Fenda.</strong>`;
       const extra = `<div class="sec-foot">${ls.available ? `<button class="action pink small" data-claim-login type="button"><i class="ic ic-chest"></i> Presente do dia ${ls.day}</button>` : ''}<button class="action small ghost" data-go="quests:advisor" type="button" data-tip="Um plano do que fazer para ficar mais forte."><i class="ic ic-compass"></i> Conselheiro</button></div>`;
       const html = main + extra, done = (g && e.guideDone(g)) || (ch && e.chronicleValue(ch) >= ch.target);
       if (html !== this.guideHtml) { this.guideHtml = html; this.el.guide.innerHTML = html; this.el.guide.classList.toggle('done', !!done); }
@@ -451,7 +451,7 @@
       this.el.rightObjectives.innerHTML = this.state.contracts.map((c, i) => {
         const def = D.contracts.find(d => d.id === c.id), done = c.progress >= c.n, tip = `${U.fill(def.text, c.n)}<br>${this.rewardPills(this.engine.contractReward(c))}`;
         return `<article class="objective ${done ? 'done' : ''} ${c.legendary ? 'legendary' : ''}" data-tip="${esc(tip)}"><header><b>${def.title}</b><span>${c.progress}/${c.n}</span></header><div class="meter"><span style="width:${c.progress / c.n * 100}%"></span></div>${done ? `<button class="action primary small" data-claim-contract="${i}" type="button">Resgatar</button>` : ''}</article>`;
-      }).join('') + '<button class="action small ghost pane-more" data-go="quests:contracts" type="button">Ver contratos e recompensas</button>';
+      }).join('') + '<button class="action small ghost pane-more" data-go="quests:contracts" type="button">Ver contratos</button>';
     }
     renderLoot() {
       const items = this.lootHistory.slice(0, 18);
@@ -467,7 +467,7 @@
     onZone(zone) {
       document.body.classList.toggle('city-focus', zone.kind === 'village');
       this.dialogQueue.length = 0; this.el.dialog.hidden = true;
-      this.logs = []; this.onLog({ text:`Você chegou a ${zone.title}.`, type:'system' });
+      this.logs = []; this.onLog({ text:`Chegada: ${zone.title}.`, type:'system' });
       this.el.result.hidden = true; this.el.choice.hidden = true; this.el.warn.hidden = true; this.dockKey = '';
       if (zone.kind !== 'village') this.renderer.showBanner(zone.title, zone.kicker, '#d8b062');
       else { this.renderer.banner = null; this.renderer.cutin = null; this.renderer.screenFlash = null; this.renderer.chainFx = null; } // nada da batalha fica na tela da cidade
@@ -488,10 +488,10 @@
       if (r.first) this.revealFieldLore(z.id, r.stage);
       if (r.rift) { this.renderer.showBanner(r.first ? `NOVO RECORDE: ANDAR ${r.stage}!` : `ANDAR ${r.stage} VENCIDO`, r.first && r.rewards.crystal ? `+${r.rewards.crystal} cristais${r.rewards.keys ? ' · 1 chave' : ''}` : z.title, '#ff5d8f'); this.callbacks.victory?.(); return; }
       this.renderer.showBanner(r.first ? 'ESTÁGIO CONQUISTADO!' : 'ESTÁGIO VENCIDO', r.first ? `Recompensa de primeira vitória: ${[r.rewards.crystal && `${r.rewards.crystal} cristais`, r.rewards.keys && `${r.rewards.keys} chave`].filter(Boolean).join(' · ')}` : `${z.title} · ${r.stage}`, '#ffd76a');
-      if (r.first && r.stage === z.stages) this.toast(`<b>${z.title} concluído!</b> O chefe da região pode ser desafiado no Mapa.`, 'gold');
+      if (r.first && r.stage === z.stages) this.toast(`<b>${z.title}: último estágio vencido.</b> O chefe da região espera no Mapa.`, 'gold');
       this.callbacks.victory?.();
     }
-    onDefeatHunt(r) { this.renderer.showBanner('DERROTA', `Recuando para o ${r.rift ? 'andar' : 'estágio'} ${r.back} para treinar`, '#ff6b7a'); this.toast(`A equipe caiu no estágio ${r.stage}. <b>Avanço automático desligado</b>, fortaleça a equipe (atributos, itens, treino) e tente de novo.`); this.renderControls(); }
+    onDefeatHunt(r) { this.renderer.showBanner('DERROTA', `Recuando ao ${r.rift ? 'andar' : 'estágio'} ${r.back} para treinar`, '#ff6b7a'); this.toast(`A equipe caiu no estágio ${r.stage}. <b>Avanço automático desligado.</b> Distribua atributos, troque itens e tente de novo.`); this.renderControls(); }
     onLoot(item) {
       this.lootHistory.unshift(item); this.lootHistory = this.lootHistory.slice(0, 30);
       if (!item.autoSalvaged) this.newItems++;
@@ -509,7 +509,7 @@
     onWarn(text) { this.el.warn.textContent = `危 ${text}`; this.el.warn.hidden = false; this.el.warn.style.animation = 'none'; void this.el.warn.offsetWidth; this.el.warn.style.animation = ''; clearTimeout(this.warnTimer); this.warnTimer = setTimeout(() => this.el.warn.hidden = true, 2200); this.callbacks.warn?.(); }
     onAccountLevel(level) {
       this.renderResources();
-      Object.values(KT.Progression.services).filter(s => s.level === level).forEach(s => this.toast(`<b>${esc(s.name)}</b> disponível! ${esc(s.text)}`, 'gold'));
+      Object.values(KT.Progression.services).filter(s => s.level === level).forEach(s => this.toast(`<b>${esc(s.name)}</b> disponível. ${esc(s.text)}`, 'gold'));
       if (this.view.panel) this.refreshPanel();
     }
     onCard(c) {
@@ -518,7 +518,7 @@
       const pop = document.createElement('div'); pop.className = `loot-pop card-pop ${c.mvp ? 'mvp' : ''}`;
       pop.innerHTML = `<span class="card-mini"><img src="${KT.spriteUrl(card.sprite)}" alt=""></span><span><b>${esc(card.name)}</b> <small>${c.mvp ? 'CARTA MVP' : 'Carta'}</small></span>`;
       this.el.lootToast.appendChild(pop); setTimeout(() => pop.remove(), 4200);
-      this.toast(`${c.mvp ? '<b>CARTA MVP!</b>' : 'Nova carta:'} <b>${esc(card.name)}</b>, encaixe na Oficina → Cartas.`, 'gold');
+      this.toast(`${c.mvp ? '<b>Carta MVP:</b>' : 'Nova carta:'} <b>${esc(card.name)}</b>. Encaixe na Oficina → Cartas.`, 'gold');
     }
     renderCloud() {
       const dot = document.querySelector('#cloud-dot'), badge = this.el.saveStatus; if (!dot) return;
@@ -531,24 +531,24 @@
       } else if (mode === 'neon') {
         const n = KT.Neon || {};
         if (n.status === 'error') { cls = 'err'; label = 'Erro'; tip = `Save local protegido. Nuvem indisponível: ${n.error || ''}`; }
-        else if (n.status === 'saving' || n.status === 'pending') { cls = 'sync'; label = 'Salvando'; tip = 'Salvando progresso no Neon…'; }
-        else { cls = 'ok'; label = 'Salvo'; tip = n.lastSync ? `Salvo na nuvem às ${new Date(n.lastSync).toLocaleTimeString('pt-BR')}` : 'Conectado ao Neon.'; }
+        else if (n.status === 'saving' || n.status === 'pending') { cls = 'sync'; label = 'Salvando'; tip = 'Salvando na nuvem…'; }
+        else { cls = 'ok'; label = 'Salvo'; tip = n.lastSync ? `Salvo na nuvem às ${new Date(n.lastSync).toLocaleTimeString('pt-BR')}` : 'Conectado à nuvem.'; }
       }
       dot.className = `cloud-dot ${cls}`; dot.dataset.tip = tip;
       if (badge) { badge.className = `save-status ${cls}`; badge.dataset.tip = tip; badge.querySelector('b').textContent = label; }
     }
     onChoice(c) {
-      this.el.choice.innerHTML = `<section><span class="eyebrow">${c.kind === 'route' ? 'DECISÃO DE ROTA' : 'ENCONTRO ESPECIAL'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text || 'Escolha como a equipe continuará. A decisão altera risco e recompensa desta expedição.')}</p><div class="choice-options ${c.options.length > 2 ? 'many' : ''}">${c.options.map(o => `<button class="choice-option ${o.item ? `rarity-${o.item.rarity}` : ''} ${o.id === c.recommended ? 'recommended' : ''}" data-choice="${o.id}" data-kind="${c.kind}" type="button" ${o.price && this.state.player.gold < o.price ? 'disabled' : ''}>${o.id === c.recommended ? '<span class="rec-badge">★ RECOMENDADO</span>' : ''}${o.item ? KT.itemIcon(o.item) : ''}<b>${o.id === 'risk' ? '<i class="ic ic-flame"></i> ' : o.id === 'safe' ? '<i class="ic ic-moon"></i> ' : ''}${esc(o.label)}</b><small>${esc(o.desc)}</small>${o.item ? `<small class="aff">${this.itemLines(o.item).join(' · ')}</small>` : ''}</button>`).join('')}</div><p class="choice-timer" id="choice-timer"></p></section>`;
+      this.el.choice.innerHTML = `<section><span class="eyebrow">${c.kind === 'route' ? 'DECISÃO DE ROTA' : 'ENCONTRO ESPECIAL'}</span><h2>${esc(c.title)}</h2><p>${esc(c.text || 'Cada caminho muda o risco e a recompensa da expedição.')}</p><div class="choice-options ${c.options.length > 2 ? 'many' : ''}">${c.options.map(o => `<button class="choice-option ${o.item ? `rarity-${o.item.rarity}` : ''} ${o.id === c.recommended ? 'recommended' : ''}" data-choice="${o.id}" data-kind="${c.kind}" type="button" ${o.price && this.state.player.gold < o.price ? 'disabled' : ''}>${o.id === c.recommended ? '<span class="rec-badge">★ RECOMENDADO</span>' : ''}${o.item ? KT.itemIcon(o.item) : ''}<b>${o.id === 'risk' ? '<i class="ic ic-flame"></i> ' : o.id === 'safe' ? '<i class="ic ic-moon"></i> ' : ''}${esc(o.label)}</b><small>${esc(o.desc)}</small>${o.item ? `<small class="aff">${this.itemLines(o.item).join(' · ')}</small>` : ''}</button>`).join('')}</div><p class="choice-timer" id="choice-timer"></p></section>`;
       this.el.choice.hidden = false; this.renderChoiceTimer();
     }
     renderChoiceTimer() {
       const pc = this.engine.pendingChoice, el = this.el.choice.querySelector('#choice-timer'); if (!el || !pc) return;
       const left = Math.max(0, KT.State.CHOICE_WAIT - pc.wait), rec = pc.options.find(o => o.id === pc.recommended);
-      el.innerHTML = `Sem resposta em <b>${fmtTime(left)}</b>, a equipe segue com “${esc(rec?.label || '')}”. Ligue o AUTO para decidir sempre sozinho.`;
+      el.innerHTML = `Sem resposta em <b>${fmtTime(left)}</b>, a equipe segue com “${esc(rec?.label || '')}”. No AUTO, a equipe decide sozinha.`;
     }
     onChoiceResolved() { this.el.choice.hidden = true; }
     onStuck(p) {
-      if (!this.el.modal.hidden) { this.toast('A equipe está travada, veja o <b>Conselheiro</b> (Missões → Conselheiro).'); return; }
+      if (!this.el.modal.hidden) { this.toast('Duas quedas seguidas. <b>Sayo</b> tem um plano em Missões → Conselheiro.'); return; }
       this.openPanel('quests', 'advisor');
       this.toast('A equipe caiu duas vezes no mesmo desafio. <b>Sayo preparou um plano.</b>', 'gold');
     }
@@ -564,7 +564,7 @@
       const notes = (KT.Lore?.fieldNotes?.[zoneId] || []).filter(n => n.at === stage);
       if (!notes.length) return;
       this.onDialog(notes.map(n => ({ who:'Crônica', by:n.by, text:n.text })));
-      this.onLog({ text:`Uma página do Caderno de Campo foi recuperada em ${D.zones[zoneId].title}.`, type:'system' });
+      this.onLog({ text:`${D.zones[zoneId].title}: nova página no Caderno de Campo.`, type:'system' });
     }
     advanceDialog() {
       const line = this.dialogQueue.shift(); clearTimeout(this.dialogTimer);
@@ -586,7 +586,7 @@
       const lootHtml = (r.loot || []).filter(it => !it.autoSalvaged).slice(0, 8).map(it => `<div class="result-item rarity-${it.rarity}">${KT.itemIcon(it)}<b>${esc(it.name)}</b><small>${D.rarities.find(x => x.id === it.rarity).label}</small></div>`).join('');
       const rw = r.rewards ? this.rewardPills({ gold:r.rewards.gold, crystal:r.rewards.crystal, keys:r.rewards.keys }) : '';
       if (r.kind === 'worldboss') {
-        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">INVASÃO MUNDIAL · ${esc(KT.Data.worldBoss.tiers[r.tier || 0].name)}</span><h2>${esc(r.boss)}</h2><p>Sua equipe causou <b>${U.fmt(r.damage)}</b> de dano. Ele entrou para a barra de vida compartilhada com todos os viajantes desta janela.</p><p class="dim">A recompensa pode ser resgatada em Aventuras → Invasão Mundial quando a janela terminar (ou quando a comunidade derrubar o chefe).</p><div class="result-actions"><button class="action primary" data-result="hunt" type="button">Voltar a caçar</button><button class="action" data-go="adventure:worldboss" type="button">Ver Invasão</button></div></div>`;
+        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">INVASÃO MUNDIAL · ${esc(KT.Data.worldBoss.tiers[r.tier || 0].name)}</span><h2>${esc(r.boss)}</h2><p>Sua equipe causou <b>${U.fmt(r.damage)}</b> de dano na barra de vida que todos os viajantes desta janela dividem.</p><p class="dim">Resgate a recompensa em Aventuras → Invasão Mundial quando a janela terminar ou o chefe cair.</p><div class="result-actions"><button class="action primary" data-result="hunt" type="button">Voltar a caçar</button><button class="action" data-go="adventure:worldboss" type="button">Ver Invasão</button></div></div>`;
         this.el.result.hidden = false; this.callbacks.victory?.(); return;
       }
       if (r.kind === 'arena') {
@@ -595,10 +595,10 @@
       }
       if (r.kind === 'defeat') {
         const tips = this.defeatTips();
-        this.el.result.innerHTML = `<div class="result-card lose"><span class="eyebrow">EXPEDIÇÃO FRACASSOU</span><h2>DERROTA</h2><p>A equipe foi nocauteada em ${esc(r.zone.title)}${r.room ? ` (sala ${r.room})` : ''}. Voltando a treinar na caçada em instantes.</p><ul class="result-tips">${tips.map(t => `<li>${t}</li>`).join('')}</ul><div class="result-actions"><button class="action" data-result="retry" type="button">↻ Tentar de novo</button><button class="action primary" data-result="hunt" type="button">Treinar na caçada</button><button class="action" data-result="city" type="button">Cidade</button></div><small class="auto-note">Voltando à caçada automaticamente…</small></div>`;
+        this.el.result.innerHTML = `<div class="result-card lose"><span class="eyebrow">EXPEDIÇÃO FRACASSOU</span><h2>DERROTA</h2><p>${esc(r.zone.title)}${r.room ? ` (sala ${r.room})` : ''}: a equipe foi nocauteada.</p><ul class="result-tips">${tips.map(t => `<li>${t}</li>`).join('')}</ul><div class="result-actions"><button class="action" data-result="retry" type="button">↻ Tentar de novo</button><button class="action primary" data-result="hunt" type="button">Treinar na caçada</button><button class="action" data-result="city" type="button">Cidade</button></div><small class="auto-note">Voltando à caçada automaticamente…</small></div>`;
       } else {
         const title = r.kind === 'boss' ? (r.first ? 'CHEFE DERROTADO!' : 'VITÓRIA!') : 'ANDAR CONQUISTADO!';
-        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">${esc(r.zone.title)}${r.kind === 'boss' ? ` · ${D.bossTiers[r.tier || 0].name}` : ` · Andar ${['I','II','III'][r.floor - 1]}`}</span><h2>${title}</h2><p>${r.kind === 'boss' ? `${esc(r.boss)} caiu diante da sua equipe.` : 'As cinco câmaras foram vencidas.'}${r.first ? ' <b>Primeira vitória!</b>' : ''}${r.kind === 'boss' ? (r.lootLocked ? ' <b class="txt-pink">Espólio de hoje esgotado: só ouro e EXP até a meia-noite.</b>' : ` Espólio restante hoje: <b>${r.lootLeft}/${KT.State.BOSS_LOOT_PER_DAY}</b>.`) : ''}</p><div class="reward-line center">${rw}</div><div class="result-items">${lootHtml || '<small class="dim">Sem itens novos desta vez.</small>'}</div><div class="result-actions"><button class="action primary" data-result="retry" type="button">↻ Repetir</button><button class="action" data-result="hunt" type="button">Caçada</button><button class="action" data-result="map" type="button">Mapa</button></div><label class="auto-repeat"><input type="checkbox" id="auto-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir automaticamente</label></div>`;
+        this.el.result.innerHTML = `<div class="result-card win"><span class="eyebrow">${esc(r.zone.title)}${r.kind === 'boss' ? ` · ${D.bossTiers[r.tier || 0].name}` : ` · Andar ${['I','II','III'][r.floor - 1]}`}</span><h2>${title}</h2><p>${r.kind === 'boss' ? `${esc(r.boss)} caiu diante da sua equipe.` : 'As cinco câmaras foram vencidas.'}${r.first ? ' <b>Primeira vitória.</b>' : ''}${r.kind === 'boss' ? (r.lootLocked ? ' <b class="txt-pink">Espólio de hoje esgotado: só ouro e EXP até a meia-noite.</b>' : ` Espólio restante hoje: <b>${r.lootLeft}/${KT.State.BOSS_LOOT_PER_DAY}</b>.`) : ''}</p><div class="reward-line center">${rw}</div><div class="result-items">${lootHtml || '<small class="dim">Sem itens novos desta vez.</small>'}</div><div class="result-actions"><button class="action primary" data-result="retry" type="button">↻ Repetir</button><button class="action" data-result="hunt" type="button">Caçada</button><button class="action" data-result="map" type="button">Mapa</button></div><label class="auto-repeat"><input type="checkbox" id="auto-repeat" ${this.state.settings.autoRepeat ? 'checked' : ''}> Repetir automaticamente</label></div>`;
         this.el.result.querySelector('#auto-repeat')?.addEventListener('change', e => { this.state.settings.autoRepeat = e.target.checked; this.cmd('setSetting', 'autoRepeat', e.target.checked); if (!e.target.checked) this.engine.autoAfterResult = null; else this.engine.autoAfterResult = () => this.engine.repeatRun(); });
         this.callbacks.victory?.();
       }
@@ -610,7 +610,7 @@
     showOffline(o) {
       if (!o || !o.seconds) return;
       const h = o.seconds >= 3600 ? `${(o.seconds / 3600).toFixed(1).replace('.0', '').replace('.', ',')}h` : `${Math.round(o.seconds / 60)} min`;
-      this.toast(`<b>Treino AFK:</b> em ${h} longe, sua equipe caçou e trouxe +${U.fmt(o.gold)} ouro, +${U.fmt(o.xp)} EXP, ${o.items.length} item(ns), +${o.ore} Tamahagane e +${o.dust} Éter.`, 'gold');
+      this.toast(`<b>Treino AFK:</b> ${h} longe. Sua equipe caçou e trouxe +${U.fmt(o.gold)} ouro, +${U.fmt(o.xp)} EXP, ${U.count(o.items.length, 'item', 'itens')}, +${o.ore} Tamahagane e +${o.dust} Éter.`, 'gold');
       (o.items || []).forEach(it => this.lootHistory.unshift({ ...it, slot:it.slot || 'weapon', ilvl:it.ilvl || 0, icon:it.icon || 'katana_01' }));
       this.newItems += (o.items || []).length;
     }
@@ -678,7 +678,7 @@
       const order = { legendary:0, epic:1, rare:2, common:3 }, single = results.length === 1;
       const best = results.reduce((a, h) => order[h.rarityRolled] < order[a.rarityRolled] ? h : a, results[0]);
       const label = r => D.heroRarities.find(x => x.id === r)?.label || r;
-      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${KT.glyph(D.classes[t.cls].icon)} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><span class="hanko" aria-hidden="true">神話</span></div></div></div>`; }).join('')}</div><p class="reveal-hint">Toque em qualquer lugar para continuar</p></div>`;
+      this.el.reveal.innerHTML = `<div><h2>${single ? label(results[0].rarityRolled).toUpperCase() + '!' : 'A FENDA SE ABRIU'}</h2><p>${single ? esc(this.engine.template(results[0].id).world) : `Melhor resultado: <b class="rarity-${best.rarityRolled} rtext">${esc(this.engine.template(best.id).name)} · ${label(best.rarityRolled)}</b>`}</p><div class="reveal-grid">${results.map((h, i) => { const t = this.engine.template(h.id); return `<div class="reveal-card ${single ? 'single' : ''}"><div class="reveal-inner" style="--d:${(i * .12).toFixed(2)}s"><div class="reveal-face rarity-${h.rarityRolled}"><span class="rays"></span><img src="${KT.spriteUrl(t.sprite)}" alt=""><footer><b>${esc(t.name)}</b><small>${label(h.rarityRolled)} · ${KT.glyph(D.classes[t.cls].icon)} ${t.cls}</small>${h.dupe ? `<em>Repetido · +${h.shardsGained} fragmentos</em>` : '<em class="new">NOVO!</em>'}</footer></div><div class="reveal-back"><span class="hanko" aria-hidden="true">神話</span></div></div></div>`; }).join('')}</div><p class="reveal-hint">fechar</p></div>`;
       this.el.reveal.hidden = false;
       this.callbacks.summon?.(best.rarityRolled);
     }

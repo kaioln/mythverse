@@ -292,7 +292,7 @@
         if (open0) ui.openPanel = (...a) => { if (ui.el.modal.hidden) sound.ui('uiOpen'); return open0(...a); };
         if (close0) ui.closeModal = (...a) => { if (!ui.el.modal.hidden) sound.ui('uiClose'); return close0(...a); }; }
       // Só no servidor local de desenvolvimento: acesso para testes automáticos da interface.
-      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const q = new URLSearchParams(location.search), f = q.get('devfight'); KT.dev = { ui, engine, renderer, awake:q.has('devmode') || q.has('devawake') }; if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.has('devtoast')) setTimeout(() => { ui.setMode('semi'); ui.setMode('manual'); ui.toast('Avanço automático <b>ligado</b>: ao vencer, segue para o próximo estágio.'); ui.toast('<b>Presente:</b> +5 Chaves de Convocação!', 'gold'); }, 2600); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
+      if (location.protocol === 'file:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname)) { const q = new URLSearchParams(location.search), f = q.get('devfight'); KT.dev = { ui, engine, renderer, awake:q.has('devmode') || q.has('devawake') }; if (q.has('devstill')) document.head.insertAdjacentHTML('beforeend', '<style>*,*::before,*::after{animation:none!important;transition:none!important}</style>'); if (q.has('devtoast')) setTimeout(() => { ui.setMode('semi'); ui.setMode('manual'); ui.toast('Avanço automático <b>ligado</b>: ao vencer, segue para o próximo estágio.'); ui.toast('<b>Presente:</b> +5 Chaves de Convocação.', 'gold'); }, 2600); if (q.get('devpanel')) setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); const [pn, tab] = q.get('devpanel').split(':'); ui.openPanel(pn, tab); }, 1600); if (f && KT.Data.zones[f]) setTimeout(() => { if (q.get('devmode')) engine.setMode(q.get('devmode')); engine.enterZone(f, { stage:Number(q.get('devstage')) || 1, floor:1, tier:0 }); setTimeout(() => { ui.dialogQueue.length = 0; ui.advanceDialog(); }, 400); }, 800); }
       ui.initAfk?.(); ui.initHud?.(); ui.initBattleHud?.(); ui.initCoach?.();
       engine.events = {
         onZone:z => { ui.onZone(z); sound.setScene(z); }, onWave:i => { ui.onWave(i); sound.prepare([...engine.party, ...engine.enemies]); }, onPhase:p => ui.onPhase(p),
@@ -315,7 +315,7 @@
           Object.keys(state).forEach(k => { delete state[k]; }); Object.assign(state, fresh);
           engine.refreshPartyUnits?.(); ui.renderAll();
         };
-        KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo foi sincronizado; a cópia local anterior ficou preservada.', 'red');
+        KT.Neon.onConflict = () => ui.toast('Outro aparelho salvou primeiro. O progresso mais novo foi sincronizado. A cópia local anterior ficou guardada.', 'red');
         KT.Neon.onError = e => ui.toast(`Não foi possível salvar no Neon: ${e}. Tentando de novo.`);
         KT.Neon.onStatus = () => ui.renderCloud();
         KT.Social?.attach(engine, ui);
@@ -324,7 +324,7 @@
         setInterval(() => KT.Neon.syncClock().catch(() => {}), 30 * 60_000);
         const gifts = () => KT.NeonMarket?.claimGifts(engine).then(list => list.forEach(g => {
           const t = g.kind === 'hero' && engine.template(g.payload.id);
-          ui.toast(g.kind === 'keys' ? `<b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação!` : `<b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção!`, 'gold');
+          ui.toast(g.kind === 'keys' ? `<b>Presente:</b> +${Number(g.payload.n).toLocaleString('pt-BR')} Chaves de Convocação.` : `<b>Presente:</b> ${t ? t.name : 'um herói'} (${KT.Data.heroRarities.find(r => r.id === g.payload.rarity)?.label || ''}) entrou na coleção.`, 'gold');
           ui.callbacks.summon?.(g.kind === 'hero' ? g.payload.rarity : 'epic'); ui.renderResources();
         })).catch(() => {});
         // Presentes: na abertura, a cada 30 min e ao voltar para a aba (no máximo uma consulta a cada 5 min).
@@ -345,7 +345,7 @@
           try {
             const r = await fetch(`version.json?t=${Date.now()}`, { cache:'no-store' }); if (!r.ok) return;
             const v = (await r.json()).v; if (!v || v === KT.VERSION) return;
-            reloading = true; ui.toast('<b>Nova versão do jogo!</b> Salvando e atualizando…', 'gold');
+            reloading = true; ui.toast('<b>Nova versão do jogo:</b> salvando e atualizando…', 'gold');
             const go = async () => { if (engine.phase === 'fight' && engine.zone?.kind !== 'village') { setTimeout(go, 5000); return; } engine.save(); try { await KT.Neon?.flush?.(); if (KT.Server?.enabled) await KT.Server.flush(); } catch (_) {} location.reload(); };
             setTimeout(go, 3000);
           } catch (_) {}
@@ -362,8 +362,8 @@
         document.body.classList.remove('booting');
         bootEl.classList.add('done'); setTimeout(() => bootEl.remove(), 700);
         if (session.mode === 'offline') ui.toast(location.protocol === 'file:' ? '<b>Modo offline</b>: progresso salvo só neste navegador. Rode o servidor para contas e saves na nuvem.' : 'Servidor indisponível: jogando no <b>modo offline</b>.');
-        if (session.mode === 'cloud' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica protegido no servidor.`, 'gold');
-        if (session.mode === 'neon' && session.user) ui.toast(`Bem-vindo, <b>${session.user.username}</b>! Seu progresso fica salvo na sua conta.`, 'gold');
+        if (session.mode === 'cloud' && session.user) ui.toast(`Boa caçada, <b>${session.user.username}</b>. Seu progresso fica guardado no servidor.`, 'gold');
+        if (session.mode === 'neon' && session.user) ui.toast(`Boa caçada, <b>${session.user.username}</b>. Seu progresso fica salvo na sua conta.`, 'gold');
         if (!state.story.seen.intro) { ui.cmd('markSeen', 'intro'); ui.onDialog(KT.Data.story.intro); }
         if (offline) ui.showOffline(offline);
       };
@@ -424,8 +424,8 @@
         const c = caught; caught = null; engine.save(); ui.renderAll();
         if (c && c.secs >= 30 && engine.active) {
           const g = state.player.gold - c.gold, min = Math.max(1, Math.round(c.secs / 60));
-          if (engine.mode === 'manual') ui.toast('<b>De volta!</b> No comando MANUAL a luta esperou por você.');
-          else ui.toast(`<b>De volta!</b> A equipe seguiu caçando por ${min} min: +${KT.Utils.fmt(Math.max(0, g))} ouro${c.loot ? `, ${c.loot} itens` : ''}${c.cards ? `, ${c.cards} carta(s)` : ''}.`);
+          if (engine.mode === 'manual') ui.toast('<b>De volta:</b> no comando MANUAL a luta esperou por você.');
+          else ui.toast(`<b>De volta:</b> a equipe caçou por ${min} min e trouxe +${KT.Utils.fmt(Math.max(0, g))} ouro${c.loot ? `, ${KT.Utils.count(c.loot, 'item', 'itens')}` : ''}${c.cards ? `, ${KT.Utils.count(c.cards, 'carta')}` : ''}.`);
         }
       };
       const catchUp = (visible) => {

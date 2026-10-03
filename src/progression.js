@@ -3,18 +3,18 @@
 
   // Nível da conta, não do herói: introduz um sistema por vez, sem custo de desbloqueio.
   const services = {
-    guild:{ level:2, name:'Contratos da Ordem', text:'Conheça as necessidades dos moradores e escolha suas caçadas.' },
-    forge:{ level:3, name:'Forja de Ren', text:'Aprimore o equipamento que encontrou na jornada.' },
-    dojo:{ level:4, name:'Dojo do Eco', text:'Treine a equipe sem substituir suas escolhas de build.' },
-    workshop:{ level:5, name:'Oficina de Aoi', text:'Prepare consumíveis e retrabalhe afixos.' },
-    house:{ level:6, name:'Casa do Time', text:'Exponha cartas e registre as descobertas da equipe.' },
+    guild:{ level:2, name:'Contratos da Ordem', text:'Os moradores pedem caçadas. Escolha a sua.' },
+    forge:{ level:3, name:'Forja de Ren', text:'Refine o equipamento que achou pelo caminho.' },
+    dojo:{ level:4, name:'Dojo do Eco', text:'Treino pago em ouro, para todos os heróis de uma vez.' },
+    workshop:{ level:5, name:'Oficina de Aoi', text:'Prepare consumíveis e sorteie afixos novos.' },
+    house:{ level:6, name:'Casa do Time', text:'Exponha cartas na Galeria e complete o Álbum.' },
     shrine:{ level:7, name:'Santuário da Lua', text:'Use fragmentos para elevar a qualidade dos heróis.' },
     expeditions:{ level:8, name:'Expedições', text:'Envie os heróis da reserva em missões.' },
-    prof:{ level:10, name:'Profissões', text:'Especialize-se em coleta e criação de equipamentos.' },
-    market:{ level:12, name:'Mercado do Porto', text:'Acompanhe as ofertas rotativas dos comerciantes.' },
-    trade:{ level:15, name:'Mercado de Jogadores', text:'Negocie espólios; confira preço, quantidade e taxas.' },
-    clans:{ level:18, name:'Guildas de jogadores', text:'Encontre aliados e participe de uma comunidade.' },
-    arena:{ level:20, name:'Coliseu Carmesim', text:'Teste suas decisões contra as defesas de outros jogadores.' }
+    prof:{ level:10, name:'Profissões', text:'Colete materiais e crie o próprio equipamento.' },
+    market:{ level:12, name:'Mercado do Porto', text:'As ofertas dos comerciantes mudam a cada 2 horas.' },
+    trade:{ level:15, name:'Mercado de Jogadores', text:'Compre e venda com outros jogadores. A casa cobra taxa.' },
+    clans:{ level:18, name:'Guildas de jogadores', text:'Entre numa guilda ou funde a sua.' },
+    arena:{ level:20, name:'Coliseu Carmesim', text:'Enfrente as defesas montadas por outros jogadores.' }
   };
   const serviceFor = (panel, tab) => panel === 'city' ? (services[tab] ? tab : null)
     : panel === 'shop' ? ({ market:'market', p2p:'trade', gems:'trade' }[tab] || null)
@@ -88,14 +88,14 @@
   const jobs = {
     Vanguarda:{ a:{ name:'Bastião Celeste', role:'Defesa absoluta', text:'+8% HP e +8% DEF. Segura a linha e protege a equipe.', stats:{ hp:.08, def:.08 }, trans:'Muralha dos Céus' },
                 b:{ name:'Berserker Rubro', role:'Tanque ofensivo', text:'+10% ATK e +3% roubo de vida. Aguenta batendo.', stats:{ atk:.10, lifesteal:.03 }, trans:'Rei da Carnificina' } },
-    Executor:{ a:{ name:'Lâmina do Eclipse', role:'Críticos devastadores', text:'+3% crítico e +12% dano crítico.', stats:{ crit:.03, critDmg:.12 }, trans:'Senhor do Eclipse' },
-               b:{ name:'Ronin das Sombras', role:'Esquiva e velocidade', text:'+4% esquiva e +5% velocidade de ataque.', stats:{ dodge:.04, spd:.05 }, trans:'Espectro Sem Nome' } },
-    Arcanista:{ a:{ name:'Oráculo Astral', role:'Habilidades e energia', text:'+8% dano de habilidade e +6% energia.', stats:{ skill:.08, nrg:.06 }, trans:'Arauto das Estrelas' },
-                b:{ name:'Feiticeiro da Ruína', role:'Queimaduras e elementos', text:'+15% dano contínuo e +6% dano elemental.', stats:{ dot:.15, elem:.06 }, trans:'Soberano da Ruína' } },
-    Atirador:{ a:{ name:'Olho do Vendaval', role:'Cadência de tiro', text:'+6% velocidade de ataque e +3% crítico.', stats:{ spd:.06, crit:.03 }, trans:'Tempestade Viva' },
-               b:{ name:'Caçador de Relíquias', role:'Caça a chefes', text:'+10% dano em chefes e +5% perfuração.', stats:{ boss:.10, pierce:.05 }, trans:'Arqueiro do Fim' } },
-    Suporte:{ a:{ name:'Tecelão de Almas', role:'Cura e escudos', text:'+10% cura/escudos e +5% HP.', stats:{ healPow:.10, hp:.05 }, trans:'Guardião das Almas' },
-              b:{ name:'Sacerdote da Aurora', role:'Apoio e economia', text:'+6% dano de habilidade e +5% de Economia de técnica.', stats:{ skill:.06, cdr:.05 }, trans:'Profeta da Aurora' } }
+    Executor:{ a:{ name:'Lâmina do Eclipse', role:'Críticos devastadores', text:'+3% crítico e +12% dano crítico. Acerta onde dói.', stats:{ crit:.03, critDmg:.12 }, trans:'Senhor do Eclipse' },
+               b:{ name:'Ronin das Sombras', role:'Esquiva e velocidade', text:'+4% esquiva e +5% velocidade de ataque. Some antes de o golpe chegar.', stats:{ dodge:.04, spd:.05 }, trans:'Espectro Sem Nome' } },
+    Arcanista:{ a:{ name:'Oráculo Astral', role:'Habilidades e energia', text:'+8% dano de habilidade e +6% energia. Ultimate atrás de ultimate.', stats:{ skill:.08, nrg:.06 }, trans:'Arauto das Estrelas' },
+                b:{ name:'Feiticeiro da Ruína', role:'Queimaduras e elementos', text:'+15% dano contínuo e +6% dano elemental. O que pega fogo não apaga.', stats:{ dot:.15, elem:.06 }, trans:'Soberano da Ruína' } },
+    Atirador:{ a:{ name:'Olho do Vendaval', role:'Cadência de tiro', text:'+6% velocidade de ataque e +3% crítico. Não para de atirar.', stats:{ spd:.06, crit:.03 }, trans:'Tempestade Viva' },
+               b:{ name:'Caçador de Relíquias', role:'Caça a chefes', text:'+10% dano em chefes e +5% perfuração. Mira sempre no maior da sala.', stats:{ boss:.10, pierce:.05 }, trans:'Arqueiro do Fim' } },
+    Suporte:{ a:{ name:'Tecelão de Almas', role:'Cura e escudos', text:'+10% cura/escudos e +5% HP. Segura todo mundo de pé.', stats:{ healPow:.10, hp:.05 }, trans:'Guardião das Almas' },
+              b:{ name:'Sacerdote da Aurora', role:'Apoio e economia', text:'+6% dano de habilidade e +5% de Economia de técnica. Reza curto e bate junto.', stats:{ skill:.06, cdr:.05 }, trans:'Profeta da Aurora' } }
   };
   // Compatibilidade: PR.jobs[cls].name continua sendo o caminho A.
   Object.values(jobs).forEach(j => { j.name = j.a.name; j.text = j.a.text; });
@@ -165,7 +165,7 @@
       T('aN', 1, 470, 'Mente Arcana', 'book', 1, { skill:.10, nrg:.10 }, 'NOTÁVEL: poder e energia.', { req:['a6|a7'], notable:true, y:1.5 }),
       T('a9', 2, 110, 'Eco Arcano', 'orb', 5, {}, 'Ultimates devolvem Pontos de Técnica.', { req:['a5'], hook:r => ({ onUlt:{ eff:[{ k:'cdr', v:1.2 * r, to:'self' }] } }), hookText:r => `Ao usar a ultimate: devolve ${(.4 * r).toFixed(1).replace('.', ',')} PT.` }),
       T('a10', 2, 290, 'Poder Bruto', 'sword', 5, { atk:.03 }, 'Mais ATK.', { req:['aN'] }),
-      T('a11', 2, 650, 'Penetração Mística', 'spear', 5, { pierce:.03 }, 'Ignora DEF.', { req:['a8'] }),
+      T('a11', 2, 650, 'Penetração Mística', 'spear', 5, { pierce:.03 }, 'Ignora parte da DEF.', { req:['a8'] }),
       T('aK', 2, 470, 'Singularidade', 'moon', 1, { ultDmg:.40, hp:-.15 }, 'PEDRA-CHAVE: +40% dano de ultimate. −15% HP.', { req:['aN'], keystone:true })
     ],
     Atirador: [
@@ -180,7 +180,7 @@
       T('tN', 1, 470, 'Olho de Águia', 'eye', 1, { crit:.06, spd:.06 }, 'NOTÁVEL: visão perfeita.', { req:['t6|t7'], notable:true, y:1.5 }),
       T('t9', 2, 110, 'Tiro Elemental', 'star', 5, { elem:.04 }, 'Mais dano com vantagem elemental.', { req:['t5'] }),
       T('t10', 2, 290, 'Rajada', 'arrows', 5, {}, 'A cada 4 ataques, uma rajada.', { req:['tN'], hook:r => ({ every:{ n:4, eff:[{ k:'dmg', m:.3 * r, to:'rand' }] } }), hookText:r => `A cada 4 ataques: tiro extra de ${30 * r}% ATK num inimigo aleatório.` }),
-      T('t11', 2, 650, 'Calibre Mortal', 'sword', 5, { atk:.03 }, 'Mais ATK.', { req:['t8'] }),
+      T('t11', 2, 650, 'Calibre Grosso', 'sword', 5, { atk:.03 }, 'Mais ATK.', { req:['t8'] }),
       T('tK', 2, 470, 'Tiro Mortal', 'target', 1, { crit:.15, critDmg:.30, spd:-.15 }, 'PEDRA-CHAVE: +15% crítico e +30% dano crítico. −15% velocidade.', { req:['tN'], keystone:true })
     ],
     Suporte: [
@@ -282,22 +282,22 @@
   const shop = {
     gold: [
       { id:'potion', name:'Poção de Cura', icon:'potion_red_01', hue:0, give:{ potion:1 }, price:{ gold:250 }, scale:true, text:'Cura 35% do HP de toda a equipe durante o combate (recarga 20s).' },
-      { id:'potion5', name:'Poções de Cura ×5', icon:'potion_red_01', hue:0, give:{ potion:5 }, price:{ gold:1100 }, scale:true, text:'Pacote econômico de 5 poções.' },
-      { id:'elixir', name:'Elixir de Energia', icon:'potion_blue_01', hue:0, give:{ elixir:1 }, price:{ gold:400 }, scale:true, text:'+50 de energia para toda a equipe (recarga 30s). Ultimates na hora certa!' },
+      { id:'potion5', name:'Poções de Cura ×5', icon:'potion_red_01', hue:0, give:{ potion:5 }, price:{ gold:1100 }, scale:true, text:'Cinco de uma vez, mais barato.' },
+      { id:'elixir', name:'Elixir de Energia', icon:'potion_blue_01', hue:0, give:{ elixir:1 }, price:{ gold:400 }, scale:true, text:'+50 de energia para toda a equipe (recarga 30s). Ultimates na hora certa.' },
       { id:'scroll', name:'Pergaminho de Estudo', icon:'tome_01', hue:45, give:{ scroll:1 }, price:{ gold:2400 }, scale:true, limit:3, text:'Concede 8% da EXP do próximo nível. Compra e uso limitados a 3 por dia.' },
       { id:'onigiri', name:'Onigiri do Viajante', icon:'magic_dust_01', hue:130, give:{ onigiri:1 }, price:{ gold:900 }, scale:true, text:'Comida: +10% HP para a equipe por 30 minutos.' },
       { id:'ramen', name:'Ramen Picante', icon:'potion_red_01', hue:20, give:{ ramen:1 }, price:{ gold:1100 }, scale:true, text:'Comida: +10% ATK para a equipe por 30 minutos.' },
       { id:'tea', name:'Chá de Jasmim', icon:'potion_blue_01', hue:130, give:{ tea:1 }, price:{ gold:1400 }, scale:true, text:'Bebida: +10% de EXP por 30 minutos.' },
       { id:'ore10', name:'Tamahagane ×10', icon:'crystal_01', hue:290, give:{ ore:10 }, price:{ gold:1500 }, scale:true, text:'Material comum de refino (até +10).' },
-      { id:'dust10', name:'Pó de Éter ×15', icon:'magic_dust_01', hue:220, give:{ dust:15 }, price:{ gold:1200 }, scale:true, text:'Usado para encantar (re-sortear afixos) na Oficina.' }
+      { id:'dust10', name:'Pó de Éter ×15', icon:'magic_dust_01', hue:220, give:{ dust:15 }, price:{ gold:1200 }, scale:true, text:'Para encantar na Oficina: sorteia afixos novos.' }
     ],
     crystal: [
       { id:'key1', name:'Chave de Convocação', icon:'lantern_seal', hue:290, give:{ keys:1 }, price:{ crystal:150 }, text:'Uma convocação na Caixa dos Mundos.' },
       { id:'key10', name:'10 Chaves de Convocação', icon:'lantern_seal', hue:290, give:{ keys:10 }, price:{ crystal:1350 }, text:'10 convocações com 10% de desconto.' },
       { id:'bag', name:'Expansão da Bolsa (+25)', icon:'backpack_LVL_01', hue:0, give:{ invCap:25 }, price:{ crystal:100 }, text:'Mais espaço para itens. O preço sobe a cada expansão. Máximo de 400 espaços.' },
       { id:'luck', name:'Pergaminho da Sorte', icon:'tome_01', hue:45, give:{ luck:1 }, price:{ crystal:40 }, text:'+20% chance de itens por 30 minutos.' },
-      { id:'boost', name:'Incenso do Viajante (1h)', icon:'magic_dust_01', hue:45, give:{ boost:3600 }, price:{ crystal:80 }, limit:1, text:'+20% de EXP e ouro por 1 hora. Limite de 1 por dia.' },
-      { id:'respec', name:'Pergaminho do Esquecimento', icon:'tome_01', hue:290, give:{ respec:1 }, price:{ crystal:50 }, text:'Redefine gratuitamente os talentos de um herói.' },
+      { id:'boost', name:'Incenso do Viajante (1 h)', icon:'magic_dust_01', hue:45, give:{ boost:3600 }, price:{ crystal:80 }, limit:1, text:'+20% de EXP e ouro por 1 hora. Limite de 1 por dia.' },
+      { id:'respec', name:'Pergaminho do Esquecimento', icon:'tome_01', hue:290, give:{ respec:1 }, price:{ crystal:50 }, text:'Redefine os talentos de um herói sem gastar ouro.' },
       { id:'ore50', name:'Tamahagane ×50', icon:'crystal_01', hue:290, give:{ ore:50 }, price:{ crystal:160 }, text:'Estoque de material comum de refino.' },
       { id:'star1', name:'Aço Estelar', icon:'crystal_01', hue:190, give:{ star:1 }, price:{ crystal:180 }, limit:2, text:'Material raro de refino: até +8 sem perder nível. Limite de 2 por dia.' },
       { id:'ori1', name:'Oricalco', icon:'crystal_01', hue:250, give:{ ori:1 }, price:{ crystal:900 }, limit:1, text:'Material épico de refino: até +15. Limite de 1 por dia.' }

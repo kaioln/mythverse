@@ -114,7 +114,7 @@
   };
   // Ajustes finos por personagem (atributos e estilo).
   const heroTweaks = {
-    kenta:{ attr:{ str:4, vit:2 }, talents:['ess','v4','v1','v2','v8','v5','v6','vN','sig_skill','v3','v7','v11','v10','sig_ult','v9'], note:'Vanguarda ofensivo: FOR alta para o Golpe Definitivo.' },
+    kenta:{ attr:{ str:4, vit:2 }, talents:['ess','v4','v1','v2','v8','v5','v6','vN','sig_skill','v3','v7','v11','v10','sig_ult','v9'], note:'Vanguarda ofensivo: FOR alta para o Soco dos Mil Degraus.' },
     toma:{ attr:{ str:3, vit:2, agi:1 }, note:'O Poder Distribuído acumula ATK, invista em FOR e VIT para aguentar o custo de HP das ultimates.' },
     tobias:{ attr:{ vit:3, str:2, luk:1 }, note:'A Maré Gigante depende de energia: um pouco de SOR ajuda.' },
     grant:{ attr:{ vit:3, str:3 }, note:'Aura de ATK para a equipe: mantenha-o vivo e na frente.' },

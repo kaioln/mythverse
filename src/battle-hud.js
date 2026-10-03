@@ -63,11 +63,11 @@
     // Na barra do herói o botão é só o ícone (o nome e a descrição vão na linha de baixo e na dica); a equipe leva o nome.
     const ab = (id, art, name, key, extra = '') => `<button class="ab ${extra}" data-ab="${id}" data-tip-touch type="button"${name ? ` aria-label="${name}"` : ''}><span class="ab-ic">${art ? icon(art, `<i class="ic ic-${{ 'cmd-attack':'swords', 'cmd-defend':'shield', 'cmd-guard':'shield', potion:'heal', elixir:'bolt' }[art] || 'star'}"></i>`) : ''}<span class="ab-veil"></span>${extra.includes('team') ? '<span class="ab-cd"></span>' : ''}</span>${key ? `<kbd>${key}</kbd>` : ''}${id[0] === 's' ? '<span class="ab-cost"></span>' : ''}${id === 'potion' || id === 'elixir' ? '<span class="ab-count">0</span>' : ''}${extra.includes('team') ? `<b class="ab-name">${name}</b>` : ''}</button>`;
     const hud = document.createElement('section'); hud.id = 'battle-hud'; hud.className = 'bhud'; hud.setAttribute('aria-label', 'Console de batalha');
-    const MODE = [['auto', 'cmd-auto', 'AUTO', 'A equipe decide tudo sozinha.'], ['semi', 'cmd-semi', 'SEMI', 'A equipe age sozinha; as ultimates são suas.'], ['manual', 'cmd-manual', 'MANUAL', 'Na vez de cada herói a luta espera a sua ordem.']];
+    const MODE = [['auto', 'cmd-auto', 'AUTO', 'A equipe decide tudo sozinha.'], ['semi', 'cmd-semi', 'SEMI', 'A equipe age sozinha: as ultimates são suas.'], ['manual', 'cmd-manual', 'MANUAL', 'Na vez de cada herói a luta espera a sua ordem.']];
     hud.innerHTML = `<div class="bh-grid">
       <div class="bh-party" id="bh-party"></div>
       <div class="bh-side bh-panel">
-        <span class="bh-mode" role="group" aria-label="Quem comanda a luta">${MODE.map(([id, art, label, txt]) => `<button type="button" data-mode="${id}" data-tip="<b>Comando ${label}</b> · tecla Z<br>${txt}">${icon(art)}<b>${label}</b></button>`).join('')}</span>
+        <span class="bh-mode" role="group" aria-label="Quem comanda a luta">${MODE.map(([id, art, label, txt]) => `<button type="button" data-mode="${id}" data-tip="<b>Comando ${label}</b>${TOUCH ? '' : ' · tecla Z'}<br>${txt}">${icon(art)}<b>${label}</b></button>`).join('')}</span>
         <div class="bh-team" role="toolbar" aria-label="Ações da equipe">${ab('guard', 'cmd-guard', 'Guarda', 'ESPAÇO', 'team guard')}${ab('potion', 'potion', 'Poção', 'F', 'team')}${ab('elixir', 'elixir', 'Elixir', 'C', 'team')}</div>
       </div>
       <div class="bh-mid bh-panel">
@@ -218,7 +218,7 @@
         this.bhSay(`<b>${esc(u.name.split(',')[0])}</b> usou <b>${esc(name)}</b>.<span class="lg"> ${esc(short)}</span>`, 3200);
       }
     } else if (fx.type === 'sp' && fx.delta > 0) this.bhSpGain = performance.now();
-    else if (fx.type === 'break') { const t = e.enemies.find(x => x.uid === fx.uid); if (t) this.bhSay(`<b>QUEBRA!</b> ${esc(t.name.split(',')[0])} fica atordoado e recebe +35% de dano. +1 PT.`, 3000); }
+    else if (fx.type === 'break') { const t = e.enemies.find(x => x.uid === fx.uid); if (t) this.bhSay(`<b>QUEBRA!</b> ${esc(t.name.split(',')[0])} fica sem agir e recebe +35% de dano. +1 PT.`, 3000); }
     else if (fx.type === 'reaction') this.bhSay(`Reação elemental: <b>${esc(fx.name)}</b>.`, 2600);
     else if (fx.type === 'chain') { const u = e.party.find(x => x.uid === fx.uid); this.bhSay(`<span class="say gold"><b>Elo Kizuna ×${fx.n}</b></span> · ${u ? `<b>${esc(u.template.ult.name)}</b> ` : ''}com +${Math.round(e.chainBonus * 100)}%. Outro herói em até ${KT.State.CHAIN.window}s aumenta o elo.`, 3600); }
     else if (fx.type === 'allOutReady' && e.mode === 'manual') this.bhSay(`Todos os inimigos quebrados: <b>ASSALTO TOTAL</b> disponível${TOUCH ? '' : ' (<kbd>T</kbd>)'}.`, 4000);
@@ -328,12 +328,12 @@
     else if (this.bhHover === 'ult' || /^u\d/.test(this.bhHover || '')) { const who = this.bhHover === 'ult' ? actor : e.party[Number(this.bhHover.slice(1))] || actor; info = `<b>${esc(who.template.ult.name)}</b> · <span class="pt">100 de energia</span> · fora da vez de ${esc(who.name.split(',')[0])} · ${esc(who.template.ultText)}`; }
     else if (this.bhHover === 'attack') info = '<b>Atacar</b> · <span class="pt">+1 PT</span> · +10 de energia · Golpe básico no alvo marcado. No golpe cronometrado, confirme de novo na faixa dourada.';
     else if (this.bhHover === 'defend') info = '<b>Defender</b> · <span class="pt">+1 PT</span> · +15 de energia · O herói leva metade do dano até a próxima vez dele.';
-    else if (this.bhHover === 'guard') info = '<b>Guarda da equipe</b> · recarga de 6s · Metade do dano em todos; erguida no bote de um golpe preparado vira <b>Aparo</b>.';
+    else if (this.bhHover === 'guard') info = '<b>Guarda da equipe</b> · recarga de 6s · Metade do dano em todos. Erguida no bote de um golpe preparado vira <b>Aparo</b>.';
     else if (this.bhHover === 'potion') info = '<b>Poção de Cura</b> · recarga de 20s · +35% de vida para toda a equipe.';
     else if (this.bhHover === 'elixir') info = '<b>Elixir de Energia</b> · recarga de 30s · +50 de energia para toda a equipe.';
     else if (this.bhMsg && now < this.bhMsgUntil) info = this.bhMsg;
     else if (state === 'turn') info = `Vez de <b>${esc(actor.name.split(',')[0])}</b>: escolha a ação.`;
-    else if (!fight) info = { between:'A próxima onda está chegando…', waiting:'Preparando a luta…', defeat:'A equipe caiu.' }[e.phase] || '';
+    else if (!fight) info = { between:'A próxima onda está chegando…', waiting:'Tomando posição…', defeat:'A equipe caiu.' }[e.phase] || '';
     else info = state !== 'auto' ? 'Aguardando a vez…' : TOUCH ? 'A equipe está no comando. Troque em <b>COMANDO</b> para dar as ordens.' : 'A equipe está no comando. <kbd>Z</kbd> troca para dar as ordens.';
     html(B.info, `<span>${info}</span>`);
     // ----- alvo -----
@@ -359,7 +359,7 @@
       this.bhTgtKey = key;
       const who = it.target && e.party.find(h => h.uid === it.target);
       // No console estreito some o começo da frase (.lg): fica o ícone e o nome do golpe, ou a seta e o herói mirado.
-      const intent = it.kind === 'broken' ? ['st-broken', 'Quebrado<span class="lg">: não age</span>', ''] : it.kind === 'special' ? ['sys-alert', `<span class="lg">Golpe preparado: </span><b>${esc(it.name)}</b>`, 'danger'] : it.kind === 'windup' ? ['sys-alert', `<span class="lg">Vai preparar </span><b>${esc(it.name)}</b>`, 'danger']
+      const intent = it.kind === 'broken' ? ['st-broken', 'Quebrou<span class="lg">: não age</span>', ''] : it.kind === 'special' ? ['sys-alert', `<span class="lg">Golpe preparado: </span><b>${esc(it.name)}</b>`, 'danger'] : it.kind === 'windup' ? ['sys-alert', `<span class="lg">Vai preparar </span><b>${esc(it.name)}</b>`, 'danger']
         : it.kind === 'skill' ? ['intent', `<span class="lg">Vai usar </span><b>${esc(it.name)}</b>`, ''] : it.kind === 'attack' ? ['intent', who ? `<span class="lg">Vai golpear </span><span class="sm">→ </span><b>${esc(who.name.split(',')[0])}</b>` : '<span class="lg">Escolhendo o alvo</span><span class="sm">Mirando…</span>', ''] : ['intent', '', ''];
       const segs = many ? '<span class="barx"><i></i></span>' : `<span class="segs">${'<i></i>'.repeat(Math.max(1, Math.ceil(t.toughMax)))}</span>`;
       el.innerHTML = `<span class="bt-thumb"><img src="${t.rival ? portrait(t.id) : KT.spriteUrl(t.sprite)}" alt=""><em>${t.level}</em></span>

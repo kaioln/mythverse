@@ -262,7 +262,7 @@
         this.engine.party.forEach(u => { if (!u.alive) return; const p = this.posOf(u.uid); this.v(u.uid).guardHit = .45; this.ring(p.x + 26, p.y - p.h * .5, '#ffffff', 120, true); this.sparks(p.x + p.h * .24, p.y - p.h * .5, 14, '#fff3c4', 420); });
         const q = this.posOf(fx.uid);
         if (q) this.later(.1, () => { this.hitActor(fx.uid, 1, 1); this.impact(q.x, q.y - q.h * .5, '#ffe28a', 1.5); this.ring(q.x, q.y - q.h * .45, '#ffe28a', 150, true); this.sparks(q.x, q.y - q.h * .5, 18, '#ffe9b0', 460); });
-        this.showBanner('APARO!', 'golpe bloqueado no instante certo · energia e postura a favor', '#ffe28a');
+        this.showBanner('APARO!', 'a equipe ganha energia, o inimigo perde postura', '#ffe28a');
         return;
       }
       if (t === 'dodge') {
@@ -274,7 +274,7 @@
       }
       if (t === 'levelUp') {
         const p = this.posOf(fx.uid); if (!p) return;
-        this.v(fx.uid).level = 1.4; this.text(p.x, p.y - p.h - 44, 'LEVEL UP!', '#ffd76a', 26, 1.6);
+        this.v(fx.uid).level = 1.4; this.text(p.x, p.y - p.h - 44, 'NOVO NÍVEL', '#ffd76a', 26, 1.6);
         for (let i = 0; i < 22; i++) this.particles.push({ kind:'rise', x:p.x + U.rand(-45, 45), y:p.y - U.rand(0, 20), vy:-U.rand(120, 260), color:'#ffd76a', life:U.rand(.7, 1.3), max:1.3, size:U.rand(2, 4) });
         return;
       }
@@ -833,7 +833,7 @@
         if (q.result === null) { c.lineWidth = gold ? 6 : 4; c.strokeStyle = gold ? '#ffffff' : 'rgba(255,255,255,.75)'; if (gold) { c.shadowColor = '#ffe28a'; c.shadowBlur = 16; } c.beginPath(); c.arc(0, 0, Math.max(R - 6, R + (1 - Math.min(1, k / .76)) * 104), 0, Math.PI * 2); c.stroke(); }
         c.shadowBlur = 0; if (KT.Icons?.draw) KT.Icons.draw(c, 'shield', 0, 0, 34, q.result === 1 || gold ? '#ffe28a' : '#fff1dc', 3);
         c.restore();
-        const msg = q.result === 1 ? 'NO TEMPO!' : q.result === 0 ? (q.early ? 'CEDO DEMAIS' : 'TARDE') : !ready ? 'GUARDA EM RECARGA' : gold ? 'AGORA!' : 'ESPERE O ANEL…';
+        const msg = q.result === 1 ? 'NO TEMPO!' : q.result === 0 ? (q.early ? 'CEDO' : 'TARDE') : !ready ? 'GUARDA EM RECARGA' : gold ? 'AGORA!' : 'ESPERE O ANEL…';
         label(msg, cy - R - 30, q.result === null && gold ? 30 : 22, q.result === 1 || (q.result === null && gold) ? '#ffe28a' : '#fff1dc');
         return;
       }
