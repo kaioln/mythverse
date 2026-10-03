@@ -14,7 +14,7 @@
     afk.dataset.tip = 'Modo AFK Total (farm): repete o estágio atual, usa poções e equipa itens melhores. Não avança nem distribui pontos.';
     afk.innerHTML = '<span><i class="ic ic-moon"></i> AFK</span><b>OFF</b>'; ctl.prepend(afk);
     const boost = document.createElement('button'); boost.id = 'boost-btn'; boost.className = 'ctl boost'; boost.type = 'button';
-    boost.dataset.tip = 'Preparação: escolha entre farm, equipamento, atributos ou talentos. Nenhuma build inteira é montada sozinha.'; boost.setAttribute('aria-label', 'Preparar equipe');
+    boost.dataset.tip = 'Preparação: escolha farm, equipamento, atributos ou talentos. Não troca heróis nem monta a build inteira.'; boost.setAttribute('aria-label', 'Preparar equipe');
     boost.innerHTML = '<span><i class="pi pi-cmd-prepare"></i></span><b>PREPARAR</b><em class="ctl-dot" hidden></em>'; ctl.prepend(boost);
     const banner = document.createElement('div'); banner.id = 'afk-banner'; banner.hidden = true; document.querySelector('#viewport')?.appendChild(banner);
     this.el.afk = afk; this.el.boost = boost; this.el.afkBanner = banner;
@@ -37,16 +37,16 @@
     if (on) {
       const ok = await this.ask('Ativar o Modo AFK Total?', `<div class="afk-explain"><p>Sua equipe passa a jogar <b>sozinha</b>, sem parar:</p><ul>
         <li>Luta com ultimates automáticas e escolhe os eventos sozinha.</li>
-        <li><b>Farma</b> o estágio atual sem parar (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
+        <li><b>Farma</b> o estágio atual (não avança sozinho). Se perder, recua um estágio e farma ali.</li>
         <li>Usa poções quando a vida fica baixa e elixires contra chefes.</li>
-        <li>A cada ~45 s equipa itens melhores; atributos e talentos continuam sob sua decisão.</li>
-        <li>Masmorras e chefes se repetem enquanto derem espólio; depois volta a caçar.</li></ul>
+        <li>A cada ~45 s equipa itens melhores. Atributos e talentos ficam por sua conta.</li>
+        <li>Masmorras e chefes se repetem enquanto derem espólio. Depois volta a caçar.</li></ul>
         <p class="dim">Com o jogo fechado, o progresso continua pelo AFK offline (até 12 h, rendendo menos). Toque em <b>Sair do AFK</b> a qualquer momento.</p></div>`,
-        [{ id:'yes', label:'Ativar AFK Total', primary:true }, { id:'no', label:'Cancelar' }]);
+        [{ id:'yes', label:'Ativar AFK', primary:true }, { id:'no', label:'Cancelar' }]);
       if (ok !== 'yes') return;
     }
     if (this.engine.seg) this.engine.input('afk', on); else { this.engine.setAfk(on); this.cmd('setSetting', 'afk', on); }
-    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>Modo AFK Total ativado.</b> Farmando este estágio: pode deixar rolando!', 'gold'); }
+    if (on) { this.startAfkSession(); this.afkManage(); this.toast('<b>Modo AFK Total ativado.</b> Farmando este estágio. Pode deixar rolando.', 'gold'); }
     else { const r = this.afkSummary(); this.afkSession = null; this.toast(`<b>AFK encerrado.</b> ${r ? `Em ${r.time}: +${U.fmt(r.gold)} ouro, ${U.fmt(r.kills)} abates, ${r.loot} itens, +${r.lv} níveis.` : ''}`); }
     this.renderControls(); this.renderAfk();
   };
@@ -89,14 +89,14 @@
   };
   P.openPreparation = async function() {
     if (!this.engine.heroes.length) { this.toast('Monte a equipe primeiro.'); this.openPanel('party'); return; }
-    const choice = await this.ask('Preparar equipe', '<div class="prep-choice"><p>Escolha uma tarefa. A preparação não troca heróis nem cria uma build completa.</p><small>Farm mantém o estágio atual repetindo; as outras ações usam apenas recursos e pontos já disponíveis.</small></div>', [
+    const choice = await this.ask('Preparar equipe', '<div class="prep-choice"><p>Escolha uma tarefa. A preparação não troca heróis nem cria uma build completa.</p><small>Farm repete o estágio atual. As outras tarefas usam só recursos e pontos que você já tem.</small></div>', [
       { id:'farm', label:'Farmar estágio', primary:true }, { id:'items', label:'Equipar melhores' }, { id:'attr', label:'Distribuir atributos' }, { id:'talents', label:'Aprender talentos' }, { id:'cancel', label:'Cancelar' }
     ]);
     if (!choice || choice === 'cancel') return;
     if (choice === 'farm') {
       await this.cmd('setSetting', 'autoAdvance', false);
       if (this.engine.zone.kind === 'village') { const z = this.state.lastHunt || 'hunt', p = this.state.progress[z] || {}; this.engine.enterZone(z, { stage:Math.max(1, p.cur || p.best || 1) }); }
-      this.toast('<b>Farm ativado.</b> O estágio atual será repetido; ligue AFK se quiser automatizar apenas o combate.', 'gold'); return;
+      this.toast('<b>Farm ativado.</b> O estágio atual se repete. Para a equipe jogar sozinha, ligue o AFK.', 'gold'); return;
     }
     const op = { items:'autoEquip', attr:'autoAttr', talents:'autoTalents' }[choice]; let n = 0;
     for (const h of [...this.engine.heroes]) n += Number(await this.cmd(op, h.uid)) || 0;

@@ -40,17 +40,17 @@
     async attack(ref, kind = 'arena') {
       const e = this.engine;
       if (!e.requireService('arena') || kind === 'gvg' && !e.requireService('clans')) return;
-      if (this.match) return this.fail(new Error('Conclua a luta atual antes de iniciar outra.'));
+      if (this.match) return this.fail(new Error('Termine a luta atual antes de começar outra.'));
       if (this.busy) return; if (e.heroes.length < 4) return this.fail(new Error('Monte uma equipe com 4 heróis.'));
       this.busy = true;
       try {
-        if (!this.status?.hasDefense && !await this.saveDefense(true)) throw new Error('Não foi possível registrar sua defesa. Nenhum desafio foi iniciado.');
+        if (!this.status?.hasDefense && !await this.saveDefense(true)) throw new Error('Sua defesa não foi salva. O desafio não começou.');
         const m = await this.rpc(kind === 'gvg' ? 'mv_gvg_start' : 'mv_pvp_start', { p_ref:ref });
         this.match = { id:m.match, kind, name:m.name, mmr:m.mmr };
         e.arenaFoe = { name:m.name, mmr:m.mmr, tier:m.tier, defense:m.defense, seed:Number(m.seed), kind };
         this.ui.closeModal();
-        if (!e.enterZone('arena')) throw new Error('Não foi possível entrar na Arena.');
-        this.ui.toast(`<b>${KT.UIController.helpers.esc(m.name)}</b> aceitou o desafio! Use Q/W/E/R nas ultimates e clique para focar.`, 'gold');
+        if (!e.enterZone('arena')) throw new Error('Os portões da Arena não abriram.');
+        this.ui.toast(`<b>${KT.UIController.helpers.esc(m.name)}</b> aceitou o desafio. Use Q/W/E/R nas ultimates e clique para focar.`, 'gold');
       } catch (err) { this.fail(err); }
       finally { this.busy = false; }
     },
@@ -101,13 +101,13 @@
       try {
         await this.rpc('mv_guild_create', { p_name:f.name, p_tag:f.tag, p_emblem:f.emblem || '月', p_motto:f.motto || '', p_open:!!f.open, p_display:String(s.player.name || 'Viajante'), p_power:Math.round(this.engine.getPower()) });
         s.player.gold -= cost; this.engine.save(); KT.Neon.flush();
-        this.ui.toast(`Guilda <b>${KT.UIController.helpers.esc(f.name)}</b> fundada!`, 'gold'); await this.refreshGuild();
+        this.ui.toast(`Guilda <b>${KT.UIController.helpers.esc(f.name)}</b> fundada.`, 'gold'); await this.refreshGuild();
       } catch (e) { this.fail(e); }
       finally { this.creatingGuild = false; }
     },
     async join(id) {
       if (!this.engine.requireService('clans')) return;
-      try { const r = await this.rpc('mv_guild_join', { p_gid:id, p_display:String(this.engine.state.player.name || 'Viajante'), p_power:Math.round(this.engine.getPower()) }); this.ui.toast(r === 'joined' ? 'Bem-vindo à guilda!' : 'Pedido enviado. Um oficial precisa aceitar.', 'gold'); await this.refreshGuild(); await this.listGuilds(); }
+      try { const r = await this.rpc('mv_guild_join', { p_gid:id, p_display:String(this.engine.state.player.name || 'Viajante'), p_power:Math.round(this.engine.getPower()) }); this.ui.toast(r === 'joined' ? 'Entrou na guilda.' : 'Pedido enviado. Um oficial precisa aceitar.', 'gold'); await this.refreshGuild(); await this.listGuilds(); }
       catch (e) { this.fail(e); }
     },
     async manage(action, ref) { try { await this.rpc('mv_guild_manage', { p_action:action, p_ref:ref }); await this.refreshGuild(); } catch (e) { this.fail(e); } },

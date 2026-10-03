@@ -79,7 +79,7 @@
         for (let i = 0; !r.ok && r.status !== 400 && r.status !== 401 && r.status !== 403 && i < 4; i++) { await new Promise(res => setTimeout(res, 1500 * (i + 1))); r = await Net.api('POST', '/api/sync', payload); }
         if (!r.ok) {
           this.status = 'error'; this.error = r.error; this.ui?.renderCloud?.();
-          if (r.status === 401) this.ui?.toast('Sua sessão expirou. Entre novamente.');
+          if (r.status === 401) this.ui?.toast('Sua sessão expirou. Entre de novo.');
           else this.ui?.toast(`Não foi possível falar com o servidor: ${r.error}`);
           if (body.start) { eng.segWaiting = false; setTimeout(() => { if (eng.active && !eng.seg && eng.zone.kind !== 'village') eng.startRun(); }, 5000); }
           return { ok:false, error:r.error };

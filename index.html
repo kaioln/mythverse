@@ -40,18 +40,18 @@
         <span class="player-avatar"><img id="player-avatar-img" alt="" hidden><span class="avatar-fallback hanko" aria-hidden="true">神</span><i class="cloud-dot" id="cloud-dot" data-tip="Salvamento"></i></span>
         <span class="player-copy">
           <strong id="player-name">Viajante</strong>
-          <small><span id="player-level">Conta Nv. 1</span> · <span id="power-label">Poder,</span></small>
+          <small><span id="player-level">Conta Nv. 1</span> · <span id="power-label">Poder</span></small>
           <span class="xp-mini"><span id="player-xp-fill"></span></span>
         </span>
       </button>
 
       <div class="resources" id="resources">
-        <div class="res gold" data-tip="Ouro, ganho em combate. Usado em prédios, treino, aprimoramentos e loja."><span class="pi pi-res-gold"></span><b id="gold-value">, </b></div>
-        <div class="res crystal" data-tip="Cristais, marcos de progresso, missões e conquistas. Troque por chaves na Loja."><span class="pi pi-res-crystal"></span><b id="crystal-value">, </b></div>
-        <div class="res dust" data-tip="Éter, desmontando itens. Usado para encantar afixos na Oficina."><span class="pi pi-res-ether"></span><b id="dust-value">, </b></div>
-        <div class="res ore" data-tip="Tamahagane, aço sagrado para aprimorar itens na Forja."><span class="pi pi-res-ore"></span><b id="ore-value">, </b></div>
+        <div class="res gold" data-tip="Ouro: cai em combate. Gasto em prédios, treino, aprimoramentos e loja."><span class="pi pi-res-gold"></span><b id="gold-value"></b></div>
+        <div class="res crystal" data-tip="Cristais: prêmio de marcos, missões e conquistas. Troque por chaves na Loja."><span class="pi pi-res-crystal"></span><b id="crystal-value"></b></div>
+        <div class="res dust" data-tip="Éter: sai de itens desmontados. Encanta afixos na Oficina."><span class="pi pi-res-ether"></span><b id="dust-value"></b></div>
+        <div class="res ore" data-tip="Tamahagane: aço sagrado. Aprimora itens na Forja."><span class="pi pi-res-ore"></span><b id="ore-value"></b></div>
         <button class="res key" data-open="collection" type="button" data-tip="Convocações disponíveis (grátis ou chaves)."><span class="pi pi-res-key"></span><b id="key-value">0</b><small id="key-caption">Grátis</small></button>
-        <button class="res gem" data-open="shop:gems" type="button" data-tip="Gemas, moeda de dinheiro real (100 = R$ 1,00), usada no Mercado de Jogadores. Clique para abrir a carteira."><span class="pi pi-res-gem"></span><b id="gem-value">0</b></button>
+        <button class="res gem" data-open="shop:gems" type="button" data-tip="Gemas: moeda de dinheiro real (100 = R$ 1,00), usada no Mercado de Jogadores. Abre a carteira."><span class="pi pi-res-gem"></span><b id="gem-value">0</b></button>
       </div>
 
       <div class="hud-notice" id="hud-notice" aria-live="polite" hidden></div>
@@ -92,7 +92,7 @@
             <div class="zone-meta"><span id="zone-difficulty">Festival ativo</span><span id="wave-label">8 distritos em celebração</span><span id="power-check" hidden></span></div>
           </div>
           <div class="boss-panel" id="boss-panel" hidden>
-            <div class="boss-line"><span id="boss-kind">CHEFE</span><strong id="boss-name">, </strong><b id="boss-percent">100%</b></div>
+            <div class="boss-line"><span id="boss-kind">CHEFE</span><strong id="boss-name"></strong><b id="boss-percent">100%</b></div>
             <div class="boss-track"><span class="boss-chip" id="boss-chip"></span><span class="boss-fill" id="boss-fill"></span><span class="boss-shield" id="boss-shield"></span><i id="boss-mark-1"></i><i id="boss-mark-2"></i></div>
             <div class="boss-break" id="boss-break" data-tip="Postura: golpes, habilidades e ultimates enchem a barra. Cheia, o chefe fica atordoado 4s, perde o ataque preparado e recebe +35% de dano."><span id="boss-break-fill"></span><em id="boss-break-label">POSTURA</em></div>
             <div class="boss-sub"><small id="boss-phase">Fase 1</small><small id="boss-timer"></small></div>
@@ -101,7 +101,7 @@
             <button class="ctl" id="city-focus-btn" type="button" aria-pressed="false" data-tip="Ampliar a cidade e recolher os cartões da equipe."><span>⛶</span><b>AMPLIAR</b></button>
             <button class="ctl journey-cta" id="journey-cta" data-open="journey" type="button" hidden data-tip="Abrir mapa do mundo (M)." aria-label="Mapa do mundo"><span><svg class="gl" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14M15 6v14"/></svg></span><b>MAPA</b></button>
             <button id="mode-btn" class="ctl mode" type="button" data-mode="auto" data-tip="Quem comanda a luta (tecla Z)."><span>COMANDO</span><b>AUTO</b></button>
-            <button id="advance-btn" class="ctl" type="button" data-tip="Avançar de estágio automaticamente ao vencer. Desligado = repetir o estágio para treinar."><span>AVANÇO</span><b>ON</b></button>
+            <button id="advance-btn" class="ctl" type="button" data-tip="Avança de estágio ao vencer. Desligado, repete o estágio para treinar."><span>AVANÇO</span><b>ON</b></button>
             <button id="speed-btn" class="ctl" type="button" data-tip="Velocidade da luta."><span>VEL</span><b>x1</b></button>
             <button id="retreat-btn" class="ctl danger" type="button" data-tip="Voltar para a cidade."><span>CIDADE</span><b>↩</b></button>
           </div>
@@ -115,20 +115,20 @@
         <div class="village-actions" id="village-actions" hidden>
           <button class="signpost" style="left:25%;top:26%" data-open="city:guild" type="button" data-badge="guild" data-tip="Contratos e recompensas"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-guild"></i></span><span class="sp-plate"><b>Guilda</b><small class="sp-lv"></small></span></button>
           <button class="signpost" style="left:9%;top:32%" data-open="city:dojo" type="button" data-badge="dojo" data-tip="Treino da equipe"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-dojo"></i></span><span class="sp-plate"><b>Dojo</b><small class="sp-lv"></small></span></button>
-          <button class="signpost" style="left:51%;top:17%" data-open="collection" type="button" data-badge="collection" data-tip="Descobrir heróis"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-summon"></i></span><span class="sp-plate"><b>Templo da Invocação</b><small class="sp-lv"></small></span></button>
+          <button class="signpost" style="left:51%;top:17%" data-open="collection" type="button" data-badge="collection" data-tip="Convocar heróis"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-summon"></i></span><span class="sp-plate"><b>Templo da Invocação</b><small class="sp-lv"></small></span></button>
           <button class="signpost" style="left:80%;top:68%" data-open="city:shrine" type="button" data-badge="shrine" data-tip="Despertar heróis"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-shrine"></i></span><span class="sp-plate"><b>Santuário</b><small class="sp-lv"></small></span></button>
           <button class="signpost hot" style="left:62%;top:40%" data-open="city:forge" type="button" data-badge="forge" data-tip="Aprimorar equipamentos"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-forge"></i></span><span class="sp-plate"><b>Forja</b><small class="sp-lv"></small></span></button>
           <button class="signpost bank" style="left:12%;top:76%" data-open="bank" type="button" data-badge="bank" data-tip="Economia, cotações e carteira"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-bank"></i></span><span class="sp-plate"><b>Banco Kogane</b><small class="sp-lv"></small></span></button>
           <button class="signpost quarter" style="left:82%;top:22%" data-quarter="market" type="button" data-badge="quarter" data-sub="Bairro dos mercadores" data-tip="Ir para a Cidade Mercado: o bazar, o Salão de Trocas e o Empório."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-market"></i></span><span class="sp-plate"><b>Cidade Mercado</b><small class="sp-lv"></small></span></button>
           <button class="signpost house" style="left:34%;top:33%" data-open="city:house" type="button" data-badge="house" data-tip="Galeria e Álbum de cartas"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-house"></i></span><span class="sp-plate"><b>Casa do Time</b><small class="sp-lv"></small></span></button>
           <button class="signpost" style="left:47%;top:76%" data-open="city:workshop" type="button" data-badge="workshop" data-tip="Criar e encantar"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-workshop"></i></span><span class="sp-plate"><b>Oficina</b><small class="sp-lv"></small></span></button>
-          <button class="signpost featured" style="left:92%;top:68%" data-open="adventure:expeditions" type="button" data-badge="expeditions" data-tip="Enviar equipes agora"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-expedition"></i></span><span class="sp-plate"><b>Casa de Expedições</b><small class="sp-lv"></small></span></button>
+          <button class="signpost featured" style="left:92%;top:68%" data-open="adventure:expeditions" type="button" data-badge="expeditions" data-tip="Enviar equipes"><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-expedition"></i></span><span class="sp-plate"><b>Casa de Expedições</b><small class="sp-lv"></small></span></button>
           <!-- Cidade Mercado (o bairro que se vê ao fundo da capital): as placas só aparecem quando ele está em cena -->
           <button class="signpost quarter" data-q="market" style="left:12%;top:16%" data-quarter="capital" type="button" data-badge="capital" data-sub="Voltar" data-tip="Voltar para a capital."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-nav-city"></i></span><span class="sp-plate"><b>Capital de Tsukimori</b><small class="sp-lv"></small></span></button>
           <button class="signpost" data-q="market" style="left:20%;top:37%" data-open="shop:p2p" type="button" data-badge="trade" data-sub="Entre jogadores" data-tip="Mercado de Jogadores: compre e venda espólios por ouro."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-ic-scale"></i></span><span class="sp-plate"><b>Salão de Trocas</b><small class="sp-lv"></small></span></button>
           <button class="signpost hot" data-q="market" style="left:47%;top:50%" data-open="shop:market" type="button" data-badge="bazaar" data-sub="Ofertas do dia" data-tip="Ofertas rotativas dos comerciantes."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-market"></i></span><span class="sp-plate"><b>Grande Bazar</b><small class="sp-lv"></small></span></button>
           <button class="signpost" data-q="market" style="left:86%;top:27%" data-open="shop:gold" type="button" data-badge="emporium" data-sub="Poções e chaves" data-tip="Empório Sakura: poções, chaves e pergaminhos."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-nav-shop"></i></span><span class="sp-plate"><b>Empório Sakura</b><small class="sp-lv"></small></span></button>
-          <button class="signpost" data-q="market" style="left:53%;top:14%" data-soon="A Casa de Leilões abre em breve: um gongo, um lote raro e lances em ouro." type="button" data-badge="auction" data-sub="Em breve" data-tip="Leilões em ouro dos itens mais raros. Em breve."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-res-chest"></i></span><span class="sp-plate"><b>Casa de Leilões</b><small class="sp-lv"></small></span></button>
+          <button class="signpost" data-q="market" style="left:53%;top:14%" data-soon="Casa de Leilões ainda fechada: um gongo, um lote raro e lances em ouro." type="button" data-badge="auction" data-sub="Ainda fechada" data-tip="Leilões em ouro dos itens mais raros."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-res-chest"></i></span><span class="sp-plate"><b>Casa de Leilões</b><small class="sp-lv"></small></span></button>
           <button class="signpost" data-q="market" style="left:83%;top:70%" data-open="chat" type="button" data-badge="tea" data-sub="Conversa" data-tip="Casa de Chá: o chat da comunidade."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-nav-chat"></i></span><span class="sp-plate"><b>Casa de Chá</b><small class="sp-lv"></small></span></button>
           <button class="signpost" data-q="market" style="left:15%;top:71%" data-open="bank:quotes" type="button" data-badge="caravan" data-sub="Cotações" data-tip="Pátio das Caravanas: quanto o mundo paga hoje por cada material."><em class="sp-badge" hidden></em><span class="sp-icon"><i class="pi pi-b-storage"></i></span><span class="sp-plate"><b>Pátio das Caravanas</b><small class="sp-lv"></small></span></button>
         </div>
@@ -180,7 +180,7 @@
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <header><button class="modal-back-nav" id="modal-back-nav" type="button" hidden>← Mapa</button><div><span class="eyebrow" id="modal-kicker">MYTHVERSE</span><h2 id="modal-title">Painel</h2></div><div class="modal-tabs" id="modal-tabs"></div><button class="icon-btn close" data-close-modal type="button" aria-label="Fechar painel e voltar ao jogo">✕</button></header>
       <div class="modal-body" id="modal-body"></div>
-      <button class="scroll-hint" id="scroll-hint" type="button" hidden aria-label="Rolar para ver mais"><span>Role para ver mais</span><i></i></button>
+      <button class="scroll-hint" id="scroll-hint" type="button" hidden aria-label="Rolar para ver mais"><span>Mais abaixo</span><i></i></button>
     </section>
   </div>
 

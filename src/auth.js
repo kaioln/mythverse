@@ -38,9 +38,9 @@
       this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card" role="alertdialog" aria-labelledby="auth-off-title">
         <div class="auth-brand"><picture><source type="image/webp" srcset="assets/brand/mv-full-440.webp 440w, assets/brand/mv-full-720.webp 720w" sizes="(max-width:600px) 86vw, 440px"><img class="auth-logo" src="assets/brand/mv-full-440.png" srcset="assets/brand/mv-full-440.png 440w, assets/brand/mv-full-720.png 720w" sizes="(max-width:600px) 86vw, 440px" width="440" height="240" alt="Mythverse: Heróis de todos os mundos"></picture></div>
         <h2 id="auth-off-title" class="auth-off-title">Servidor indisponível</h2>
-        <p class="auth-note">Não foi possível falar com o servidor do jogo, então login, cadastro e saves na nuvem não estão disponíveis agora. Tente de novo em alguns instantes.</p>
+        <p class="auth-note">O servidor do jogo não respondeu. Sem ele não dá para entrar, criar conta nem salvar na nuvem. Tente de novo daqui a pouco.</p>
         <button class="action primary big" type="button" data-off="retry">Tentar de novo</button>
-        <p class="auth-alt">Ou <button type="button" class="link" data-off="offline">jogar offline neste navegador</button> (sem conta: o progresso fica só neste aparelho e não vai para o servidor).</p>
+        <p class="auth-alt">Ou <button type="button" class="link" data-off="offline">jogar offline neste navegador</button>. Sem conta, o progresso fica só neste aparelho.</p>
       </section>`;
       return new Promise(resolve => this.el.querySelectorAll('[data-off]').forEach(b => b.addEventListener('click', () => { if (b.dataset.off === 'offline') this.hide(); resolve(b.dataset.off); })));
     },
@@ -58,7 +58,7 @@
         </form>`;
       if (m === 'register') form = `<form data-auth-form="register" novalidate>
           <label class="field"><span>Nome de usuário</span><input name="username" autocomplete="username" required minlength="3" maxlength="20"><small>3 a 20 caracteres: letras, números, ponto, hífen ou sublinhado. Aparece no ranking.</small></label>
-          <label class="field"><span>E-mail ${neon ? '' : '<em>(opcional)</em>'}</span><input name="email" type="email" autocomplete="email" maxlength="254" ${neon ? 'required' : ''}><small>${neon ? 'Você entra com o e-mail.' : 'Permite entrar com o e-mail.'}</small></label>
+          <label class="field"><span>E-mail ${neon ? '' : '<em>(opcional)</em>'}</span><input name="email" type="email" autocomplete="email" maxlength="254" ${neon ? 'required' : ''}><small>${neon ? 'Você entra com o e-mail.' : 'Também serve para entrar.'}</small></label>
           ${pw('password', 'Senha', 'new-password', 'Mínimo de 8 caracteres, com letras e números.')}
           ${pw('confirm', 'Confirmar senha', 'new-password')}
           <label class="check"><input type="checkbox" name="acceptTerms" required> <span>Li e aceito os <a href="legal/termos.html" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="legal/privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</span></label>
@@ -126,7 +126,7 @@
       btn.disabled = true; btn.classList.add('busy'); btn.textContent = kind === 'login' ? 'Entrando' : kind === 'register' ? 'Criando conta' : 'Redefinindo';
       const r = kind === 'login' ? await KT.Net.login(d) : kind === 'register' ? await KT.Net.register(d) : await KT.Net.recover(d);
       btn.disabled = false; btn.classList.remove('busy'); btn.textContent = label;
-      if (!r.ok) return this.error(r.error || 'Não foi possível concluir. Tente novamente.');
+      if (!r.ok) return this.error(r.error || 'Não deu certo. Tente de novo.');
       KT.Net.user = r.user || await KT.Net.me();
       if (r.recoveryCode) await this.showRecovery(r.recoveryCode, kind === 'register');
       this.hide('Carregando seu progresso…'); this.resolve?.(KT.Net.user);
@@ -134,14 +134,14 @@
     showRecovery(code, isNew) {
       return new Promise(resolve => {
         this.el.innerHTML = `<div class="auth-bg"></div><section class="auth-card">
-          <div class="auth-brand"><img class="auth-logo small" src="assets/brand/emblem.png" alt=""><div class="auth-title"><h1>${isNew ? 'Conta criada!' : 'Senha redefinida!'}</h1><p>Guarde seu código de recuperação.</p></div></div>
-          <p class="auth-note">Este código é a <b>única forma</b> de recuperar a conta se você esquecer a senha. Ele só é mostrado agora.</p>
+          <div class="auth-brand"><img class="auth-logo small" src="assets/brand/emblem.png" alt=""><div class="auth-title"><h1>${isNew ? 'Conta criada' : 'Senha redefinida'}</h1><p>Guarde seu código de recuperação.</p></div></div>
+          <p class="auth-note">Este código é a <b>única forma</b> de recuperar a conta se você esquecer a senha. Ele não aparece de novo.</p>
           <div class="recovery-code"><code>${esc(code)}</code><button type="button" class="action small" data-copy>Copiar</button></div>
           <label class="check"><input type="checkbox" data-saved> <span>Guardei meu código em um lugar seguro.</span></label>
-          <button class="action primary big" type="button" data-continue disabled>Começar a jogar</button></section>`;
+          <button class="action primary big" type="button" data-continue disabled>Jogar</button></section>`;
         const btn = this.el.querySelector('[data-continue]');
         this.el.querySelector('[data-saved]').addEventListener('change', e => { btn.disabled = !e.target.checked; });
-        this.el.querySelector('[data-copy]').addEventListener('click', async e => { try { await navigator.clipboard.writeText(code); e.target.textContent = 'Copiado!'; } catch (_) { e.target.textContent = 'Selecione e copie'; } });
+        this.el.querySelector('[data-copy]').addEventListener('click', async e => { try { await navigator.clipboard.writeText(code); e.target.textContent = 'Copiado'; } catch (_) { e.target.textContent = 'Selecione e copie'; } });
         btn.addEventListener('click', resolve);
       });
     }

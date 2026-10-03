@@ -19,7 +19,7 @@
       nav.querySelectorAll('.nav[data-panel]').forEach(b => { if (!MAIN.includes(b.dataset.panel)) b.classList.add('nav-extra'); });
       const more = document.createElement('button'); more.className = 'nav nav-more'; more.type = 'button';
       more.innerHTML = '<i class="pi pi-nav-menu"></i><b>Menu</b><em class="nav-badge nav-more-badge" hidden></em>';
-      more.dataset.tip = 'Todos os outros lugares: Aventuras, Ranking, Arena, Guilda, Talentos, Loja e Wiki.';
+      more.dataset.tip = 'Os outros lugares: Aventuras, Ranking, Arena, Chat, Guilda, Talentos, Loja e Wiki.';
       more.addEventListener('click', () => this.toggleMoreSheet());
       nav.appendChild(more);
     }
@@ -124,12 +124,12 @@
     const e = this.engine, g = e.guideStep(), ch = !g && e.ensureChronicle(), ls = e.loginStatus();
     let title = '', sub = '', btn = '';
     if (g) {
-      const done = e.guideDone(g); title = g.title; sub = done ? 'Concluído! Resgate a recompensa.' : g.desc;
+      const done = e.guideDone(g); title = g.title; sub = done ? 'Concluído. Resgate a recompensa.' : g.desc;
       btn = done ? '<button class="action primary small" data-claim-guide type="button">✓ Resgatar</button>' : g.go ? `<button class="action small" data-go="${KT.goOf(g)}" type="button">Ir →</button>` : '';
     } else if (ch) {
       const v = e.chronicleValue(ch), done = v >= ch.target; title = ch.title; sub = `${U.fmt(v)} / ${U.fmt(ch.target)}`;
       btn = done ? '<button class="action primary small" data-claim-chronicle type="button">✓ Resgatar</button>' : '';
-    } else { title = 'Jornada concluída!'; sub = 'Explore a Fenda e os chefes em Pesadelo.'; }
+    } else { title = 'Jornada concluída'; sub = 'Explore a Fenda e os chefes em Pesadelo.'; }
     const gift = ls.available ? `<button class="action pink small" data-claim-login type="button" data-tip="Presente de login do dia"><i class="ic ic-chest"></i> Presente</button>` : '';
     const html = `<span class="goal-ic"><i class="ic ic-target"></i></span><div class="goal-txt"><small>OBJETIVO</small><b>${esc(title)}</b><em>${esc(sub)}</em></div>${btn || gift ? `<div class="goal-actions">${btn}${gift}</div>` : ''}`;
     chip.hidden = false;
