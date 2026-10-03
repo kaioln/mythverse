@@ -84,13 +84,13 @@
       if (box.innerHTML !== html) { box.innerHTML = html; if (near) box.scrollTop = box.scrollHeight; else { const more = this.el.modalBody.querySelector('[data-chat-latest]'); if (more) more.hidden = false; } }
     }
     const status = this.el.modalBody.querySelector('.chat-status');
-    if (status) { const err = guild ? Community.guildErr : Community.err; status.textContent = err ? `Conexão interrompida · tentando reconectar. ${err}` : 'Conectado · atualizado automaticamente'; status.classList.toggle('txt-pink', !!err); }
+    if (status) { const err = guild ? Community.guildErr : Community.err; status.textContent = err ? `Sem conexão. Tentando de novo. ${err}` : 'Conectado'; status.classList.toggle('txt-pink', !!err); }
   };
   P.chatLines = function(guild = false) {
     const C = Community;
     if (guild) return (KT.Social?.guild?.feed || []).slice().reverse().map(m => `<div class="chat-line ${m.kind === 'event' ? 'chat-event' : ''}"><b>${esc(m.kind === 'event' ? 'Registro da guilda' : m.author)}</b><small>${hhmm(m.at)}</small><p>${esc(m.text)}</p></div>`).join('') || '<p class="empty-note">Combine uma caçada com sua guilda.</p>';
     return C.msgs.map(m => `<div class="chat-line ${m.me ? 'me' : ''}"><button class="chat-who" data-player="${esc(m.ref)}" type="button">${avatar(m.avatar)}<b>${esc(m.name)}</b></button><small>${hhmm(m.at)}</small><p>${esc(m.text)}</p></div>`).join('')
-      || '<p class="empty-note">Ninguém falou ainda. Diga olá para Tsukimori!</p>';
+      || '<p class="empty-note">Ninguém falou ainda. Puxe conversa.</p>';
   };
   P.chatPanel = function(_, tab) {
     const C = Community;
@@ -99,12 +99,12 @@
     if (tab === 'profile') return this.myProfileHtml();
     const guild = tab === 'guild';
     if (guild && this.engine.serviceStatus('clans').locked) return this.serviceLockedHtml(this.engine.serviceStatus('clans'));
-    if (guild && !KT.Social?.guild?.guild) return '<div class="empty-state"><h3>Uma mesa para seus aliados</h3><p>Este canal é reservado aos membros da sua guilda.</p><button class="action primary" data-go="guild:list" type="button">Encontrar uma guilda</button></div>';
+    if (guild && !KT.Social?.guild?.guild) return '<div class="empty-state"><h3>Uma mesa para seus aliados</h3><p>Este canal é reservado aos membros da sua guilda.</p><button class="action primary" data-go="guild:list" type="button">Procurar guildas</button></div>';
     if (guild) C.pollGuild();
     setTimeout(() => { const box = this.el.modalBody.querySelector('.chat-log'); if (box) box.scrollTop = box.scrollHeight; }, 30);
-    return `<section class="chat"><header class="chat-channel"><div><span class="eyebrow">${guild ? 'SOMENTE SUA GUILDA' : 'PRAÇA DE TSUKIMORI · PÚBLICO'}</span><h3>${guild ? esc(KT.Social.guild.guild.name) : 'Viajantes de todos os mundos'}</h3></div><small class="chat-status">${esc((guild ? C.guildErr : C.err) || 'Conectado · atualizado automaticamente')}</small></header>
+    return `<section class="chat"><header class="chat-channel"><div><span class="eyebrow">${guild ? 'SOMENTE SUA GUILDA' : 'PRAÇA DE TSUKIMORI · PÚBLICO'}</span><h3>${guild ? esc(KT.Social.guild.guild.name) : 'Viajantes de todos os mundos'}</h3></div><small class="chat-status">${esc((guild ? C.guildErr : C.err) || 'Conectado')}</small></header>
       <div class="chat-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="${guild ? 'Chat da guilda' : 'Chat global'}">${this.chatLines(guild)}</div><button class="action small" data-chat-latest type="button" hidden>Novas mensagens ↓</button>
-      <form class="chat-form" data-chat-form data-channel="${guild ? 'guild' : 'global'}"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" maxlength="200" autocomplete="off" placeholder="${guild ? 'Combine estratégias com seus aliados…' : 'Converse com os viajantes…'}"><button class="action primary" type="submit">Enviar</button></form>
+      <form class="chat-form" data-chat-form data-channel="${guild ? 'guild' : 'global'}"><label class="sr-only" for="chat-input">Sua mensagem</label><input id="chat-input" maxlength="200" autocomplete="off" placeholder="${guild ? 'Fale com a guilda…' : 'Converse com os viajantes…'}"><button class="action primary" type="submit">Enviar</button></form>
       <small class="dim chat-rules">Até 200 caracteres · Enter envia. ${guild ? 'Canal reservado aos membros. ' : 'Canal público: não compartilhe dados pessoais. '}Respeite os demais jogadores.</small></section>`;
   };
   P.myProfileHtml = function() {
@@ -114,7 +114,7 @@
     return `<section class="profile-edit"><div class="profile-card">${this.playerCardHtml(p)}</div>
       <form class="profile-form" data-profile-form>
         <h4>Avatar</h4><div class="avatar-pick">${heroes.map(id => `<label><input type="radio" name="avatar" value="${id}" ${p.avatar === id ? 'checked' : ''}>${avatar(id)}</label>`).join('')}</div>
-        <small class="dim">Só retratos dos seus heróis: nada de fotos, então nada de imagens impróprias.</small>
+        <small class="dim">Só retratos dos seus heróis. Nada de fotos.</small>
         <h4>Título</h4><input name="title" maxlength="40" value="${esc(p.title)}" placeholder="Ex.: Caçadora de Selos">
         <h4>Sobre você</h4><textarea name="bio" maxlength="240" rows="3" placeholder="Horários, estilo de jogo, guilda que procura…">${esc(p.bio)}</textarea>
         <h4>Quem vê o quê</h4>

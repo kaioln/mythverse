@@ -34,7 +34,7 @@
     }).join('');
     return `<div class="bank-chart"><svg viewBox="0 0 ${W} ${H}" role="img">${grid}${refLine}${lines}${xl}</svg><div class="bank-legend">${series.map(s => `<span><i style="background:${s.color}"></i>${s.label}</span>`).join('')}</div></div>`;
   }
-  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Banco está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'Ajustes leves em andamento para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'O ouro guardado pelos jogadores está perto de 6 horas da própria renda: saudável.'];
+  const verdict = ix => ix > 1.5 ? ['Inflação alta', 'hot', 'O Banco está fechando a torneira de ouro e encarecendo NPCs e impostos.'] : ix > 1.1 ? ['Inflação moderada', 'warm', 'A torneira vai fechando para segurar os preços.'] : ix < .6 ? ['Ouro escasso', 'cold', 'A torneira está aberta: vale a pena caçar, vender e produzir.'] : ['Economia estável', 'ok', 'O ouro guardado pelos jogadores está perto de 6 horas da própria renda: saudável.'];
 
   // Estimativa de valor quando ainda não há negócios: custo de produzir (receitas da Oficina) ou de desmontar.
   P.bankEstimate = function(kind, id) {
@@ -52,7 +52,7 @@
     if (this.session?.mode !== 'neon') return this.cloudOnly('Banco Kogane');
     const eco = M().econ;
     if (!eco && !this.econLoading) { this.econLoading = true; M().economy(this.engine).then(() => { this.econLoading = false; if (this.view.panel === 'bank') this.refreshPanel(); }); }
-    const head = `<section class="bank-hero">${CREST}<div><span class="eyebrow">BANCO KOGANE · 黄金 · desde a fundação de Tsukimori</span><h3>Tesoureira Oharu</h3><p>“Guardo o valor do ouro da cidade. Quando sobra ouro, fecho a torneira; quando falta, abro. Aqui você vê o pulso da economia e quanto vale cada coisa.”</p></div></section>`;
+    const head = `<section class="bank-hero">${CREST}<div><span class="eyebrow">BANCO KOGANE · 黄金 · desde a fundação de Tsukimori</span><h3>Tesoureira Oharu</h3><p>“Guardo o valor do ouro da cidade. Quando sobra ouro, fecho a torneira. Quando falta, abro. Aqui você vê como anda o ouro e quanto vale cada coisa.”</p></div></section>`;
     if (!eco) return `${head}<div class="empty-state"><p>Consultando os livros do Banco…</p></div>`;
     if (tab === 'quotes') return head + this.bankQuotes(eco);
     const ix = Number(eco.index) || 1, v = verdict(ix), hist = eco.history || [];
@@ -64,7 +64,7 @@
         <span><b>${compact(eco.perPlayer)}</b>Ouro guardado (mediana)<small>reserva saudável ${compact(eco.target)} = 6 h de renda</small></span>
         <span><b>${compact(eco.income || 0)}/h</b>Renda típica<small>ouro ganho por hora de jogo (mediana)</small></span>
         <span><b>${U.fmt(eco.players || 0)}</b>Jogadores ativos<small>últimos 7 dias · ouro total ${compact(eco.money)}</small></span>
-        <span><b>${compact(eco.volume24)}</b>Volume 24 h<small>${eco.trades24} negócio(s) · ${eco.listings} anúncios · ${eco.orders} ordens</small></span>
+        <span><b>${compact(eco.volume24)}</b>Volume 24 h<small>${U.count(eco.trades24, 'negócio')} · ${U.count(eco.listings, 'anúncio')} · ${U.count(eco.orders, 'ordem', 'ordens')}</small></span>
         <span><b>${eco.growth24 === null || eco.growth24 === undefined ? '–' : `${eco.growth24 > 0 ? '+' : ''}${String(eco.growth24).replace('.', ',')}%`}</b>Variação 24 h<small>ouro guardado por jogador</small></span>
       </div>
       <h4 class="sub-title">Índice de inflação e torneira de ouro</h4>
@@ -104,7 +104,7 @@
     const rows = (list || []).map(o => { const h = have(o); return `<div class="order-row ${o.mine ? 'mine' : ''}"><b>${esc(o.name)}</b><span>${U.fmt(o.qtyLeft)}/${U.fmt(o.qty)} × <b class="price"><span class="coin-ic" aria-hidden="true"></span> ${U.fmt(o.price)}</b></span><small>${o.mine ? 'sua ordem' : `por ${esc(o.buyer)} · você tem ${U.fmt(h)}`}</small>
       ${o.mine ? `<button class="action small" data-order-cancel="${o.id}" type="button">Cancelar</button>` : `<button class="action small ${h ? 'primary' : ''}" data-order-fill="${o.id}" type="button" ${h ? '' : 'disabled'}>Vender</button>`}</div>`; }).join('');
     return `<section class="orders-box"><h4 class="sub-title">Ordens de compra</h4>
-      <p class="dim small-note">Materiais e cartas. O ouro da ordem fica reservado no banco; quem vende recebe na hora (menos o imposto de ${((M().econ?.taxBps || 500) / 100).toFixed(1)}%). Cancelar devolve o que sobrou.</p>
+      <p class="dim small-note">Materiais e cartas. O ouro da ordem fica reservado no banco. Quem vende recebe na hora (menos o imposto de ${((M().econ?.taxBps || 500) / 100).toFixed(1)}%). Cancelar devolve o que sobrou.</p>
       <div class="card-sell"><select id="ord-goods">${goods.map(g => `<option value="${g.v}">${esc(g.n)}</option>`).join('')}</select><input id="ord-qty" type="number" min="1" max="9999" placeholder="Quantidade"><input id="ord-price" type="number" min="100" placeholder="Preço por unidade"><button class="action" data-order-place type="button">Criar ordem</button></div>
       <div class="order-list">${rows || '<p class="empty-note">Nenhuma ordem aberta.</p>'}</div></section>`;
   };
@@ -128,7 +128,7 @@
       return `<div class="craft-row ${lvOk ? '' : 'locked'}"><div><b>${KT.glyph(D.PROF.craft[r.prof].icon)} ${esc(r.name)}</b><small>${Object.entries(cost).map(([k, v]) => `<span class="${e.profHave(k) >= v ? 'cost-ok' : 'cost-bad'}">${U.fmt(v)} ${esc(matName(k))}</span>`).join(' · ')}${lvOk ? '' : ` · requer ${esc(D.PROF.craft[r.prof].name)} ${r.lv}`}</small>
         ${r.gear ? `<small class="dim">Item nível ${D.PROF.tierIlvl[r.gear] + Math.floor((pr.lv.smithing || 1) / 5)}${r.masterwork ? ', épico ou lendário garantido' : ''}. Negociável e assinado com seu nome.</small>` : ''}</div>
         <button class="action ${can ? 'primary' : ''}" data-prof-craft="${r.id}" type="button" ${can ? '' : 'disabled'}>Criar</button></div>`; }).join('');
-    return `<section class="house-hero"><div><span class="eyebrow">OFÍCIOS DE TSUKIMORI</span><h3>Profissões</h3><p>Entre as ondas de caçadas e salas de masmorra, sua equipe coleta minérios, ervas e essências do capítulo em que está (mais nível = mais coleta e mais achados raros). Com eles a Alquimia prepara frascos de batalha e a Artesania forja equipamentos que você pode usar ou <b>vender no Mercado</b>.</p></div></section>
+    return `<section class="house-hero"><div><span class="eyebrow">OFÍCIOS DE TSUKIMORI</span><h3>Profissões</h3><p>Entre as ondas de caçadas e salas de masmorra, sua equipe coleta minérios, ervas e essências do capítulo em que está. Mais nível, mais coleta e mais achados raros. Com eles a Alquimia prepara frascos de batalha e a Artesania forja equipamentos que você pode usar ou <b>vender no Mercado</b>.</p></div></section>
       <h4 class="sub-title">Coleta</h4><div class="prof-grid">${Object.entries(D.PROF.gather).map(([id, d]) => bar(id, d)).join('')}</div>
       <h4 class="sub-title">Criação</h4><div class="prof-grid">${Object.entries(D.PROF.craft).map(([id, d]) => bar(id, d)).join('')}</div>
       <h4 class="sub-title">Receitas</h4><div class="card-sell"><span class="dim">Espaço para equipamentos de Artesania:</span>${slotSel}</div><div class="recipe-grid">${recipes}</div>
@@ -141,7 +141,7 @@
     const done = (r, okMsg) => { if (!r.ok) this.toast(esc(r.error || 'Falhou.')); else this.toast(okMsg, 'gold'); this.ordersList = null; this.renderResources(); this.loadMarket(true); this.refreshPanel(); };
     if (b.hasAttribute('data-order-place')) {
       const [kind, id] = String(val('#ord-goods') || '').split(':'), qty = val('#ord-qty'), price = val('#ord-price'), total = Math.floor(qty) * Math.floor(price);
-      this.ask('Criar ordem de compra', `Reservar <b>${U.fmt(total || 0)} de ouro</b> para comprar ${U.fmt(qty || 0)} × a ${U.fmt(price || 0)} cada?`, [{ id:'yes', label:'Criar ordem', primary:true }, { id:'no', label:'Cancelar' }])
+      this.ask('Criar ordem de compra', `Reservar <b>${U.fmt(total || 0)} de ouro</b> para comprar ${U.fmt(qty || 0)} a ${U.fmt(price || 0)} cada?`, [{ id:'yes', label:'Criar ordem', primary:true }, { id:'no', label:'Cancelar' }])
         .then(x => { if (x === 'yes') M().placeOrder(this.engine, { kind, id, qty, price }).then(r => done(r, 'Ordem criada: o ouro está reservado.')); });
       return true;
     }
